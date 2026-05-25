@@ -55,25 +55,36 @@ export const ru1TechwireSections: ThemeSection[] = [
     html_code: `<section data-component-title="Ru1 Techwire Navbar">
 <nav class="pbx-bg-white pbx-shadow-sm">
   <div class="pbx-max-w-7xl pbx-mx-auto pbx-px-4 sm:pbx-px-6 lg:pbx-px-8">
-    <div class="pbx-flex pbx-items-center pbx-justify-between pbx-h-16">
-      <div class="pbx-flex pbx-items-center">
+    <!-- Top row: Logo | Search | Actions -->
+    <div class="pbx-flex pbx-items-center pbx-justify-between pbx-gap-4 pbx-py-3 pbx-border-b pbx-border-gray-100">
+      <div class="pbx-flex-shrink-0">
         <span class="pbx-text-lg pbx-font-bold pbx-text-gray-900">Your Logo</span>
       </div>
-      <div class="pbx-hidden md:pbx-flex pbx-items-center pbx-gap-6">
-        <a href="/" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Home</a>
-        <a href="/shop" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Shop</a>
-        <a href="/about" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">About Us</a>
-        <a href="/signin" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Sign In</a>
-        <a href="/contact" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Contact Us</a>
-        <a href="/cart" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Cart</a>
+      <div class="pbx-flex-1 pbx-max-w-md pbx-hidden md:pbx-block">
+        <input type="text" placeholder="Search products..." class="pbx-w-full pbx-border pbx-border-gray-300 pbx-rounded pbx-px-3 pbx-py-1.5 pbx-text-sm pbx-text-gray-700 focus:pbx-outline-none" />
       </div>
-      <div class="md:pbx-hidden">
-        <button class="pbx-p-2 pbx-text-gray-700">
+      <div class="pbx-flex pbx-items-center pbx-gap-4">
+        <a href="/contact" class="pbx-hidden md:pbx-block pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Contact Us</a>
+        <a href="/signup" class="pbx-hidden md:pbx-block pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Sign Up</a>
+        <a href="/cart" class="pbx-text-gray-700 hover:pbx-text-gray-900">
           <svg class="pbx-h-6 pbx-w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
           </svg>
-        </button>
+        </a>
+        <div class="md:pbx-hidden">
+          <button class="pbx-p-2 pbx-text-gray-700">
+            <svg class="pbx-h-6 pbx-w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+        </div>
       </div>
+    </div>
+    <!-- Bottom row: Nav links -->
+    <div class="pbx-hidden md:pbx-flex pbx-items-center pbx-gap-6 pbx-py-2">
+      <a href="/" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Home</a>
+      <a href="/shop" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Shop</a>
+      <a href="/about" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">About Us</a>
     </div>
   </div>
 </nav>
@@ -161,32 +172,32 @@ export const ru1TechwireSections: ThemeSection[] = [
     id: null,
     title: 'Ru1 Techwire Footer',
     html_code: `<section data-component-title="Ru1 Techwire Footer">
-<footer class="pbx-bg-gray-900 pbx-text-white">
+<footer>
   <div class="pbx-max-w-7xl pbx-mx-auto pbx-px-4 sm:pbx-px-6 lg:pbx-px-8 pbx-py-12">
     <div class="pbx-grid pbx-grid-cols-1 md:pbx-grid-cols-3 pbx-gap-8">
       <div>
-        <h3 class="pbx-text-sm pbx-font-semibold pbx-text-gray-400 pbx-uppercase pbx-tracking-wider pbx-mb-4">Useful Links</h3>
+        <h3 class="pbx-text-sm pbx-font-semibold pbx-uppercase pbx-tracking-wider pbx-mb-4">Useful Links</h3>
         <ul class="pbx-space-y-2">
-          <li><a href="/" class="pbx-text-gray-300 hover:pbx-text-white pbx-text-sm">Home</a></li>
-          <li><a href="/shop" class="pbx-text-gray-300 hover:pbx-text-white pbx-text-sm">Shop</a></li>
-          <li><a href="/about" class="pbx-text-gray-300 hover:pbx-text-white pbx-text-sm">About Us</a></li>
-          <li><a href="/contact" class="pbx-text-gray-300 hover:pbx-text-white pbx-text-sm">Contact Us</a></li>
+          <li><a href="/" class="pbx-text-sm pbx-text-gray-700 hover:pbx-text-gray-900">Home</a></li>
+          <li><a href="/shop" class="pbx-text-sm pbx-text-gray-700 hover:pbx-text-gray-900">Shop</a></li>
+          <li><a href="/about" class="pbx-text-sm pbx-text-gray-700 hover:pbx-text-gray-900">About Us</a></li>
+          <li><a href="/contact" class="pbx-text-sm pbx-text-gray-700 hover:pbx-text-gray-900">Contact Us</a></li>
         </ul>
       </div>
       <div>
-        <h3 class="pbx-text-sm pbx-font-semibold pbx-text-gray-400 pbx-uppercase pbx-tracking-wider pbx-mb-4">About Us</h3>
-        <p class="pbx-text-gray-300 pbx-text-sm pbx-leading-relaxed">This site is for employees to order branded apparel and accessories.</p>
+        <h3 class="pbx-text-sm pbx-font-semibold pbx-uppercase pbx-tracking-wider pbx-mb-4">About Us</h3>
+        <p class="pbx-text-sm pbx-text-gray-700 pbx-leading-relaxed">This site is for employees to order branded apparel and accessories.</p>
       </div>
       <div>
-        <h3 class="pbx-text-sm pbx-font-semibold pbx-text-gray-400 pbx-uppercase pbx-tracking-wider pbx-mb-4">Connect with Us</h3>
+        <h3 class="pbx-text-sm pbx-font-semibold pbx-uppercase pbx-tracking-wider pbx-mb-4">Connect with Us</h3>
         <ul class="pbx-space-y-2">
-          <li class="pbx-text-gray-300 pbx-text-sm">support@yourdomain.com</li>
-          <li class="pbx-text-gray-300 pbx-text-sm">+1 000-000-0000</li>
+          <li class="pbx-text-sm pbx-text-gray-700">support@yourdomain.com</li>
+          <li class="pbx-text-sm pbx-text-gray-700">+1 000-000-0000</li>
         </ul>
       </div>
     </div>
-    <div class="pbx-border-t pbx-border-gray-700 pbx-mt-8 pbx-pt-6 pbx-text-center">
-      <p class="pbx-text-gray-400 pbx-text-sm">© Your Store. All rights reserved.</p>
+    <div class="pbx-border-t pbx-border-gray-200 pbx-mt-8 pbx-pt-6 pbx-text-center">
+      <p class="pbx-text-sm pbx-text-gray-500">© Your Store. All rights reserved.</p>
     </div>
   </div>
 </footer>
