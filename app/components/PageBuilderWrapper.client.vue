@@ -23,5 +23,5 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PageBuilder :custom-builder-components="BuilderPanel" />
+  <PageBuilder :CustomBuilderComponents="BuilderPanel" />
 </template>

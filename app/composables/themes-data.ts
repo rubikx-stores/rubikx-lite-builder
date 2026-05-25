@@ -55,32 +55,28 @@ export const ru1TechwireSections: ThemeSection[] = [
     html_code: `<section data-component-title="Ru1 Techwire Navbar">
 <nav class="pbx-bg-white pbx-shadow-sm">
   <div class="pbx-max-w-7xl pbx-mx-auto pbx-px-4 sm:pbx-px-6 lg:pbx-px-8">
-    <!-- Top row: Logo | Search | Actions -->
-    <div class="pbx-flex pbx-items-center pbx-justify-between pbx-gap-4 pbx-py-3 pbx-border-b pbx-border-gray-100">
+    <div class="pbx-flex pbx-items-center pbx-justify-between pbx-gap-4 pbx-py-3">
       <div class="pbx-flex-shrink-0">
         <span class="pbx-text-lg pbx-font-bold pbx-text-gray-900">Your Logo</span>
       </div>
-      <div class="pbx-flex-1 pbx-max-w-md pbx-hidden md:pbx-block">
-        <input type="text" placeholder="Search products..." class="pbx-w-full pbx-border pbx-border-gray-300 pbx-rounded pbx-px-3 pbx-py-1.5 pbx-text-sm pbx-text-gray-700 focus:pbx-outline-none" />
+      <div class="pbx-flex-1 pbx-flex pbx-justify-center">
+        <div class="pbx-flex pbx-items-center pbx-border pbx-border-gray-300 pbx-rounded-full pbx-px-3 pbx-py-1.5 pbx-gap-2 pbx-w-full pbx-max-w-xs">
+          <svg class="pbx-h-4 pbx-w-4 pbx-text-blue-400 pbx-flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+          </svg>
+          <input type="text" placeholder="Search..." class="pbx-w-full pbx-bg-transparent pbx-text-sm pbx-text-gray-500 focus:pbx-outline-none" />
+        </div>
       </div>
-      <div class="pbx-flex pbx-items-center pbx-gap-4">
-        <a href="/contact" class="pbx-hidden md:pbx-block pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Contact Us</a>
-        <a href="/signup" class="pbx-hidden md:pbx-block pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Sign Up</a>
+      <div class="pbx-flex pbx-items-center pbx-gap-2">
+        <a href="/signin" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900 pbx-underline">Sign In</a>
+        <a href="/contact" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900 pbx-underline">Contact Us</a>
         <a href="/cart" class="pbx-text-gray-700 hover:pbx-text-gray-900">
           <svg class="pbx-h-6 pbx-w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
           </svg>
         </a>
-        <div class="md:pbx-hidden">
-          <button class="pbx-p-2 pbx-text-gray-700">
-            <svg class="pbx-h-6 pbx-w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-          </button>
-        </div>
       </div>
     </div>
-    <!-- Bottom row: Nav links -->
     <div class="pbx-hidden md:pbx-flex pbx-items-center pbx-gap-6 pbx-py-2">
       <a href="/" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Home</a>
       <a href="/shop" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Shop</a>
@@ -126,40 +122,58 @@ export const ru1TechwireSections: ThemeSection[] = [
     html_code: `<section data-component-title="Ru1 Techwire Featured Products">
 <div class="md:pbx-pt-16 md:pbx-pb-16 pbx-pt-6 pbx-pb-6 lg:pbx-px-4 pbx-px-2">
   <div class="pbx-mx-auto pbx-max-w-7xl">
-    <div class="pbx-break-words pbx-font-medium pbx-text-3xl lg:pbx-text-6xl pbx-mb-8">
+    <div class="pbx-break-words pbx-font-medium pbx-text-3xl lg:pbx-text-4xl pbx-mb-8">
       <h2>Featured Products</h2>
     </div>
     <div class="pbx-myPrimaryGap pbx-grid pbx-grid-cols-2 sm:pbx-grid-cols-2 lg:pbx-grid-cols-4">
-      <div class="pbx-flex-1 pbx-py-2">
+      <div class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200 pbx-rounded-lg pbx-overflow-hidden">
         <img class="pbx-object-cover pbx-w-full pbx-object-top pbx-aspect-square" src="${placeholderSvg}" alt="Product image" />
-        <div class="pbx-break-words pbx-py-2">
-          <p class="pbx-font-semibold">Product Name</p>
-          <p>$0.00</p>
-          <a href="/shop" class="pbx-mySecondaryButton pbx-mt-2">Add to Cart</a>
+        <div class="pbx-flex pbx-flex-col pbx-gap-1 pbx-p-3 pbx-flex-1">
+          <p class="pbx-font-semibold pbx-text-sm">Product One</p>
+          <p class="pbx-text-sm">$29.99</p>
+          <div class="pbx-flex pbx-items-center pbx-gap-1 pbx-my-1">
+            <span class="pbx-w-4 pbx-h-4 pbx-rounded-full pbx-inline-block" style="background:#111827"></span>
+            <span class="pbx-w-4 pbx-h-4 pbx-rounded-full pbx-inline-block pbx-border pbx-border-gray-300" style="background:#ffffff"></span>
+            <span class="pbx-w-4 pbx-h-4 pbx-rounded-full pbx-inline-block" style="background:#ef4444"></span>
+          </div>
+          <a href="/shop" class="pbx-mySecondaryButton pbx-mt-auto">Add to Cart</a>
         </div>
       </div>
-      <div class="pbx-flex-1 pbx-py-2">
+      <div class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200 pbx-rounded-lg pbx-overflow-hidden">
         <img class="pbx-object-cover pbx-w-full pbx-object-top pbx-aspect-square" src="${placeholderSvg}" alt="Product image" />
-        <div class="pbx-break-words pbx-py-2">
-          <p class="pbx-font-semibold">Product Name</p>
-          <p>$0.00</p>
-          <a href="/shop" class="pbx-mySecondaryButton pbx-mt-2">Add to Cart</a>
+        <div class="pbx-flex pbx-flex-col pbx-gap-1 pbx-p-3 pbx-flex-1">
+          <p class="pbx-font-semibold pbx-text-sm">Product Two</p>
+          <p class="pbx-text-sm">$39.99</p>
+          <div class="pbx-flex pbx-items-center pbx-gap-1 pbx-my-1">
+            <span class="pbx-w-4 pbx-h-4 pbx-rounded-full pbx-inline-block" style="background:#3b82f6"></span>
+            <span class="pbx-w-4 pbx-h-4 pbx-rounded-full pbx-inline-block" style="background:#22c55e"></span>
+          </div>
+          <a href="/shop" class="pbx-mySecondaryButton pbx-mt-auto">Add to Cart</a>
         </div>
       </div>
-      <div class="pbx-flex-1 pbx-py-2">
+      <div class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200 pbx-rounded-lg pbx-overflow-hidden">
         <img class="pbx-object-cover pbx-w-full pbx-object-top pbx-aspect-square" src="${placeholderSvg}" alt="Product image" />
-        <div class="pbx-break-words pbx-py-2">
-          <p class="pbx-font-semibold">Product Name</p>
-          <p>$0.00</p>
-          <a href="/shop" class="pbx-mySecondaryButton pbx-mt-2">Add to Cart</a>
+        <div class="pbx-flex pbx-flex-col pbx-gap-1 pbx-p-3 pbx-flex-1">
+          <p class="pbx-font-semibold pbx-text-sm">Product Three</p>
+          <p class="pbx-text-sm">$49.99</p>
+          <div class="pbx-flex pbx-items-center pbx-gap-1 pbx-my-1">
+            <span class="pbx-w-4 pbx-h-4 pbx-rounded-full pbx-inline-block" style="background:#a855f7"></span>
+            <span class="pbx-w-4 pbx-h-4 pbx-rounded-full pbx-inline-block" style="background:#f59e0b"></span>
+            <span class="pbx-w-4 pbx-h-4 pbx-rounded-full pbx-inline-block" style="background:#111827"></span>
+          </div>
+          <a href="/shop" class="pbx-mySecondaryButton pbx-mt-auto">Add to Cart</a>
         </div>
       </div>
-      <div class="pbx-flex-1 pbx-py-2">
+      <div class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200 pbx-rounded-lg pbx-overflow-hidden">
         <img class="pbx-object-cover pbx-w-full pbx-object-top pbx-aspect-square" src="${placeholderSvg}" alt="Product image" />
-        <div class="pbx-break-words pbx-py-2">
-          <p class="pbx-font-semibold">Product Name</p>
-          <p>$0.00</p>
-          <a href="/shop" class="pbx-mySecondaryButton pbx-mt-2">Add to Cart</a>
+        <div class="pbx-flex pbx-flex-col pbx-gap-1 pbx-p-3 pbx-flex-1">
+          <p class="pbx-font-semibold pbx-text-sm">Product Four</p>
+          <p class="pbx-text-sm">$59.99</p>
+          <div class="pbx-flex pbx-items-center pbx-gap-1 pbx-my-1">
+            <span class="pbx-w-4 pbx-h-4 pbx-rounded-full pbx-inline-block" style="background:#111827"></span>
+            <span class="pbx-w-4 pbx-h-4 pbx-rounded-full pbx-inline-block" style="background:#6b7280"></span>
+          </div>
+          <a href="/shop" class="pbx-mySecondaryButton pbx-mt-auto">Add to Cart</a>
         </div>
       </div>
     </div>
