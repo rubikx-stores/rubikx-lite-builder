@@ -68,8 +68,8 @@ export const ru1TechwireSections: ThemeSection[] = [
         </div>
       </div>
       <div class="pbx-flex pbx-items-center pbx-gap-2">
-        <a href="/signin" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Sign In</a>
-        <a href="/contact" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Contact Us</a>
+        <a href="/signin" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900 pbx-no-underline">Sign In</a>
+        <a href="/contact" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900 pbx-no-underline">Contact Us</a>
         <a href="/cart" class="pbx-text-gray-700 hover:pbx-text-gray-900">
           <svg class="pbx-h-6 pbx-w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
@@ -78,9 +78,9 @@ export const ru1TechwireSections: ThemeSection[] = [
       </div>
     </div>
     <div class="pbx-hidden md:pbx-flex pbx-items-center pbx-gap-6 pbx-py-2">
-      <a href="/" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Home</a>
-      <a href="/shop" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">Shop</a>
-      <a href="/about" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900">About Us</a>
+      <a href="/" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900 pbx-no-underline">Home</a>
+      <a href="/shop" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900 pbx-no-underline">Shop</a>
+      <a href="/about" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900 pbx-no-underline">About Us</a>
     </div>
   </div>
 </nav>
