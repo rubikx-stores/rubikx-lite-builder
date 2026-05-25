@@ -1,7 +1,13 @@
+import { fileURLToPath, URL } from 'url'
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-21',
 
   ssr: true,
+
+  alias: {
+    '#lib': fileURLToPath(new URL('../src/utils/html-elements', import.meta.url)),
+  },
 
   app: {
     head: {
@@ -40,7 +46,6 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    // Server-only secrets — never sent to the browser
     unsplashAccessKey: process.env.UNSPLASH_ACCESS_KEY,
     apiBaseUrl: process.env.API_BASE_URL,
     apiSecretKey: process.env.API_SECRET_KEY,
