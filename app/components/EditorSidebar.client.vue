@@ -270,7 +270,7 @@ function onUploadImage(fieldKey: string, file: File) {
                       type="file"
                       accept="image/*"
                       class="sr-only"
-                      @change="onUploadImage(field.key, ($event.target as HTMLInputElement).files![0])"
+                      @change="{ const f = ($event.target as HTMLInputElement).files; if (f?.length) onUploadImage(field.key, f[0]) }"
                     />
                   </label>
                 </div>
