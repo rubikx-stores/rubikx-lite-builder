@@ -4,11 +4,11 @@ import { usePageBuilderStateStore } from '@myissue/vue-website-page-builder'
 
 const store = usePageBuilderStateStore() as any
 const {
-  selectedEl, selectedBlockTitle, mode,
+  selectedEl, selectedBlockTitle, selectedTag, mode,
   blockConfig, blockData,
   updateBlockField, updateBlockListItem, addBlockListItem, removeBlockListItem,
   updateElementStyle, updateElementClass,
-  addLink, removeLink, openGlobalPageStyles,
+  addLink, removeLink, openGlobalPageStyles, closeEditor,
 } = useEditorSidebar()
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -214,12 +214,14 @@ const isImgEl = computed(() => selectedEl.value?.tagName?.toUpperCase() === 'IMG
       class="absolute right-0 top-0 bottom-0 z-30 w-72 bg-white border-l border-gray-200 shadow-lg flex flex-col overflow-hidden"
     >
       <!-- Header -->
-      <div class="flex-shrink-0 px-3 py-2.5 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-        <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide truncate">
-          {{ mode === 'block' ? selectedBlockTitle : (selectedEl?.tagName?.toLowerCase() ?? 'Element') }}
-        </p>
-        <span class="text-xs text-gray-400 bg-white border border-gray-200 rounded px-1.5 py-0.5 ml-2 shrink-0">
-          {{ mode }}
+      <div class="flex-shrink-0 px-4 py-3 border-b border-gray-200 bg-white flex items-center justify-between">
+        <button
+          type="button"
+          class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 border-none bg-transparent cursor-pointer text-base leading-none"
+          @click="closeEditor"
+        >×</button>
+        <span class="text-xs font-semibold text-gray-700 tracking-wide">
+          Editing &lt;{{ selectedTag }}&gt;
         </span>
       </div>
 
