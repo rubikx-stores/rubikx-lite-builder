@@ -8,7 +8,7 @@ const {
   blockConfig, blockData,
   updateBlockField, updateBlockListItem, addBlockListItem, removeBlockListItem,
   updateElementStyle, updateElementClass,
-  addLink, removeLink, openGlobalPageStyles, closeEditor,
+  addLink, removeLink, closeEditor,
 } = useEditorSidebar()
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -701,16 +701,6 @@ function onUploadImage(fieldKey: string, file: File) {
         </details>
       </div>
 
-      <!-- Global Page Styles — pinned at bottom -->
-      <div class="flex-shrink-0 border-t border-gray-200 p-3">
-        <button
-          type="button"
-          class="w-full text-xs font-medium bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-md py-2 border border-gray-200 cursor-pointer"
-          @click="openGlobalPageStyles"
-        >
-          ⚙ Global Page Styles
-        </button>
-      </div>
     </div>
   </Transition>
 </template>
