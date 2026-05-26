@@ -217,11 +217,12 @@ const isImgEl = computed(() => selectedEl.value?.tagName?.toUpperCase() === 'IMG
       <div class="flex-shrink-0 px-4 py-3 border-b border-gray-200 bg-white flex items-center justify-between">
         <button
           type="button"
+          aria-label="Close editor"
           class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 border-none bg-transparent cursor-pointer text-base leading-none"
           @click="closeEditor"
         >×</button>
         <span class="text-xs font-semibold text-gray-700 tracking-wide">
-          Editing &lt;{{ selectedTag }}&gt;
+          Editing &lt;{{ selectedTag || 'element' }}&gt;
         </span>
       </div>
 
