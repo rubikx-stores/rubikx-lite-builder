@@ -231,93 +231,88 @@ const isImgEl = computed(() => selectedEl.value?.tagName?.toUpperCase() === 'IMG
 
         <!-- ── Block Content Editor ───────────────────────────────────────── -->
         <template v-if="mode === 'block' && blockConfig && blockData">
-          <div class="border-b border-gray-100">
-            <div class="px-3 pt-3 pb-1 flex items-center justify-between">
-              <p class="text-xs font-semibold text-gray-700 uppercase tracking-wide">Block Content</p>
-            </div>
-            <div class="px-3 pb-3">
-              <template v-for="field in blockConfig.fields" :key="field.key">
+          <div class="border-b border-gray-100 px-3 pt-3 pb-3">
+            <template v-for="field in blockConfig.fields" :key="field.key">
 
-                <!-- text / url / image / number -->
-                <div v-if="['text','url','image','number'].includes(field.type)" class="mb-2.5">
-                  <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
-                  <input
-                    type="text" :value="blockData[field.key]"
-                    class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
-                    @change="updateBlockField(field.key, ($event.target as HTMLInputElement).value)"
-                  />
+              <!-- text / url / image / number -->
+              <div v-if="['text','url','image','number'].includes(field.type)" class="mb-2.5">
+                <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
+                <input
+                  type="text" :value="blockData[field.key]"
+                  class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
+                  @change="updateBlockField(field.key, ($event.target as HTMLInputElement).value)"
+                />
+              </div>
+
+              <!-- color -->
+              <div v-else-if="field.type === 'color'" class="mb-2.5">
+                <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
+                <div class="flex items-center gap-2 border border-gray-200 rounded-md px-2 py-1">
+                  <input type="color" :value="blockData[field.key]" class="w-6 h-6 rounded cursor-pointer border-none p-0" @change="updateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
+                  <input type="text" :value="blockData[field.key]" class="flex-1 text-xs focus:outline-none" @change="updateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
                 </div>
+              </div>
 
-                <!-- color -->
-                <div v-else-if="field.type === 'color'" class="mb-2.5">
-                  <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
-                  <div class="flex items-center gap-2 border border-gray-200 rounded-md px-2 py-1">
-                    <input type="color" :value="blockData[field.key]" class="w-6 h-6 rounded cursor-pointer border-none p-0" @change="updateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
-                    <input type="text" :value="blockData[field.key]" class="flex-1 text-xs focus:outline-none" @change="updateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
-                  </div>
-                </div>
+              <!-- toggle -->
+              <div v-else-if="field.type === 'toggle'" class="mb-2.5 flex items-center justify-between py-1">
+                <label class="text-xs text-gray-600">{{ field.label }}</label>
+                <button
+                  type="button"
+                  class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors border-none cursor-pointer shrink-0"
+                  :class="blockData[field.key] ? 'bg-blue-500' : 'bg-gray-200'"
+                  @click="updateBlockField(field.key, !blockData[field.key])"
+                >
+                  <span class="inline-block h-3.5 w-3.5 rounded-full bg-white shadow transform transition-transform" :class="blockData[field.key] ? 'translate-x-4' : 'translate-x-0.5'" />
+                </button>
+              </div>
 
-                <!-- toggle -->
-                <div v-else-if="field.type === 'toggle'" class="mb-2.5 flex items-center justify-between py-1">
-                  <label class="text-xs text-gray-600">{{ field.label }}</label>
+              <!-- select -->
+              <div v-else-if="field.type === 'select'" class="mb-2.5">
+                <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
+                <select
+                  :value="String(blockData[field.key])"
+                  class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 bg-white"
+                  @change="updateBlockField(field.key, Number(($event.target as HTMLSelectElement).value) || ($event.target as HTMLSelectElement).value)"
+                >
+                  <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
+                </select>
+              </div>
+
+              <!-- list -->
+              <div v-else-if="field.type === 'list' && field.listFields" class="mb-2.5">
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-xs text-gray-500">{{ field.label }}</label>
                   <button
                     type="button"
-                    class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors border-none cursor-pointer shrink-0"
-                    :class="blockData[field.key] ? 'bg-blue-500' : 'bg-gray-200'"
-                    @click="updateBlockField(field.key, !blockData[field.key])"
-                  >
-                    <span class="inline-block h-3.5 w-3.5 rounded-full bg-white shadow transform transition-transform" :class="blockData[field.key] ? 'translate-x-4' : 'translate-x-0.5'" />
-                  </button>
+                    class="text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-1.5 py-0.5 bg-blue-50 cursor-pointer"
+                    @click="addBlockListItem(field.key, Object.fromEntries((field.listFields ?? []).map(f => [f.key, ''])))"
+                  >+ Add</button>
                 </div>
-
-                <!-- select -->
-                <div v-else-if="field.type === 'select'" class="mb-2.5">
-                  <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
-                  <select
-                    :value="String(blockData[field.key])"
-                    class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 bg-white"
-                    @change="updateBlockField(field.key, Number(($event.target as HTMLSelectElement).value) || ($event.target as HTMLSelectElement).value)"
-                  >
-                    <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
-                  </select>
-                </div>
-
-                <!-- list -->
-                <div v-else-if="field.type === 'list' && field.listFields" class="mb-2.5">
-                  <div class="flex items-center justify-between mb-1.5">
-                    <label class="text-xs text-gray-500">{{ field.label }}</label>
-                    <button
-                      type="button"
-                      class="text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-1.5 py-0.5 bg-blue-50 cursor-pointer"
-                      @click="addBlockListItem(field.key, Object.fromEntries((field.listFields ?? []).map(f => [f.key, ''])))"
-                    >+ Add</button>
+                <div
+                  v-for="(item, idx) in (blockData[field.key] as Record<string, any>[])"
+                  :key="idx"
+                  class="mb-1.5 border border-gray-200 rounded-md overflow-hidden"
+                >
+                  <div class="flex justify-between items-center px-2 py-1 bg-gray-50 border-b border-gray-100">
+                    <span class="text-xs text-gray-400 font-medium">{{ idx + 1 }}</span>
+                    <div class="flex gap-1">
+                      <button v-if="idx > 0" type="button" class="text-xs text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="updateBlockField(field.key, (() => { const arr = [...blockData![field.key]]; const [it] = arr.splice(idx,1); arr.splice(idx-1,0,it); return arr })())">↑</button>
+                      <button v-if="idx < (blockData[field.key] as any[]).length - 1" type="button" class="text-xs text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="updateBlockField(field.key, (() => { const arr = [...blockData![field.key]]; const [it] = arr.splice(idx,1); arr.splice(idx+1,0,it); return arr })())">↓</button>
+                      <button type="button" class="text-xs text-red-400 hover:text-red-600 border-none bg-transparent cursor-pointer px-1" @click="removeBlockListItem(field.key, idx)">✕</button>
+                    </div>
                   </div>
-                  <div
-                    v-for="(item, idx) in (blockData[field.key] as Record<string, any>[])"
-                    :key="idx"
-                    class="mb-1.5 border border-gray-200 rounded-md overflow-hidden"
-                  >
-                    <div class="flex justify-between items-center px-2 py-1 bg-gray-50 border-b border-gray-100">
-                      <span class="text-xs text-gray-400 font-medium">{{ idx + 1 }}</span>
-                      <div class="flex gap-1">
-                        <button v-if="idx > 0" type="button" class="text-xs text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="updateBlockField(field.key, (() => { const arr = [...blockData![field.key]]; const [it] = arr.splice(idx,1); arr.splice(idx-1,0,it); return arr })())">↑</button>
-                        <button v-if="idx < (blockData[field.key] as any[]).length - 1" type="button" class="text-xs text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="updateBlockField(field.key, (() => { const arr = [...blockData![field.key]]; const [it] = arr.splice(idx,1); arr.splice(idx+1,0,it); return arr })())">↓</button>
-                        <button type="button" class="text-xs text-red-400 hover:text-red-600 border-none bg-transparent cursor-pointer px-1" @click="removeBlockListItem(field.key, idx)">✕</button>
+                  <div class="px-2 py-1.5">
+                    <template v-for="subField in field.listFields" :key="subField.key">
+                      <div class="mb-1">
+                        <label class="block text-xs text-gray-400 mb-0.5">{{ subField.label }}</label>
+                        <input type="text" :value="item[subField.key]" class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-blue-400" @change="updateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value)" />
                       </div>
-                    </div>
-                    <div class="px-2 py-1.5">
-                      <template v-for="subField in field.listFields" :key="subField.key">
-                        <div class="mb-1">
-                          <label class="block text-xs text-gray-400 mb-0.5">{{ subField.label }}</label>
-                          <input type="text" :value="item[subField.key]" class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-blue-400" @change="updateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value)" />
-                        </div>
-                      </template>
-                    </div>
+                    </template>
                   </div>
                 </div>
+              </div>
 
-              </template>
-            </div>
+            </template>
           </div>
         </template>
 
