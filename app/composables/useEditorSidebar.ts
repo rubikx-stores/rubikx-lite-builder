@@ -150,10 +150,6 @@ export function useEditorSidebar() {
     await _syncBuilder()
   }
 
-  function openGlobalPageStyles() {
-    store.setMenuRight(true)
-  }
-
   return {
     selectedEl,
     selectedBlockTitle,
@@ -169,7 +165,6 @@ export function useEditorSidebar() {
     updateElementClass,
     addLink,
     removeLink,
-    openGlobalPageStyles,
     closeEditor,
   }
 }

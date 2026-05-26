@@ -204,6 +204,10 @@ const stylesOpen = computed(() => mode.value !== 'block')
 const uploadError = ref<Record<string, string>>({})
 
 function onUploadImage(fieldKey: string, file: File) {
+  if (!file.type.startsWith('image/')) {
+    uploadError.value[fieldKey] = 'Please select an image file.'
+    return
+  }
   uploadError.value[fieldKey] = ''
   const reader = new FileReader()
   reader.onload = () => {
