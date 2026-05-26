@@ -11,6 +11,11 @@ const {
   addLink, removeLink, closeEditor,
 } = useEditorSidebar()
 
+// Auto-open the library's right panel when an element is selected
+watch(selectedEl, (el) => {
+  if (el) store.setMenuRight(true)
+})
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function getPx(prop: string): number {
   return parseFloat((selectedEl.value?.style as any)?.[prop] || '0') || 0
@@ -222,17 +227,10 @@ function onUploadImage(fieldKey: string, file: File) {
 </script>
 
 <template>
-  <Transition
-    enter-active-class="transition-transform duration-200"
-    enter-from-class="translate-x-full"
-    enter-to-class="translate-x-0"
-    leave-active-class="transition-transform duration-200"
-    leave-from-class="translate-x-0"
-    leave-to-class="translate-x-full"
-  >
+  <Teleport to="#pagebuilder-right-menu" :disabled="!mode || mode === 'none'">
     <div
       v-if="mode !== 'none'"
-      class="absolute right-0 top-0 bottom-0 z-30 w-72 bg-white border-l border-gray-200 shadow-lg flex flex-col overflow-hidden"
+      class="absolute inset-0 z-10 bg-white flex flex-col overflow-hidden"
     >
       <!-- Header -->
       <div class="flex-shrink-0 px-4 py-3 border-b border-gray-200 bg-white flex items-center justify-between">
@@ -706,5 +704,5 @@ function onUploadImage(fieldKey: string, file: File) {
       </div>
 
     </div>
-  </Transition>
+  </Teleport>
 </template>

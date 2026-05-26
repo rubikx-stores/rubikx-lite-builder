@@ -26,6 +26,7 @@ onMounted(async () => {
 <template>
   <div class="relative h-full overflow-hidden">
     <PageBuilder :CustomBuilderComponents="BuilderPanel" />
-    <EditorSidebar />
   </div>
+  <!-- Mounted outside canvas — teleports itself into #pagebuilder-right-menu -->
+  <EditorSidebar />
 </template>
