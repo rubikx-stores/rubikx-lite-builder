@@ -199,6 +199,22 @@ const isTextEl = computed(() => {
 })
 const isImgEl = computed(() => selectedEl.value?.tagName?.toUpperCase() === 'IMG')
 const stylesOpen = computed(() => mode.value !== 'block')
+
+// ── Block image upload ────────────────────────────────────────────────────────
+const uploadError = ref<Record<string, string>>({})
+
+function onUploadImage(fieldKey: string, file: File) {
+  uploadError.value[fieldKey] = ''
+  const reader = new FileReader()
+  reader.onload = () => {
+    const dataUrl = reader.result as string
+    updateBlockField(fieldKey, dataUrl)
+  }
+  reader.onerror = () => {
+    uploadError.value[fieldKey] = 'File could not be read. Please try again or paste a URL.'
+  }
+  reader.readAsDataURL(file)
+}
 </script>
 
 <template>
@@ -235,8 +251,40 @@ const stylesOpen = computed(() => mode.value !== 'block')
           <div class="border-b border-gray-100 px-3 pt-3 pb-3">
             <template v-for="field in blockConfig.fields" :key="field.key">
 
-              <!-- text / url / image / number -->
-              <div v-if="['text','url','image','number'].includes(field.type)" class="mb-2.5">
+              <!-- image field with URL input + file upload -->
+              <div v-if="field.type === 'image'" class="mb-2.5">
+                <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
+                <div class="flex items-center gap-1 mb-1">
+                  <input
+                    type="text"
+                    :value="blockData[field.key]"
+                    placeholder="https://..."
+                    class="flex-1 border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400"
+                    @change="updateBlockField(field.key, ($event.target as HTMLInputElement).value); uploadError[field.key] = ''"
+                  />
+                  <label
+                    class="shrink-0 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 rounded-md px-2 py-1.5 cursor-pointer"
+                  >
+                    ↑ Upload
+                    <input
+                      type="file"
+                      accept="image/*"
+                      class="sr-only"
+                      @change="onUploadImage(field.key, ($event.target as HTMLInputElement).files![0])"
+                    />
+                  </label>
+                </div>
+                <img
+                  v-if="blockData[field.key]"
+                  :src="blockData[field.key]"
+                  class="w-full h-20 object-cover rounded border border-gray-200 mb-1"
+                  alt="preview"
+                />
+                <p v-if="uploadError[field.key]" class="text-xs text-red-500">{{ uploadError[field.key] }}</p>
+              </div>
+
+              <!-- text / url / number -->
+              <div v-else-if="['text','url','number'].includes(field.type)" class="mb-2.5">
                 <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
                 <input
                   type="text" :value="blockData[field.key]"
