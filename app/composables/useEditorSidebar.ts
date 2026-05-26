@@ -33,6 +33,15 @@ export function useEditorSidebar() {
     return registry.getData(selectedBlockTitle.value)
   })
 
+  const selectedTag = computed<string>(() => {
+    if (mode.value === 'block') return selectedBlockTitle.value ?? ''
+    return selectedEl.value?.tagName?.toLowerCase() ?? 'element'
+  })
+
+  function closeEditor() {
+    store.setElement(null)
+  }
+
   async function _syncBuilder() {
     const { getPageBuilder } = await import('@myissue/vue-website-page-builder')
     const builder = getPageBuilder() as any
@@ -151,6 +160,7 @@ export function useEditorSidebar() {
     mode,
     blockConfig,
     blockData,
+    selectedTag,
     updateBlockField,
     updateBlockListItem,
     addBlockListItem,
@@ -160,5 +170,6 @@ export function useEditorSidebar() {
     addLink,
     removeLink,
     openGlobalPageStyles,
+    closeEditor,
   }
 }
