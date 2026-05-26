@@ -34,3 +34,7 @@ new_release/
 .vitepress/dist
 .vitepress/cache
 .vitepress/.temp
+.nuxt
+.output
+.playwright-mcp
+.amplify-hosting
