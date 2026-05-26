@@ -1,3 +1,5 @@
+import type { FieldConfig } from './useBlockRegistry'
+
 export interface ThemeSection {
   id: null
   title: string
@@ -91,27 +93,8 @@ export const ru1TechwireSections: ThemeSection[] = [
     id: null,
     title: 'Ru1 Techwire Hero',
     html_code: `<section data-component-title="Ru1 Techwire Hero">
-<div class="md:pbx-pt-16 md:pbx-pb-16 pbx-pt-6 pbx-pb-6 lg:pbx-px-4 pbx-px-2">
-  <div class="pbx-mx-auto pbx-max-w-7xl">
-    <div class="pbx-myPrimaryGap pbx-grid pbx-grid-cols-1 sm:pbx-grid-cols-1 lg:pbx-grid-cols-2 pbx-items-center">
-      <div class="pbx-flex-1 pbx-py-2">
-        <p class="pbx-font-semibold pbx-mb-4">Branded Merchandise Store</p>
-        <div class="pbx-break-words pbx-font-medium pbx-text-3xl lg:pbx-text-6xl pbx-mb-6">
-          <h1>Order Branded Gear Your Team Will Love</h1>
-        </div>
-        <div class="pbx-mb-8">
-          <p>Premium branded apparel and accessories for your team. Fast delivery, custom designs, company pride delivered to your door.</p>
-        </div>
-        <div class="pbx-flex pbx-gap-4 pbx-flex-wrap">
-          <a href="/shop" class="pbx-myPrimaryButton">Shop Now</a>
-          <a href="/about" class="pbx-mySecondaryButton">Learn More</a>
-        </div>
-      </div>
-      <div class="pbx-flex-1 pbx-py-2">
-        <img class="pbx-object-cover pbx-w-full pbx-object-top pbx-aspect-square" src="${placeholderSvg}" alt="Hero image" />
-      </div>
-    </div>
-  </div>
+<div style="background:#394152;">
+  <img class="pbx-w-full pbx-h-auto pbx-block" src="${placeholderSvg}" alt="Hero image" />
 </div>
 </section>`,
   },
@@ -123,7 +106,7 @@ export const ru1TechwireSections: ThemeSection[] = [
 <div class="md:pbx-pt-16 md:pbx-pb-16 pbx-pt-6 pbx-pb-6 lg:pbx-px-4 pbx-px-2">
   <div class="pbx-mx-auto pbx-max-w-7xl">
     <div class="pbx-break-words pbx-font-medium pbx-text-3xl lg:pbx-text-4xl pbx-mb-8">
-      <h2>Featured Products</h2>
+      <h1>Featured Products</h1>
     </div>
     <div class="pbx-myPrimaryGap pbx-grid pbx-grid-cols-2 sm:pbx-grid-cols-2 lg:pbx-grid-cols-4">
       <div class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200 pbx-rounded-lg pbx-overflow-hidden">
@@ -218,3 +201,255 @@ export const ru1TechwireSections: ThemeSection[] = [
 </section>`,
   },
 ]
+
+// ─── Navbar block editor data ───────────────────────────────────────────────
+
+export interface NavLink { label: string; url: string }
+
+export interface Ru1NavbarData {
+  brandName: string
+  showSearch: boolean
+  topLinks: NavLink[]
+  navLinks: NavLink[]
+}
+
+export const ru1NavbarDefaults: Ru1NavbarData = {
+  brandName: 'Your Logo',
+  showSearch: true,
+  topLinks: [
+    { label: 'Sign In', url: '/signin' },
+    { label: 'Contact Us', url: '/contact' },
+  ],
+  navLinks: [
+    { label: 'Home', url: '/' },
+    { label: 'Shop', url: '/shop' },
+    { label: 'About Us', url: '/about' },
+  ],
+}
+
+export const ru1NavbarFields: FieldConfig[] = [
+  { key: 'brandName', label: 'Brand Name', type: 'text' },
+  { key: 'showSearch', label: 'Show Search Bar', type: 'toggle' },
+  {
+    key: 'topLinks', label: 'Top Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'url', label: 'URL', type: 'url' },
+    ],
+  },
+  {
+    key: 'navLinks', label: 'Nav Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'url', label: 'URL', type: 'url' },
+    ],
+  },
+]
+
+export function renderRu1Navbar(data: Ru1NavbarData): string {
+  return `<section data-component-title="Ru1 Techwire Navbar">
+<nav class="pbx-bg-white pbx-shadow-sm">
+  <div class="pbx-max-w-7xl pbx-mx-auto pbx-px-4 sm:pbx-px-6 lg:pbx-px-8">
+    <div class="pbx-flex pbx-items-center pbx-justify-between pbx-gap-4 pbx-py-3">
+      <div class="pbx-flex-shrink-0">
+        <span class="pbx-text-lg pbx-font-bold pbx-text-gray-900">${data.brandName}</span>
+      </div>
+      ${data.showSearch ? `<div class="pbx-flex-1 pbx-flex pbx-justify-center">
+        <div class="pbx-flex pbx-items-center pbx-border pbx-border-gray-300 pbx-rounded-full pbx-px-3 pbx-py-1.5 pbx-gap-2 pbx-w-full pbx-max-w-xs">
+          <svg class="pbx-h-4 pbx-w-4 pbx-text-blue-400 pbx-flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+          <input type="text" placeholder="Search..." class="pbx-w-full pbx-bg-transparent pbx-text-sm pbx-text-gray-500 focus:pbx-outline-none" />
+        </div>
+      </div>` : '<div class="pbx-flex-1"></div>'}
+      <div class="pbx-flex pbx-items-center pbx-gap-2">
+        ${data.topLinks.map(l => `<a href="${l.url}" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900 pbx-no-underline">${l.label}</a>`).join('\n        ')}
+        <a href="/cart" class="pbx-text-gray-700 hover:pbx-text-gray-900">
+          <svg class="pbx-h-6 pbx-w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="pbx-hidden md:pbx-flex pbx-items-center pbx-gap-6 pbx-py-2">
+      ${data.navLinks.map(l => `<a href="${l.url}" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900 pbx-no-underline">${l.label}</a>`).join('\n      ')}
+    </div>
+  </div>
+</nav>
+</section>`
+}
+
+// ─── Hero block editor data ──────────────────────────────────────────────────
+
+export interface Ru1HeroData {
+  imageUrl: string
+  altText: string
+  linkUrl: string
+  bgColor: string
+}
+
+export const ru1HeroDefaults: Ru1HeroData = {
+  imageUrl: placeholderSvg,
+  altText: 'Hero image',
+  linkUrl: '',
+  bgColor: '#394152',
+}
+
+export const ru1HeroFields: FieldConfig[] = [
+  { key: 'imageUrl', label: 'Image URL', type: 'image' },
+  { key: 'altText', label: 'Alt Text', type: 'text' },
+  { key: 'linkUrl', label: 'Click Link URL', type: 'url' },
+  { key: 'bgColor', label: 'Background Color', type: 'color' },
+]
+
+export function renderRu1Hero(data: Ru1HeroData): string {
+  const inner = `<img class="pbx-w-full pbx-h-auto pbx-block" src="${data.imageUrl}" alt="${data.altText}" />`
+  return `<section data-component-title="Ru1 Techwire Hero">
+<div style="background:${data.bgColor};">
+  ${data.linkUrl ? `<a href="${data.linkUrl}">${inner}</a>` : inner}
+</div>
+</section>`
+}
+
+// ─── Featured Products block editor data ────────────────────────────────────
+
+export interface ProductSwatch { color: string }
+export interface Product {
+  name: string
+  price: string
+  imageUrl: string
+  buttonLabel: string
+  buttonUrl: string
+  swatches: ProductSwatch[]
+}
+
+export interface Ru1ProductsData {
+  sectionTitle: string
+  columns: 1 | 2 | 3 | 4
+  products: Product[]
+}
+
+const _colClass: Record<string, string> = {
+  '1': 'pbx-grid-cols-1',
+  '2': 'pbx-grid-cols-2',
+  '3': 'pbx-grid-cols-2 sm:pbx-grid-cols-3',
+  '4': 'pbx-grid-cols-2 sm:pbx-grid-cols-2 lg:pbx-grid-cols-4',
+}
+
+export const ru1ProductsDefaults: Ru1ProductsData = {
+  sectionTitle: 'Featured Products',
+  columns: 4,
+  products: [
+    { name: 'Product One', price: '$29.99', imageUrl: placeholderSvg, buttonLabel: 'Add to Cart', buttonUrl: '/shop', swatches: [{ color: '#111827' }, { color: '#ffffff' }, { color: '#ef4444' }] },
+    { name: 'Product Two', price: '$39.99', imageUrl: placeholderSvg, buttonLabel: 'Add to Cart', buttonUrl: '/shop', swatches: [{ color: '#3b82f6' }, { color: '#22c55e' }] },
+    { name: 'Product Three', price: '$49.99', imageUrl: placeholderSvg, buttonLabel: 'Add to Cart', buttonUrl: '/shop', swatches: [{ color: '#a855f7' }, { color: '#f59e0b' }, { color: '#111827' }] },
+    { name: 'Product Four', price: '$59.99', imageUrl: placeholderSvg, buttonLabel: 'Add to Cart', buttonUrl: '/shop', swatches: [{ color: '#111827' }, { color: '#6b7280' }] },
+  ],
+}
+
+export const ru1ProductsFields: FieldConfig[] = [
+  { key: 'sectionTitle', label: 'Section Title', type: 'text' },
+  { key: 'columns', label: 'Columns', type: 'select', options: ['1', '2', '3', '4'] },
+  {
+    key: 'products', label: 'Products', type: 'list',
+    listFields: [
+      { key: 'name', label: 'Product Name', type: 'text' },
+      { key: 'price', label: 'Price', type: 'text' },
+      { key: 'imageUrl', label: 'Image URL', type: 'image' },
+      { key: 'buttonLabel', label: 'Button Label', type: 'text' },
+      { key: 'buttonUrl', label: 'Button URL', type: 'url' },
+    ],
+  },
+]
+
+export function renderRu1Products(data: Ru1ProductsData): string {
+  const colCls = _colClass[String(data.columns)] ?? _colClass['4']
+  const cards = data.products.map(p => `
+      <div class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200 pbx-rounded-lg pbx-overflow-hidden">
+        <img class="pbx-object-cover pbx-w-full pbx-object-top pbx-aspect-square" src="${p.imageUrl}" alt="${p.name}" />
+        <div class="pbx-flex pbx-flex-col pbx-gap-1 pbx-p-3 pbx-flex-1">
+          <p class="pbx-font-semibold pbx-text-sm">${p.name}</p>
+          <p class="pbx-text-sm">${p.price}</p>
+          <div class="pbx-flex pbx-items-center pbx-gap-1 pbx-my-1">
+            ${p.swatches.map(s => `<span class="pbx-w-4 pbx-h-4 pbx-rounded-full pbx-inline-block pbx-border pbx-border-gray-300" style="background:${s.color}"></span>`).join('')}
+          </div>
+          <a href="${p.buttonUrl}" class="pbx-mySecondaryButton pbx-mt-auto">${p.buttonLabel}</a>
+        </div>
+      </div>`).join('')
+  return `<section data-component-title="Ru1 Techwire Featured Products">
+<div class="md:pbx-pt-16 md:pbx-pb-16 pbx-pt-6 pbx-pb-6 lg:pbx-px-4 pbx-px-2">
+  <div class="pbx-mx-auto pbx-max-w-7xl">
+    <div class="pbx-break-words pbx-font-medium pbx-text-3xl lg:pbx-text-4xl pbx-mb-8">
+      <h1>${data.sectionTitle}</h1>
+    </div>
+    <div class="pbx-myPrimaryGap pbx-grid ${colCls}">
+      ${cards}
+    </div>
+  </div>
+</div>
+</section>`
+}
+
+// ─── Footer block editor data ────────────────────────────────────────────────
+
+export interface Ru1FooterData {
+  tagline: string
+  usefulLinks: NavLink[]
+  contactEmail: string
+  contactPhone: string
+  copyright: string
+}
+
+export const ru1FooterDefaults: Ru1FooterData = {
+  tagline: 'This site is for employees to order branded apparel and accessories.',
+  usefulLinks: [
+    { label: 'Home', url: '/' },
+    { label: 'Shop', url: '/shop' },
+    { label: 'About Us', url: '/about' },
+    { label: 'Contact Us', url: '/contact' },
+  ],
+  contactEmail: 'support@yourdomain.com',
+  contactPhone: '+1 000-000-0000',
+  copyright: '© Your Store. All rights reserved.',
+}
+
+export const ru1FooterFields: FieldConfig[] = [
+  { key: 'tagline', label: 'Tagline', type: 'text' },
+  {
+    key: 'usefulLinks', label: 'Useful Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'url', label: 'URL', type: 'url' },
+    ],
+  },
+  { key: 'contactEmail', label: 'Contact Email', type: 'text' },
+  { key: 'contactPhone', label: 'Contact Phone', type: 'text' },
+  { key: 'copyright', label: 'Copyright Text', type: 'text' },
+]
+
+export function renderRu1Footer(data: Ru1FooterData): string {
+  return `<section data-component-title="Ru1 Techwire Footer">
+<footer>
+  <div class="pbx-max-w-7xl pbx-mx-auto pbx-px-4 sm:pbx-px-6 lg:pbx-px-8 pbx-py-12">
+    <div class="pbx-grid pbx-grid-cols-1 md:pbx-grid-cols-3 pbx-gap-8">
+      <div>
+        <h3 class="pbx-text-sm pbx-font-semibold pbx-uppercase pbx-tracking-wider pbx-mb-4">Useful Links</h3>
+        <ul class="pbx-space-y-2">
+          ${data.usefulLinks.map(l => `<li><a href="${l.url}" class="pbx-text-sm pbx-text-gray-700 hover:pbx-text-gray-900">${l.label}</a></li>`).join('\n          ')}
+        </ul>
+      </div>
+      <div>
+        <h3 class="pbx-text-sm pbx-font-semibold pbx-uppercase pbx-tracking-wider pbx-mb-4">About Us</h3>
+        <p class="pbx-text-sm pbx-text-gray-700 pbx-leading-relaxed">${data.tagline}</p>
+      </div>
+      <div>
+        <h3 class="pbx-text-sm pbx-font-semibold pbx-uppercase pbx-tracking-wider pbx-mb-4">Connect with Us</h3>
+        <ul class="pbx-space-y-2">
+          <li class="pbx-text-sm pbx-text-gray-700">${data.contactEmail}</li>
+          <li class="pbx-text-sm pbx-text-gray-700">${data.contactPhone}</li>
+        </ul>
+      </div>
+    </div>
+    <div class="pbx-border-t pbx-border-gray-200 pbx-mt-8 pbx-pt-6 pbx-text-center">
+      <p class="pbx-text-sm pbx-text-gray-500">${data.copyright}</p>
+    </div>
+  </div>
+</footer>
+</section>`
+}

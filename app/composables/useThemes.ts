@@ -1,4 +1,11 @@
 import { type ThemeSection, ru1TechwireSections, ru1TechwireSvg } from './themes-data'
+import {
+  ru1NavbarDefaults, ru1NavbarFields, renderRu1Navbar,
+  ru1HeroDefaults, ru1HeroFields, renderRu1Hero,
+  ru1ProductsDefaults, ru1ProductsFields, renderRu1Products,
+  ru1FooterDefaults, ru1FooterFields, renderRu1Footer,
+} from './themes-data'
+import { useBlockRegistry } from './useBlockRegistry'
 
 interface ThemeMeta {
   id: string
@@ -27,6 +34,13 @@ export const themeRegistry: Record<string, Theme> = {
 }
 
 export function useThemes() {
+  const blockRegistry = useBlockRegistry()
+
+  blockRegistry.register('Ru1 Techwire Navbar', { defaults: ru1NavbarDefaults, fields: ru1NavbarFields, render: renderRu1Navbar })
+  blockRegistry.register('Ru1 Techwire Hero', { defaults: ru1HeroDefaults, fields: ru1HeroFields, render: renderRu1Hero })
+  blockRegistry.register('Ru1 Techwire Featured Products', { defaults: ru1ProductsDefaults, fields: ru1ProductsFields, render: renderRu1Products })
+  blockRegistry.register('Ru1 Techwire Footer', { defaults: ru1FooterDefaults, fields: ru1FooterFields, render: renderRu1Footer })
+
   async function applyTheme(themeId: string) {
     const theme = themeRegistry[themeId]
     if (!theme) return
@@ -36,5 +50,6 @@ export function useThemes() {
       await builder.addComponent(section)
     }
   }
+
   return { themeRegistry, applyTheme }
 }

@@ -2,6 +2,7 @@
 import { PageBuilder, getPageBuilder } from '@myissue/vue-website-page-builder'
 import type { PageBuilderConfig } from '@myissue/vue-website-page-builder'
 import BuilderPanel from './BuilderPanel.client.vue'
+import EditorSidebar from './EditorSidebar.client.vue'
 
 const props = defineProps<{
   pageId?: number
@@ -23,5 +24,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PageBuilder :CustomBuilderComponents="BuilderPanel" />
+  <div class="relative h-full overflow-hidden">
+    <PageBuilder :CustomBuilderComponents="BuilderPanel" />
+    <EditorSidebar />
+  </div>
 </template>
