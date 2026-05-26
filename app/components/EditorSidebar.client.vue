@@ -198,6 +198,7 @@ const isTextEl = computed(() => {
   return t ? ['P','H1','H2','H3','H4','H5','H6','SPAN','A','LI','BUTTON','LABEL'].includes(t) : false
 })
 const isImgEl = computed(() => selectedEl.value?.tagName?.toUpperCase() === 'IMG')
+const stylesOpen = computed(() => mode.value !== 'block')
 </script>
 
 <template>
@@ -317,6 +318,11 @@ const isImgEl = computed(() => selectedEl.value?.tagName?.toUpperCase() === 'IMG
         </template>
 
         <!-- ── Element Style Editors ─────────────────────────────────────── -->
+        <details :open="stylesOpen">
+          <summary class="px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide cursor-pointer list-none flex items-center justify-between select-none hover:bg-gray-50 border-b border-gray-100">
+            Element Styles
+            <span class="text-gray-300">▾</span>
+          </summary>
 
         <!-- Link -->
         <details class="border-b border-gray-100">
@@ -643,7 +649,8 @@ const isImgEl = computed(() => selectedEl.value?.tagName?.toUpperCase() === 'IMG
           </div>
         </details>
 
-        <div class="h-4"></div>
+          <div class="h-4"></div>
+        </details>
       </div>
 
       <!-- Global Page Styles — pinned at bottom -->
