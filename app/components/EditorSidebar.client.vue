@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { usePageBuilderStateStore } from '@myissue/vue-website-page-builder'
 
 const store = usePageBuilderStateStore() as any
@@ -14,6 +14,20 @@ const {
 // Auto-open the library's right panel when an element is selected
 watch(selectedEl, (el) => {
   if (el) store.setMenuRight(true)
+})
+
+// #pagebuilder-right-menu needs position:relative so our absolute inset-0 child fills it
+onMounted(() => {
+  const trySetRelative = () => {
+    const panel = document.getElementById('pagebuilder-right-menu')
+    if (panel) {
+      panel.style.position = 'relative'
+    } else {
+      // Panel not yet in DOM (library renders it lazily) — retry
+      setTimeout(trySetRelative, 100)
+    }
+  }
+  trySetRelative()
 })
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
