@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { usePageBuilderStateStore } from '@myissue/vue-website-page-builder'
 
 const store = usePageBuilderStateStore() as any
@@ -11,24 +11,6 @@ const {
   addLink, removeLink, closeEditor, openGlobalPageStyles,
 } = useEditorSidebar()
 
-// Auto-open the library's right panel when an element is selected
-watch(selectedEl, (el) => {
-  if (el) store.setMenuRight(true)
-})
-
-// #pagebuilder-right-menu needs position:relative so our absolute inset-0 child fills it
-onMounted(() => {
-  const trySetRelative = () => {
-    const panel = document.getElementById('pagebuilder-right-menu')
-    if (panel) {
-      panel.style.position = 'relative'
-    } else {
-      // Panel not yet in DOM (library renders it lazily) — retry
-      setTimeout(trySetRelative, 100)
-    }
-  }
-  trySetRelative()
-})
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function getPx(prop: string): number {
@@ -241,8 +223,18 @@ function onUploadImage(fieldKey: string, file: File) {
 </script>
 
 <template>
-  <Teleport to="#pagebuilder-right-menu">
-    <div class="absolute inset-0 z-10 bg-white flex flex-col overflow-hidden">
+  <Transition
+    enter-active-class="transition-transform duration-200"
+    enter-from-class="translate-x-full"
+    enter-to-class="translate-x-0"
+    leave-active-class="transition-transform duration-200"
+    leave-from-class="translate-x-0"
+    leave-to-class="translate-x-full"
+  >
+    <div
+      v-if="mode !== 'none'"
+      class="absolute right-0 top-0 bottom-0 z-30 w-80 bg-white border-l border-gray-200 shadow-lg flex flex-col overflow-hidden"
+    >
       <!-- Header -->
       <div class="flex-shrink-0 px-4 py-3 border-b border-gray-200 bg-white flex items-center justify-between">
         <button
@@ -714,7 +706,7 @@ function onUploadImage(fieldKey: string, file: File) {
         </details>
       </div>
 
-      <!-- Global Page Styles — always visible at bottom -->
+      <!-- Global Page Styles — pinned at bottom -->
       <div class="flex-shrink-0 border-t border-gray-200 p-3">
         <button
           type="button"
@@ -725,5 +717,5 @@ function onUploadImage(fieldKey: string, file: File) {
         </button>
       </div>
     </div>
-  </Teleport>
+  </Transition>
 </template>
