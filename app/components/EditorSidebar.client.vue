@@ -8,7 +8,7 @@ const {
   blockConfig, blockData,
   updateBlockField, updateBlockListItem, addBlockListItem, removeBlockListItem,
   updateElementStyle, updateElementClass,
-  addLink, removeLink, closeEditor,
+  addLink, removeLink, closeEditor, openGlobalPageStyles,
 } = useEditorSidebar()
 
 // Auto-open the library's right panel when an element is selected
@@ -241,11 +241,8 @@ function onUploadImage(fieldKey: string, file: File) {
 </script>
 
 <template>
-  <Teleport to="#pagebuilder-right-menu" :disabled="!mode || mode === 'none'">
-    <div
-      v-if="mode !== 'none'"
-      class="absolute inset-0 z-10 bg-white flex flex-col overflow-hidden"
-    >
+  <Teleport to="#pagebuilder-right-menu">
+    <div class="absolute inset-0 z-10 bg-white flex flex-col overflow-hidden">
       <!-- Header -->
       <div class="flex-shrink-0 px-4 py-3 border-b border-gray-200 bg-white flex items-center justify-between">
         <button
@@ -717,6 +714,16 @@ function onUploadImage(fieldKey: string, file: File) {
         </details>
       </div>
 
+      <!-- Global Page Styles — always visible at bottom -->
+      <div class="flex-shrink-0 border-t border-gray-200 p-3">
+        <button
+          type="button"
+          class="w-full text-left border border-gray-900 flex items-center justify-between px-3 py-4 cursor-pointer bg-black text-white hover:bg-gray-100 hover:text-black text-sm font-medium transition-colors duration-200"
+          @click="openGlobalPageStyles"
+        >
+          Global Page Styles
+        </button>
+      </div>
     </div>
   </Teleport>
 </template>

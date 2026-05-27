@@ -150,6 +150,12 @@ export function useEditorSidebar() {
     await _syncBuilder()
   }
 
+  async function openGlobalPageStyles() {
+    const { getPageBuilder } = await import('@myissue/vue-website-page-builder')
+    const builder = getPageBuilder() as any
+    await builder.globalPageStyles()
+  }
+
   return {
     selectedEl,
     selectedBlockTitle,
@@ -166,5 +172,6 @@ export function useEditorSidebar() {
     addLink,
     removeLink,
     closeEditor,
+    openGlobalPageStyles,
   }
 }
