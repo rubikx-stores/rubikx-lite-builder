@@ -565,10 +565,15 @@ export function renderRu1Products(data: Ru1ProductsData): string {
 
 export interface Ru1FooterData {
   tagline: string
-  usefulLinks: NavLink[]
+  usefulLinks: { label: string; url: string }[]
   contactEmail: string
   contactPhone: string
   copyright: string
+  paddingY: number
+  paddingX: number
+  borderStyle: string
+  borderWidth: number
+  borderColor: string
 }
 
 export const ru1FooterDefaults: Ru1FooterData = {
@@ -582,6 +587,11 @@ export const ru1FooterDefaults: Ru1FooterData = {
   contactEmail: 'support@yourdomain.com',
   contactPhone: '+1 000-000-0000',
   copyright: '© Your Store. All rights reserved.',
+  paddingY: 48,
+  paddingX: 16,
+  borderStyle: 'none',
+  borderWidth: 1,
+  borderColor: '#e5e7eb',
 }
 
 export const ru1FooterFields: FieldConfig[] = [
@@ -596,12 +606,22 @@ export const ru1FooterFields: FieldConfig[] = [
   { key: 'contactEmail', label: 'Contact Email', type: 'text' },
   { key: 'contactPhone', label: 'Contact Phone', type: 'text' },
   { key: 'copyright', label: 'Copyright Text', type: 'text' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number' },
+  { key: 'borderStyle', label: 'Border Style', type: 'select', options: ['none', 'solid', 'dashed', 'dotted'] },
+  { key: 'borderWidth', label: 'Border Width', type: 'number' },
+  { key: 'borderColor', label: 'Border Color', type: 'color' },
 ]
 
 export function renderRu1Footer(data: Ru1FooterData): string {
+  const footerStyle = [
+    `padding:${data.paddingY}px ${data.paddingX}px`,
+    data.borderStyle !== 'none' ? `border-top:${data.borderWidth}px ${data.borderStyle} ${data.borderColor}` : '',
+  ].filter(Boolean).join(';')
+
   return `<section data-component-title="Ru1 Techwire Footer">
-<footer>
-  <div class="pbx-max-w-7xl pbx-mx-auto pbx-px-4 sm:pbx-px-6 lg:pbx-px-8 pbx-py-12">
+<footer style="${footerStyle}">
+  <div class="pbx-max-w-7xl pbx-mx-auto">
     <div class="pbx-grid pbx-grid-cols-1 md:pbx-grid-cols-3 pbx-gap-8">
       <div>
         <h3 class="pbx-text-sm pbx-font-semibold pbx-uppercase pbx-tracking-wider pbx-mb-4">Useful Links</h3>
