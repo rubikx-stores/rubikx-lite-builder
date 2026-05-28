@@ -204,71 +204,148 @@ export const ru1TechwireSections: ThemeSection[] = [
 
 // ─── Navbar block editor data ───────────────────────────────────────────────
 
-export interface NavLink { label: string; url: string }
+export interface NavLink { label: string; url: string; visible: boolean }
 
 export interface Ru1NavbarData {
+  logoUrl: string
   brandName: string
+  bgColor: string
+  sticky: boolean
   showSearch: boolean
-  topLinks: NavLink[]
+  searchPlaceholder: string
   navLinks: NavLink[]
+  showSignIn: boolean
+  signInLabel: string
+  signInUrl: string
+  showContactUs: boolean
+  contactUsLabel: string
+  contactUsUrl: string
+  showCart: boolean
+  cartUrl: string
+  textColor: string
+  fontSize: number
+  fontWeight: string
+  paddingY: number
+  paddingX: number
+  logoWidth: number
+  borderStyle: string
+  borderWidth: number
+  borderColor: string
 }
 
 export const ru1NavbarDefaults: Ru1NavbarData = {
+  logoUrl: '',
   brandName: 'Your Logo',
+  bgColor: '#ffffff',
+  sticky: false,
   showSearch: true,
-  topLinks: [
-    { label: 'Sign In', url: '/signin' },
-    { label: 'Contact Us', url: '/contact' },
-  ],
+  searchPlaceholder: 'Search...',
   navLinks: [
-    { label: 'Home', url: '/' },
-    { label: 'Shop', url: '/shop' },
-    { label: 'About Us', url: '/about' },
+    { label: 'Home', url: '/', visible: true },
+    { label: 'Shop', url: '/shop', visible: true },
+    { label: 'About Us', url: '/about', visible: true },
   ],
+  showSignIn: true,
+  signInLabel: 'Sign In',
+  signInUrl: '/signin',
+  showContactUs: true,
+  contactUsLabel: 'Contact Us',
+  contactUsUrl: '/contact',
+  showCart: true,
+  cartUrl: '/cart',
+  textColor: '#111827',
+  fontSize: 14,
+  fontWeight: '500',
+  paddingY: 0,
+  paddingX: 16,
+  logoWidth: 120,
+  borderStyle: 'none',
+  borderWidth: 1,
+  borderColor: '#e5e7eb',
 }
 
 export const ru1NavbarFields: FieldConfig[] = [
+  { key: 'logoUrl', label: 'Logo Image', type: 'image' },
   { key: 'brandName', label: 'Brand Name', type: 'text' },
-  { key: 'showSearch', label: 'Show Search Bar', type: 'toggle' },
-  {
-    key: 'topLinks', label: 'Top Links', type: 'list',
-    listFields: [
-      { key: 'label', label: 'Label', type: 'text' },
-      { key: 'url', label: 'URL', type: 'url' },
-    ],
-  },
+  { key: 'bgColor', label: 'Background Color', type: 'color' },
+  { key: 'sticky', label: 'Sticky Navbar', type: 'toggle' },
+  { key: 'showSearch', label: 'Search Bar', type: 'toggle' },
+  { key: 'searchPlaceholder', label: 'Search Placeholder', type: 'text' },
   {
     key: 'navLinks', label: 'Nav Links', type: 'list',
     listFields: [
       { key: 'label', label: 'Label', type: 'text' },
       { key: 'url', label: 'URL', type: 'url' },
+      { key: 'visible', label: 'Visible', type: 'toggle' },
     ],
   },
+  { key: 'showSignIn', label: 'Show Sign In', type: 'toggle' },
+  { key: 'signInLabel', label: 'Sign In Label', type: 'text' },
+  { key: 'signInUrl', label: 'Sign In URL', type: 'url' },
+  { key: 'showContactUs', label: 'Show Contact Us', type: 'toggle' },
+  { key: 'contactUsLabel', label: 'Contact Us Label', type: 'text' },
+  { key: 'contactUsUrl', label: 'Contact Us URL', type: 'url' },
+  { key: 'showCart', label: 'Show Cart', type: 'toggle' },
+  { key: 'cartUrl', label: 'Cart URL', type: 'url' },
+  { key: 'textColor', label: 'Text Color', type: 'color' },
+  { key: 'fontSize', label: 'Font Size', type: 'number' },
+  { key: 'fontWeight', label: 'Font Weight', type: 'select', options: ['300', '400', '500', '600', '700', '800'] },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number' },
+  { key: 'logoWidth', label: 'Logo Width', type: 'number' },
+  { key: 'borderStyle', label: 'Border Style', type: 'select', options: ['none', 'solid', 'dashed', 'dotted'] },
+  { key: 'borderWidth', label: 'Border Width', type: 'number' },
+  { key: 'borderColor', label: 'Border Color', type: 'color' },
 ]
 
 export function renderRu1Navbar(data: Ru1NavbarData): string {
+  const navStyle = [
+    `background:${data.bgColor}`,
+    `color:${data.textColor}`,
+    `font-size:${data.fontSize}px`,
+    `font-weight:${data.fontWeight}`,
+    (data.paddingY || data.paddingX) ? `padding:${data.paddingY}px ${data.paddingX}px` : '',
+    data.borderStyle !== 'none' ? `border-bottom:${data.borderWidth}px ${data.borderStyle} ${data.borderColor}` : '',
+    data.sticky ? 'position:sticky;top:0;z-index:50' : '',
+  ].filter(Boolean).join(';')
+
+  const logo = data.logoUrl
+    ? `<img src="${data.logoUrl}" alt="${data.brandName}" style="width:${data.logoWidth}px;height:auto;display:block;" />`
+    : `<span style="font-size:1.125rem;font-weight:700;">${data.brandName}</span>`
+
+  const searchBar = data.showSearch
+    ? `<div class="pbx-flex-1 pbx-flex pbx-justify-center">
+        <div class="pbx-flex pbx-items-center pbx-border pbx-border-gray-300 pbx-rounded-full pbx-px-3 pbx-py-1.5 pbx-gap-2 pbx-w-full pbx-max-w-xs">
+          <svg class="pbx-h-4 pbx-w-4 pbx-flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+          <input type="text" placeholder="${data.searchPlaceholder}" class="pbx-w-full pbx-bg-transparent pbx-text-sm focus:pbx-outline-none" />
+        </div>
+      </div>`
+    : '<div class="pbx-flex-1"></div>'
+
+  const topRight = [
+    data.showSignIn ? `<a href="${data.signInUrl}" style="color:${data.textColor}" class="pbx-text-sm pbx-font-medium pbx-no-underline">${data.signInLabel}</a>` : '',
+    data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${data.textColor}" class="pbx-text-sm pbx-font-medium pbx-no-underline">${data.contactUsLabel}</a>` : '',
+    data.showCart
+      ? `<a href="${data.cartUrl}" style="color:${data.textColor}"><svg class="pbx-h-6 pbx-w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg></a>`
+      : '',
+  ].filter(Boolean)
+
+  const navLinks = data.navLinks
+    .filter(l => l.visible)
+    .map(l => `<a href="${l.url}" style="color:${data.textColor}" class="pbx-text-sm pbx-font-medium pbx-no-underline">${l.label}</a>`)
+
   return `<section data-component-title="Ru1 Techwire Navbar">
-<nav class="pbx-bg-white pbx-shadow-sm">
+<nav style="${navStyle}">
   <div class="pbx-max-w-7xl pbx-mx-auto pbx-px-4 sm:pbx-px-6 lg:pbx-px-8">
     <div class="pbx-flex pbx-items-center pbx-justify-between pbx-gap-4 pbx-py-3">
-      <div class="pbx-flex-shrink-0">
-        <span class="pbx-text-lg pbx-font-bold pbx-text-gray-900">${data.brandName}</span>
-      </div>
-      ${data.showSearch ? `<div class="pbx-flex-1 pbx-flex pbx-justify-center">
-        <div class="pbx-flex pbx-items-center pbx-border pbx-border-gray-300 pbx-rounded-full pbx-px-3 pbx-py-1.5 pbx-gap-2 pbx-w-full pbx-max-w-xs">
-          <svg class="pbx-h-4 pbx-w-4 pbx-text-blue-400 pbx-flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
-          <input type="text" placeholder="Search..." class="pbx-w-full pbx-bg-transparent pbx-text-sm pbx-text-gray-500 focus:pbx-outline-none" />
-        </div>
-      </div>` : '<div class="pbx-flex-1"></div>'}
+      <div class="pbx-flex-shrink-0">${logo}</div>
+      ${searchBar}
       <div class="pbx-flex pbx-items-center pbx-gap-2">
-        ${data.topLinks.map(l => `<a href="${l.url}" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900 pbx-no-underline">${l.label}</a>`).join('\n        ')}
-        <a href="/cart" class="pbx-text-gray-700 hover:pbx-text-gray-900">
-          <svg class="pbx-h-6 pbx-w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-        </a>
+        ${topRight.join('\n        ')}
       </div>
     </div>
     <div class="pbx-hidden md:pbx-flex pbx-items-center pbx-gap-6 pbx-py-2">
-      ${data.navLinks.map(l => `<a href="${l.url}" class="pbx-text-sm pbx-font-medium pbx-text-gray-700 hover:pbx-text-gray-900 pbx-no-underline">${l.label}</a>`).join('\n      ')}
+      ${navLinks.join('\n      ')}
     </div>
   </div>
 </nav>
