@@ -358,28 +358,98 @@ export interface Ru1HeroData {
   imageUrl: string
   altText: string
   linkUrl: string
+  headline: string
+  subheadline: string
+  textColor: string
+  textAlign: string
+  overlayColor: string
+  overlayOpacity: number
+  ctaText: string
+  ctaUrl: string
+  ctaBgColor: string
+  ctaTextColor: string
   bgColor: string
+  paddingY: number
+  paddingX: number
+  borderRadius: number
 }
 
 export const ru1HeroDefaults: Ru1HeroData = {
   imageUrl: placeholderSvg,
   altText: 'Hero image',
   linkUrl: '',
+  headline: '',
+  subheadline: '',
+  textColor: '#ffffff',
+  textAlign: 'center',
+  overlayColor: '#000000',
+  overlayOpacity: 30,
+  ctaText: '',
+  ctaUrl: '',
+  ctaBgColor: '#2563eb',
+  ctaTextColor: '#ffffff',
   bgColor: '#394152',
+  paddingY: 0,
+  paddingX: 0,
+  borderRadius: 0,
 }
 
 export const ru1HeroFields: FieldConfig[] = [
-  { key: 'imageUrl', label: 'Image URL', type: 'image' },
+  { key: 'imageUrl', label: 'Banner Image', type: 'image' },
   { key: 'altText', label: 'Alt Text', type: 'text' },
-  { key: 'linkUrl', label: 'Click Link URL', type: 'url' },
-  { key: 'bgColor', label: 'Background Color', type: 'color' },
+  { key: 'linkUrl', label: 'Banner Link URL', type: 'url' },
+  { key: 'headline', label: 'Headline', type: 'text' },
+  { key: 'subheadline', label: 'Subheadline', type: 'text' },
+  { key: 'textColor', label: 'Text Color', type: 'color' },
+  { key: 'textAlign', label: 'Text Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'overlayColor', label: 'Overlay Color', type: 'color' },
+  { key: 'overlayOpacity', label: 'Overlay Opacity (0–100)', type: 'number' },
+  { key: 'ctaText', label: 'CTA Button Text', type: 'text' },
+  { key: 'ctaUrl', label: 'CTA Button URL', type: 'url' },
+  { key: 'ctaBgColor', label: 'CTA Button BG Color', type: 'color' },
+  { key: 'ctaTextColor', label: 'CTA Button Text Color', type: 'color' },
+  { key: 'bgColor', label: 'Section Background', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number' },
+  { key: 'borderRadius', label: 'Border Radius', type: 'number' },
 ]
 
 export function renderRu1Hero(data: Ru1HeroData): string {
-  const inner = `<img class="pbx-w-full pbx-h-auto pbx-block" src="${data.imageUrl}" alt="${data.altText}" />`
+  const alignItems = data.textAlign === 'left' ? 'flex-start' : data.textAlign === 'right' ? 'flex-end' : 'center'
+
+  const sectionStyle = [
+    `background:${data.bgColor}`,
+    data.paddingY ? `padding-top:${data.paddingY}px;padding-bottom:${data.paddingY}px` : '',
+    data.paddingX ? `padding-left:${data.paddingX}px;padding-right:${data.paddingX}px` : '',
+    data.borderRadius ? `border-radius:${data.borderRadius}px` : '',
+  ].filter(Boolean).join(';')
+
+  const overlayDiv = data.overlayOpacity > 0
+    ? `<div style="position:absolute;inset:0;background:${data.overlayColor};opacity:${(data.overlayOpacity / 100).toFixed(2)};pointer-events:none"></div>`
+    : ''
+
+  const ctaBtn = data.ctaText
+    ? `<a href="${data.ctaUrl}" style="display:inline-block;background:${data.ctaBgColor};color:${data.ctaTextColor};padding:0.625rem 1.5rem;border-radius:0.375rem;text-decoration:none;font-weight:600;margin-top:1rem">${data.ctaText}</a>`
+    : ''
+
+  const hasText = data.headline || data.subheadline || data.ctaText
+  const textLayer = hasText
+    ? `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:${alignItems};justify-content:center;padding:2rem;text-align:${data.textAlign};color:${data.textColor}">
+      ${data.headline ? `<h2 style="font-size:2.25rem;font-weight:700;margin:0;line-height:1.2">${data.headline}</h2>` : ''}
+      ${data.subheadline ? `<p style="font-size:1.125rem;margin:0.5rem 0 0">${data.subheadline}</p>` : ''}
+      ${ctaBtn}
+    </div>`
+    : ''
+
+  const inner = `<div style="position:relative;">
+    <img src="${data.imageUrl}" alt="${data.altText}" style="width:100%;aspect-ratio:4/1;object-fit:cover;display:block;" />
+    ${overlayDiv}
+    ${textLayer}
+  </div>`
+
   return `<section data-component-title="Ru1 Techwire Hero">
-<div style="background:${data.bgColor};">
-  ${data.linkUrl ? `<a href="${data.linkUrl}">${inner}</a>` : inner}
+<div style="${sectionStyle}">
+  ${data.linkUrl ? `<a href="${data.linkUrl}" style="display:block">${inner}</a>` : inner}
 </div>
 </section>`
 }
