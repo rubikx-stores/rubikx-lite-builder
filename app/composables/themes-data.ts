@@ -456,20 +456,26 @@ export function renderRu1Hero(data: Ru1HeroData): string {
 
 // ─── Featured Products block editor data ────────────────────────────────────
 
-export interface ProductSwatch { color: string }
 export interface Product {
+  imageUrl: string
   name: string
   price: string
-  imageUrl: string
+  oldPrice: string
   buttonLabel: string
   buttonUrl: string
-  swatches: ProductSwatch[]
 }
 
 export interface Ru1ProductsData {
   sectionTitle: string
   columns: 1 | 2 | 3 | 4
   products: Product[]
+  bgColor: string
+  paddingY: number
+  paddingX: number
+  cardBorderRadius: number
+  buttonBgColor: string
+  buttonTextColor: string
+  oldPriceColor: string
 }
 
 const _colClass: Record<string, string> = {
@@ -482,24 +488,39 @@ const _colClass: Record<string, string> = {
 export const ru1ProductsDefaults: Ru1ProductsData = {
   sectionTitle: 'Featured Products',
   columns: 4,
+  bgColor: '',
+  paddingY: 48,
+  paddingX: 16,
+  cardBorderRadius: 8,
+  buttonBgColor: '#111827',
+  buttonTextColor: '#ffffff',
+  oldPriceColor: '#9ca3af',
   products: [
-    { name: 'Product One', price: '$29.99', imageUrl: placeholderSvg, buttonLabel: 'Add to Cart', buttonUrl: '/shop', swatches: [{ color: '#111827' }, { color: '#ffffff' }, { color: '#ef4444' }] },
-    { name: 'Product Two', price: '$39.99', imageUrl: placeholderSvg, buttonLabel: 'Add to Cart', buttonUrl: '/shop', swatches: [{ color: '#3b82f6' }, { color: '#22c55e' }] },
-    { name: 'Product Three', price: '$49.99', imageUrl: placeholderSvg, buttonLabel: 'Add to Cart', buttonUrl: '/shop', swatches: [{ color: '#a855f7' }, { color: '#f59e0b' }, { color: '#111827' }] },
-    { name: 'Product Four', price: '$59.99', imageUrl: placeholderSvg, buttonLabel: 'Add to Cart', buttonUrl: '/shop', swatches: [{ color: '#111827' }, { color: '#6b7280' }] },
+    { imageUrl: placeholderSvg, name: 'Product One',   price: '$29.99', oldPrice: '',       buttonLabel: 'Add to Cart', buttonUrl: '/shop' },
+    { imageUrl: placeholderSvg, name: 'Product Two',   price: '$39.99', oldPrice: '$49.99', buttonLabel: 'Add to Cart', buttonUrl: '/shop' },
+    { imageUrl: placeholderSvg, name: 'Product Three', price: '$49.99', oldPrice: '',       buttonLabel: 'Add to Cart', buttonUrl: '/shop' },
+    { imageUrl: placeholderSvg, name: 'Product Four',  price: '$59.99', oldPrice: '$79.99', buttonLabel: 'Add to Cart', buttonUrl: '/shop' },
   ],
 }
 
 export const ru1ProductsFields: FieldConfig[] = [
   { key: 'sectionTitle', label: 'Section Title', type: 'text' },
   { key: 'columns', label: 'Columns', type: 'select', options: ['1', '2', '3', '4'] },
+  { key: 'bgColor', label: 'Section Background', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number' },
+  { key: 'cardBorderRadius', label: 'Card Border Radius', type: 'number' },
+  { key: 'buttonBgColor', label: 'Button BG Color', type: 'color' },
+  { key: 'buttonTextColor', label: 'Button Text Color', type: 'color' },
+  { key: 'oldPriceColor', label: 'Old Price Color', type: 'color' },
   {
     key: 'products', label: 'Products', type: 'list',
     listFields: [
+      { key: 'imageUrl', label: 'Image', type: 'image' },
       { key: 'name', label: 'Product Name', type: 'text' },
       { key: 'price', label: 'Price', type: 'text' },
-      { key: 'imageUrl', label: 'Image URL', type: 'image' },
-      { key: 'buttonLabel', label: 'Button Label', type: 'text' },
+      { key: 'oldPrice', label: 'Old Price', type: 'text' },
+      { key: 'buttonLabel', label: 'Button Text', type: 'text' },
       { key: 'buttonUrl', label: 'Button URL', type: 'url' },
     ],
   },
@@ -507,20 +528,27 @@ export const ru1ProductsFields: FieldConfig[] = [
 
 export function renderRu1Products(data: Ru1ProductsData): string {
   const colCls = _colClass[String(data.columns)] ?? _colClass['4']
+
+  const sectionStyle = [
+    data.bgColor ? `background:${data.bgColor}` : '',
+    `padding:${data.paddingY}px ${data.paddingX}px`,
+  ].filter(Boolean).join(';')
+
   const cards = data.products.map(p => `
-      <div class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200 pbx-rounded-lg pbx-overflow-hidden">
+      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200">
         <img class="pbx-object-cover pbx-w-full pbx-object-top pbx-aspect-square" src="${p.imageUrl}" alt="${p.name}" />
         <div class="pbx-flex pbx-flex-col pbx-gap-1 pbx-p-3 pbx-flex-1">
           <p class="pbx-font-semibold pbx-text-sm">${p.name}</p>
-          <p class="pbx-text-sm">${p.price}</p>
-          <div class="pbx-flex pbx-items-center pbx-gap-1 pbx-my-1">
-            ${p.swatches.map(s => `<span class="pbx-w-4 pbx-h-4 pbx-rounded-full pbx-inline-block pbx-border pbx-border-gray-300" style="background:${s.color}"></span>`).join('')}
+          <div class="pbx-flex pbx-items-center pbx-gap-2">
+            <p class="pbx-text-sm">${p.price}</p>
+            ${p.oldPrice ? `<s style="color:${data.oldPriceColor}" class="pbx-text-sm">${p.oldPrice}</s>` : ''}
           </div>
-          <a href="${p.buttonUrl}" class="pbx-mySecondaryButton pbx-mt-auto">${p.buttonLabel}</a>
+          <a href="${p.buttonUrl}" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.cardBorderRadius}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block">${p.buttonLabel}</a>
         </div>
       </div>`).join('')
+
   return `<section data-component-title="Ru1 Techwire Featured Products">
-<div class="md:pbx-pt-16 md:pbx-pb-16 pbx-pt-6 pbx-pb-6 lg:pbx-px-4 pbx-px-2">
+<div style="${sectionStyle}">
   <div class="pbx-mx-auto pbx-max-w-7xl">
     <div class="pbx-break-words pbx-font-medium pbx-text-3xl lg:pbx-text-4xl pbx-mb-8">
       <h1>${data.sectionTitle}</h1>
