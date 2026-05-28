@@ -204,7 +204,7 @@ export const ru1TechwireSections: ThemeSection[] = [
 
 // ─── Navbar block editor data ───────────────────────────────────────────────
 
-export interface NavLink { label: string; url: string; visible: boolean }
+export interface NavLink { label: string; url: string; visible?: boolean }
 
 export interface Ru1NavbarData {
   logoUrl: string
@@ -331,7 +331,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   ].filter(Boolean)
 
   const navLinks = data.navLinks
-    .filter(l => l.visible)
+    .filter(l => l.visible !== false)
     .map(l => `<a href="${l.url}" style="color:${data.textColor}" class="pbx-text-sm pbx-font-medium pbx-no-underline">${l.label}</a>`)
 
   return `<section data-component-title="Ru1 Techwire Navbar">
@@ -344,9 +344,9 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
         ${topRight.join('\n        ')}
       </div>
     </div>
-    <div class="pbx-hidden md:pbx-flex pbx-items-center pbx-gap-6 pbx-py-2">
+    ${navLinks.length ? `<div class="pbx-hidden md:pbx-flex pbx-items-center pbx-gap-6 pbx-py-2">
       ${navLinks.join('\n      ')}
-    </div>
+    </div>` : ''}
   </div>
 </nav>
 </section>`
