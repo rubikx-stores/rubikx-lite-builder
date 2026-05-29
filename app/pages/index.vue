@@ -77,7 +77,12 @@ async function publishPage(page: Page) {
       },
     })
     const target = pages.value.find((p) => p.id === page.id)
-    if (target) target.status = 'published'
+    if (target) {
+      target.status = 'published'
+      const vNum = selectedVersions.value[page.id]
+      const targetVersion = target.versions.find((v) => v.version === vNum) ?? target.versions[0]
+      if (targetVersion) targetVersion.status = 'published'
+    }
   } finally {
     publishing.value[page.id] = false
   }
