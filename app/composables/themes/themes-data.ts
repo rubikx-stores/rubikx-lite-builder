@@ -1,4 +1,4 @@
-import type { FieldConfig } from './useBlockRegistry'
+import type { FieldConfig } from '../editor/useBlockRegistry'
 
 export interface ThemeSection {
   id: null
@@ -159,7 +159,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 
   const logo = data.logoUrl
     ? `<img src="${data.logoUrl}" alt="${data.brandName}" style="width:${data.logoWidth}px;height:auto;display:block;" />`
-    : `<span style="font-size:1.125rem;font-weight:700;">${data.brandName}</span>`
+    : `<span data-field-key="brandName" style="font-size:1.125rem;font-weight:700;">${data.brandName}</span>`
 
   const searchBar = data.showSearch
     ? `<div class="pbx-flex-1 pbx-flex pbx-justify-center">
@@ -206,6 +206,7 @@ export interface Ru1HeroData {
   imageUrl: string
   altText: string
   linkUrl: string
+  aspectRatio: string
   headline: string
   subheadline: string
   textColor: string
@@ -226,6 +227,7 @@ export const ru1HeroDefaults: Ru1HeroData = {
   imageUrl: placeholderSvg,
   altText: 'Hero image',
   linkUrl: '',
+  aspectRatio: '4/1',
   headline: '',
   subheadline: '',
   textColor: '#ffffff',
@@ -246,6 +248,7 @@ export const ru1HeroFields: FieldConfig[] = [
   { key: 'imageUrl', label: 'Banner Image', type: 'image' },
   { key: 'altText', label: 'Alt Text', type: 'text' },
   { key: 'linkUrl', label: 'Banner Link URL', type: 'url' },
+  { key: 'aspectRatio', label: 'Aspect Ratio', type: 'select', options: ['4/1', '3/1', '16/9', '2/1', '4/3', '1/1'] },
   { key: 'headline', label: 'Headline', type: 'text' },
   { key: 'subheadline', label: 'Subheadline', type: 'text' },
   { key: 'textColor', label: 'Text Color', type: 'color' },
@@ -283,14 +286,14 @@ export function renderRu1Hero(data: Ru1HeroData): string {
   const hasText = data.headline || data.subheadline || data.ctaText
   const textLayer = hasText
     ? `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:${alignItems};justify-content:center;padding:2rem;text-align:${data.textAlign};color:${data.textColor}">
-      ${data.headline ? `<h2 style="font-size:2.25rem;font-weight:700;margin:0;line-height:1.2">${data.headline}</h2>` : ''}
-      ${data.subheadline ? `<p style="font-size:1.125rem;margin:0.5rem 0 0">${data.subheadline}</p>` : ''}
+      ${data.headline ? `<h2 data-field-key="headline" style="font-size:2.25rem;font-weight:700;margin:0;line-height:1.2">${data.headline}</h2>` : ''}
+      ${data.subheadline ? `<p data-field-key="subheadline" style="font-size:1.125rem;margin:0.5rem 0 0">${data.subheadline}</p>` : ''}
       ${ctaBtn}
     </div>`
     : ''
 
   const inner = `<div style="position:relative;">
-    <img src="${data.imageUrl}" alt="${data.altText}" style="width:100%;aspect-ratio:4/1;object-fit:cover;display:block;" />
+    <img src="${data.imageUrl}" alt="${data.altText}" style="width:100%;aspect-ratio:${data.aspectRatio};object-fit:cover;display:block;" />
     ${overlayDiv}
     ${textLayer}
   </div>`
@@ -399,7 +402,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
 <div style="${sectionStyle}">
   <div class="pbx-mx-auto pbx-max-w-7xl">
     <div class="pbx-break-words pbx-font-medium pbx-text-3xl lg:pbx-text-4xl pbx-mb-8">
-      <h1>${data.sectionTitle}</h1>
+      <h1 data-field-key="sectionTitle">${data.sectionTitle}</h1>
     </div>
     <div class="pbx-myPrimaryGap pbx-grid ${colCls}">
       ${cards}
@@ -479,7 +482,7 @@ export function renderRu1Footer(data: Ru1FooterData): string {
       </div>
       <div>
         <h3 class="pbx-text-sm pbx-font-semibold pbx-uppercase pbx-tracking-wider pbx-mb-4">About Us</h3>
-        <p class="pbx-text-sm pbx-text-gray-700 pbx-leading-relaxed">${data.tagline}</p>
+        <p data-field-key="tagline" class="pbx-text-sm pbx-text-gray-700 pbx-leading-relaxed">${data.tagline}</p>
       </div>
       <div>
         <h3 class="pbx-text-sm pbx-font-semibold pbx-uppercase pbx-tracking-wider pbx-mb-4">Connect with Us</h3>
@@ -490,7 +493,7 @@ export function renderRu1Footer(data: Ru1FooterData): string {
       </div>
     </div>
     <div class="pbx-border-t pbx-border-gray-200 pbx-mt-8 pbx-pt-6 pbx-text-center">
-      <p class="pbx-text-sm pbx-text-gray-500">${data.copyright}</p>
+      <p data-field-key="copyright" class="pbx-text-sm pbx-text-gray-500">${data.copyright}</p>
     </div>
   </div>
 </footer>

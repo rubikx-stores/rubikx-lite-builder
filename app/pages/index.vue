@@ -8,12 +8,12 @@ interface Website {
 }
 
 interface Page {
-  id: number
+  id: string
   name: string
   slug: string
-  version: number
+  version: string
   updatedAt: string
-  status: 'published' | 'draft'
+  status: string
 }
 
 const { data: websites } = await useFetch<Website[]>('/api/websites')

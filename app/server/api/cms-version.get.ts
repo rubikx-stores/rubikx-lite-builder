@@ -1,6 +1,15 @@
-const GRAPHQL_QUERY = `query MyQuery { RubikxCms { key version state updatedBy updatedOn } }`
+// GET /api/cms-version?key=homepage
+// Fetches the saved HTML value for a single CMS page from Odoo.
+
+const GRAPHQL_QUERY = `query MyQuery { RubikxCms { key value } }`
 
 export default defineEventHandler(async (event) => {
+  const { key } = getQuery(event)
+
+  if (!key) {
+    throw createError({ statusCode: 400, message: 'key is required' })
+  }
+
   const config = useRuntimeConfig(event)
 
   if (!config.odooBaseUrl) {
@@ -45,15 +54,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const json = JSON.parse(responseText)
-  const items: Array<{ key: string; version: string; state: string; updatedBy: string; updatedOn: string }> =
-    json?.data?.RubikxCms ?? []
+  const items: Array<{ key: string; value: string }> = json?.data?.RubikxCms ?? []
+  const item = items.find((r) => r.key === key)
 
-  return items.map((item) => ({
-    id: item.key,
-    name: item.key,
-    slug: `/${item.key}`,
-    version: item.version,
-    updatedAt: item.updatedOn,
-    status: item.state,
-  }))
+  return { html: item?.value ?? null }
 })

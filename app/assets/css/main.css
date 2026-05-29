@@ -17,3 +17,26 @@ body {
   background-color: var(--color-primary-background);
   color: var(--color-primary-text);
 }
+
+/* ── Builder canvas cursors ───────────────────────────────────────────────── */
+
+/* Replace the library's default + / crosshair cursor with a pointer finger */
+#pagebuilder,
+#pagebuilder * {
+  cursor: pointer !important;
+}
+
+/* Text leaf elements: I-beam so the user knows they can type inline */
+#pagebuilder p,
+#pagebuilder h1, #pagebuilder h2, #pagebuilder h3,
+#pagebuilder h4, #pagebuilder h5, #pagebuilder h6,
+#pagebuilder span, #pagebuilder li, #pagebuilder label,
+#pagebuilder strong, #pagebuilder em, #pagebuilder b, #pagebuilder i,
+#pagebuilder td, #pagebuilder th {
+  cursor: text !important;
+}
+
+/* Element actively being typed in */
+#pagebuilder [data-inline-active="1"] {
+  cursor: text !important;
+}

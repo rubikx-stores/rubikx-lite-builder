@@ -2,7 +2,7 @@
 definePageMeta({ layout: 'editor' })
 
 const route = useRoute()
-const pageId = computed(() => Number(route.query.pageId))
+const pageId = computed(() => route.query.pageId as string | undefined)
 const pageName = computed(() => (route.query.pageName as string) ?? 'Untitled')
 </script>
 

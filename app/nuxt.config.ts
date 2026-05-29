@@ -26,11 +26,15 @@ export default defineNuxtConfig({
   },
 
   components: {
-    dirs: [{ path: '~/components', isAsync: true }],
+    // pathPrefix: false keeps component names flat (e.g. <EditorSidebar> not
+    // <BuilderEditorSidebar>) even though files now live in components/builder/
+    dirs: [{ path: '~/components', pathPrefix: false, isAsync: true }],
   },
 
   imports: {
-    dirs: ['composables', 'stores'],
+    // Explicit subdirectory list ensures all composable folders are auto-imported.
+    // Add new layout composable dirs here as the library grows.
+    dirs: ['composables', 'composables/editor', 'composables/themes', 'composables/layouts', 'stores'],
     autoImport: true,
   },
 
@@ -52,6 +56,8 @@ export default defineNuxtConfig({
     odooBaseUrl: process.env.ODOO_BASE_URL,
     odooApiKey: process.env.ODOO_API_KEY,
     odooSessionId: process.env.ODOO_SESSION_ID,
+    odooAccessToken: process.env.ODOO_ACCESS_TOKEN,
+    odooCompanyId: process.env.ODOO_COMPANY_ID,
     public: {
       appName: process.env.NUXT_PUBLIC_APP_NAME || 'RubikX Builder',
       env: process.env.NUXT_PUBLIC_ENV || 'development',

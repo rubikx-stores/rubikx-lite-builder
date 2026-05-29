@@ -5,6 +5,7 @@ import themesData from '#lib/themes'
 import { getPageBuilder, usePageBuilderModal } from '@myissue/vue-website-page-builder'
 
 const { themeRegistry, applyTheme } = useThemes()
+const { layoutComponentRegistry } = useLayouts()
 const { closeAddComponentModal } = usePageBuilderModal()
 
 const isLoading = ref(false)
@@ -13,15 +14,20 @@ const selectedCategory = ref('All')
 const selectedThemeCategory = ref('All')
 
 const categories = computed(() => {
-  const all = componentData[0]?.components?.data?.map((c) => c.category) ?? []
-  return ['All', ...new Set(all)]
+  const libCats = componentData[0]?.components?.data?.map((c) => c.category) ?? []
+  // Custom layout categories (Header, etc.) come first so they're easy to find
+  const customCats = Object.keys(layoutComponentRegistry)
+  return ['All', ...customCats, ...new Set(libCats)]
 })
 
 const filteredComponents = computed(() => {
-  const data = componentData[0]?.components?.data ?? []
+  const libData = componentData[0]?.components?.data ?? []
+  // Merge custom layout components + library components into one list
+  const customItems = Object.values(layoutComponentRegistry).flat()
+  const all = [...customItems, ...libData]
   return selectedCategory.value === 'All'
-    ? data
-    : data.filter((c) => c.category === selectedCategory.value)
+    ? all
+    : all.filter((c) => c.category === selectedCategory.value)
 })
 
 const themeCategories = computed(() => {

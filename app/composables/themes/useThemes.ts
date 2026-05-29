@@ -5,7 +5,7 @@ import {
   ru1ProductsDefaults, ru1ProductsFields, renderRu1Products,
   ru1FooterDefaults, ru1FooterFields, renderRu1Footer,
 } from './themes-data'
-import { useBlockRegistry } from './useBlockRegistry'
+import { useBlockRegistry } from '../editor/useBlockRegistry'
 
 interface ThemeMeta {
   id: string
