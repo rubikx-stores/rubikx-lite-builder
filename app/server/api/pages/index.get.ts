@@ -1,40 +1,44 @@
-const GRAPHQL_QUERY = `query MyQuery { RubikxCms { key version state updatedBy updatedOn } }`
+const GRAPHQL_QUERY = `query MyQuery { RubikxCms { key version state updatedBy updatedOn value } }`
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
 
   if (!config.odooBaseUrl) {
-    throw createError({ statusCode: 500, message: 'ODOO_BASE_URL is not configured' })
+    throw createError({
+      statusCode: 500,
+      message: 'ODOO_BASE_URL is not configured',
+    })
   }
   if (!config.odooApiKey) {
-    throw createError({ statusCode: 500, message: 'ODOO_API_KEY is not configured' })
+    throw createError({
+      statusCode: 500,
+      message: 'ODOO_API_KEY is not configured',
+    })
   }
 
-  const url = `${config.odooBaseUrl}/graphql`
+  const url = 'https://rubikx-stores-rubikx-2-0-prod.odoo.com/graphql'
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     accept: 'application/json',
-    'X-API-Key': config.odooApiKey,
-    Authorization: `Bearer ${config.odooApiKey}`,
+    Authorization: `Bearer ec66a59946ecae022949f32f5c65cc67`,
   }
 
   if (config.odooAccessToken) {
-    headers['Cookie'] = `access_token=${config.odooAccessToken}; frontend_lang=en_US`
+    headers['Cookie'] =
+      `access_token=${config.odooAccessToken}; frontend_lang=en_US`
   }
 
-  const variables: Record<string, unknown> = {}
-  if (config.odooCompanyId) {
-    variables.context = { allowed_company_ids: [Number(config.odooCompanyId)] }
-  }
+  const variables = { context: { allowed_company_ids: [3] } }
 
   const response = await fetch(url, {
     method: 'POST',
     headers,
     body: JSON.stringify({ query: GRAPHQL_QUERY, variables }),
   })
-
   const responseText = await response.text()
+  console.log('Odoo status:', response.status, response.ok)
+  console.log('Odoo body:', responseText)
 
   if (!response.ok) {
     throw createError({
@@ -45,15 +49,49 @@ export default defineEventHandler(async (event) => {
   }
 
   const json = JSON.parse(responseText)
-  const items: Array<{ key: string; version: string; state: string; updatedBy: string; updatedOn: string }> =
-    json?.data?.RubikxCms ?? []
+  const items: Array<{
+    key: string
+    version: number
+    state: string
+    updatedBy: string
+    updatedOn: string
+    value: string
+  }> = json?.data?.MyQuery?.RubikxCms ?? []
 
-  return items.map((item) => ({
-    id: item.key,
-    name: item.key,
-    slug: `/${item.key}`,
-    version: item.version,
-    updatedAt: item.updatedOn,
-    status: item.state,
-  }))
+  if (items.length === 0) {
+    return [
+      {
+        id: 'home',
+        name: 'home',
+        slug: '/home',
+        status: 'draft',
+        updatedAt: new Date().toISOString(),
+        versions: [{ version: 1, updatedAt: new Date().toISOString(), status: 'draft', value: '' }],
+      },
+    ]
+  }
+
+  const grouped = new Map<string, typeof items>()
+  for (const item of items) {
+    if (!grouped.has(item.key)) grouped.set(item.key, [])
+    grouped.get(item.key)!.push(item)
+  }
+
+  return Array.from(grouped.entries()).map(([key, versions]) => {
+    versions.sort((a, b) => b.version - a.version)
+    const latest = versions[0]
+    return {
+      id: key,
+      name: key,
+      slug: `/${key}`,
+      status: latest.state,
+      updatedAt: latest.updatedOn,
+      versions: versions.map((v) => ({
+        version: v.version,
+        updatedAt: v.updatedOn,
+        status: v.state,
+        value: v.value,
+      })),
+    }
+  })
 })

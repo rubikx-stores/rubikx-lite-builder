@@ -4,6 +4,7 @@ definePageMeta({ layout: 'editor' })
 const route = useRoute()
 const pageId = computed(() => route.query.pageId as string | undefined)
 const pageName = computed(() => (route.query.pageName as string) ?? 'Untitled')
+const pageVersion = computed(() => Number(route.query.pageVersion) || 1)
 </script>
 
 <template>
@@ -23,7 +24,7 @@ const pageName = computed(() => (route.query.pageName as string) ?? 'Untitled')
 
     <!-- Page builder fills remaining height -->
     <div class="flex-1 overflow-hidden">
-      <PageBuilderWrapper :page-id="pageId" :page-name="pageName" />
+      <PageBuilderWrapper :page-id="pageId" :page-name="pageName" :page-version="pageVersion" />
     </div>
   </div>
 </template>
