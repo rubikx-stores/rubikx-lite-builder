@@ -54,7 +54,7 @@ const _lastResetForId = ref('')
 const storedMode = ref('')
 watch(component, (newComp) => {
   if (newComp?.title) {
-    storedMode.value = newComp.title.includes('Single') ? 'single' : 'multiple'
+    storedMode.value = newComp.title.includes('Single') ? 'single' : newComp.title.includes('6') ? 'six' : 'multiple'
     lastAppliedCompId.value = newComp.id
   }
   if (newComp?.id && newComp.id !== _lastResetForId.value) {
@@ -78,7 +78,7 @@ watch(component, (newComp) => {
 }, { immediate: true })
 const mode = computed(() => storedMode.value || 'multiple')
 
-const maxSelection = computed(() => (mode.value === 'single' ? 1 : 3))
+const maxSelection = computed(() => mode.value === 'single' ? 1 : mode.value === 'six' ? 6 : 3)
 
 const filteredProducts = computed(() => {
   const q = search.value.trim().toLowerCase()

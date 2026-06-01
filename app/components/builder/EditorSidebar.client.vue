@@ -72,7 +72,7 @@ function toHex(v: string | undefined | null): string {
 }
 
 // ── Product block flag ────────────────────────────────────────────────────────
-const _PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products']
+const _PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products']
 
 const lastProductTitle = ref('')
 

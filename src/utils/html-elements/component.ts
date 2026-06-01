@@ -466,6 +466,63 @@ const component: Components[] = [
                     `,
         },
         {
+          title: 'Show 6 Products',
+          html_code: `<section>\n<div class="md:pbx-pt-16 md:pbx-pb-16 pbx-pt-6 pbx-pb-6 lg:pbx-px-4 pbx-px-2"><div class="pbx-mx-auto pbx-max-w-7xl"><div class="myPrimaryGap grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3"> <div class="flex-1 py-2"> <img class="object-cover w-full object-top aspect-square " src="${getPlaceholderImageDataUrl()}" alt="provider"> <div class="break-words py-2"><p>Layouts and visual.</p><p>Start customizing by editing this default text directly in the editor.</p></div> </div> <div class="flex-1 py-2"> <img class="object-cover w-full object-top aspect-square " src="${getPlaceholderImageDataUrl()}" alt="provider"> <div class="break-words py-2"><p>Layouts and visual.</p><p>Start customizing by editing this default text directly in the editor.</p></div> </div> <div class="flex-1 py-2"> <img class="object-cover w-full object-top aspect-square " src="${getPlaceholderImageDataUrl()}" alt="provider"> <div class="break-words py-2"><p>Layouts and visual.</p><p>Start customizing by editing this default text directly in the editor.</p></div> </div> <div class="flex-1 py-2"> <img class="object-cover w-full object-top aspect-square " src="${getPlaceholderImageDataUrl()}" alt="provider"> <div class="break-words py-2"><p>Layouts and visual.</p><p>Start customizing by editing this default text directly in the editor.</p></div> </div> <div class="flex-1 py-2"> <img class="object-cover w-full object-top aspect-square " src="${getPlaceholderImageDataUrl()}" alt="provider"> <div class="break-words py-2"><p>Layouts and visual.</p><p>Start customizing by editing this default text directly in the editor.</p></div> </div> <div class="flex-1 py-2"> <img class="object-cover w-full object-top aspect-square " src="${getPlaceholderImageDataUrl()}" alt="provider"> <div class="break-words py-2"><p>Layouts and visual.</p><p>Start customizing by editing this default text directly in the editor.</p></div> </div> </div> </div> </div>\n</section>`,
+          category: 'Products',
+          cover_image: `
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 177.28 146">
+                        <defs>
+                          <style>
+                            .bg { fill: #384152; }
+                            .fg { fill: #718096; }
+                          </style>
+                        </defs>
+                        <rect class="bg" width="53.92" height="53.92"/>
+                        <rect class="bg" x="62.15" width="53.92" height="53.92"/>
+                        <rect class="bg" x="123.37" width="53.92" height="53.92"/>
+                        <polygon class="fg" points="8.2 35 21.6 18.92 35 35"/>
+                        <polygon class="fg" points="32.32 35 39.02 26.96 45.71 35"/>
+                        <circle class="fg" cx="39.02" cy="21.15" r="2.23"/>
+                        <polygon class="fg" points="70.36 35 83.75 18.92 97.15 35"/>
+                        <polygon class="fg" points="94.47 35 101.17 26.96 107.87 35"/>
+                        <circle class="fg" cx="101.17" cy="21.15" r="2.23"/>
+                        <polygon class="fg" points="131.57 35 144.96 18.92 158.36 35"/>
+                        <polygon class="fg" points="155.68 35 162.38 26.96 169.08 35"/>
+                        <circle class="fg" cx="162.38" cy="21.15" r="2.23"/>
+                        <rect class="bg" y="59.92" width="53.92" height="2.93"/>
+                        <rect class="bg" y="63.91" width="53.92" height="2.93"/>
+                        <rect class="bg" y="67.91" width="53.92" height="2.93"/>
+                        <rect class="bg" x="62.15" y="59.92" width="53.92" height="2.93"/>
+                        <rect class="bg" x="62.15" y="63.91" width="53.92" height="2.93"/>
+                        <rect class="bg" x="62.15" y="67.91" width="53.92" height="2.93"/>
+                        <rect class="bg" x="123.37" y="59.92" width="53.92" height="2.93"/>
+                        <rect class="bg" x="123.37" y="63.91" width="53.92" height="2.93"/>
+                        <rect class="bg" x="123.37" y="67.91" width="53.92" height="2.93"/>
+                        <rect class="bg" y="75" width="53.92" height="53.92"/>
+                        <rect class="bg" x="62.15" y="75" width="53.92" height="53.92"/>
+                        <rect class="bg" x="123.37" y="75" width="53.92" height="53.92"/>
+                        <polygon class="fg" points="8.2 110 21.6 93.92 35 110"/>
+                        <polygon class="fg" points="32.32 110 39.02 101.96 45.71 110"/>
+                        <circle class="fg" cx="39.02" cy="96.15" r="2.23"/>
+                        <polygon class="fg" points="70.36 110 83.75 93.92 97.15 110"/>
+                        <polygon class="fg" points="94.47 110 101.17 101.96 107.87 110"/>
+                        <circle class="fg" cx="101.17" cy="96.15" r="2.23"/>
+                        <polygon class="fg" points="131.57 110 144.96 93.92 158.36 110"/>
+                        <polygon class="fg" points="155.68 110 162.38 101.96 169.08 110"/>
+                        <circle class="fg" cx="162.38" cy="96.15" r="2.23"/>
+                        <rect class="bg" y="134.92" width="53.92" height="2.93"/>
+                        <rect class="bg" y="138.91" width="53.92" height="2.93"/>
+                        <rect class="bg" y="142.90" width="53.92" height="2.93"/>
+                        <rect class="bg" x="62.15" y="134.92" width="53.92" height="2.93"/>
+                        <rect class="bg" x="62.15" y="138.91" width="53.92" height="2.93"/>
+                        <rect class="bg" x="62.15" y="142.90" width="53.92" height="2.93"/>
+                        <rect class="bg" x="123.37" y="134.92" width="53.92" height="2.93"/>
+                        <rect class="bg" x="123.37" y="138.91" width="53.92" height="2.93"/>
+                        <rect class="bg" x="123.37" y="142.90" width="53.92" height="2.93"/>
+                      </svg>
+                    `,
+        },
+        {
           title: 'Simple Centered CTA',
           html_code: `<section><div class="md:pbx-pt-16 md:pbx-pb-16 pbx-pt-6 pbx-pb-6 lg:pbx-px-4 pbx-px-2"><div class="pbx-mx-auto pbx-max-w-7xl"><div class="pbx-mx-auto pbx-text-center"> <div class="pbx-break-words pbx-text-6xl lg:pbx-text-8xl pbx-font-medium"> <h2>Start customizing by editing this default text directly in the editor.</h2> </div> <div class="pbx-pt-12 pbx-pb-4"> <p>Start customizing by editing this default text directly in the editor. Start customizing by editing this default text directly in the editor.</p> </div> <div class="pbx-font-semibold pbx-py-4"><p><a target="_blank" rel="noopener noreferrer nofollow" href="https://www.google.com">Layouts and visual.</a></p></div> </div> </div></div></section>`,
           category: 'Call To Action',
