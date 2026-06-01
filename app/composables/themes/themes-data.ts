@@ -85,7 +85,7 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   logoUrl: '',
   brandName: 'Your Logo',
   bgColor: '#ffffff',
-  sticky: false,
+  sticky: true,
   showSearch: true,
   searchPlaceholder: 'Search...',
   navLinks: [
