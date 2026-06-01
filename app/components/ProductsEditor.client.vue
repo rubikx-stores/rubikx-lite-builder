@@ -49,16 +49,16 @@ const shadowPresets = {
 const component = computed(() => pageBuilderStateStore.getComponent)
 
 const lastAppliedCompId = ref('')
+const _lastResetForId = ref('')
 
 const storedMode = ref('')
-watch(component, (newComp, oldComp) => {
+watch(component, (newComp) => {
   if (newComp?.title) {
     storedMode.value = newComp.title.includes('Single') ? 'single' : 'multiple'
     lastAppliedCompId.value = newComp.id
   }
-  if (newComp?.id && (
-    !oldComp?.id || newComp.id !== oldComp.id
-  )) {
+  if (newComp?.id && newComp.id !== _lastResetForId.value) {
+    _lastResetForId.value = newComp.id
     selected.value = []
     search.value = ''
     btnText.value = 'Shop Now'
