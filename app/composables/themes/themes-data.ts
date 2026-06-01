@@ -104,7 +104,7 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   textColor: '#111827',
   fontSize: 14,
   fontWeight: '500',
-  paddingY: 0,
+  paddingY: 12,
   paddingX: 16,
   logoWidth: 120,
   borderStyle: 'none',
@@ -154,7 +154,6 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     `font-weight:${data.fontWeight}`,
     (data.paddingY || data.paddingX) ? `padding:${data.paddingY}px ${data.paddingX}px` : '',
     data.borderStyle !== 'none' ? `border-bottom:${data.borderWidth}px ${data.borderStyle} ${data.borderColor}` : '',
-    data.sticky ? 'position:sticky;top:0;z-index:50' : '',
   ].filter(Boolean).join(';')
 
   const logo = data.logoUrl
@@ -182,10 +181,12 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     .filter(l => l.visible !== false)
     .map(l => `<a href="${l.url}" style="color:${data.textColor}" class="pbx-text-sm pbx-font-medium pbx-no-underline">${l.label}</a>`)
 
-  return `<section data-component-title="Ru1 Techwire Navbar">
+  const sectionStyle = data.sticky ? 'position:sticky;top:0;z-index:50' : ''
+
+  return `<section data-component-title="Ru1 Techwire Navbar"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 <nav style="${navStyle}">
   <div class="pbx-max-w-7xl pbx-mx-auto pbx-px-4 sm:pbx-px-6 lg:pbx-px-8">
-    <div class="pbx-flex pbx-items-center pbx-justify-between pbx-gap-4 pbx-py-3">
+    <div class="pbx-flex pbx-items-center pbx-justify-between pbx-gap-4">
       <div class="pbx-flex-shrink-0">${logo}</div>
       ${searchBar}
       <div class="pbx-flex pbx-items-center pbx-gap-2">
@@ -275,9 +276,7 @@ export function renderRu1Hero(data: Ru1HeroData): string {
     data.borderRadius ? `border-radius:${data.borderRadius}px` : '',
   ].filter(Boolean).join(';')
 
-  const overlayDiv = data.overlayOpacity > 0
-    ? `<div style="position:absolute;inset:0;background:${data.overlayColor};opacity:${(data.overlayOpacity / 100).toFixed(2)};pointer-events:none"></div>`
-    : ''
+  const overlayDiv = `<div style="position:absolute;inset:0;background:${data.overlayColor};opacity:${(data.overlayOpacity / 100).toFixed(2)};pointer-events:none"></div>`
 
   const ctaBtn = data.ctaText
     ? `<a href="${data.ctaUrl}" style="display:inline-block;background:${data.ctaBgColor};color:${data.ctaTextColor};padding:0.625rem 1.5rem;border-radius:0.375rem;text-decoration:none;font-weight:600;margin-top:1rem">${data.ctaText}</a>`
@@ -402,9 +401,9 @@ export function renderRu1Products(data: Ru1ProductsData): string {
 <div style="${sectionStyle}">
   <div class="pbx-mx-auto pbx-max-w-7xl">
     <div class="pbx-break-words pbx-font-medium pbx-text-3xl lg:pbx-text-4xl pbx-mb-8">
-      <h1 data-field-key="sectionTitle">${data.sectionTitle}</h1>
+      <h1 data-field-key="sectionTitle" style="margin:0">${data.sectionTitle}</h1>
     </div>
-    <div class="pbx-myPrimaryGap pbx-grid ${colCls}">
+    <div class="pbx-grid pbx-gap-4 ${colCls}">
       ${cards}
     </div>
   </div>
