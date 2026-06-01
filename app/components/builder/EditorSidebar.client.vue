@@ -104,6 +104,7 @@ const isImgEl  = computed(() => selectedEl.value?.tagName?.toUpperCase() === 'IM
 // Without this, if the user switches to Hero before 300ms, the Navbar logo
 // update would fire against Hero's registry and trigger _applyBlockRender
 // for the wrong block — disrupting the Hero selection.
+
 let _fieldDebounceTimer = 0
 function debouncedUpdateBlockField(fieldKey: string, value: any) {
   const capturedTitle = selectedBlockTitle.value   // snapshot NOW, before any await
@@ -250,6 +251,7 @@ onMounted(() => {
 // Any element click re-checks (covers cases where panel was open but DOM shifted)
 watch(() => selectedEl.value, (el) => { if (el) _ensureInjected() })
 
+
 onUnmounted(() => {
   _destroyed = true
   window.removeEventListener('unhandledrejection', _suppressImgError)
@@ -301,7 +303,7 @@ onUnmounted(() => {
                   :class="field.type === 'number' ? 'pr-7' : ''"
                   class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
                   @input="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
-                <span v-if="field.type === 'number'" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">px</span>
+                <span v-if="field.type === 'number'" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">{{ field.unit ?? 'px' }}</span>
               </div>
             </div>
 
@@ -411,7 +413,7 @@ onUnmounted(() => {
                             :class="subField.type === 'number' ? 'pr-7' : ''"
                             class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-blue-400"
                             @input="debouncedUpdateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value)" />
-                          <span v-if="subField.type === 'number'" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">px</span>
+                          <span v-if="subField.type === 'number'" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">{{ subField.unit ?? 'px' }}</span>
                         </div>
                       </template>
                     </div>

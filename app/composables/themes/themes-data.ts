@@ -327,6 +327,10 @@ export interface Ru1ProductsData {
   buttonBgColor: string
   buttonTextColor: string
   oldPriceColor: string
+  cardAnimation: boolean
+  hoverEffect: string
+  hoverAmount: number
+  animationDuration: number
 }
 
 const _colClass: Record<string, string> = {
@@ -348,6 +352,10 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   buttonBgColor: '#111827',
   buttonTextColor: '#ffffff',
   oldPriceColor: '#9ca3af',
+  cardAnimation: false,
+  hoverEffect: 'Lift Up',
+  hoverAmount: 6,
+  animationDuration: 300,
   products: [
     { imageUrl: placeholderSvg, name: 'Product One',   price: '$29.99', oldPrice: '',       buttonLabel: 'Add to Cart', buttonUrl: '/shop' },
     { imageUrl: placeholderSvg, name: 'Product Two',   price: '$39.99', oldPrice: '$49.99', buttonLabel: 'Add to Cart', buttonUrl: '/shop' },
@@ -368,6 +376,10 @@ export const ru1ProductsFields: FieldConfig[] = [
   { key: 'buttonBgColor', label: 'Button BG Color', type: 'color' },
   { key: 'buttonTextColor', label: 'Button Text Color', type: 'color' },
   { key: 'oldPriceColor', label: 'Old Price Color', type: 'color' },
+  { key: 'cardAnimation', label: 'Hover Animation', type: 'toggle' },
+  { key: 'hoverEffect', label: 'Animation Type', type: 'select', options: ['Lift Up', 'Drop Down', 'Slide Left', 'Slide Right', 'Pop Out', 'Zoom In', 'Glow', 'Tilt Left', 'Tilt Right'] },
+  { key: 'hoverAmount', label: 'Animation Amount', type: 'number' },
+  { key: 'animationDuration', label: 'Animation Duration', type: 'number', unit: 'ms' },
   {
     key: 'products', label: 'Products', type: 'list',
     listFields: [
@@ -383,6 +395,24 @@ export const ru1ProductsFields: FieldConfig[] = [
 
 export function renderRu1Products(data: Ru1ProductsData): string {
   const colCls = _colClass[String(data.columns)] ?? _colClass['4']
+  const _hoverCSS = (effect: string, amount: number): string => {
+    switch (effect) {
+      case 'Lift Up':    return `transform:translateY(-${amount}px)`
+      case 'Drop Down':  return `transform:translateY(${amount}px)`
+      case 'Slide Left': return `transform:translateX(-${amount}px)`
+      case 'Slide Right':return `transform:translateX(${amount}px)`
+      case 'Pop Out':    return `transform:scale(${1 + amount / 100})`
+      case 'Zoom In':    return `transform:scale(${1 + amount / 100});box-shadow:0 25px 50px rgba(0,0,0,0.15)`
+      case 'Glow':       return `box-shadow:0 0 ${amount}px rgba(99,102,241,0.7)`
+      case 'Tilt Left':  return `transform:rotate(-${amount}deg)`
+      case 'Tilt Right': return `transform:rotate(${amount}deg)`
+      default:           return `transform:translateY(-${amount}px)`
+    }
+  }
+  const animStyle = data.cardAnimation
+    ? `<style>.ru1-product-card{transition:transform ${data.animationDuration}ms ease,box-shadow ${data.animationDuration}ms ease}.ru1-product-card:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}</style>`
+    : ''
+  const cardCls = data.cardAnimation ? 'ru1-product-card' : ''
 
   const sectionStyle = [
     data.bgColor ? `background:${data.bgColor}` : '',
@@ -390,7 +420,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
   ].filter(Boolean).join(';')
 
   const cards = data.products.map(p => `
-      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200">
+      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200 ${cardCls}">
         <img class="pbx-w-full pbx-h-auto pbx-block" src="${p.imageUrl}" alt="${p.name}" />
         <div class="pbx-flex pbx-flex-col pbx-gap-1 pbx-p-3 pbx-flex-1">
           <p class="pbx-font-semibold pbx-text-sm">${p.name}</p>
@@ -403,6 +433,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
       </div>`).join('')
 
   return `<section data-component-title="Ru1 Techwire Featured Products">
+${animStyle}
 <div style="${sectionStyle}">
   <div class="pbx-mx-auto pbx-max-w-7xl">
     <div class="pbx-mb-8">

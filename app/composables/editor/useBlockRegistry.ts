@@ -7,6 +7,7 @@ export interface FieldConfig {
   options?: string[]
   listFields?: FieldConfig[]
   placeholder?: string   // example hint shown inside the input
+  unit?: string          // unit label shown inside number inputs, defaults to 'px'
 }
 
 export interface BlockEditorConfig<T = Record<string, any>> {
@@ -25,7 +26,7 @@ const _registry = reactive<Map<string, RegistryEntry>>(new Map())
 // ── Persistent storage for registry state ─────────────────────────────────────
 // Saves every block's editor data to localStorage so the editor reopens with
 // the user's last edits after a page reload, not just the defaults.
-const STORAGE_KEY = 'app-block-registry-v2'
+const STORAGE_KEY = 'app-block-registry-v3'
 let _storageCache: Record<string, Record<string, any>> | null = null
 
 function _loadStorage(): Record<string, Record<string, any>> {
