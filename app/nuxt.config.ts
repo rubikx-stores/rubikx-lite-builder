@@ -55,6 +55,7 @@ export default defineNuxtConfig({
     apiSecretKey: process.env.API_SECRET_KEY,
     odooBaseUrl: process.env.ODOO_BASE_URL,
     odooApiKey: process.env.ODOO_API_KEY,
+    odooGraphqlApiKey: process.env.ODOO_GRAPHQL_API_KEY,
     odooSessionId: process.env.ODOO_SESSION_ID,
     odooAccessToken: process.env.ODOO_ACCESS_TOKEN,
     odooCompanyId: process.env.ODOO_COMPANY_ID,

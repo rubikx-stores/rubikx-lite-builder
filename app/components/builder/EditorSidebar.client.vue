@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
-import { usePageBuilderStateStore } from '@myissue/vue-website-page-builder'
+import { usePageBuilderStateStore, sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
+import ProductsEditor from '../ProductsEditor.client.vue'
 
 const store = usePageBuilderStateStore() as any
 const {
@@ -69,6 +70,28 @@ function toHex(v: string | undefined | null): string {
   } catch { /* ignore SSR / headless */ }
   return '#000000'                                      // safe fallback
 }
+
+// ── Product block flag ────────────────────────────────────────────────────────
+const _PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products']
+
+const lastProductTitle = ref('')
+
+watch(
+  () => (sharedPageBuilderStore as any).getComponent,
+  (comp: any) => {
+    if (comp?.title && _PRODUCT_TITLES.includes(comp.title)) {
+      lastProductTitle.value = comp.title
+    } else if (comp !== null) {
+      lastProductTitle.value = ''
+    }
+    // comp === null is a post-save reset — keep lastProductTitle as-is
+  }
+)
+
+const isProductBlock = computed(() =>
+  _PRODUCT_TITLES.includes((sharedPageBuilderStore as any).getComponent?.title ?? '') ||
+  lastProductTitle.value !== ''
+)
 
 // ── Element type flags ────────────────────────────────────────────────────────
 const isTextEl = computed(() => {
@@ -239,10 +262,15 @@ onUnmounted(() => {
 
 <template>
   <Teleport v-if="slotReady" to="#app-block-editor-slot">
-    <template v-if="mode !== 'none'">
+    <template v-if="mode !== 'none' || isProductBlock">
+
+      <!-- ── Product block editor ──────────────────────────────────────── -->
+      <div v-show="isProductBlock">
+        <ProductsEditor />
+      </div>
 
       <!-- ── Block Content Editor ────────────────────────────────────────── -->
-      <template v-if="mode === 'block' && blockConfig && blockData">
+      <template v-if="!isProductBlock && mode === 'block' && blockConfig && blockData">
         <div class="border-b border-gray-100 px-3 pt-3 pb-3">
           <template v-for="field in blockConfig.fields" :key="field.key">
 
@@ -391,13 +419,13 @@ onUnmounted(() => {
       </template>
 
       <!-- Fallback: block selected but not registered in app registry -->
-      <div v-else-if="mode === 'block' && (!blockConfig || !blockData)"
+      <div v-if="!isProductBlock && mode === 'block' && (!blockConfig || !blockData)"
         class="px-3 py-3 border-b border-gray-100 text-xs text-gray-400 text-center leading-relaxed">
         No custom editor for this block.<br/>Use the library editors below.
       </div>
 
       <!-- mode === 'element': library component or raw element — show style editors -->
-      <template v-else-if="mode === 'element'">
+      <template v-if="!isProductBlock && mode === 'element'">
 
         <!-- Typography (text elements only) -->
         <details v-if="isTextEl" open class="border-b border-gray-100">
