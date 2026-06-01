@@ -54,7 +54,7 @@ async function handleSaveClick() {
   if (!html) return
 
   _pendingHtml = html
-  selectedVersion.value = (props.pageVersion ?? 1) + 1
+  selectedVersion.value = props.pageVersion ?? 1
   showVersionModal.value = true
 }
 
