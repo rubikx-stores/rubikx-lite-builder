@@ -295,10 +295,14 @@ onUnmounted(() => {
             <!-- text / url / number -->
             <div v-else-if="['text','url','number'].includes(field.type)" class="mb-2.5">
               <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
-              <input type="text" :value="blockData[field.key]"
-                :placeholder="field.placeholder ?? ''"
-                class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
-                @input="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
+              <div class="relative">
+                <input type="text" :value="blockData[field.key]"
+                  :placeholder="field.placeholder ?? ''"
+                  :class="field.type === 'number' ? 'pr-7' : ''"
+                  class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
+                  @input="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
+                <span v-if="field.type === 'number'" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">px</span>
+              </div>
             </div>
 
             <!-- color -->
@@ -306,7 +310,7 @@ onUnmounted(() => {
               <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
               <div class="flex items-center gap-2 border border-gray-200 rounded-md px-2 py-1">
                 <input type="color" :value="toHex(blockData[field.key])" class="w-6 h-6 rounded cursor-pointer border-none p-0"
-                  @change="updateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
+                  @input="updateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
                 <input type="text" :value="blockData[field.key]" class="flex-1 text-xs focus:outline-none"
                   @input="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
               </div>
@@ -365,7 +369,7 @@ onUnmounted(() => {
                               @change="{ const f=($event.target as HTMLInputElement).files; if(f?.length) onUploadSubImage(field.key,idx,subField.key,f[0]) }" />
                           </label>
                         </div>
-                        <img v-if="item[subField.key]" :src="item[subField.key]" class="w-full h-12 object-cover rounded border border-gray-200" alt="preview" />
+                        <img v-if="item[subField.key]" :src="item[subField.key]" class="w-full aspect-square object-cover rounded border border-gray-200 bg-gray-50" alt="preview" />
                       </template>
                       <template v-else-if="subField.type === 'toggle'">
                         <button type="button"
@@ -380,11 +384,9 @@ onUnmounted(() => {
                       <!-- color sub-field: swatch picker + hex text input -->
                       <template v-else-if="subField.type === 'color'">
                         <div class="flex items-center gap-2 border border-gray-200 rounded-md px-2 py-1">
-                          <!-- swatch: @change fires live while dragging in the colour picker -->
                           <input type="color" :value="toHex(item[subField.key])"
                             class="w-6 h-6 rounded cursor-pointer border-none p-0 shrink-0"
-                            @change="updateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value)" />
-                          <!-- hex text: instant update on every keystroke -->
+                            @input="updateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value)" />
                           <input type="text" :value="item[subField.key]"
                             placeholder="#000000"
                             class="flex-1 text-xs focus:outline-none min-w-0"
@@ -403,10 +405,14 @@ onUnmounted(() => {
 
                       <!-- text / url / number: instant update on every keystroke -->
                       <template v-else>
-                        <input type="text" :value="item[subField.key]"
-                          :placeholder="subField.placeholder ?? ''"
-                          class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-blue-400"
-                          @input="debouncedUpdateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value)" />
+                        <div class="relative">
+                          <input type="text" :value="item[subField.key]"
+                            :placeholder="subField.placeholder ?? ''"
+                            :class="subField.type === 'number' ? 'pr-7' : ''"
+                            class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-blue-400"
+                            @input="debouncedUpdateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value)" />
+                          <span v-if="subField.type === 'number'" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">px</span>
+                        </div>
                       </template>
                     </div>
                   </template>

@@ -316,6 +316,8 @@ export interface Product {
 
 export interface Ru1ProductsData {
   sectionTitle: string
+  titleAlign: string
+  titleColor: string
   columns: 1 | 2 | 3 | 4
   products: Product[]
   bgColor: string
@@ -336,6 +338,8 @@ const _colClass: Record<string, string> = {
 
 export const ru1ProductsDefaults: Ru1ProductsData = {
   sectionTitle: 'Featured Products',
+  titleAlign: 'left',
+  titleColor: '#111827',
   columns: 4,
   bgColor: '',
   paddingY: 48,
@@ -354,6 +358,8 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
 
 export const ru1ProductsFields: FieldConfig[] = [
   { key: 'sectionTitle', label: 'Section Title', type: 'text' },
+  { key: 'titleAlign', label: 'Title Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'titleColor', label: 'Title Color', type: 'color' },
   { key: 'columns', label: 'Columns', type: 'select', options: ['1', '2', '3', '4'] },
   { key: 'bgColor', label: 'Section Background', type: 'color' },
   { key: 'paddingY', label: 'Vertical Padding', type: 'number' },
@@ -385,7 +391,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
 
   const cards = data.products.map(p => `
       <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200">
-        <img class="pbx-object-cover pbx-w-full pbx-object-top pbx-aspect-square" src="${p.imageUrl}" alt="${p.name}" />
+        <img class="pbx-w-full pbx-h-auto pbx-block" src="${p.imageUrl}" alt="${p.name}" />
         <div class="pbx-flex pbx-flex-col pbx-gap-1 pbx-p-3 pbx-flex-1">
           <p class="pbx-font-semibold pbx-text-sm">${p.name}</p>
           <div class="pbx-flex pbx-items-center pbx-gap-2">
@@ -399,8 +405,8 @@ export function renderRu1Products(data: Ru1ProductsData): string {
   return `<section data-component-title="Ru1 Techwire Featured Products">
 <div style="${sectionStyle}">
   <div class="pbx-mx-auto pbx-max-w-7xl">
-    <div class="pbx-break-words pbx-font-medium pbx-text-3xl lg:pbx-text-4xl pbx-mb-8">
-      <h1 data-field-key="sectionTitle" style="margin:0">${data.sectionTitle}</h1>
+    <div class="pbx-mb-8">
+      <h1 data-field-key="sectionTitle" style="margin:0;font-size:2rem;font-weight:600;text-align:${data.titleAlign};color:${data.titleColor}">${data.sectionTitle}</h1>
     </div>
     <div class="pbx-grid pbx-gap-4 ${colCls}">
       ${cards}

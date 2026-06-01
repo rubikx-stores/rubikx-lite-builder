@@ -126,6 +126,22 @@ onMounted(async () => {
 
   await builder.startBuilder(config)
 
+  // The builder wraps sections in a container that has overflow-x:scroll, which
+  // CSS spec forces overflow-y from 'visible' to 'auto'. Any overflow value other
+  // than 'visible' on an ancestor creates an overflow context that intercepts
+  // position:sticky, so sticky sections never reach the real scroll container
+  // (#page-builder-wrapper). Fix: walk from #pagebuilder up to the wrapper and
+  // clear overflow on every intermediate element.
+  const pagebuilderEl = document.getElementById('pagebuilder')
+  const wrapperEl = document.getElementById('page-builder-wrapper')
+  if (pagebuilderEl && wrapperEl) {
+    let el = pagebuilderEl.parentElement
+    while (el && el !== wrapperEl) {
+      el.style.overflow = 'visible'
+      el = el.parentElement
+    }
+  }
+
   _saveBtn = await waitForSaveButton()
   _saveBtn.addEventListener('click', handleSaveClick)
 })
