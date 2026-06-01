@@ -21,7 +21,7 @@ const config: PageBuilderConfig = {
     formType: 'update',
     formName: 'page',
   },
-  resourceData: props.pageId ? { title: props.pageId, id: props.pageId } : null,
+  resourceData: props.pageId ? { title: props.pageId, id: props.pageId as any } : null,
 }
 
 // Mirrors the builder's internal sanitizeForLocalStorage to compute the key.
@@ -110,7 +110,7 @@ onMounted(async () => {
     const html = pageHtmlCache.value[props.pageId] ?? null
 
     if (html) {
-      const parsed = builder.parsePageBuilderHTML(html)
+      const parsed = (builder as any).parsePageBuilderHTML(html)
       localStorage.setItem(
         storageKey,
         JSON.stringify({
