@@ -162,6 +162,12 @@ export function useEditorSidebar() {
       ? !!currentEl.closest(`section[data-component-title="${title}"]`)
       : _lastKnownBlockTitle === title
 
+    // Sync section-level attributes (e.g. style="position:sticky") that live on
+    // the <section> tag itself and are not part of innerHTML.
+    const newStyle = newSection.getAttribute('style')
+    if (newStyle) section.setAttribute('style', newStyle)
+    else section.removeAttribute('style')
+
     section.innerHTML = newSection.innerHTML
 
     // _syncBuilderWithListeners re-registers click handlers across the whole
