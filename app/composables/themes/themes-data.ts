@@ -85,7 +85,7 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   logoUrl: '',
   brandName: 'Your Logo',
   bgColor: '#ffffff',
-  sticky: true,
+  sticky: false,
   showSearch: true,
   searchPlaceholder: 'Search...',
   navLinks: [
@@ -177,14 +177,22 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
       : '',
   ].filter(Boolean)
 
-  const navLinks = data.navLinks
-    .filter(l => l.visible !== false)
-    .map(l => `<a href="${l.url}" style="color:${data.textColor}" class="pbx-text-sm pbx-font-medium pbx-no-underline">${l.label}</a>`)
+  const visibleNavLinks = data.navLinks.filter(l => l.visible !== false)
+  const navLinkEls = visibleNavLinks.map(l => `<a href="${l.url}" style="color:${data.textColor}" class="pbx-text-sm pbx-font-medium pbx-no-underline">${l.label}</a>`)
 
-  const sectionStyle = data.sticky ? 'position:sticky;top:0;z-index:50' : ''
+  // When sticky: position:fixed works in all builder/iframe contexts regardless of
+  // parent overflow settings. A spacer div reserves the nav's height in the flow.
+  const fixedStyle = data.sticky
+    ? `position:fixed;top:0;left:0;right:0;z-index:9999;${navStyle}`
+    : navStyle
 
-  return `<section data-component-title="Ru1 Techwire Navbar"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
-<nav style="${navStyle}">
+  // Estimate navbar height for the spacer: top+bottom padding + content row(s)
+  const spacerH = data.paddingY * 2 + Math.round(data.fontSize * 1.6) + 12 +
+    (visibleNavLinks.length > 0 ? Math.round(data.fontSize * 1.6) + 8 : 0)
+
+  return `<section data-component-title="Ru1 Techwire Navbar">
+${data.sticky ? `<div style="height:${spacerH}px"></div>` : ''}
+<nav style="${fixedStyle}">
   <div class="pbx-max-w-7xl pbx-mx-auto pbx-px-4 sm:pbx-px-6 lg:pbx-px-8">
     <div class="pbx-flex pbx-items-center pbx-justify-between pbx-gap-4">
       <div class="pbx-flex-shrink-0">${logo}</div>
@@ -193,8 +201,8 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
         ${topRight.join('\n        ')}
       </div>
     </div>
-    ${navLinks.length ? `<div class="pbx-hidden md:pbx-flex pbx-items-center pbx-gap-6 pbx-py-2">
-      ${navLinks.join('\n      ')}
+    ${navLinkEls.length ? `<div class="pbx-hidden md:pbx-flex pbx-items-center pbx-gap-6 pbx-py-2">
+      ${navLinkEls.join('\n      ')}
     </div>` : ''}
   </div>
 </nav>
