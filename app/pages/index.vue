@@ -31,6 +31,12 @@ const loadingPages = ref(false)
 const selectedVersions = ref<Record<string, number>>({})
 const publishing = ref<Record<string, boolean>>({})
 
+// New page modal state
+const showNewPageModal = ref(false)
+const newPageName = ref('')
+const newPageNameInput = ref<HTMLInputElement | null>(null)
+const newPageError = ref('')
+
 watchEffect(() => {
   if (websites.value?.length && !selectedWebsiteId.value) {
     selectedWebsiteId.value = websites.value[0].id
@@ -101,6 +107,61 @@ function formatDate(iso: string) {
     month: 'short',
     day: 'numeric',
   })
+}
+
+function toSlug(name: string) {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+function openNewPageModal() {
+  newPageName.value = ''
+  newPageError.value = ''
+  showNewPageModal.value = true
+  nextTick(() => newPageNameInput.value?.focus())
+}
+
+function closeNewPageModal() {
+  showNewPageModal.value = false
+  newPageName.value = ''
+  newPageError.value = ''
+}
+
+function createNewPage() {
+  const name = newPageName.value.trim()
+  if (!name) {
+    newPageError.value = 'Page name is required.'
+    return
+  }
+  const slug = toSlug(name)
+  if (!slug) {
+    newPageError.value = 'Please enter a valid page name.'
+    return
+  }
+  if (pages.value.some((p) => p.id === slug)) {
+    newPageError.value = `A page named "${slug}" already exists.`
+    return
+  }
+  const now = new Date().toISOString()
+  pages.value.push({
+    id: slug,
+    name,
+    slug: `/${slug}`,
+    status: 'draft',
+    updatedAt: now,
+    versions: [{ version: 1, updatedAt: now, status: 'draft', value: '' }],
+  })
+  selectedVersions.value[slug] = 1
+  pageHtmlCache.value[slug] = ''
+  closeNewPageModal()
+}
+
+function handleModalKeydown(e: KeyboardEvent) {
+  if (e.key === 'Enter') createNewPage()
+  if (e.key === 'Escape') closeNewPageModal()
 }
 </script>
 
@@ -211,13 +272,64 @@ function formatDate(iso: string) {
         </div>
       </div>
 
-      <!-- New Page placeholder -->
+      <!-- New Page card -->
       <button
         class="flex min-h-[220px] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 transition-colors hover:border-gray-400 hover:bg-gray-50"
+        @click="openNewPageModal"
       >
         <span class="text-4xl font-light leading-none text-gray-300">+</span>
         <span class="mt-2 text-sm text-gray-400">New Page</span>
       </button>
     </div>
+
+    <!-- New Page modal -->
+    <Teleport to="body">
+      <div
+        v-if="showNewPageModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+        @click.self="closeNewPageModal"
+      >
+        <div
+          class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
+          @keydown="handleModalKeydown"
+        >
+          <h2 class="text-base font-semibold text-gray-900">New Page</h2>
+          <p class="mt-1 text-xs text-gray-500">Give your page a name to get started.</p>
+
+          <div class="mt-4">
+            <input
+              ref="newPageNameInput"
+              v-model="newPageName"
+              type="text"
+              placeholder="e.g. About Us"
+              class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+              @input="newPageError = ''"
+            />
+            <!-- Slug preview -->
+            <p v-if="newPageName.trim()" class="mt-1.5 text-xs text-gray-400">
+              Slug: <span class="font-mono text-gray-600">/{{ toSlug(newPageName) }}</span>
+            </p>
+            <!-- Error -->
+            <p v-if="newPageError" class="mt-1.5 text-xs text-red-500">{{ newPageError }}</p>
+          </div>
+
+          <div class="mt-5 flex gap-2">
+            <button
+              class="flex-1 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
+              @click="closeNewPageModal"
+            >
+              Cancel
+            </button>
+            <button
+              class="flex-1 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:opacity-40"
+              :disabled="!newPageName.trim()"
+              @click="createNewPage"
+            >
+              Create Page
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>

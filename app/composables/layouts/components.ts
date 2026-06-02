@@ -81,7 +81,6 @@ export const navbar1Defaults: Navbar1Data = {
 
   ctaButtons: [
     { label: 'Sign In',        href: '/signin',   style: 'outline', textColor: '#1f2937', bgColor: '#ffffff',     borderColor: '#1f2937' },
-    { label: 'Create Account', href: '/register', style: 'filled',  textColor: '#ffffff', bgColor: '#1f2937',      borderColor: '#1f2937' },
   ],
   buttonsAlign: 'right',
   buttonBorderRadius: 6,
