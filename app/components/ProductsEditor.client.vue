@@ -54,7 +54,7 @@ const _lastResetForId = ref('')
 const storedMode = ref('')
 watch(component, (newComp) => {
   if (newComp?.title) {
-    storedMode.value = newComp.title.includes('Single') ? 'single' : newComp.title.includes('6') ? 'six' : 'multiple'
+    storedMode.value = newComp.title.includes('Single') ? 'single' : newComp.title.includes('6') ? 'six' : newComp.title.includes('4') ? 'four' : 'multiple'
     lastAppliedCompId.value = newComp.id
   }
   if (newComp?.id && newComp.id !== _lastResetForId.value) {
@@ -78,7 +78,7 @@ watch(component, (newComp) => {
 }, { immediate: true })
 const mode = computed(() => storedMode.value || 'multiple')
 
-const maxSelection = computed(() => mode.value === 'single' ? 1 : mode.value === 'six' ? 6 : 3)
+const maxSelection = computed(() => mode.value === 'single' ? 1 : mode.value === 'six' ? 6 : mode.value === 'four' ? 4 : 3)
 
 const filteredProducts = computed(() => {
   const q = search.value.trim().toLowerCase()
@@ -152,6 +152,7 @@ function doApply() {
     if (textDiv) {
       textDiv.style.display = ''
       textDiv.style.flexDirection = ''
+      textDiv.style.flex = ''
     }
   })
 
@@ -184,6 +185,7 @@ function doApply() {
       const textDiv = cardDiv.querySelector('.break-words, .pbx-break-words') ?? textContainer
       textDiv.style.display = 'flex'
       textDiv.style.flexDirection = 'column'
+      textDiv.style.flex = '1'
       cardDiv.querySelectorAll('a.shop-btn').forEach(b => b.remove())
 
       // Remove existing swatches
@@ -194,7 +196,8 @@ function doApply() {
       if (product.colors?.length) {
         const swatchContainer = document.createElement('div')
         swatchContainer.className = 'color-swatches'
-        swatchContainer.style.cssText = 'display:flex; gap:4px; padding:4px 0;'
+        const isCentered = cardDiv?.classList.contains('text-center') || textDiv?.classList.contains('text-center')
+        swatchContainer.style.cssText = `display:flex; gap:4px; padding:4px 0; justify-content:${isCentered ? 'center' : 'flex-start'};`
         product.colors.forEach(color => {
           const dot = document.createElement('span')
           dot.title = color.name
@@ -214,7 +217,8 @@ function doApply() {
         btn.href = '#'
         btn.setAttribute('data-product-id', String(product.id ?? ''))
         btn.className = 'shop-btn'
-        btn.style.cssText = `display:inline-block; background-color:${btnBg.value}; color:${btnColor.value}; padding:8px 16px; text-decoration:none; font-size:14px; cursor:pointer; border:none; width:100%; text-align:center; box-sizing:border-box; margin-top:auto;`
+        const isCentered = textDiv?.classList.contains('text-center')
+        btn.style.cssText = `display:inline-block; background-color:${btnBg.value}; color:${btnColor.value}; padding:8px 16px; text-decoration:none; font-size:14px; cursor:pointer; border:none; width:100%; text-align:center; box-sizing:border-box; ${isCentered ? 'margin:8px auto 0;' : 'margin-top:auto;'}`
         btn.textContent = btnText.value
         textDiv.appendChild(btn)
       }
@@ -244,6 +248,7 @@ function doApply() {
         ) ?? parentDiv
         textDiv.style.display = ''
         textDiv.style.flexDirection = ''
+        textDiv.style.flex = ''
       }
     }
   })
