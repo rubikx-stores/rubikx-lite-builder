@@ -4,6 +4,44 @@ import { useBlockRegistry } from './useBlockRegistry'
 
 export type SidebarMode = 'none' | 'block' | 'element'
 
+// ── Element override store ─────────────────────────────────────────────────────
+// When the user applies styles via the element editor while inside a registered
+// block, _applyBlockRender() replaces section.innerHTML and wipes those styles.
+// We record every user-applied property here and re-apply after each re-render.
+//
+// Key 1: block title  Key 2: stable element key  Value: { cssProp → value }
+const _elementOverrides = new Map<string, Map<string, Record<string, string>>>()
+
+function _getElementKey(el: HTMLElement, section: HTMLElement): string | null {
+  const fieldKey = el.getAttribute('data-field-key')
+  if (fieldKey) return `key:${fieldKey}`
+  const indices: number[] = []
+  let cur: Element = el
+  while (cur !== section) {
+    const parent = cur.parentElement
+    if (!parent) return null
+    indices.unshift(Array.from(parent.children).indexOf(cur))
+    cur = parent
+  }
+  return `idx:${indices.join(',')}`
+}
+
+function _getElementByKey(key: string, section: HTMLElement): HTMLElement | null {
+  if (key.startsWith('key:')) {
+    return section.querySelector(`[data-field-key="${key.slice(4)}"]`) as HTMLElement | null
+  }
+  if (key.startsWith('idx:')) {
+    const indices = key.slice(4).split(',').map(Number)
+    let cur: Element = section
+    for (const idx of indices) {
+      cur = cur.children[idx]
+      if (!cur) return null
+    }
+    return cur as HTMLElement
+  }
+  return null
+}
+
 // Extract a best-effort field-value snapshot from a section in the DOM.
 // Used to re-sync the registry after the library performs undo/redo, which
 // modifies DOM directly without touching our registry.
@@ -170,6 +208,22 @@ export function useEditorSidebar() {
 
     section.innerHTML = newSection.innerHTML
 
+    // Re-apply any element-level style overrides the user set via the element
+    // editor — these are wiped by the innerHTML swap above.
+    const blockOverrides = _elementOverrides.get(title)
+    if (blockOverrides) {
+      const stale: string[] = []
+      blockOverrides.forEach((props, elKey) => {
+        const target = _getElementByKey(elKey, section)
+        if (target) {
+          Object.entries(props).forEach(([p, v]) => { (target.style as any)[p] = v })
+        } else {
+          stale.push(elKey) // element gone after structural change — drop override
+        }
+      })
+      stale.forEach(k => blockOverrides.delete(k))
+    }
+
     // _syncBuilderWithListeners re-registers click handlers across the whole
     // document, so the new children of this section become clickable regardless
     // of which element is currently selected. setElement is only needed to keep
@@ -219,6 +273,30 @@ export function useEditorSidebar() {
     const el = selectedEl.value
     if (!el) return
     ;(el.style as any)[prop] = value
+
+    // If the element is inside a registered block, record the override so it
+    // survives the next _applyBlockRender() innerHTML swap.
+    const title = selectedBlockTitle.value
+    if (title && registry.hasConfig(title)) {
+      const section = document.querySelector(
+        `section[data-component-title="${title}"]`,
+      ) as HTMLElement | null
+      if (section) {
+        const elKey = _getElementKey(el, section)
+        if (elKey) {
+          if (!_elementOverrides.has(title)) _elementOverrides.set(title, new Map())
+          const blockOverrides = _elementOverrides.get(title)!
+          if (!blockOverrides.has(elKey)) blockOverrides.set(elKey, {})
+          const props = blockOverrides.get(elKey)!
+          if (value !== '') props[prop] = value
+          else {
+            delete props[prop]
+            if (Object.keys(props).length === 0) blockOverrides.delete(elKey)
+          }
+        }
+      }
+    }
+
     await _syncBuilder()
   }
 

@@ -433,7 +433,8 @@ onUnmounted(() => {
       </div>
 
       <!-- mode === 'element': library component or raw element — show style editors -->
-      <template v-if="!isProductBlock && mode === 'element'">
+      <!-- also shown in block mode when a specific child element (not the section itself) is selected -->
+      <template v-if="!isProductBlock && (mode === 'element' || (mode === 'block' && selectedEl?.isConnected && selectedEl?.tagName?.toUpperCase() !== 'SECTION'))">
 
         <!-- Typography (text elements only) -->
         <details v-if="isTextEl" open class="border-b border-gray-100">
