@@ -26,7 +26,7 @@ const _registry = reactive<Map<string, RegistryEntry>>(new Map())
 // ── Persistent storage for registry state ─────────────────────────────────────
 // Saves every block's editor data to localStorage so the editor reopens with
 // the user's last edits after a page reload, not just the defaults.
-const STORAGE_KEY = 'app-block-registry-v3'
+const STORAGE_KEY = 'app-block-registry-v4'
 let _storageCache: Record<string, Record<string, any>> | null = null
 
 function _loadStorage(): Record<string, Record<string, any>> {

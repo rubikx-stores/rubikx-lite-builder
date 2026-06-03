@@ -2,6 +2,8 @@
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { usePageBuilderStateStore, sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
 import ProductsEditor from '../ProductsEditor.client.vue'
+import { buildCategoryTree } from '~/composables/categories/buildCategoryTree'
+import type { FlatCategory, CategoryNode } from '~/composables/categories/buildCategoryTree'
 
 const store = usePageBuilderStateStore() as any
 const {
@@ -152,6 +154,64 @@ function onUploadSubImage(listKey: string, idx: number, subKey: string, file: Fi
   const reader = new FileReader()
   reader.onload = () => updateBlockListItem(listKey, idx, subKey, reader.result as string)
   reader.readAsDataURL(file)
+}
+
+// ── Category picker for navLinks ──────────────────────────────────────────────
+const loadingCategories = ref(false)
+const availableCategories = ref<CategoryNode[]>([])
+const selectedCategoryIds = ref(new Set<number>())
+const showCategoryPicker = ref(false)
+
+async function openCategoryPicker() {
+  if (availableCategories.value.length > 0) { showCategoryPicker.value = true; return }
+  loadingCategories.value = true
+  try {
+    const flat = await $fetch<FlatCategory[]>('/api/categories')
+    availableCategories.value = buildCategoryTree(flat)
+    showCategoryPicker.value = true
+  } finally {
+    loadingCategories.value = false
+  }
+}
+
+function toggleCategory(id: number) {
+  const s = new Set(selectedCategoryIds.value)
+  s.has(id) ? s.delete(id) : s.add(id)
+  selectedCategoryIds.value = s
+}
+
+function closePicker() {
+  showCategoryPicker.value = false
+  selectedCategoryIds.value = new Set()
+}
+
+function applySelectedCategories() {
+  const title = selectedBlockTitle.value
+  if (!title) return
+  const existing: any[] = (blockData.value as any)?.navLinks ?? []
+  const seen = new Set<string>()
+  const dedupedExisting = existing.filter((l: any) => {
+    if (seen.has(l.label)) return false
+    seen.add(l.label)
+    return true
+  })
+  const toAdd = availableCategories.value.filter(c =>
+    selectedCategoryIds.value.has(c.id) && !seen.has(c.displayName)
+  )
+  let merged: any[]
+  if (title === 'Navbar-1') {
+    merged = [
+      ...dedupedExisting,
+      ...toAdd.map(c => ({ label: c.displayName, href: `/${(c.headlessName && c.headlessName !== false ? c.headlessName : c.name.toLowerCase())}` })),
+    ]
+  } else {
+    merged = [
+      ...dedupedExisting,
+      ...toAdd.map(c => ({ label: c.displayName, url: `/${(c.headlessName && c.headlessName !== false ? c.headlessName : c.name.toLowerCase())}`, visible: true })),
+    ]
+  }
+  updateBlockField('navLinks', merged)
+  closePicker()
 }
 
 // ── Teleport into library right panel scroll area ─────────────────────────────
@@ -339,8 +399,42 @@ onUnmounted(() => {
               </select>
             </div>
 
+            <!-- Category checkbox picker for navLinks on navbar blocks -->
+            <div v-if="field.key === 'navLinks' && (selectedBlockTitle === 'Navbar-1' || selectedBlockTitle === 'Ru1 Techwire Navbar')" class="mb-2">
+              <button v-if="!showCategoryPicker" type="button" @click="openCategoryPicker"
+                class="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
+                + Add from Odoo
+              </button>
+              <div v-else class="border border-gray-200 rounded-md overflow-hidden text-xs">
+                <div class="px-2 py-1.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                  <span class="font-medium text-gray-600">Add categories</span>
+                  <button type="button" @click="closePicker" class="text-gray-400 hover:text-gray-600 bg-transparent border-none cursor-pointer">✕</button>
+                </div>
+                <div v-if="loadingCategories" class="px-2 py-3 text-gray-400 text-center">Loading…</div>
+                <div v-else class="max-h-40 overflow-y-auto">
+                  <label v-for="cat in availableCategories" :key="cat.id"
+                    class="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" :checked="selectedCategoryIds.has(cat.id)"
+                      @change="toggleCategory(cat.id)" class="cursor-pointer" />
+                    <span class="text-gray-700">{{ cat.displayName }}</span>
+                  </label>
+                  <div v-if="!availableCategories.length" class="px-2 py-2 text-gray-400 text-center">No categories found</div>
+                </div>
+                <div class="px-2 py-1.5 bg-gray-50 border-t border-gray-100 flex gap-1.5">
+                  <button type="button" @click="applySelectedCategories" :disabled="selectedCategoryIds.size === 0"
+                    class="flex-1 text-xs border border-gray-900 rounded px-2 py-1 bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+                    Add Selected
+                  </button>
+                  <button type="button" @click="closePicker"
+                    class="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <!-- list -->
-            <div v-else-if="field.type === 'list' && field.listFields" class="mb-2.5">
+            <div v-if="field.type === 'list' && field.listFields" class="mb-2.5">
               <div class="flex items-center justify-between mb-1.5">
                 <label class="text-xs text-gray-500">{{ field.label }}</label>
                 <button type="button"
