@@ -1,27 +1,50 @@
-interface LoginBody {
-  email: string
-  password: string
-}
+
+import { setCookie } from 'h3'
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody<LoginBody>(event)
-
-  if (!body?.email || !body?.password) {
-    throw createError({ statusCode: 400, message: 'Email and password are required' })
-  }
-
-  // TODO: replace with real auth API call
-  // const config = useRuntimeConfig(event)
-  // const response = await $fetch(`${config.apiBaseUrl}/auth/login`, {
-  //   method: 'POST',
-  //   body: { email: body.email, password: body.password },
-  // })
-
-  return {
-    token: `stub_${Date.now()}`,
-    user: {
-      name: body.email.split('@')[0],
-      email: body.email,
-    },
+  const _error = 'An unexpected error occurred during login!'
+  try {
+    const body = await readBody(event)
+    if (!body?.email || !body?.password) {
+      throw createError({ statusCode: 400, message: 'Email and password are required' })
+    }
+    const url = 'https://rubikx-stores-rubikx-2-0-prod.odoo.com/graphql/api/jwt/auth/login'
+    let result: any
+    try {
+      result = await $fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+        },
+        body: { login: body.email, password: body.password },
+      })
+    } catch (odooError: any) {
+      throw createError({ statusCode: 401, message: odooError?.data?.message || 'Invalid credentials' })
+    }
+    if (!result?.token) {
+      throw createError({ statusCode: 400, message: result?.result?.error || _error })
+    }
+    const payload = JSON.parse(Buffer.from(result.token.split('.')[1], 'base64').toString('utf-8'))
+    const expiresAtMs = payload.exp * 1000
+    const maxAgeSeconds = Math.floor((expiresAtMs - Date.now()) / 1000)
+    if (maxAgeSeconds <= 0) {
+      throw createError({ statusCode: 401, statusMessage: 'Token already expired' })
+    }
+    setCookie(event, 'rb_auth_token', result.token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      path: '/',
+      maxAge: maxAgeSeconds,
+    })
+    return {
+      statusCode: 200,
+      success: true,
+      maxAge: Date.now() + maxAgeSeconds * 1000,
+      message: result?.msg || 'Login successful',
+    }
+  } catch (error: any) {
+    throw createError({ statusCode: error.statusCode || 500, message: error.message || _error })
   }
 })

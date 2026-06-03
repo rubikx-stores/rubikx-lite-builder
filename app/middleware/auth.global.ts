@@ -1,11 +1,23 @@
-export default defineNuxtRouteMiddleware((to) => {
-  const token = useCookie('rb_auth_token')
+export default defineNuxtRouteMiddleware(async (to) => {
+  const user = useState<any>('auth_user')
 
-  if (!token.value && to.path !== '/login') {
+  if (import.meta.server && !user.value) {
+    try {
+      const headers = useRequestHeaders(['cookie'])
+      const data = await $fetch<{ user: any }>('/api/auth/me', { headers })
+      user.value = data.user
+    } catch {
+      user.value = null
+    }
+  }
+
+  const isAuthenticated = !!user.value
+
+  if (!isAuthenticated && to.path !== '/login') {
     return navigateTo('/login')
   }
 
-  if (token.value && to.path === '/login') {
+  if (isAuthenticated && to.path === '/login') {
     return navigateTo('/')
   }
 })
