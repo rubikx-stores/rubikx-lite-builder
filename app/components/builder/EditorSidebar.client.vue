@@ -92,6 +92,7 @@ watch(
 
 const isProductBlock = computed(() =>
   _PRODUCT_TITLES.includes((sharedPageBuilderStore as any).getComponent?.title ?? '') ||
+  _PRODUCT_TITLES.includes(selectedBlockTitle.value ?? '') ||
   lastProductTitle.value !== ''
 )
 

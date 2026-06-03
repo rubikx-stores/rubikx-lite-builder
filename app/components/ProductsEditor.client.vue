@@ -35,6 +35,7 @@ const cardBorderRadius = ref(0)
 const cardShadow = ref('none')
 const cardMargin = ref(0)
 const cardPadding = ref(0)
+const cardLayout = ref('default')
 const shadowPresets = {
   'none':       '0 0 #0000',
   'shadow-2xs': '0 1px rgb(0 0 0 / 0.05)',
@@ -74,6 +75,7 @@ watch(component, (newComp) => {
     cardShadow.value = 'none'
     cardMargin.value = 0
     cardPadding.value = 0
+    cardLayout.value = 'default'
   }
 }, { immediate: true })
 const mode = computed(() => storedMode.value || 'multiple')
@@ -146,6 +148,12 @@ function doApply() {
   allCards.forEach(card => {
     card.querySelectorAll('a.shop-btn').forEach(b => b.remove())
     card.querySelectorAll('.color-swatches').forEach(s => s.remove())
+    card.querySelectorAll('.layout-inline-wrapper').forEach(wrapper => {
+      while (wrapper.firstChild) {
+        wrapper.parentElement?.insertBefore(wrapper.firstChild, wrapper)
+      }
+      wrapper.remove()
+    })
     const textDiv = card.querySelector(
       '.break-words, .pbx-break-words'
     )
@@ -186,6 +194,25 @@ function doApply() {
       textDiv.style.display = 'flex'
       textDiv.style.flexDirection = 'column'
       textDiv.style.flex = '1'
+
+      if (cardLayout.value === 'centered') {
+        textDiv.style.textAlign = 'center'
+      } else if (cardLayout.value === 'inline') {
+        textDiv.style.textAlign = ''
+        if (ps[0] && ps[1]) {
+          const wrapper = document.createElement('div')
+          wrapper.className = 'layout-inline-wrapper'
+          wrapper.style.cssText = 'display:flex; justify-content:space-between; align-items:center;'
+          ps[0].style.cssText += '; min-width:0; overflow:hidden;'
+          ps[1].style.cssText += '; white-space:nowrap; flex-shrink:0;'
+          textDiv.insertBefore(wrapper, ps[0])
+          wrapper.appendChild(ps[0])
+          wrapper.appendChild(ps[1])
+        }
+      } else {
+        textDiv.style.textAlign = 'left'
+      }
+
       cardDiv.querySelectorAll('a.shop-btn').forEach(b => b.remove())
 
       // Remove existing swatches
@@ -196,7 +223,7 @@ function doApply() {
       if (product.colors?.length) {
         const swatchContainer = document.createElement('div')
         swatchContainer.className = 'color-swatches'
-        const isCentered = cardDiv?.classList.contains('text-center') || textDiv?.classList.contains('text-center')
+        const isCentered = cardDiv?.classList.contains('text-center') || textDiv?.classList.contains('text-center') || textDiv?.style?.textAlign === 'center' || cardLayout.value === 'centered'
         swatchContainer.style.cssText = `display:flex; gap:4px; padding:4px 0; justify-content:${isCentered ? 'center' : 'flex-start'};`
         product.colors.forEach(color => {
           const dot = document.createElement('span')
@@ -352,6 +379,7 @@ const debouncedButtonText = debounce(applyButtonLive, 300)
 watch(bgColor, applyBackgroundLive)
 watch(bgImageUrl, debouncedBackground)
 watch([cardBg, cardTextColor, cardShadow], applyCardStylesLive)
+watch(cardLayout, () => { if (selected.value.length > 0) doApply() })
 watch([cardFontSize, cardBorderRadius, cardMargin, cardPadding], debouncedCardNumbers)
 watch([btnEnabled, btnBg, btnColor], applyButtonLive)
 watch(btnText, debouncedButtonText)
@@ -481,6 +509,46 @@ watch(btnText, debouncedButtonText)
       <!-- Card Style configurator -->
       <div class="px-1">
         <p class="font-medium text-sm mb-3">Card Style</p>
+
+        <!-- Card Layout picker -->
+        <div class="mb-3">
+          <label class="block text-xs text-gray-500 mb-1.5">Card Layout</label>
+          <div class="flex gap-2">
+            <button type="button" @click="cardLayout = 'default'"
+              :class="cardLayout === 'default' ? 'border-gray-900 bg-gray-50' : 'border-gray-200 bg-white'"
+              class="flex-1 border-2 rounded-lg p-1.5 cursor-pointer transition-colors">
+              <svg viewBox='0 0 40 48' fill='none' xmlns='http://www.w3.org/2000/svg' class='w-full'>
+                <rect width='40' height='26' rx='2' fill='#E2E8F0'/>
+                <rect y='29' width='28' height='3' rx='1' fill='#94A3B8'/>
+                <rect y='34' width='20' height='3' rx='1' fill='#CBD5E1'/>
+                <rect y='39' width='40' height='9' rx='2' fill='#1E293B'/>
+              </svg>
+              <span class="text-xs text-gray-500 mt-1 block text-center">Default</span>
+            </button>
+            <button type="button" @click="cardLayout = 'inline'"
+              :class="cardLayout === 'inline' ? 'border-gray-900 bg-gray-50' : 'border-gray-200 bg-white'"
+              class="flex-1 border-2 rounded-lg p-1.5 cursor-pointer transition-colors">
+              <svg viewBox='0 0 40 48' fill='none' xmlns='http://www.w3.org/2000/svg' class='w-full'>
+                <rect width='40' height='26' rx='2' fill='#E2E8F0'/>
+                <rect y='29' width='18' height='3' rx='1' fill='#94A3B8'/>
+                <rect x='24' y='29' width='16' height='3' rx='1' fill='#94A3B8'/>
+                <rect y='34' width='40' height='9' rx='2' fill='#1E293B'/>
+              </svg>
+              <span class="text-xs text-gray-500 mt-1 block text-center">Inline</span>
+            </button>
+            <button type="button" @click="cardLayout = 'centered'"
+              :class="cardLayout === 'centered' ? 'border-gray-900 bg-gray-50' : 'border-gray-200 bg-white'"
+              class="flex-1 border-2 rounded-lg p-1.5 cursor-pointer transition-colors">
+              <svg viewBox='0 0 40 48' fill='none' xmlns='http://www.w3.org/2000/svg' class='w-full'>
+                <rect width='40' height='26' rx='2' fill='#E2E8F0'/>
+                <rect x='6' y='29' width='28' height='3' rx='1' fill='#94A3B8'/>
+                <rect x='10' y='34' width='20' height='3' rx='1' fill='#CBD5E1'/>
+                <rect y='39' width='40' height='9' rx='2' fill='#1E293B'/>
+              </svg>
+              <span class="text-xs text-gray-500 mt-1 block text-center">Centered</span>
+            </button>
+          </div>
+        </div>
 
         <!-- Row 1: Card bg + text color -->
         <div class="flex gap-2 mb-2">
