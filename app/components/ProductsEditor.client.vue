@@ -53,7 +53,7 @@ const lastAppliedCompId = ref('')
 const _lastResetForId = ref('')
 
 const storedMode = ref('')
-watch(component, (newComp) => {
+watch(component, async (newComp) => {
   if (newComp?.title) {
     storedMode.value = newComp.title.includes('Single') ? 'single' : newComp.title.includes('6') ? 'six' : newComp.title.includes('4') ? 'four' : 'multiple'
     lastAppliedCompId.value = newComp.id
@@ -76,6 +76,17 @@ watch(component, (newComp) => {
     cardMargin.value = 0
     cardPadding.value = 0
     cardLayout.value = 'default'
+
+    // Restore selected products from canvas data attribute
+    await nextTick()
+    const section = getSection()
+    const storedIds = section?.getAttribute('data-selected-products')
+    if (storedIds && products.value.length > 0) {
+      try {
+        const ids = JSON.parse(storedIds)
+        selected.value = products.value.filter(p => ids.includes(p.id))
+      } catch { /* ignore parse errors */ }
+    }
   }
 }, { immediate: true })
 const mode = computed(() => storedMode.value || 'multiple')
@@ -164,12 +175,15 @@ function doApply() {
     }
   })
 
-  const cards = section.querySelectorAll('.flex-1, .pbx-flex-1')
+  const cards = Array.from(section.querySelectorAll('.flex-1, .pbx-flex-1')).filter(el =>
+    el.querySelector('img[alt="provider"]')
+  )
   cards.forEach(card => {
     card.style.backgroundColor = cardBg.value
     card.style.color = cardTextColor.value
     card.style.fontSize = cardFontSize.value + 'px'
     card.style.borderRadius = cardBorderRadius.value + 'px'
+    card.style.overflow = 'hidden'
     card.style.boxShadow = shadowPresets[cardShadow.value] ?? 'none'
     card.style.margin = cardMargin.value + 'px'
     card.style.padding = cardPadding.value + 'px'
@@ -334,13 +348,16 @@ function applyBackgroundLive() {
 function applyCardStylesLive() {
   const section = getSection()
   if (!section) return
-  const cards = section.querySelectorAll('.flex-1, .pbx-flex-1')
+  const cards = Array.from(section.querySelectorAll('.flex-1, .pbx-flex-1')).filter(el =>
+    el.querySelector('img[alt="provider"]')
+  )
   if (!cards.length) return
   cards.forEach(card => {
     card.style.backgroundColor = cardBg.value
     card.style.color = cardTextColor.value
     card.style.fontSize = cardFontSize.value + 'px'
     card.style.borderRadius = cardBorderRadius.value + 'px'
+    card.style.overflow = 'hidden'
     card.style.boxShadow = shadowPresets[cardShadow.value] ?? 'none'
     card.style.margin = cardMargin.value + 'px'
     card.style.padding = cardPadding.value + 'px'
@@ -379,7 +396,9 @@ const debouncedButtonText = debounce(applyButtonLive, 300)
 watch(bgColor, applyBackgroundLive)
 watch(bgImageUrl, debouncedBackground)
 watch([cardBg, cardTextColor, cardShadow], applyCardStylesLive)
-watch(cardLayout, () => { if (selected.value.length > 0) doApply() })
+watch(cardLayout, () => {
+  if (selected.value.length > 0) doApply()
+})
 watch([cardFontSize, cardBorderRadius, cardMargin, cardPadding], debouncedCardNumbers)
 watch([btnEnabled, btnBg, btnColor], applyButtonLive)
 watch(btnText, debouncedButtonText)
