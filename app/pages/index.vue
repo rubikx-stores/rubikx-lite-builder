@@ -103,9 +103,13 @@ function editPage(page: Page) {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', {
+  const date = new Date(iso.replace(' ', 'T'))
+  return date.toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
   })
 }
 
@@ -244,9 +248,8 @@ function handleModalKeydown(e: KeyboardEvent) {
           </div>
 
           <!-- Updated date -->
-          <p class="text-xs text-gray-400">
-            Updated {{ formatDate(selectedVersionData(page)?.updatedAt ?? page.updatedAt) }}
-          </p>
+          <p class="text-xs text-gray-400">Updated {{ formatDate(selectedVersionData(page)?.updatedAt ?? page.updatedAt) }}</p>
+          <p v-if="selectedVersionData(page)?.updatedBy" class="text-xs text-gray-400">by {{ selectedVersionData(page)?.updatedBy }}</p>
 
           <!-- Action buttons -->
           <div class="mt-auto flex items-center gap-2 pt-3">

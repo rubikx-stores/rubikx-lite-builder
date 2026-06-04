@@ -86,9 +86,11 @@ export default defineEventHandler(async (event) => {
       slug: `/${key}`,
       status: latest.state,
       updatedAt: latest.updatedOn,
+      updatedBy: latest.updatedBy ?? '',
       versions: versions.map((v) => ({
         version: v.version,
         updatedAt: v.updatedOn,
+        updatedBy: v.updatedBy ?? '',
         status: v.state,
         value: v.value,
       })),
