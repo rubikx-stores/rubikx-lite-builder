@@ -4,6 +4,7 @@ import { usePageBuilderStateStore, sharedPageBuilderStore } from '@myissue/vue-w
 import ProductsEditor from '../ProductsEditor.client.vue'
 import { buildCategoryTree } from '~/composables/categories/buildCategoryTree'
 import type { FlatCategory, CategoryNode } from '~/composables/categories/buildCategoryTree'
+import { productImageSrc } from '~/composables/useProductImageSrc'
 
 const store = usePageBuilderStateStore() as any
 const {
@@ -74,7 +75,7 @@ function toHex(v: string | undefined | null): string {
 }
 
 // ── Product block flag ────────────────────────────────────────────────────────
-const _PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 6 Products Minimal', 'Show 4 Products Centered']
+const _PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 6 Products Minimal', 'Show 4 Products Centered', 'Ru1 Techwire Featured Products']
 
 const lastProductTitle = ref('')
 
@@ -186,6 +187,96 @@ function closePicker() {
   selectedCategoryIds.value = new Set()
 }
 
+// ── Mega menu editor (Mega-menu-Header only) ──────────────────────────────────
+interface MegaProduct { id: number; name: string; price: number; image: string }
+interface EditingGroup { label: string; href: string; products: MegaProduct[] }
+
+const megaMenuPickerIdx  = ref(-1)          // which navLink editor is open
+const editingGroups      = ref<EditingGroup[]>([])
+const groupProductIdx    = ref(-1)          // which group's product picker is open
+const megaMenuAllProducts = ref<MegaProduct[]>([])
+const megaMenuSearch     = ref('')
+const megaMenuLoading    = ref(false)
+const selectedProductIds = ref(new Set<number>())
+
+const megaMenuFiltered = computed(() =>
+  megaMenuSearch.value.trim()
+    ? megaMenuAllProducts.value.filter(p => p.name.toLowerCase().includes(megaMenuSearch.value.toLowerCase()))
+    : megaMenuAllProducts.value
+)
+
+function openMegaMenuEditor(navIdx: number) {
+  const links: any[] = (blockData.value as any)?.navLinks ?? []
+  const existing: any[] = links[navIdx]?.megaMenu ?? []
+  editingGroups.value = existing.length
+    ? existing.map((g: any) => ({ label: g.label, href: g.href, products: g.products ?? [] }))
+    : [{ label: 'Women', href: '/women', products: [] }, { label: 'Men', href: '/men', products: [] }]
+  megaMenuPickerIdx.value = navIdx
+  groupProductIdx.value = -1
+}
+
+function closeMegaMenuEditor() {
+  megaMenuPickerIdx.value = -1
+  groupProductIdx.value = -1
+  editingGroups.value = []
+  megaMenuSearch.value = ''
+}
+
+function addGroup() {
+  editingGroups.value = [...editingGroups.value, { label: '', href: '', products: [] }]
+}
+
+function removeGroup(gi: number) {
+  editingGroups.value = editingGroups.value.filter((_, i) => i !== gi)
+}
+
+function onGroupLabelInput(gi: number, val: string) {
+  editingGroups.value = editingGroups.value.map((g, i) =>
+    i === gi ? { ...g, label: val, href: `/${val.toLowerCase().replace(/\s+/g, '-')}` } : g
+  )
+}
+
+async function openGroupProductPicker(gi: number) {
+  groupProductIdx.value = gi
+  megaMenuSearch.value = ''
+  megaMenuLoading.value = true
+  try {
+    megaMenuAllProducts.value = await $fetch<MegaProduct[]>('/api/products')
+  } finally {
+    megaMenuLoading.value = false
+  }
+  selectedProductIds.value = new Set(editingGroups.value[gi].products.map(p => p.id))
+}
+
+function toggleProduct(id: number) {
+  const s = new Set(selectedProductIds.value)
+  s.has(id) ? s.delete(id) : s.add(id)
+  selectedProductIds.value = s
+}
+
+function applyGroupProducts() {
+  const gi = groupProductIdx.value
+  if (gi < 0) return
+  const products = megaMenuAllProducts.value.filter(p => selectedProductIds.value.has(p.id))
+  editingGroups.value = editingGroups.value.map((g, i) => i === gi ? { ...g, products } : g)
+  groupProductIdx.value = -1
+  selectedProductIds.value = new Set()
+}
+
+function applyMegaMenuToLink() {
+  const idx = megaMenuPickerIdx.value
+  if (idx < 0) return
+  const megaMenu = editingGroups.value.map(g => ({
+    label: g.label,
+    href: g.href,
+    products: g.products.map(p => ({ id: p.id, label: p.name, href: `/shop/${p.id}`, image: p.image, price: p.price })),
+  }))
+  const links: any[] = [...((blockData.value as any)?.navLinks ?? [])]
+  links[idx] = { ...links[idx], megaMenu }
+  updateBlockField('navLinks', links)
+  closeMegaMenuEditor()
+}
+
 function applySelectedCategories() {
   const title = selectedBlockTitle.value
   if (!title) return
@@ -199,16 +290,44 @@ function applySelectedCategories() {
   const toAdd = availableCategories.value.filter(c =>
     selectedCategoryIds.value.has(c.id) && !seen.has(c.displayName)
   )
+  const toHref = (c: { headlessName: string; name: string }) =>
+    `/${typeof c.headlessName === 'string' && c.headlessName ? c.headlessName : c.name.toLowerCase()}`
+
   let merged: any[]
-  if (title === 'Navbar-1') {
+  if (title === 'Mega-menu-Header') {
+    // Populate children on the existing "Categories" navLink (matched by href or label),
+    // merging newly selected categories into its children. Creates the link if absent.
+    const newChildren = toAdd.map(c => ({
+      label: c.displayName,
+      href: toHref(c),
+      children: c.children.map(ch => ({ label: ch.displayName, href: toHref(ch) })),
+    }))
+    const catIdx = dedupedExisting.findIndex((l: any) =>
+      l.href === '/categories' || l.label?.toLowerCase() === 'categories'
+    )
+    if (catIdx !== -1) {
+      const updated = dedupedExisting.map((l: any, i: number) => {
+        if (i !== catIdx) return l
+        const existingChildren: any[] = l.children ?? []
+        const childSeen = new Set(existingChildren.map((ch: any) => ch.label))
+        return {
+          ...l,
+          children: [...existingChildren, ...newChildren.filter(c => !childSeen.has(c.label))],
+        }
+      })
+      merged = updated
+    } else {
+      merged = [...dedupedExisting, ...newChildren]
+    }
+  } else if (title === 'Navbar-1') {
     merged = [
       ...dedupedExisting,
-      ...toAdd.map(c => ({ label: c.displayName, href: `/${(c.headlessName && c.headlessName !== false ? c.headlessName : c.name.toLowerCase())}` })),
+      ...toAdd.map(c => ({ label: c.displayName, href: toHref(c) })),
     ]
   } else {
     merged = [
       ...dedupedExisting,
-      ...toAdd.map(c => ({ label: c.displayName, url: `/${(c.headlessName && c.headlessName !== false ? c.headlessName : c.name.toLowerCase())}`, visible: true })),
+      ...toAdd.map(c => ({ label: c.displayName, url: toHref(c), visible: true })),
     ]
   }
   updateBlockField('navLinks', merged)
@@ -329,11 +448,15 @@ onUnmounted(() => {
 
       <!-- ── Product block editor ──────────────────────────────────────── -->
       <div v-show="isProductBlock">
-        <ProductsEditor />
+        <ProductsEditor
+          :update-block-field="updateBlockField"
+          :selected-block-title="selectedBlockTitle ?? ''"
+          :block-data="blockData ?? undefined"
+        />
       </div>
 
       <!-- ── Block Content Editor ────────────────────────────────────────── -->
-      <template v-if="!isProductBlock && mode === 'block' && blockConfig && blockData">
+      <template v-if="mode === 'block' && blockConfig && blockData">
         <div class="border-b border-gray-100 px-3 pt-3 pb-3">
           <template v-for="field in blockConfig.fields" :key="field.key">
 
@@ -503,7 +626,7 @@ onUnmounted(() => {
                       <!-- text / url / number: instant update on every keystroke -->
                       <template v-else>
                         <div class="relative">
-                          <input type="text" :value="item[subField.key]"
+                          <input type="text" :value="typeof item[subField.key] === 'object' ? '' : (item[subField.key] ?? '')"
                             :placeholder="subField.placeholder ?? ''"
                             :class="subField.type === 'number' ? 'pr-7' : ''"
                             class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-blue-400"
@@ -511,6 +634,111 @@ onUnmounted(() => {
                           <span v-if="subField.type === 'number'" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">{{ subField.unit ?? 'px' }}</span>
                         </div>
                       </template>
+                    </div>
+                  </template>
+
+                  <!-- Mega Menu configurator: only for Mega-menu-Header navLinks -->
+                  <template v-if="selectedBlockTitle === 'Mega-menu-Header' && field.key === 'navLinks'">
+                    <div class="mt-1.5 pt-1.5 border-t border-gray-100">
+                      <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs text-gray-400">Mega Menu</span>
+                        <button type="button"
+                          @click="megaMenuPickerIdx === idx ? closeMegaMenuEditor() : openMegaMenuEditor(idx)"
+                          class="text-xs border border-gray-200 rounded px-1.5 py-0.5 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
+                          {{ (item.megaMenu as any[])?.length ? `${(item.megaMenu as any[]).length} groups ✎` : '+ Set' }}
+                        </button>
+                      </div>
+
+                      <!-- mega menu editor panel -->
+                      <div v-if="megaMenuPickerIdx === idx" class="border border-gray-200 rounded-md overflow-hidden text-xs mt-1">
+
+                        <!-- product picker for a specific group -->
+                        <template v-if="groupProductIdx >= 0">
+                          <div class="px-2 py-1.5 bg-gray-50 border-b border-gray-100 flex items-center gap-1.5">
+                            <button type="button" @click="groupProductIdx = -1; selectedProductIds = new Set()"
+                              class="text-gray-400 hover:text-gray-700 bg-transparent border-none cursor-pointer text-sm leading-none">←</button>
+                            <span class="font-medium text-gray-600 flex-1">{{ editingGroups[groupProductIdx]?.label || 'Group' }} products
+                              <span v-if="selectedProductIds.size" class="text-blue-500">({{ selectedProductIds.size }})</span>
+                            </span>
+                            <button type="button" @click="closeMegaMenuEditor" class="text-gray-400 hover:text-gray-600 bg-transparent border-none cursor-pointer">✕</button>
+                          </div>
+                          <div class="px-2 py-1.5 border-b border-gray-100">
+                            <input type="text" v-model="megaMenuSearch" placeholder="Search products…"
+                              class="w-full border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-blue-400" />
+                          </div>
+                          <div v-if="megaMenuLoading" class="px-2 py-3 text-gray-400 text-center">Loading…</div>
+                          <div v-else class="max-h-52 overflow-y-auto">
+                            <label v-for="product in megaMenuFiltered" :key="product.id"
+                              class="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 cursor-pointer border-b border-gray-50">
+                              <input type="checkbox" :checked="selectedProductIds.has(product.id)"
+                                @change="toggleProduct(product.id)" class="cursor-pointer shrink-0" />
+                              <img v-if="productImageSrc(product.image)" :src="productImageSrc(product.image)"
+                                class="w-8 h-8 object-cover rounded shrink-0" />
+                              <div v-else class="w-8 h-8 bg-gray-100 rounded shrink-0" />
+                              <div class="flex-1 min-w-0">
+                                <div class="text-gray-700 truncate">{{ product.name }}</div>
+                                <div class="text-gray-400">${{ Number(product.price).toFixed(2) }}</div>
+                              </div>
+                            </label>
+                            <div v-if="!megaMenuFiltered.length" class="px-2 py-2 text-gray-400 text-center">No products found</div>
+                          </div>
+                          <div class="px-2 py-1.5 bg-gray-50 border-t border-gray-100">
+                            <button type="button" @click="applyGroupProducts"
+                              class="w-full text-xs border border-gray-900 rounded px-2 py-1 bg-gray-900 text-white hover:bg-gray-700 cursor-pointer">
+                              Done
+                            </button>
+                          </div>
+                        </template>
+
+                        <!-- groups list -->
+                        <template v-else>
+                          <div class="px-2 py-1.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                            <span class="font-medium text-gray-600">Groups</span>
+                            <button type="button" @click="closeMegaMenuEditor" class="text-gray-400 hover:text-gray-600 bg-transparent border-none cursor-pointer">✕</button>
+                          </div>
+                          <div class="max-h-52 overflow-y-auto">
+                            <div v-for="(group, gi) in editingGroups" :key="gi"
+                              class="flex items-center gap-1.5 px-2 py-1.5 border-b border-gray-50">
+                              <input type="text" :value="group.label"
+                                @input="onGroupLabelInput(gi, ($event.target as HTMLInputElement).value)"
+                                placeholder="e.g. Women"
+                                class="flex-1 border border-gray-200 rounded px-1.5 py-0.5 text-xs focus:outline-none focus:border-blue-400 min-w-0" />
+                              <button type="button" @click="openGroupProductPicker(gi)"
+                                class="shrink-0 text-xs border border-blue-200 rounded px-1.5 py-0.5 bg-blue-50 text-blue-600 hover:bg-blue-100 cursor-pointer whitespace-nowrap">
+                                {{ group.products.length ? `${group.products.length} ✎` : '+ Products' }}
+                              </button>
+                              <button type="button" @click="removeGroup(gi)"
+                                class="shrink-0 text-red-400 hover:text-red-600 bg-transparent border-none cursor-pointer">✕</button>
+                            </div>
+                            <div v-if="!editingGroups.length" class="px-2 py-2 text-gray-400 text-center">No groups yet</div>
+                          </div>
+                          <div class="px-2 py-1 border-b border-gray-100">
+                            <button type="button" @click="addGroup"
+                              class="w-full text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-2 py-1 bg-blue-50 cursor-pointer">
+                              + Add group
+                            </button>
+                          </div>
+                          <div class="px-2 py-1.5 bg-gray-50 flex gap-1.5">
+                            <button type="button" @click="applyMegaMenuToLink"
+                              class="flex-1 text-xs border border-gray-900 rounded px-2 py-1 bg-gray-900 text-white hover:bg-gray-700 cursor-pointer">
+                              Apply
+                            </button>
+                            <button type="button" @click="closeMegaMenuEditor"
+                              class="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
+                              Cancel
+                            </button>
+                          </div>
+                        </template>
+                      </div>
+
+                      <!-- summary when closed -->
+                      <div v-else-if="(item.megaMenu as any[])?.length" class="mt-0.5">
+                        <div v-for="(g, gi) in (item.megaMenu as any[]).slice(0, 3)" :key="gi"
+                          class="text-xs text-gray-400 truncate">• {{ g.label }} ({{ (g.products as any[])?.length ?? 0 }})</div>
+                        <div v-if="(item.megaMenu as any[]).length > 3" class="text-xs text-gray-400">
+                          + {{ (item.megaMenu as any[]).length - 3 }} more
+                        </div>
+                      </div>
                     </div>
                   </template>
                 </div>

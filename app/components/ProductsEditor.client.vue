@@ -2,6 +2,14 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { sharedPageBuilderStore, getPageBuilder } from '@myissue/vue-website-page-builder'
 
+const props = defineProps({
+  updateBlockField: { type: Function, default: null },
+  selectedBlockTitle: { type: String, default: '' },
+  blockData: { type: Object, default: null },
+})
+
+const THEME_REGISTRY_BLOCKS = ['Ru1 Techwire Featured Products']
+
 function debounce(fn, delay) {
   let timer
   return (...args) => {
@@ -51,6 +59,11 @@ const shadowPresets = {
 
 const component = computed(() => pageBuilderStateStore.getComponent)
 
+const isThemeBlock = computed(() => {
+  const title = component.value?.title ?? props.selectedBlockTitle ?? ''
+  return THEME_REGISTRY_BLOCKS.includes(title)
+})
+
 const lastAppliedCompId = ref('')
 const _lastResetForId = ref('')
 
@@ -95,7 +108,10 @@ watch(component, async (newComp) => {
 }, { immediate: true })
 const mode = computed(() => storedMode.value || 'multiple')
 
-const maxSelection = computed(() => mode.value === 'single' ? 1 : mode.value === 'six' ? 6 : mode.value === 'four' ? 4 : 3)
+const maxSelection = computed(() => {
+  if (isThemeBlock.value) return Number(props.blockData?.columns ?? 4) * Number(props.blockData?.rows ?? 1)
+  return mode.value === 'single' ? 1 : mode.value === 'six' ? 6 : mode.value === 'four' ? 4 : 3
+})
 
 const filteredProducts = computed(() => {
   const q = search.value.trim().toLowerCase()
@@ -122,19 +138,23 @@ onMounted(async () => {
   await nextTick()
   const section = getSection()
 
-  // Pre-populate from stored data attribute
-  const storedIds = section?.getAttribute(
-    'data-selected-products'
-  )
+  // Pre-populate from stored data attribute (primary)
+  const storedIds = section?.getAttribute('data-selected-products')
   if (storedIds) {
     try {
       const ids = JSON.parse(storedIds)
-      selected.value = products.value.filter(
-        p => ids.includes(p.id)
-      )
+      selected.value = products.value.filter(p => ids.includes(p.id))
     } catch (e) {
       // ignore parse errors
     }
+  }
+
+  // Fallback for theme blocks: match by name from blockData.products when no IDs stored
+  if (!selected.value.length && isThemeBlock.value && props.blockData?.products?.length) {
+    const matched = props.blockData.products
+      .map(tp => products.value.find(op => op.name === tp.name))
+      .filter(Boolean)
+    if (matched.length) selected.value = matched
   }
 })
 
@@ -152,7 +172,33 @@ function productImageSrc(image) {
   return `data:${mime};base64,${image}`
 }
 
+function doApplyThemeBlock() {
+  const section = getSection()
+  const title = component.value?.title ?? props.selectedBlockTitle
+
+  const mapped = selected.value.map(p => ({
+    imageUrl: productImageSrc(p.image),
+    name: p.name,
+    price: p.price != null ? (typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : String(p.price)) : '',
+    oldPrice: '',
+    buttonLabel: 'Add to Cart',
+    buttonUrl: '/shop',
+    colors: '',
+  }))
+
+  // Store selected IDs on the section element so restore-on-mount works after re-render
+  if (section) {
+    section.setAttribute('data-selected-products', JSON.stringify(selected.value.map(p => p.id)))
+  }
+
+  if (props.updateBlockField && title) {
+    props.updateBlockField('products', mapped, title)
+  }
+}
+
 function doApply() {
+  if (isThemeBlock.value) { doApplyThemeBlock(); return }
+
   const section = getSection()
   if (!section) return
 
@@ -508,9 +554,10 @@ watch(cardSubtitleEnabled, () => { if (selected.value.length > 0) doApply() })
       </div>
 
       <!-- Divider -->
-      <div class="w-full border-t border-gray-200 my-4"></div>
+      <div v-if="!isThemeBlock" class="w-full border-t border-gray-200 my-4"></div>
 
       <!-- Background configurator -->
+      <template v-if="!isThemeBlock">
       <div class="px-1">
         <p class="font-medium text-sm mb-3">Background</p>
 
@@ -772,6 +819,7 @@ watch(cardSubtitleEnabled, () => { if (selected.value.length > 0) doApply() })
           </div>
         </div>
       </div>
+      </template>
     </div>
   </div>
 </template>

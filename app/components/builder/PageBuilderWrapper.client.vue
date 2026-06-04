@@ -3,6 +3,7 @@ import { PageBuilder, getPageBuilder } from '@myissue/vue-website-page-builder'
 import type { PageBuilderConfig } from '@myissue/vue-website-page-builder'
 import BuilderPanel from './BuilderPanel.client.vue'
 import EditorSidebar from './EditorSidebar.client.vue'
+import { productImageSrc } from '~/composables/useProductImageSrc'
 
 // Register all block configs eagerly on builder mount so the editor opens
 // correctly even on page reload with saved canvas data (before the user opens
@@ -96,9 +97,53 @@ function waitForSaveButton(): Promise<Element> {
   })
 }
 
+// ── Mega-menu product tile click → product detail panel ──────────────────────
+function handleProductTileClick(e: MouseEvent) {
+  const tile = (e.target as Element).closest('.pbx-ptile') as HTMLAnchorElement | null
+  if (!tile) return
+  e.preventDefault()
+  e.stopPropagation()
+
+  const section = tile.closest('section')
+  const panel   = section?.querySelector<HTMLElement>('.pbx-pd')
+  if (!panel) return
+
+  const rawImg = tile.getAttribute('data-img') ?? ''
+  const name  = tile.querySelector<HTMLElement>('.pbx-ptile-name')?.textContent?.trim() ?? ''
+  const price = tile.querySelector<HTMLElement>('.pbx-ptile-price')?.textContent?.trim() ?? ''
+
+  panel.innerHTML = `
+    <div style="display:grid;grid-template-columns:45% 55%;height:480px;position:relative;">
+      <div id="pbx-pd-imgcol" style="overflow:hidden;background:#f3f4f6;"></div>
+      <div style="padding:52px 56px;display:flex;flex-direction:column;justify-content:center;background:#fff;">
+        <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.14em;text-transform:uppercase;margin-bottom:16px;">Featured Product</div>
+        <div style="font-size:30px;font-weight:800;color:#111827;line-height:1.2;margin-bottom:14px;">${name}</div>
+        <div style="font-size:24px;font-weight:600;color:#374151;margin-bottom:32px;">${price}</div>
+        <a href="${tile.href}" style="display:inline-block;padding:14px 32px;background:#111827;color:#fff;text-decoration:none;border-radius:8px;font-size:15px;font-weight:600;letter-spacing:.02em;">View Product →</a>
+      </div>
+      <button onclick="this.closest('.pbx-pd').style.display='none'"
+        style="position:absolute;top:14px;right:16px;background:rgba(255,255,255,.9);border:1px solid #e5e7eb;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:18px;color:#6b7280;line-height:1;display:flex;align-items:center;justify-content:center;">×</button>
+    </div>`
+
+  const imgSrc = productImageSrc(rawImg)
+  if (imgSrc) {
+    const imgCol = panel.querySelector<HTMLElement>('#pbx-pd-imgcol')
+    if (imgCol) {
+      const img = document.createElement('img')
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;'
+      img.src = imgSrc
+      imgCol.appendChild(img)
+    }
+  }
+
+  panel.style.display = 'block'
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+}
+
 onUnmounted(() => {
   _destroyed = true
   _saveBtn?.removeEventListener('click', handleSaveClick)
+  document.removeEventListener('click', handleProductTileClick, true)
 })
 
 onMounted(async () => {
@@ -144,6 +189,9 @@ onMounted(async () => {
 
   _saveBtn = await waitForSaveButton()
   _saveBtn.addEventListener('click', handleSaveClick)
+
+  // Capture-phase so we intercept before the builder's own click handler
+  document.addEventListener('click', handleProductTileClick, true)
 })
 </script>
 

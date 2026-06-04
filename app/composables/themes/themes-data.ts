@@ -312,13 +312,15 @@ export interface Product {
   oldPrice: string
   buttonLabel: string
   buttonUrl: string
+  colors: string
 }
 
 export interface Ru1ProductsData {
   sectionTitle: string
   titleAlign: string
   titleColor: string
-  columns: 1 | 2 | 3 | 4
+  columns: 1 | 2 | 3 | 4 | 5 | 6
+  rows: number
   products: Product[]
   bgColor: string
   paddingY: number
@@ -338,6 +340,8 @@ const _colClass: Record<string, string> = {
   '2': 'pbx-grid-cols-2',
   '3': 'pbx-grid-cols-2 sm:pbx-grid-cols-3',
   '4': 'pbx-grid-cols-2 sm:pbx-grid-cols-2 lg:pbx-grid-cols-4',
+  '5': 'pbx-grid-cols-2 sm:pbx-grid-cols-3 lg:pbx-grid-cols-5',
+  '6': 'pbx-grid-cols-2 sm:pbx-grid-cols-3 lg:pbx-grid-cols-6',
 }
 
 export const ru1ProductsDefaults: Ru1ProductsData = {
@@ -345,6 +349,7 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   titleAlign: 'left',
   titleColor: '#111827',
   columns: 4,
+  rows: 1,
   bgColor: '',
   paddingY: 48,
   paddingX: 16,
@@ -357,10 +362,10 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   hoverAmount: 6,
   animationDuration: 300,
   products: [
-    { imageUrl: placeholderSvg, name: 'Product One',   price: '$29.99', oldPrice: '',       buttonLabel: 'Add to Cart', buttonUrl: '/shop' },
-    { imageUrl: placeholderSvg, name: 'Product Two',   price: '$39.99', oldPrice: '$49.99', buttonLabel: 'Add to Cart', buttonUrl: '/shop' },
-    { imageUrl: placeholderSvg, name: 'Product Three', price: '$49.99', oldPrice: '',       buttonLabel: 'Add to Cart', buttonUrl: '/shop' },
-    { imageUrl: placeholderSvg, name: 'Product Four',  price: '$59.99', oldPrice: '$79.99', buttonLabel: 'Add to Cart', buttonUrl: '/shop' },
+    { imageUrl: placeholderSvg, name: 'Product One',   price: '$29.99', oldPrice: '',       buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
+    { imageUrl: placeholderSvg, name: 'Product Two',   price: '$39.99', oldPrice: '$49.99', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
+    { imageUrl: placeholderSvg, name: 'Product Three', price: '$49.99', oldPrice: '',       buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
+    { imageUrl: placeholderSvg, name: 'Product Four',  price: '$59.99', oldPrice: '$79.99', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
   ],
 }
 
@@ -368,7 +373,8 @@ export const ru1ProductsFields: FieldConfig[] = [
   { key: 'sectionTitle', label: 'Section Title', type: 'text' },
   { key: 'titleAlign', label: 'Title Alignment', type: 'select', options: ['left', 'center', 'right'] },
   { key: 'titleColor', label: 'Title Color', type: 'color' },
-  { key: 'columns', label: 'Columns', type: 'select', options: ['1', '2', '3', '4'] },
+  { key: 'columns', label: 'Columns', type: 'select', options: ['1', '2', '3', '4', '5', '6'] },
+  { key: 'rows', label: 'Rows', type: 'select', options: ['1', '2', '3', '4', '5', '6'] },
   { key: 'bgColor', label: 'Section Background', type: 'color' },
   { key: 'paddingY', label: 'Vertical Padding', type: 'number' },
   { key: 'paddingX', label: 'Horizontal Padding', type: 'number' },
@@ -389,6 +395,7 @@ export const ru1ProductsFields: FieldConfig[] = [
       { key: 'oldPrice', label: 'Old Price', type: 'text' },
       { key: 'buttonLabel', label: 'Button Text', type: 'text' },
       { key: 'buttonUrl', label: 'Button URL', type: 'url' },
+      { key: 'colors', label: 'Color Swatches', type: 'text', placeholder: 'blue, black, #ff0000' },
     ],
   },
 ]
@@ -419,7 +426,13 @@ export function renderRu1Products(data: Ru1ProductsData): string {
     `padding:${data.paddingY}px ${data.paddingX}px`,
   ].filter(Boolean).join(';')
 
-  const cards = data.products.map(p => `
+  const maxVisible = data.columns * (data.rows ?? 1)
+  const placeholder = { imageUrl: placeholderSvg, name: 'Product Name', price: '$0.00', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' }
+  const visibleProducts = [
+    ...data.products.slice(0, maxVisible),
+    ...Array(Math.max(0, maxVisible - data.products.length)).fill(placeholder),
+  ]
+  const cards = visibleProducts.map(p => `
       <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200 ${cardCls}">
         <img class="pbx-w-full pbx-h-auto pbx-block" src="${p.imageUrl}" alt="${p.name}" />
         <div class="pbx-flex pbx-flex-col pbx-gap-1 pbx-p-3 pbx-flex-1">
@@ -428,6 +441,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
             <p class="pbx-text-sm">${p.price}</p>
             ${p.oldPrice ? `<s style="color:${data.oldPriceColor}" class="pbx-text-sm">${p.oldPrice}</s>` : ''}
           </div>
+          ${(() => { const cs = Array.isArray(p.colors) ? '' : String(p.colors ?? '').trim(); return cs ? `<div style="display:flex;gap:6px;align-items:center;padding:4px 0">${cs.split(',').map((c: string) => c.trim()).filter(Boolean).map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.15);flex-shrink:0"></span>`).join('')}</div>` : '' })()}
           <a href="${p.buttonUrl}" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.cardBorderRadius}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block">${p.buttonLabel}</a>
         </div>
       </div>`).join('')

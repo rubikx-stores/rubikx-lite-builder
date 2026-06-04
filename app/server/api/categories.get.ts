@@ -9,12 +9,15 @@ query RubikxProductPublicCategory($context: Any) {
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
 
-  const url = 'https://rubikx-stores-rubikx-2-0-prod.odoo.com/graphql'
+  if (!config.odooBaseUrl) throw createError({ statusCode: 500, message: 'ODOO_BASE_URL is not configured' })
+  if (!config.odooGraphqlApiKey) throw createError({ statusCode: 500, message: 'ODOO_GRAPHQL_API_KEY is not configured' })
+
+  const url = `${config.odooBaseUrl}/graphql`
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     accept: 'application/json',
-    Authorization: `Bearer ec66a59946ecae022949f32f5c65cc67`,
+    Authorization: `Bearer ${config.odooGraphqlApiKey}`,
   }
 
   if (config.odooAccessToken) {

@@ -1,4 +1,6 @@
 import type { FieldConfig } from '../editor/useBlockRegistry'
+import { productImageSrc } from '../useProductImageSrc'
+
 
 // ─── Navbar-1 SVG cover ───────────────────────────────────────────────────────
 // Matches the library component card style exactly:
@@ -14,7 +16,9 @@ export const navbar1Svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 
 </svg>`
 
 // ─── Interface ────────────────────────────────────────────────────────────────
-export interface NavLink  { label: string; href: string }
+export interface MegaMenuProduct { id: number; label: string; href: string; image?: string; price?: number }
+export interface MegaMenuGroup   { label: string; href: string; products: MegaMenuProduct[] }
+export interface NavLink         { label: string; href: string; megaMenu?: MegaMenuGroup[] }
 export interface CtaButton {
   label: string
   href: string
@@ -66,9 +70,12 @@ export const navbar1Defaults: Navbar1Data = {
   brandFontWeight: '700',
 
   navLinks: [
-    { label: 'Home',    href: '/'        },
-    { label: 'About',   href: '/about'   },
-    { label: 'Contact', href: '/contact' },
+    { label: 'Home',       href: '/'           },
+    { label: 'Contact',    href: '/contact'    },
+    { label: 'Categories', href: '/categories', megaMenu: [
+      { label: 'Women', href: '/women', products: [] },
+      { label: 'Men',   href: '/men',   products: [] },
+    ]},
   ],
   navLinksAlign: 'center',
   linkFontSize: 14,
@@ -189,11 +196,38 @@ export function renderNavbar1(data: Navbar1Data): string {
     : ''
 
   // ── Nav links ─────────────────────────────────────────────────────────────
+  const linkStyle = `color:${data.linkColor};text-decoration:none;font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};white-space:nowrap;`
+
+  const renderStaticDrop = (megaMenu: typeof data.navLinks[0]['megaMenu']) => {
+    if (!megaMenu || !megaMenu.length) return ''
+    return megaMenu.map((g, gi) => {
+      const productsHtml = g.products.map(p => {
+        const imgSrc = productImageSrc(p.image)
+        const img = imgSrc
+          ? `<img src="${imgSrc}" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;"/>`
+          : `<div style="width:44px;height:44px;background:#f3f4f6;border-radius:6px;flex-shrink:0;"></div>`
+        const price = p.price != null ? `<span class="pbx-ptile-price" style="font-size:11px;color:#6b7280;">$${Number(p.price).toFixed(2)}</span>` : ''
+        return `<a href="/shop/${p.id}" class="pbx-ptile" data-img="${p.image ?? ''}" style="display:flex;align-items:center;gap:10px;padding:7px 14px;text-decoration:none;cursor:pointer;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">${img}<div style="min-width:0;"><div class="pbx-ptile-name" style="font-size:13px;font-weight:500;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">${p.label}</div>${price}</div></a>`
+      }).join('')
+      const divider = gi > 0 ? '<div style="height:1px;background:#f3f4f6;margin:4px 0;"></div>' : ''
+      return `${divider}<div><a href="${g.href}" style="display:block;padding:8px 14px 4px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;">${g.label}</a>${productsHtml || '<div style="padding:4px 14px 8px;font-size:12px;color:#9ca3af;font-style:italic;">No products selected</div>'}</div>`
+    }).join('')
+  }
+
   const linksEl = data.navLinks.length
     ? `<nav style="display:flex;align-items:center;gap:1.5rem;">${
-        data.navLinks.map(l =>
-          `<a href="${l.href}" style="color:${data.linkColor};text-decoration:none;font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};white-space:nowrap;">${l.label}</a>`
-        ).join('')
+        data.navLinks.map(l => {
+          if (l.megaMenu && l.megaMenu.length > 0) {
+            const groups = l.megaMenu.map(g => ({ label: g.label, href: g.href, ids: g.products.map(p => p.id) }))
+            const json = JSON.stringify(groups).replace(/"/g, '&quot;')
+            const staticContent = renderStaticDrop(l.megaMenu)
+            return `<div class="pbx-mega-item" data-mega-json="${json}" style="position:relative;display:inline-block;">` +
+              `<a href="${l.href}" style="${linkStyle}cursor:pointer;">${l.label} ▾</a>` +
+              `<div class="pbx-mega-drop" style="display:none;position:absolute;top:100%;left:0;min-width:260px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100;overflow:hidden;">${staticContent}</div>` +
+              `</div>`
+          }
+          return `<a href="${l.href}" style="${linkStyle}">${l.label}</a>`
+        }).join('')
       }</nav>`
     : ''
 
@@ -220,7 +254,18 @@ export function renderNavbar1(data: Navbar1Data): string {
   const zone = (items: string[], justify: string) =>
     `<div style="display:flex;align-items:center;gap:0.75rem;justify-content:${justify};">${items.join('')}</div>`
 
-  return `<section data-component-title="Navbar-1">
+  const hasMegaMenu = data.navLinks.some(l => l.megaMenu && l.megaMenu.length > 0)
+
+  // Refresh dropdowns with live Odoo data + wire product-tile click → detail panel
+  const megaScript = hasMegaMenu
+    ? `<script>(function(){function wireTiles(sec){sec.querySelectorAll('.pbx-ptile').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var panel=sec.querySelector('.pbx-pd');if(!panel)return;var imgEl=a.querySelector('img');var imgSrc=imgEl?imgEl.src:'';var name=(a.querySelector('.pbx-ptile-name')||{}).textContent||'';var price=(a.querySelector('.pbx-ptile-price')||{}).textContent||'';var imgCol=imgSrc?'<img src="'+imgSrc+'" style="width:100%;height:100%;object-fit:cover;display:block;" />':'<div style="width:100%;height:100%;background:#f3f4f6;"></div>';panel.innerHTML='<div style="display:grid;grid-template-columns:40% 60%;height:380px;position:relative;">'+  '<div style="overflow:hidden;">'+imgCol+'</div>'+  '<div style="padding:40px 48px;display:flex;flex-direction:column;justify-content:center;background:#fff;">'+    '<div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;">Featured Product</div>'+    '<div style="font-size:26px;font-weight:700;color:#111827;line-height:1.25;margin-bottom:12px;">'+name+'</div>'+    '<div style="font-size:22px;font-weight:600;color:#374151;margin-bottom:28px;">'+price+'</div>'+    '<div><a href="'+a.href+'" style="display:inline-block;padding:12px 28px;background:#111827;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:500;letter-spacing:.02em;">View Product →</a></div>'+  '</div>'+  '<button onclick="this.closest(\\'.pbx-pd\\').style.display=\\'none\\'" style="position:absolute;top:12px;right:16px;background:rgba(255,255,255,.9);border:1px solid #e5e7eb;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;color:#6b7280;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>'+  '</div>';panel.style.display='block';panel.scrollIntoView({behavior:'smooth',block:'nearest'});});})}function init(){var ts=document.querySelectorAll('.pbx-mega-item[data-mega-json]');if(!ts.length)return;var allIds=[];ts.forEach(function(t){try{JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"')).forEach(function(g){(g.ids||[]).forEach(function(id){if(allIds.indexOf(id)<0)allIds.push(id);});});}catch(e){}});ts.forEach(function(t){var sec=t.closest('section');if(sec)wireTiles(sec);});if(!allIds.length)return;fetch('/api/products?ids='+allIds.join(',')).then(function(r){return r.json();}).then(function(prods){var map={};prods.forEach(function(p){map[p.id]=p;});ts.forEach(function(t){var groups;try{groups=JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"'));}catch(e){return;}var drop=t.querySelector('.pbx-mega-drop');if(!drop)return;var html=groups.map(function(g){var items=(g.ids||[]).map(function(id){var p=map[id];if(!p)return'';var img=p.image?'<img src="data:image/png;base64,'+p.image+'" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;"/>':'<div style="width:44px;height:44px;background:#f3f4f6;border-radius:6px;flex-shrink:0;"></div>';var price=p.price!=null?'<span class="pbx-ptile-price" style="font-size:11px;color:#6b7280;">$'+Number(p.price).toFixed(2)+'</span>':'';return'<a href="/shop/'+p.id+'" class="pbx-ptile" style="display:flex;align-items:center;gap:10px;padding:7px 14px;text-decoration:none;cursor:pointer;" onmouseover="this.style.background=\\'#f9fafb\\'" onmouseout="this.style.background=\\'\\''">'+img+'<div style="min-width:0;"><div class="pbx-ptile-name" style="font-size:13px;font-weight:500;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">'+p.name+'</div>'+price+'</div></a>';}).join('');if(!items.trim())return'';return'<div><a href="'+(g.href||'#')+'" style="display:block;padding:8px 14px 4px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;">'+g.label+'</a>'+items+'</div>';}).filter(Boolean).join('<div style="height:1px;background:#f3f4f6;margin:4px 0;"></div>');drop.innerHTML=html;var sec=t.closest('section');if(sec)wireTiles(sec);});}).catch(function(){});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();<\/script>`
+    : ''
+
+  return `<section data-component-title="Mega-menu-Header">
+<style>
+.pbx-mega-item:hover .pbx-mega-drop{display:block !important;}
+.pbx-pd{display:none;width:100%;border-top:1px solid #e5e7eb;overflow:hidden;}
+</style>
 <nav style="${navStyle}">
   <div class="pbx-max-w-7xl pbx-mx-auto" style="display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
     ${zone(cols.left,   'flex-start')}
@@ -228,5 +273,6 @@ export function renderNavbar1(data: Navbar1Data): string {
     ${zone(cols.right,  'flex-end')}
   </div>
 </nav>
-</section>`
+${hasMegaMenu ? '<div class="pbx-pd"></div>' : ''}
+${megaScript}</section>`
 }

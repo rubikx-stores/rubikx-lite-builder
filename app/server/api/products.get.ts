@@ -1,5 +1,5 @@
-// GET /api/products
-// Fetches all products from Odoo GraphQL — keeps API key server-side.
+// GET /api/products?ids=1,2,3   (ids optional — omit to fetch all)
+// Fetches products from Odoo GraphQL — keeps API key server-side.
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
 
@@ -10,6 +10,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'ODOO_GRAPHQL_API_KEY is not configured' })
   }
 
+  const { ids: idsParam } = getQuery(event) as { ids?: string }
+  const idList = idsParam ? idsParam.split(',').map(Number).filter(Boolean) : []
+  const domain = idList.length ? [['id', 'in', idList]] : []
+
   const response = await fetch(`${config.odooBaseUrl}/graphql`, {
     method: 'POST',
     headers: {
@@ -17,8 +21,8 @@ export default defineEventHandler(async (event) => {
       'Authorization': `Bearer ${config.odooGraphqlApiKey}`,
     },
     body: JSON.stringify({
-      query: `query products($context: Any) { StoreProductTemplate(order: "sequence asc", context: $context) { id name price image attributeValues { id name htmlColor displayType } } }`,
-      variables: { context: { allowed_company_ids: [3] } },
+      query: `query products($domain: Any, $context: Any) { StoreProductTemplate(domain: $domain, order: "sequence asc", context: $context) { id name price image attributeValues { id name htmlColor displayType } } }`,
+      variables: { domain, context: { allowed_company_ids: [3] } },
     }),
   })
 

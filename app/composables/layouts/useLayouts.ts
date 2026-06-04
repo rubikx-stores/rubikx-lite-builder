@@ -23,7 +23,7 @@ export interface LayoutComponentItem {
 export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
   Headers: [
     {
-      title: 'Navbar-1',
+      title: 'Mega-menu-Header',
       category: 'Headers',
       cover_image: navbar1Svg,
       html_code: renderNavbar1(navbar1Defaults),
@@ -40,7 +40,7 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
 export function useLayouts() {
   const blockRegistry = useBlockRegistry()
 
-  blockRegistry.register('Navbar-1', {
+  blockRegistry.register('Mega-menu-Header', {
     defaults: navbar1Defaults,
     fields: navbar1Fields,
     render: renderNavbar1,
