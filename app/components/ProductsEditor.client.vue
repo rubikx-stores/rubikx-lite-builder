@@ -23,6 +23,8 @@ const btnEnabled = ref(true)
 const btnText = ref('Shop Now')
 const btnBg = ref('#000000')
 const btnColor = ref('#ffffff')
+const cardSubtitle = ref('')
+const cardSubtitleEnabled = ref(true)
 
 const bgColor = ref('#ffffff')
 const bgImageUrl = ref('')
@@ -66,6 +68,8 @@ watch(component, async (newComp) => {
     btnBg.value = '#000000'
     btnColor.value = '#ffffff'
     btnEnabled.value = true
+    cardSubtitle.value = ''
+    cardSubtitleEnabled.value = true
     bgColor.value = '#ffffff'
     bgImageUrl.value = ''
     cardBg.value = '#ffffff'
@@ -199,6 +203,17 @@ function doApply() {
       const ps = parentDiv.querySelectorAll('p')
       if (ps[0]) ps[0].textContent = product.name ?? ''
       if (ps[1]) ps[1].textContent = product.price != null ? String(product.price) : ''
+      if (ps[2]) {
+        if (cardSubtitleEnabled.value && cardSubtitle.value.trim()) {
+          ps[2].textContent = cardSubtitle.value.trim()
+          ps[2].style.display = ''
+        } else if (!cardSubtitleEnabled.value) {
+          ps[2].style.display = 'none'
+        } else {
+          ps[2].textContent = 'Start customizing by editing this default text directly in the editor.'
+          ps[2].style.display = ''
+        }
+      }
 
       // textContainer is the div that holds the <p> tags — button goes here too
       const textContainer = ps[0]?.parentElement ?? parentDiv
@@ -402,6 +417,9 @@ watch(cardLayout, () => {
 watch([cardFontSize, cardBorderRadius, cardMargin, cardPadding], debouncedCardNumbers)
 watch([btnEnabled, btnBg, btnColor], applyButtonLive)
 watch(btnText, debouncedButtonText)
+const debouncedSubtitle = debounce(doApply, 300)
+watch(cardSubtitle, debouncedSubtitle)
+watch(cardSubtitleEnabled, () => { if (selected.value.length > 0) doApply() })
 </script>
 
 <template>
@@ -710,6 +728,21 @@ watch(btnText, debouncedButtonText)
               type="text"
               class="w-full border border-gray-300 text-xs px-2 py-1.5 rounded outline-none focus:border-gray-500 bg-white"
             />
+          </div>
+
+          <!-- Card subtitle -->
+          <div class="mt-2">
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs text-gray-500">Card Subtitle</label>
+              <label class="flex items-center gap-1 cursor-pointer">
+                <input type="checkbox" v-model="cardSubtitleEnabled" class="cursor-pointer" />
+                <span class="text-xs text-gray-400">Show</span>
+              </label>
+            </div>
+            <input v-model="cardSubtitle" v-if="cardSubtitleEnabled" type="text" maxlength="50"
+              placeholder="e.g. Available in 3 colors"
+              class="w-full border border-gray-300 text-xs px-2 py-1.5 rounded outline-none focus:border-gray-500 bg-white" />
+            <p v-if="cardSubtitleEnabled" class="text-right text-xs text-gray-400 mt-0.5">{{ cardSubtitle.length }}/50</p>
           </div>
 
           <!-- Color pickers -->
