@@ -58,6 +58,7 @@ declare module '@myissue/vue-website-page-builder' {
 
   export interface PageBuilderService {
     startBuilder(config: PageBuilderConfig): Promise<StartBuilderResult>
+    addComponent(component: ComponentObject): Promise<void>
   }
 
   export const PageBuilder: Component
@@ -65,7 +66,10 @@ declare module '@myissue/vue-website-page-builder' {
 
   export function getPageBuilder(): PageBuilderService
   export function usePageBuilderStateStore(): unknown
-  export function usePageBuilderModal(): unknown
+  export function usePageBuilderModal(): {
+    closeAddComponentModal: () => void
+    closeMediaLibraryModal: () => void
+  }
   export function createPinia(): unknown
 
   export const pageBuilder: Plugin

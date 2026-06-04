@@ -1,3 +1,5 @@
+import { getCookie } from 'h3'
+
 // POST /api/proxy/odoo/cms
 // Proxies to Odoo CMS webhook — keeps API key and session server-side.
 //
@@ -49,10 +51,28 @@ export default defineEventHandler(async (event) => {
     headers['Cookie'] = `session_id=${config.odooSessionId}`
   }
 
+  const token = getCookie(event, 'rb_auth_token')
+  let updatedBy = 'editor'
+  if (token) {
+    try {
+      const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf-8'))
+      updatedBy = payload.name || payload.email || 'editor'
+    } catch { }
+  }
+
+  const now = new Date()
+  const updatedOn = now.toLocaleString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+
   const response = await fetch(url, {
     method: 'POST',
     headers,
-    body: JSON.stringify(body),
+    body: JSON.stringify({ ...body, updatedBy, updatedOn }),
   })
 
   const responseText = await response.text()

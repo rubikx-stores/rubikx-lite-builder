@@ -1,40 +1,99 @@
-export default defineEventHandler(async (event) => {
-  const { websiteId } = getQuery(event)
+const GRAPHQL_QUERY = `query MyQuery { RubikxCms { key version state updatedBy updatedOn value } }`
 
-  if (!websiteId) {
-    throw createError({ statusCode: 400, message: 'websiteId is required' })
+export default defineEventHandler(async (event) => {
+  const config = useRuntimeConfig(event)
+
+  if (!config.odooBaseUrl) {
+    throw createError({
+      statusCode: 500,
+      message: 'ODOO_BASE_URL is not configured',
+    })
+  }
+  if (!config.odooApiKey) {
+    throw createError({
+      statusCode: 500,
+      message: 'ODOO_API_KEY is not configured',
+    })
   }
 
-  // TODO: replace with real API call
-  // const config = useRuntimeConfig(event)
-  // return await $fetch(`${config.apiBaseUrl}/pages?websiteId=${websiteId}`, {
-  //   headers: { 'X-Api-Key': config.apiSecretKey },
-  // })
+  const url = 'https://rubikx-stores-rubikx-2-0-prod.odoo.com/graphql'
 
-  return [
-    {
-      id: 1,
-      name: 'Home',
-      slug: '/',
-      version: 3,
-      updatedAt: new Date('2026-05-22').toISOString(),
-      status: 'published',
-    },
-    {
-      id: 2,
-      name: 'About',
-      slug: '/about',
-      version: 1,
-      updatedAt: new Date('2026-05-20').toISOString(),
-      status: 'draft',
-    },
-    {
-      id: 3,
-      name: 'Contact',
-      slug: '/contact',
-      version: 2,
-      updatedAt: new Date('2026-05-18').toISOString(),
-      status: 'published',
-    },
-  ]
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    accept: 'application/json',
+    Authorization: `Bearer ec66a59946ecae022949f32f5c65cc67`,
+  }
+
+  if (config.odooAccessToken) {
+    headers['Cookie'] =
+      `access_token=${config.odooAccessToken}; frontend_lang=en_US`
+  }
+
+  const variables = { context: { allowed_company_ids: [3] } }
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ query: GRAPHQL_QUERY, variables }),
+  })
+  const responseText = await response.text()
+  console.log('Odoo status:', response.status, response.ok)
+  console.log('Odoo body:', responseText)
+
+  if (!response.ok) {
+    throw createError({
+      statusCode: response.status,
+      message: `Odoo error: ${response.statusText}`,
+      data: responseText,
+    })
+  }
+
+  const json = JSON.parse(responseText)
+  const items: Array<{
+    key: string
+    version: number
+    state: string
+    updatedBy: string
+    updatedOn: string
+    value: string
+  }> = json?.data?.MyQuery?.RubikxCms ?? []
+
+  if (items.length === 0) {
+    return [
+      {
+        id: 'home',
+        name: 'home',
+        slug: '/home',
+        status: 'draft',
+        updatedAt: new Date().toISOString(),
+        versions: [{ version: 1, updatedAt: new Date().toISOString(), status: 'draft', value: '' }],
+      },
+    ]
+  }
+
+  const grouped = new Map<string, typeof items>()
+  for (const item of items) {
+    if (!grouped.has(item.key)) grouped.set(item.key, [])
+    grouped.get(item.key)!.push(item)
+  }
+
+  return Array.from(grouped.entries()).map(([key, versions]) => {
+    versions.sort((a, b) => b.version - a.version)
+    const latest = versions[0]
+    return {
+      id: key,
+      name: key,
+      slug: `/${key}`,
+      status: latest.state,
+      updatedAt: latest.updatedOn,
+      updatedBy: latest.updatedBy ?? '',
+      versions: versions.map((v) => ({
+        version: v.version,
+        updatedAt: v.updatedOn,
+        updatedBy: v.updatedBy ?? '',
+        status: v.state,
+        value: v.value,
+      })),
+    }
+  })
 })
