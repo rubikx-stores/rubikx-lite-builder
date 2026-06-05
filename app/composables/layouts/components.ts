@@ -276,3 +276,130 @@ export function renderNavbar1(data: Navbar1Data): string {
 ${hasMegaMenu ? '<div class="pbx-pd"></div>' : ''}
 ${megaScript}</section>`
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Ru1-Form  (Contact category)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const ru1FormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 120">
+  <rect fill="#f3f4f6" x="0" y="0" width="138" height="120"/>
+  <rect fill="#1f2937" x="10" y="14" width="72" height="7" rx="2"/>
+  <rect fill="#d1d5db" x="10" y="27" width="110" height="3" rx="1"/>
+  <rect fill="#d1d5db" x="10" y="33" width="95" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="10" y="50" width="5" height="5" rx="1"/>
+  <rect fill="#6b7280" x="20" y="51" width="88" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="10" y="63" width="5" height="5" rx="1"/>
+  <rect fill="#6b7280" x="20" y="64" width="68" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="10" y="76" width="5" height="5" rx="1"/>
+  <rect fill="#6b7280" x="20" y="77" width="80" height="3" rx="1"/>
+  <rect fill="#ffffff" x="139" y="0" width="138.5" height="120"/>
+  <rect fill="#f9fafb" x="148" y="12" width="54" height="12" rx="2" stroke="#e5e7eb" stroke-width="0.5"/>
+  <rect fill="#f9fafb" x="207" y="12" width="54" height="12" rx="2" stroke="#e5e7eb" stroke-width="0.5"/>
+  <rect fill="#f9fafb" x="148" y="29" width="113" height="12" rx="2" stroke="#e5e7eb" stroke-width="0.5"/>
+  <rect fill="#f9fafb" x="148" y="46" width="113" height="12" rx="2" stroke="#e5e7eb" stroke-width="0.5"/>
+  <rect fill="#f9fafb" x="148" y="63" width="113" height="28" rx="2" stroke="#e5e7eb" stroke-width="0.5"/>
+  <rect fill="#4f46e5" x="191" y="100" width="70" height="12" rx="3"/>
+  <rect fill="#ffffff" x="200" y="104" width="52" height="4" rx="1" opacity="0.8"/>
+</svg>`
+
+export interface Ru1FormData {
+  title: string
+  description: string
+  addressLine1: string
+  addressLine2: string
+  phone: string
+  email: string
+  submitLabel: string
+  submitBgColor: string
+}
+
+export const ru1FormDefaults: Ru1FormData = {
+  title: 'Get in touch',
+  description: 'Proin volutpat consequat porttitor cras nullam gravida at. Orci molestie a eu arcu. Sed ut tincidunt integer elementum id sem. Arcu sed malesuada et magna.',
+  addressLine1: '545 Mavis Island',
+  addressLine2: 'Chicago, IL 99191',
+  phone: '+1 (555) 234-5678',
+  email: 'hello@example.com',
+  submitLabel: 'Send message',
+  submitBgColor: '#4f46e5',
+}
+
+export const ru1FormFields: FieldConfig[] = [
+  { key: 'title',        label: 'Section Title',    type: 'text',  placeholder: 'Get in touch'            },
+  { key: 'description',  label: 'Description',      type: 'text',  placeholder: 'Short intro paragraph…' },
+  { key: 'addressLine1', label: 'Address Line 1',   type: 'text',  placeholder: '545 Mavis Island'        },
+  { key: 'addressLine2', label: 'Address Line 2',   type: 'text',  placeholder: 'Chicago, IL 99191'       },
+  { key: 'phone',        label: 'Phone Number',     type: 'text',  placeholder: '+1 (555) 234-5678'       },
+  { key: 'email',        label: 'Email Address',    type: 'text',  placeholder: 'hello@example.com'       },
+  { key: 'submitLabel',  label: 'Submit Button Text', type: 'text', placeholder: 'Send message'           },
+  { key: 'submitBgColor', label: 'Submit Button Colour', type: 'color'                                    },
+]
+
+const iconBuilding = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="height:28px;width:24px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"/></svg>`
+const iconPhone   = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="height:28px;width:24px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 6.75Z"/></svg>`
+const iconEnvelope = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="height:28px;width:24px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>`
+
+const inputStyle = 'display:block;width:100%;box-sizing:border-box;border-radius:6px;background:#fff;padding:0.5rem 0.875rem;font-size:1rem;color:#111827;outline:1px solid #d1d5db;outline-offset:-1px;'
+
+export function renderRu1Form(data: Ru1FormData): string {
+  const phoneHref = `tel:${data.phone.replace(/\s/g, '')}`
+  const emailHref = `mailto:${data.email}`
+  const btnStyle  = `display:inline-block;border-radius:6px;padding:0.625rem 0.875rem;font-size:0.875rem;font-weight:600;color:#fff;background:${data.submitBgColor};border:none;cursor:pointer;`
+
+  return `<section data-component-title="Ru1-Form" style="position:relative;background:#fff;">
+  <div style="margin:0 auto;max-width:80rem;display:grid;grid-template-columns:1fr 1fr;">
+
+    <!-- Left: info panel -->
+    <div style="position:relative;padding:6rem 2rem 5rem;overflow:hidden;background:#f3f4f6;">
+      <h2 style="font-size:2.25rem;font-weight:600;color:#111827;margin:0 0 1.5rem;">${data.title}</h2>
+      <p style="font-size:1.125rem;line-height:2;color:#4b5563;margin:0 0 2.5rem;">${data.description}</p>
+      <dl style="display:flex;flex-direction:column;gap:1rem;font-size:1rem;line-height:1.75;color:#4b5563;">
+        <div style="display:flex;gap:1rem;align-items:flex-start;">
+          <dt style="flex:none;">${iconBuilding}</dt>
+          <dd style="margin:0;">${data.addressLine1}<br/>${data.addressLine2}</dd>
+        </div>
+        <div style="display:flex;gap:1rem;align-items:flex-start;">
+          <dt style="flex:none;">${iconPhone}</dt>
+          <dd style="margin:0;"><a href="${phoneHref}" style="color:inherit;text-decoration:none;">${data.phone}</a></dd>
+        </div>
+        <div style="display:flex;gap:1rem;align-items:flex-start;">
+          <dt style="flex:none;">${iconEnvelope}</dt>
+          <dd style="margin:0;"><a href="${emailHref}" style="color:inherit;text-decoration:none;">${data.email}</a></dd>
+        </div>
+      </dl>
+    </div>
+
+    <!-- Right: form -->
+    <div style="padding:5rem 2rem 6rem;">
+      <div style="max-width:28rem;margin-left:auto;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem 2rem;">
+          <div>
+            <label for="ru1-first-name" style="display:block;font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:0.625rem;">First name</label>
+            <input type="text" id="ru1-first-name" name="first-name" autocomplete="given-name" style="${inputStyle}" />
+          </div>
+          <div>
+            <label for="ru1-last-name" style="display:block;font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:0.625rem;">Last name</label>
+            <input type="text" id="ru1-last-name" name="last-name" autocomplete="family-name" style="${inputStyle}" />
+          </div>
+          <div style="grid-column:1/-1;">
+            <label for="ru1-email" style="display:block;font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:0.625rem;">Email</label>
+            <input type="email" id="ru1-email" name="email" autocomplete="email" style="${inputStyle}" />
+          </div>
+          <div style="grid-column:1/-1;">
+            <label for="ru1-phone" style="display:block;font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:0.625rem;">Phone number</label>
+            <input type="tel" id="ru1-phone" name="phone-number" autocomplete="tel" style="${inputStyle}" />
+          </div>
+          <div style="grid-column:1/-1;">
+            <label for="ru1-message" style="display:block;font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:0.625rem;">Message</label>
+            <textarea id="ru1-message" name="message" rows="4" style="${inputStyle}resize:vertical;"></textarea>
+          </div>
+        </div>
+        <div style="margin-top:2rem;display:flex;justify-content:flex-end;">
+          <button type="submit" style="${btnStyle}">${data.submitLabel}</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>`
+}

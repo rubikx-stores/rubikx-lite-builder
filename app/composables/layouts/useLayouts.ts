@@ -6,6 +6,10 @@ import {
   navbar1Fields,
   navbar1Svg,
   renderNavbar1,
+  ru1FormDefaults,
+  ru1FormFields,
+  ru1FormSvg,
+  renderRu1Form,
 } from './components'
 
 // ─── Layout component descriptor ─────────────────────────────────────────────
@@ -29,9 +33,14 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       html_code: renderNavbar1(navbar1Defaults),
     },
   ],
-  // Future categories:
-  // Footer: [ ... ],
-  // Hero: [ ... ],
+  Contact: [
+    {
+      title: 'Ru1-Form',
+      category: 'Contact',
+      cover_image: ru1FormSvg,
+      html_code: renderRu1Form(ru1FormDefaults),
+    },
+  ],
 }
 
 // ─── Composable ───────────────────────────────────────────────────────────────
@@ -44,6 +53,12 @@ export function useLayouts() {
     defaults: navbar1Defaults,
     fields: navbar1Fields,
     render: renderNavbar1,
+  })
+
+  blockRegistry.register('Ru1-Form', {
+    defaults: ru1FormDefaults,
+    fields: ru1FormFields,
+    render: renderRu1Form,
   })
 
   return { layoutComponentRegistry }
