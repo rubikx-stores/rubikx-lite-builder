@@ -159,13 +159,18 @@ function onUploadSubImage(listKey: string, idx: number, subKey: string, file: Fi
 }
 
 function updateColumnOrder(fieldKey: string, index: number, newVal: string) {
-  const currentOrder = [...((blockData.value[fieldKey] as string[]) ?? ['links', 'about', 'contact'])]
+  const currentOrder = [...((blockData.value[fieldKey] as string[]) ?? [])]
   const swapIdx = currentOrder.indexOf(newVal)
   if (swapIdx !== -1 && swapIdx !== index) {
     currentOrder[swapIdx] = currentOrder[index]
   }
   currentOrder[index] = newVal
   updateBlockField(fieldKey, currentOrder)
+}
+
+const colOrderLabelMap: Record<string, string> = {
+  links: 'Links', about: 'About', contact: 'Contact',
+  info: 'Info Panel', form: 'Form',
 }
 
 // ── Category picker for navLinks ──────────────────────────────────────────────
@@ -537,15 +542,21 @@ onUnmounted(() => {
             <div v-else-if="field.type === 'column-order'" class="mb-2.5">
               <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
               <div class="flex gap-1.5">
-                <div v-for="(pos, i) in ['Left', 'Center', 'Right']" :key="pos" class="flex-1">
+                <div
+                  v-for="(pos, i) in ((blockData[field.key] as string[] ?? []).length === 2 ? ['Left', 'Right'] : ['Left', 'Center', 'Right'])"
+                  :key="pos"
+                  class="flex-1">
                   <label class="block text-xs text-gray-400 mb-0.5">{{ pos }}</label>
                   <select
                     class="w-full border border-gray-200 rounded px-1.5 py-1 text-xs bg-white focus:outline-none"
-                    :value="(blockData[field.key] as string[])?.[i] ?? ['links','about','contact'][i]"
+                    :value="(blockData[field.key] as string[])?.[i]"
                     @change="updateColumnOrder(field.key, i, ($event.target as HTMLSelectElement).value)">
-                    <option value="links">Links</option>
-                    <option value="about">About</option>
-                    <option value="contact">Contact</option>
+                    <option
+                      v-for="opt in (blockData[field.key] as string[] ?? [])"
+                      :key="opt"
+                      :value="opt">
+                      {{ colOrderLabelMap[opt] ?? opt }}
+                    </option>
                   </select>
                 </div>
               </div>

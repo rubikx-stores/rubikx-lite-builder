@@ -281,25 +281,24 @@ ${megaScript}</section>`
 // Ru1-Form  (Contact category)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export const ru1FormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 120">
-  <rect fill="#f3f4f6" x="0" y="0" width="138" height="120"/>
-  <rect fill="#1f2937" x="10" y="14" width="72" height="7" rx="2"/>
-  <rect fill="#d1d5db" x="10" y="27" width="110" height="3" rx="1"/>
-  <rect fill="#d1d5db" x="10" y="33" width="95" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="10" y="50" width="5" height="5" rx="1"/>
-  <rect fill="#6b7280" x="20" y="51" width="88" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="10" y="63" width="5" height="5" rx="1"/>
-  <rect fill="#6b7280" x="20" y="64" width="68" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="10" y="76" width="5" height="5" rx="1"/>
-  <rect fill="#6b7280" x="20" y="77" width="80" height="3" rx="1"/>
-  <rect fill="#ffffff" x="139" y="0" width="138.5" height="120"/>
-  <rect fill="#f9fafb" x="148" y="12" width="54" height="12" rx="2" stroke="#e5e7eb" stroke-width="0.5"/>
-  <rect fill="#f9fafb" x="207" y="12" width="54" height="12" rx="2" stroke="#e5e7eb" stroke-width="0.5"/>
-  <rect fill="#f9fafb" x="148" y="29" width="113" height="12" rx="2" stroke="#e5e7eb" stroke-width="0.5"/>
-  <rect fill="#f9fafb" x="148" y="46" width="113" height="12" rx="2" stroke="#e5e7eb" stroke-width="0.5"/>
-  <rect fill="#f9fafb" x="148" y="63" width="113" height="28" rx="2" stroke="#e5e7eb" stroke-width="0.5"/>
-  <rect fill="#4f46e5" x="191" y="100" width="70" height="12" rx="3"/>
-  <rect fill="#ffffff" x="200" y="104" width="52" height="4" rx="1" opacity="0.8"/>
+export const ru1FormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
+  <rect fill="#394152" x="0" y="10" width="88" height="7"/>
+  <rect fill="#394152" x="0" y="24" width="118" height="3"/>
+  <rect fill="#394152" x="0" y="30" width="112" height="3"/>
+  <rect fill="#394152" x="0" y="36" width="105" height="3"/>
+  <rect fill="#394152" x="0" y="42" width="88" height="3"/>
+  <rect fill="#394152" x="0" y="55" width="5" height="5"/>
+  <rect fill="#394152" x="9" y="56" width="82" height="3"/>
+  <rect fill="#394152" x="0" y="66" width="5" height="5"/>
+  <rect fill="#394152" x="9" y="67" width="62" height="3"/>
+  <rect fill="#394152" x="0" y="77" width="5" height="5"/>
+  <rect fill="#394152" x="9" y="78" width="74" height="3"/>
+  <rect fill="#394152" x="148" y="10" width="55" height="11"/>
+  <rect fill="#394152" x="209" y="10" width="55" height="11"/>
+  <rect fill="#394152" x="148" y="27" width="116" height="10"/>
+  <rect fill="#394152" x="148" y="43" width="116" height="10"/>
+  <rect fill="#394152" x="148" y="59" width="116" height="22"/>
+  <rect fill="#394152" x="204" y="88" width="60" height="10"/>
 </svg>`
 
 export interface Ru1FormData {
@@ -311,6 +310,7 @@ export interface Ru1FormData {
   email: string
   submitLabel: string
   submitBgColor: string
+  columnOrder: string[]
 }
 
 export const ru1FormDefaults: Ru1FormData = {
@@ -322,6 +322,7 @@ export const ru1FormDefaults: Ru1FormData = {
   email: 'hello@example.com',
   submitLabel: 'Send message',
   submitBgColor: '#4f46e5',
+  columnOrder: ['info', 'form'],
 }
 
 export const ru1FormFields: FieldConfig[] = [
@@ -333,6 +334,7 @@ export const ru1FormFields: FieldConfig[] = [
   { key: 'email',        label: 'Email Address',    type: 'text',  placeholder: 'hello@example.com'       },
   { key: 'submitLabel',  label: 'Submit Button Text', type: 'text', placeholder: 'Send message'           },
   { key: 'submitBgColor', label: 'Submit Button Colour', type: 'color'                                    },
+  { key: 'columnOrder',  label: 'Column Order',         type: 'column-order'                              },
 ]
 
 const iconBuilding = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="height:28px;width:24px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"/></svg>`
@@ -346,11 +348,7 @@ export function renderRu1Form(data: Ru1FormData): string {
   const emailHref = `mailto:${data.email}`
   const btnStyle  = `display:inline-block;border-radius:6px;padding:0.625rem 0.875rem;font-size:0.875rem;font-weight:600;color:#fff;background:${data.submitBgColor};border:none;cursor:pointer;`
 
-  return `<section data-component-title="Ru1-Form" style="position:relative;background:#fff;">
-  <div style="margin:0 auto;max-width:80rem;display:grid;grid-template-columns:1fr 1fr;">
-
-    <!-- Left: info panel -->
-    <div style="position:relative;padding:6rem 2rem 5rem;overflow:hidden;background:#f3f4f6;">
+  const infoCol = `<div style="position:relative;padding:6rem 2rem 5rem;overflow:hidden;background:#f3f4f6;">
       <h2 style="font-size:2.25rem;font-weight:600;color:#111827;margin:0 0 1.5rem;">${data.title}</h2>
       <p style="font-size:1.125rem;line-height:2;color:#4b5563;margin:0 0 2.5rem;">${data.description}</p>
       <dl style="display:flex;flex-direction:column;gap:1rem;font-size:1rem;line-height:1.75;color:#4b5563;">
@@ -367,10 +365,9 @@ export function renderRu1Form(data: Ru1FormData): string {
           <dd style="margin:0;"><a href="${emailHref}" style="color:inherit;text-decoration:none;">${data.email}</a></dd>
         </div>
       </dl>
-    </div>
+    </div>`
 
-    <!-- Right: form -->
-    <div style="padding:5rem 2rem 6rem;">
+  const formCol = `<div style="padding:5rem 2rem 6rem;">
       <div style="max-width:28rem;margin-left:auto;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem 2rem;">
           <div>
@@ -398,8 +395,15 @@ export function renderRu1Form(data: Ru1FormData): string {
           <button type="submit" style="${btnStyle}">${data.submitLabel}</button>
         </div>
       </div>
-    </div>
+    </div>`
 
+  const colMap: Record<string, string> = { info: infoCol, form: formCol }
+  const order = data.columnOrder ?? ['info', 'form']
+  const orderedCols = order.map(k => colMap[k] ?? '').join('\n    ')
+
+  return `<section data-component-title="Ru1-Form" style="position:relative;background:#fff;">
+  <div style="margin:0 auto;max-width:80rem;display:grid;grid-template-columns:1fr 1fr;">
+    ${orderedCols}
   </div>
 </section>`
 }
