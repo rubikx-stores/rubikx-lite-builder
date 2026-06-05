@@ -5,6 +5,7 @@ import ProductsEditor from '../ProductsEditor.client.vue'
 import { buildCategoryTree } from '~/composables/categories/buildCategoryTree'
 import type { FlatCategory, CategoryNode } from '~/composables/categories/buildCategoryTree'
 import { productImageSrc } from '~/composables/useProductImageSrc'
+import { detectSocial } from '~/composables/useSocialIcons'
 
 const store = usePageBuilderStateStore() as any
 const {
@@ -607,7 +608,20 @@ onUnmounted(() => {
               <div v-for="(item, idx) in (blockData[field.key] as Record<string,any>[])" :key="idx"
                 class="mb-1.5 border border-gray-200 rounded-md overflow-hidden">
                 <div class="flex justify-between items-center px-2 py-1 bg-gray-50 border-b border-gray-100">
-                  <span class="text-xs text-gray-400 font-medium">{{ idx + 1 }}</span>
+                  <!-- Social link: show live brand icon + platform name -->
+                  <template v-if="field.key === 'socials' && selectedBlockTitle === 'Ru1-Form'">
+                    <div class="flex items-center gap-1.5">
+                      <span v-if="item.href"
+                        class="flex items-center justify-center w-6 h-6 rounded-full shrink-0"
+                        :style="`border:1.5px solid ${detectSocial(item.href).color};color:${detectSocial(item.href).color};`"
+                        v-html="detectSocial(item.href).icon.replace('<svg ', '<svg width=\'14\' height=\'14\' ')" />
+                      <span v-else class="flex items-center justify-center w-6 h-6 rounded-full border border-dashed border-gray-300 text-gray-300 text-xs">+</span>
+                      <span class="text-xs" :style="item.href ? `color:${detectSocial(item.href).color};font-weight:500;` : 'color:#9ca3af;'">
+                        {{ item.href ? detectSocial(item.href).label : 'Paste URL below' }}
+                      </span>
+                    </div>
+                  </template>
+                  <span v-else class="text-xs text-gray-400 font-medium">{{ idx + 1 }}</span>
                   <div class="flex gap-1">
                     <button v-if="idx > 0" type="button" class="text-xs text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="moveListItemUp(field.key, idx)">↑</button>
                     <button v-if="idx < (blockData[field.key] as any[]).length - 1" type="button" class="text-xs text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="moveListItemDown(field.key, idx)">↓</button>
