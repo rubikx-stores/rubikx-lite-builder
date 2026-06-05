@@ -5,7 +5,7 @@ import ProductsEditor from '../ProductsEditor.client.vue'
 import { buildCategoryTree } from '~/composables/categories/buildCategoryTree'
 import type { FlatCategory, CategoryNode } from '~/composables/categories/buildCategoryTree'
 import { productImageSrc } from '~/composables/useProductImageSrc'
-import { detectSocial } from '~/composables/useSocialIcons'
+import { getDomain, faviconUrl } from '~/composables/useSocialIcons'
 
 const store = usePageBuilderStateStore() as any
 const {
@@ -160,7 +160,7 @@ function onUploadSubImage(listKey: string, idx: number, subKey: string, file: Fi
 }
 
 function updateColumnOrder(fieldKey: string, index: number, newVal: string) {
-  const currentOrder = [...((blockData.value[fieldKey] as string[]) ?? [])]
+  const currentOrder = [...((blockData.value?.[fieldKey] as string[]) ?? [])]
   const swapIdx = currentOrder.indexOf(newVal)
   if (swapIdx !== -1 && swapIdx !== index) {
     currentOrder[swapIdx] = currentOrder[index]
@@ -534,8 +534,9 @@ onUnmounted(() => {
             <div v-else-if="field.type === 'select'" class="mb-2.5">
               <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
               <select class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 bg-white"
+                :value="String(blockData[field.key])"
                 @change="updateBlockField(field.key, Number(($event.target as HTMLSelectElement).value) || ($event.target as HTMLSelectElement).value)">
-                <option v-for="opt in field.options" :key="opt" :value="opt" :selected="String(blockData[field.key]) === opt">{{ opt }}</option>
+                <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
               </select>
             </div>
 
@@ -611,13 +612,16 @@ onUnmounted(() => {
                   <!-- Social link: show live brand icon + platform name -->
                   <template v-if="field.key === 'socials' && selectedBlockTitle === 'Ru1-Form'">
                     <div class="flex items-center gap-1.5">
-                      <span v-if="item.href"
-                        class="flex items-center justify-center w-6 h-6 rounded-full shrink-0"
-                        :style="`border:1.5px solid ${detectSocial(item.href).color};color:${detectSocial(item.href).color};`"
-                        v-html="detectSocial(item.href).icon.replace('<svg ', '<svg width=\'14\' height=\'14\' ')" />
+                      <template v-if="item.href">
+                        <span
+                          class="flex items-center justify-center w-6 h-6 rounded-full shrink-0 overflow-hidden"
+                          style="background:#fff;border:1.5px solid #e5e7eb;">
+                          <img :src="faviconUrl(item.href)" width="16" height="16" style="object-fit:contain;" :alt="getDomain(item.href)" />
+                        </span>
+                      </template>
                       <span v-else class="flex items-center justify-center w-6 h-6 rounded-full border border-dashed border-gray-300 text-gray-300 text-xs">+</span>
-                      <span class="text-xs" :style="item.href ? `color:${detectSocial(item.href).color};font-weight:500;` : 'color:#9ca3af;'">
-                        {{ item.href ? detectSocial(item.href).label : 'Paste URL below' }}
+                      <span class="text-xs font-medium" :style="item.href ? 'color:#374151;' : 'color:#9ca3af;'">
+                        {{ item.href ? (getDomain(item.href) || 'Link') : 'Paste URL below' }}
                       </span>
                     </div>
                   </template>
@@ -670,9 +674,9 @@ onUnmounted(() => {
                       <!-- select sub-field: dropdown, instant on selection -->
                       <template v-else-if="subField.type === 'select'">
                         <select class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs bg-white focus:outline-none focus:border-blue-400"
+                          :value="item[subField.key]"
                           @change="updateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLSelectElement).value)">
-                          <option v-for="opt in subField.options" :key="opt" :value="opt"
-                            :selected="item[subField.key] === opt">{{ opt }}</option>
+                          <option v-for="opt in subField.options" :key="opt" :value="opt">{{ opt }}</option>
                         </select>
                       </template>
 

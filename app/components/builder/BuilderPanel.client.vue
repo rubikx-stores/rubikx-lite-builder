@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { nextTick, ref, computed } from 'vue'
 import componentHelpers from '#lib/componentHelpers'
 import componentData from '#lib/component'
 import themesData from '#lib/themes'
@@ -7,6 +8,8 @@ import { getPageBuilder, usePageBuilderModal } from '@myissue/vue-website-page-b
 const { themeRegistry, applyTheme } = useThemes()
 const { layoutComponentRegistry } = useLayouts()
 const { closeAddComponentModal } = usePageBuilderModal()
+const { applyBlockRender } = useEditorSidebar()
+const blockRegistry = useBlockRegistry()
 
 const isLoading = ref(false)
 const selectedTab = ref<'Components' | 'Themes'>('Components')
@@ -44,6 +47,11 @@ const filteredLibThemes = computed(() => {
 async function handleDropComponent(comp: { id: string | number | null; html_code: string; title: string }) {
   isLoading.value = true
   await getPageBuilder().addComponent(comp)
+  if (comp.title && blockRegistry.hasConfig(comp.title)) {
+    blockRegistry.resetToDefaults(comp.title)
+    await nextTick()
+    await applyBlockRender(comp.title)
+  }
   closeAddComponentModal()
   isLoading.value = false
 }
@@ -59,6 +67,16 @@ async function handleDropLibTheme(html_code: string) {
 async function handleApplyTheme(themeId: string) {
   isLoading.value = true
   await applyTheme(themeId)
+  const theme = themeRegistry[themeId]
+  if (theme) {
+    await nextTick()
+    for (const section of theme.sections) {
+      if (blockRegistry.hasConfig(section.title)) {
+        blockRegistry.resetToDefaults(section.title)
+        await applyBlockRender(section.title)
+      }
+    }
+  }
   closeAddComponentModal()
   isLoading.value = false
 }

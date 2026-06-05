@@ -12,6 +12,7 @@ interface PageVersion {
   updatedAt: string
   status: string
   value: string
+  updatedBy?: string
 }
 
 interface Page {

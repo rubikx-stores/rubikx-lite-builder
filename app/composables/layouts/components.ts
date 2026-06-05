@@ -1,11 +1,8 @@
 import type { FieldConfig } from '../editor/useBlockRegistry'
 import { productImageSrc } from '../useProductImageSrc'
-import { detectSocial, socialIconHtml } from '../useSocialIcons'
+import { socialIconHtml } from '../useSocialIcons'
 
 
-// ─── Navbar-1 SVG cover ───────────────────────────────────────────────────────
-// Matches the library component card style exactly:
-//   transparent bg, #394152 for the navbar bar, #718096 for inner elements
 export const navbar1Svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 32">
   <rect fill="#394152" x="0" y="0" width="277.5" height="32"/>
   <rect fill="#718096" x="8"   y="12" width="36" height="8"/>
@@ -16,7 +13,6 @@ export const navbar1Svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 
   <rect fill="#718096" x="240" y="12" width="26" height="8"/>
 </svg>`
 
-// ─── Interface ────────────────────────────────────────────────────────────────
 export interface MegaMenuProduct { id: number; label: string; href: string; image?: string; price?: number }
 export interface MegaMenuGroup   { label: string; href: string; products: MegaMenuProduct[] }
 export interface NavLink         { label: string; href: string; megaMenu?: MegaMenuGroup[] }
@@ -30,28 +26,23 @@ export interface CtaButton {
 }
 
 export interface Navbar1Data {
-  // Logo
   logoUrl: string
   logoText: string
   logoWidth: number
   logoAlign: string
   brandFontSize: number
   brandFontWeight: string
-  // Nav links
   navLinks: NavLink[]
   navLinksAlign: string
   linkFontSize: number
   linkFontWeight: string
   linkColor: string
-  // Search
   showSearch: boolean
   searchPlaceholder: string
   searchAlign: string
-  // CTA buttons — fully dynamic list (add/remove/reorder)
   ctaButtons: CtaButton[]
   buttonsAlign: string
   buttonBorderRadius: number
-  // Appearance
   bgColor: string
   textColor: string
   paddingY: number
@@ -61,7 +52,6 @@ export interface Navbar1Data {
   bottomBorderColor: string
 }
 
-// ─── Defaults ─────────────────────────────────────────────────────────────────
 export const navbar1Defaults: Navbar1Data = {
   logoUrl: '',
   logoText: 'Brand',
@@ -102,9 +92,7 @@ export const navbar1Defaults: Navbar1Data = {
   bottomBorderColor: '#e5e7eb',
 }
 
-// ─── Fields ───────────────────────────────────────────────────────────────────
 export const navbar1Fields: FieldConfig[] = [
-  // ── Logo ───────────────────────────────────────────────────────────────────
   { key: 'logoUrl',         label: 'Logo Image',           type: 'image',
     placeholder: 'https://example.com/logo.png'                             },
   { key: 'logoText',        label: 'Brand Name',           type: 'text',
@@ -118,7 +106,6 @@ export const navbar1Fields: FieldConfig[] = [
   { key: 'brandFontWeight', label: 'Brand Font Weight',    type: 'select',
     options: ['400', '500', '600', '700', '800']                            },
 
-  // ── Nav Links ──────────────────────────────────────────────────────────────
   {
     key: 'navLinks', label: 'Nav Links', type: 'list',
     listFields: [
@@ -134,16 +121,12 @@ export const navbar1Fields: FieldConfig[] = [
   { key: 'linkFontWeight',  label: 'Link Font Weight',      type: 'select',
     options: ['400', '500', '600', '700']                                   },
 
-  // ── Search ─────────────────────────────────────────────────────────────────
   { key: 'showSearch',      label: 'Show Search Bar',       type: 'toggle'  },
   { key: 'searchPlaceholder', label: 'Search Placeholder',  type: 'text',
     placeholder: 'e.g. Search products…'                                    },
   { key: 'searchAlign',     label: 'Search Position',       type: 'select',
     options: ['left', 'center', 'right']                                    },
 
-  // ── CTA Buttons — fully dynamic ────────────────────────────────────────────
-  // Each button has its own label, URL, style (outline / filled), and colours.
-  // Use + Add to add more buttons (e.g. Sign Up, Get Started, Dashboard…).
   {
     key: 'ctaButtons', label: 'CTA Buttons', type: 'list',
     listFields: [
@@ -160,7 +143,6 @@ export const navbar1Fields: FieldConfig[] = [
   { key: 'buttonBorderRadius', label: 'Button Radius (px)', type: 'number',
     placeholder: '6 — corner roundness for all CTA buttons'                },
 
-  // ── Appearance ─────────────────────────────────────────────────────────────
   { key: 'bgColor',         label: 'Background Colour',     type: 'color'   },
   { key: 'textColor',       label: 'Global Text Colour',    type: 'color'   },
   { key: 'paddingY',        label: 'Vertical Padding (px)', type: 'number',
@@ -172,7 +154,6 @@ export const navbar1Fields: FieldConfig[] = [
   { key: 'bottomBorderColor', label: 'Bottom Border Colour', type: 'color'  },
 ]
 
-// ─── Render ───────────────────────────────────────────────────────────────────
 export function renderNavbar1(data: Navbar1Data): string {
   const navStyle = [
     `background:${data.bgColor}`,
@@ -182,13 +163,11 @@ export function renderNavbar1(data: Navbar1Data): string {
     data.showBottomBorder ? `border-bottom:1px solid ${data.bottomBorderColor}` : '',
   ].filter(Boolean).join(';')
 
-  // ── Logo ──────────────────────────────────────────────────────────────────
   const logoInner = data.logoUrl
     ? `<img src="${data.logoUrl}" alt="${data.logoText}" style="width:${data.logoWidth}px;height:auto;display:block;" />`
     : `<span data-field-key="logoText" style="font-size:${data.brandFontSize}px;font-weight:${data.brandFontWeight};color:inherit;">${data.logoText}</span>`
   const logoEl = `<a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;">${logoInner}</a>`
 
-  // ── Search ────────────────────────────────────────────────────────────────
   const searchEl = data.showSearch
     ? `<div style="display:flex;align-items:center;border:1px solid #d1d5db;border-radius:9999px;padding:0.375rem 0.75rem;gap:0.5rem;min-width:160px;max-width:220px;">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
@@ -196,7 +175,6 @@ export function renderNavbar1(data: Navbar1Data): string {
       </div>`
     : ''
 
-  // ── Nav links ─────────────────────────────────────────────────────────────
   const linkStyle = `color:${data.linkColor};text-decoration:none;font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};white-space:nowrap;`
 
   const renderStaticDrop = (megaMenu: typeof data.navLinks[0]['megaMenu']) => {
@@ -232,7 +210,6 @@ export function renderNavbar1(data: Navbar1Data): string {
       }</nav>`
     : ''
 
-  // ── CTA buttons (fully dynamic list) ─────────────────────────────────────
   const buttonsEl = data.ctaButtons.length
     ? `<div style="display:flex;align-items:center;gap:0.5rem;">${
         data.ctaButtons.map(btn => {
@@ -244,7 +221,6 @@ export function renderNavbar1(data: Navbar1Data): string {
       }</div>`
     : ''
 
-  // ── Column assignment ─────────────────────────────────────────────────────
   const cols: Record<string, string[]> = { left: [], center: [], right: [] }
   const put = (zone: string, el: string) => { if (el && zone in cols) cols[zone].push(el) }
   put(data.logoAlign,     logoEl)
@@ -277,10 +253,6 @@ export function renderNavbar1(data: Navbar1Data): string {
 ${hasMegaMenu ? '<div class="pbx-pd"></div>' : ''}
 ${megaScript}</section>`
 }
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Ru1-Form  (Contact category)
-// ═══════════════════════════════════════════════════════════════════════════════
 
 export const ru1FormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
   <rect fill="#394152" x="0" y="10" width="88" height="7"/>
@@ -319,10 +291,10 @@ export interface Ru1FormData {
 export const ru1FormDefaults: Ru1FormData = {
   title: 'Get in touch',
   description: "We'd love to hear from you. Whether you have questions about our services, need expert guidance, or want to discuss a new project, our team is here to help. Fill out the form, and we'll get back to you as soon as possible.",
-  addressLine1: '',
-  addressLine2: '',
-  phone: '',
-  email: '',
+  addressLine1: '123 Main Street, Suite 100',
+  addressLine2: 'New York, NY 10001',
+  phone: '+1 (555) 000-0000',
+  email: 'hello@example.com',
   submitLabel: 'Send message',
   submitBgColor: '#4f46e5',
   submitAlign: 'right',

@@ -3,11 +3,11 @@ import { reactive } from 'vue'
 export interface FieldConfig {
   key: string
   label: string
-  type: 'text' | 'url' | 'color' | 'select' | 'toggle' | 'number' | 'image' | 'list'
+  type: 'text' | 'url' | 'color' | 'select' | 'toggle' | 'number' | 'image' | 'list' | 'column-order'
   options?: string[]
   listFields?: FieldConfig[]
-  placeholder?: string   // example hint shown inside the input
-  unit?: string          // unit label shown inside number inputs, defaults to 'px'
+  placeholder?: string
+  unit?: string
 }
 
 export interface BlockEditorConfig<T = Record<string, any>> {
@@ -23,9 +23,6 @@ interface RegistryEntry {
 
 const _registry = reactive<Map<string, RegistryEntry>>(new Map())
 
-// ── Persistent storage for registry state ─────────────────────────────────────
-// Saves every block's editor data to localStorage so the editor reopens with
-// the user's last edits after a page reload, not just the defaults.
 const STORAGE_KEY = 'app-block-registry-v5'
 let _storageCache: Record<string, Record<string, any>> | null = null
 
@@ -49,7 +46,6 @@ function _saveStorage() {
   try {
     const out: Record<string, any> = {}
     _registry.forEach((entry, title) => {
-      // Deep-clone and strip Vue reactivity proxies
       out[title] = JSON.parse(JSON.stringify(entry.state))
     })
     _storageCache = out
@@ -126,6 +122,17 @@ export function useBlockRegistry() {
     _saveStorage()
   }
 
+  function resetToDefaults(title: string) {
+    const entry = _registry.get(title)
+    if (!entry) return
+    const fresh = JSON.parse(JSON.stringify(entry.config.defaults))
+    for (const k of Object.keys(entry.state)) {
+      if (!(k in fresh)) delete entry.state[k]
+    }
+    Object.assign(entry.state, fresh)
+    _saveStorage()
+  }
+
   // Replace entire state for a block. Used by undo/redo sync from DOM, where
   // multiple fields need to be updated atomically without triggering multiple
   // re-renders.
@@ -143,6 +150,6 @@ export function useBlockRegistry() {
   return {
     register, hasConfig, getConfig, getData,
     setData, setListItem, addListItem, removeListItem, moveListItem,
-    replaceData,
+    replaceData, resetToDefaults,
   }
 }

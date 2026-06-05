@@ -12,8 +12,6 @@ import {
   renderRu1Form,
 } from './components'
 
-// ─── Layout component descriptor ─────────────────────────────────────────────
-// Used by BuilderPanel to render the card grid for each category.
 export interface LayoutComponentItem {
   title: string
   category: string
@@ -21,9 +19,6 @@ export interface LayoutComponentItem {
   html_code: string
 }
 
-// ─── Registry ─────────────────────────────────────────────────────────────────
-// Add new layout components here as the library grows.
-// BuilderPanel reads this object to build the "Headers", "Footer", etc. sections.
 export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
   Headers: [
     {
@@ -43,9 +38,6 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
   ],
 }
 
-// ─── Composable ───────────────────────────────────────────────────────────────
-// Call on app mount (PageBuilderWrapper) so block configs are in the registry
-// before any canvas interaction. Idempotent — register() skips duplicates.
 export function useLayouts() {
   const blockRegistry = useBlockRegistry()
 
