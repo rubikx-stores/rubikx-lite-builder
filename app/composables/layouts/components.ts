@@ -315,7 +315,7 @@ export interface Ru1FormData {
 
 export const ru1FormDefaults: Ru1FormData = {
   title: 'Get in touch',
-  description: 'Proin volutpat consequat porttitor cras nullam gravida at. Orci molestie a eu arcu. Sed ut tincidunt integer elementum id sem. Arcu sed malesuada et magna.',
+  description: "We'd love to hear from you. Whether you have questions about our services, need expert guidance, or want to discuss a new project, our team is here to help. Fill out the form, and we'll get back to you as soon as possible.",
   addressLine1: '545 Mavis Island',
   addressLine2: 'Chicago, IL 99191',
   phone: '+1 (555) 234-5678',
@@ -326,7 +326,7 @@ export const ru1FormDefaults: Ru1FormData = {
 
 export const ru1FormFields: FieldConfig[] = [
   { key: 'title',        label: 'Section Title',    type: 'text',  placeholder: 'Get in touch'            },
-  { key: 'description',  label: 'Description',      type: 'text',  placeholder: 'Short intro paragraph…' },
+  { key: 'description',  label: 'Description',      type: 'text',  placeholder: "We'd love to hear from you…" },
   { key: 'addressLine1', label: 'Address Line 1',   type: 'text',  placeholder: '545 Mavis Island'        },
   { key: 'addressLine2', label: 'Address Line 2',   type: 'text',  placeholder: 'Chicago, IL 99191'       },
   { key: 'phone',        label: 'Phone Number',     type: 'text',  placeholder: '+1 (555) 234-5678'       },
