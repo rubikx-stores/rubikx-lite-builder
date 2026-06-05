@@ -474,6 +474,7 @@ export interface Ru1FooterData {
   borderStyle: string
   borderWidth: number
   borderColor: string
+  columnOrder: string[]
 }
 
 export const ru1FooterDefaults: Ru1FooterData = {
@@ -492,6 +493,7 @@ export const ru1FooterDefaults: Ru1FooterData = {
   borderStyle: 'none',
   borderWidth: 1,
   borderColor: '#e5e7eb',
+  columnOrder: ['links', 'about', 'contact'],
 }
 
 export const ru1FooterFields: FieldConfig[] = [
@@ -511,6 +513,7 @@ export const ru1FooterFields: FieldConfig[] = [
   { key: 'borderStyle', label: 'Border Style', type: 'select', options: ['none', 'solid', 'dashed', 'dotted'] },
   { key: 'borderWidth', label: 'Border Width', type: 'number' },
   { key: 'borderColor', label: 'Border Color', type: 'color' },
+  { key: 'columnOrder', label: 'Column Order', type: 'column-order' },
 ]
 
 export function renderRu1Footer(data: Ru1FooterData): string {
@@ -519,27 +522,31 @@ export function renderRu1Footer(data: Ru1FooterData): string {
     data.borderStyle !== 'none' ? `border-top:${data.borderWidth}px ${data.borderStyle} ${data.borderColor}` : '',
   ].filter(Boolean).join(';')
 
-  return `<section data-component-title="Ru1 Techwire Footer">
-<footer style="${footerStyle}">
-  <div class="pbx-max-w-7xl pbx-mx-auto">
-    <div class="pbx-grid pbx-grid-cols-1 md:pbx-grid-cols-3 pbx-gap-8">
-      <div>
+  const linksCol = `<div>
         <h3 class="pbx-text-sm pbx-font-semibold pbx-uppercase pbx-tracking-wider pbx-mb-4">Useful Links</h3>
         <ul class="pbx-space-y-2">
           ${data.usefulLinks.map(l => `<li><a href="${l.url}" class="pbx-text-sm pbx-text-gray-700 hover:pbx-text-gray-900">${l.label}</a></li>`).join('\n          ')}
         </ul>
-      </div>
-      <div>
+      </div>`
+  const aboutCol = `<div>
         <h3 class="pbx-text-sm pbx-font-semibold pbx-uppercase pbx-tracking-wider pbx-mb-4">About Us</h3>
         <p data-field-key="tagline" class="pbx-text-sm pbx-text-gray-700 pbx-leading-relaxed">${data.tagline}</p>
-      </div>
-      <div>
+      </div>`
+  const contactCol = `<div>
         <h3 class="pbx-text-sm pbx-font-semibold pbx-uppercase pbx-tracking-wider pbx-mb-4">Connect with Us</h3>
         <ul class="pbx-space-y-2">
           <li class="pbx-text-sm pbx-text-gray-700">${data.contactEmail}</li>
           <li class="pbx-text-sm pbx-text-gray-700">${data.contactPhone}</li>
         </ul>
-      </div>
+      </div>`
+  const colMap: Record<string, string> = { links: linksCol, about: aboutCol, contact: contactCol }
+  const orderedCols = (data.columnOrder ?? ['links', 'about', 'contact']).map(k => colMap[k] ?? '').join('\n      ')
+
+  return `<section data-component-title="Ru1 Techwire Footer">
+<footer style="${footerStyle}">
+  <div class="pbx-max-w-7xl pbx-mx-auto">
+    <div class="pbx-grid pbx-grid-cols-1 md:pbx-grid-cols-3 pbx-gap-8">
+      ${orderedCols}
     </div>
     <div class="pbx-border-t pbx-border-gray-200 pbx-mt-8 pbx-pt-6 pbx-text-center">
       <p data-field-key="copyright" class="pbx-text-sm pbx-text-gray-500">${data.copyright}</p>

@@ -158,6 +158,16 @@ function onUploadSubImage(listKey: string, idx: number, subKey: string, file: Fi
   reader.readAsDataURL(file)
 }
 
+function updateColumnOrder(fieldKey: string, index: number, newVal: string) {
+  const currentOrder = [...((blockData.value[fieldKey] as string[]) ?? ['links', 'about', 'contact'])]
+  const swapIdx = currentOrder.indexOf(newVal)
+  if (swapIdx !== -1 && swapIdx !== index) {
+    currentOrder[swapIdx] = currentOrder[index]
+  }
+  currentOrder[index] = newVal
+  updateBlockField(fieldKey, currentOrder)
+}
+
 // ── Category picker for navLinks ──────────────────────────────────────────────
 const loadingCategories = ref(false)
 const availableCategories = ref<CategoryNode[]>([])
@@ -521,6 +531,24 @@ onUnmounted(() => {
                 @change="updateBlockField(field.key, Number(($event.target as HTMLSelectElement).value) || ($event.target as HTMLSelectElement).value)">
                 <option v-for="opt in field.options" :key="opt" :value="opt" :selected="String(blockData[field.key]) === opt">{{ opt }}</option>
               </select>
+            </div>
+
+            <!-- column-order -->
+            <div v-else-if="field.type === 'column-order'" class="mb-2.5">
+              <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
+              <div class="flex gap-1.5">
+                <div v-for="(pos, i) in ['Left', 'Center', 'Right']" :key="pos" class="flex-1">
+                  <label class="block text-xs text-gray-400 mb-0.5">{{ pos }}</label>
+                  <select
+                    class="w-full border border-gray-200 rounded px-1.5 py-1 text-xs bg-white focus:outline-none"
+                    :value="(blockData[field.key] as string[])?.[i] ?? ['links','about','contact'][i]"
+                    @change="updateColumnOrder(field.key, i, ($event.target as HTMLSelectElement).value)">
+                    <option value="links">Links</option>
+                    <option value="about">About</option>
+                    <option value="contact">Contact</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             <!-- Category checkbox picker for navLinks on navbar blocks -->
