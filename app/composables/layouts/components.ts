@@ -310,6 +310,7 @@ export interface Ru1FormData {
   email: string
   submitLabel: string
   submitBgColor: string
+  submitAlign: string
   // Social icons
   socialFacebookShow: boolean
   socialFacebookHref: string
@@ -331,14 +332,15 @@ export const ru1FormDefaults: Ru1FormData = {
   email: 'hello@example.com',
   submitLabel: 'Send message',
   submitBgColor: '#4f46e5',
+  submitAlign: 'right',
   socialFacebookShow: true,
-  socialFacebookHref: 'https://facebook.com',
+  socialFacebookHref: '',
   socialXShow: true,
-  socialXHref: 'https://x.com',
+  socialXHref: '',
   socialYoutubeShow: true,
-  socialYoutubeHref: 'https://youtube.com',
+  socialYoutubeHref: '',
   socialInstagramShow: true,
-  socialInstagramHref: 'https://instagram.com',
+  socialInstagramHref: '',
   columnOrder: ['info', 'form'],
 }
 
@@ -351,15 +353,16 @@ export const ru1FormFields: FieldConfig[] = [
   { key: 'email',        label: 'Email Address',    type: 'text',  placeholder: 'hello@example.com'       },
   { key: 'submitLabel',  label: 'Submit Button Text', type: 'text', placeholder: 'Send message'           },
   { key: 'submitBgColor',       label: 'Submit Button Colour', type: 'color'                              },
+  { key: 'submitAlign',         label: 'Submit Button Align',  type: 'select', options: ['left', 'center', 'right'] },
   // Social links
   { key: 'socialFacebookShow',  label: 'Facebook — Show',      type: 'toggle'                             },
-  { key: 'socialFacebookHref',  label: 'Facebook URL',         type: 'url', placeholder: 'https://facebook.com' },
+  { key: 'socialFacebookHref',  label: 'Facebook URL',         type: 'url', placeholder: 'Your Facebook page URL' },
   { key: 'socialXShow',         label: 'X (Twitter) — Show',   type: 'toggle'                             },
-  { key: 'socialXHref',         label: 'X URL',                type: 'url', placeholder: 'https://x.com'  },
+  { key: 'socialXHref',         label: 'X URL',                type: 'url', placeholder: 'Your X profile URL'  },
   { key: 'socialYoutubeShow',   label: 'YouTube — Show',       type: 'toggle'                             },
-  { key: 'socialYoutubeHref',   label: 'YouTube URL',          type: 'url', placeholder: 'https://youtube.com' },
+  { key: 'socialYoutubeHref',   label: 'YouTube URL',          type: 'url', placeholder: 'Your YouTube channel URL' },
   { key: 'socialInstagramShow', label: 'Instagram — Show',     type: 'toggle'                             },
-  { key: 'socialInstagramHref', label: 'Instagram URL',        type: 'url', placeholder: 'https://instagram.com' },
+  { key: 'socialInstagramHref', label: 'Instagram URL',        type: 'url', placeholder: 'Your Instagram profile URL' },
   { key: 'columnOrder',         label: 'Column Order',         type: 'column-order'                       },
 ]
 
@@ -383,6 +386,8 @@ export function renderRu1Form(data: Ru1FormData): string {
   const phoneHref = `tel:${data.phone.replace(/\s/g, '')}`
   const emailHref = `mailto:${data.email}`
   const btnStyle  = `display:inline-block;border-radius:6px;padding:0.625rem 0.875rem;font-size:0.875rem;font-weight:600;color:#fff;background:${data.submitBgColor};border:none;cursor:pointer;`
+  const alignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
+  const btnJustify = alignMap[data.submitAlign ?? 'right'] ?? 'flex-end'
 
   // Build social icons row (only include enabled platforms)
   const socialLinks: string[] = []
@@ -438,7 +443,7 @@ export function renderRu1Form(data: Ru1FormData): string {
             <textarea id="ru1-message" name="message" rows="4" style="${inputStyle}resize:vertical;"></textarea>
           </div>
         </div>
-        <div style="margin-top:2rem;display:flex;justify-content:flex-end;">
+        <div style="margin-top:2rem;display:flex;justify-content:${btnJustify};">
           <button type="submit" style="${btnStyle}">${data.submitLabel}</button>
         </div>
       </div>
