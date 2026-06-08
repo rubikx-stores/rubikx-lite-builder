@@ -37,8 +37,6 @@ export default defineEventHandler(async (event) => {
     body: JSON.stringify({ query: GRAPHQL_QUERY, variables }),
   })
   const responseText = await response.text()
-  console.log('Odoo status:', response.status, response.ok)
-  console.log('Odoo body:', responseText)
 
   if (!response.ok) {
     throw createError({

@@ -55,8 +55,8 @@ export default defineEventHandler(async (event) => {
   let updatedBy = 'editor'
   if (token) {
     try {
-      const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf-8'))
-      updatedBy = payload.name || payload.email || 'editor'
+      const jwtPayload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf-8'))
+      updatedBy = jwtPayload.name || jwtPayload.email || 'editor'
     } catch { }
   }
 
