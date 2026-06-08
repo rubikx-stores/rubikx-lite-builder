@@ -402,20 +402,20 @@ export function renderRu1Form(data: Ru1FormData): string {
 
 // ─── Footer-1 ─────────────────────────────────────────────────────────────────
 
-export const footer1Svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 177.28 70">
-  <rect width="177.28" height="70" fill="#1a1a1a"/>
-  <rect x="8" y="12" width="40" height="4" rx="1" fill="#444"/>
-  <rect x="8" y="20" width="30" height="3" rx="1" fill="#333"/>
-  <rect x="8" y="26" width="35" height="3" rx="1" fill="#333"/>
-  <rect x="8" y="32" width="28" height="3" rx="1" fill="#333"/>
-  <rect x="68" y="12" width="40" height="4" rx="1" fill="#444"/>
-  <rect x="68" y="20" width="50" height="3" rx="1" fill="#333"/>
-  <rect x="68" y="26" width="45" height="3" rx="1" fill="#333"/>
-  <rect x="128" y="12" width="40" height="4" rx="1" fill="#444"/>
-  <rect x="128" y="20" width="35" height="3" rx="1" fill="#333"/>
-  <rect x="128" y="26" width="30" height="3" rx="1" fill="#333"/>
-  <rect x="0" y="55" width="177.28" height="1" fill="#333"/>
-  <rect x="50" y="62" width="77" height="3" rx="1" fill="#444"/>
+export const footer1Svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 177.28 70'>
+  <rect width='177.28' height='70' fill='#1a1a1a'/>
+  <rect x='8' y='12' width='40' height='4' rx='1' fill='#444'/>
+  <rect x='8' y='20' width='30' height='3' rx='1' fill='#333'/>
+  <rect x='8' y='26' width='35' height='3' rx='1' fill='#333'/>
+  <rect x='8' y='32' width='28' height='3' rx='1' fill='#333'/>
+  <rect x='68' y='12' width='40' height='4' rx='1' fill='#444'/>
+  <rect x='68' y='20' width='50' height='3' rx='1' fill='#333'/>
+  <rect x='68' y='26' width='45' height='3' rx='1' fill='#333'/>
+  <rect x='128' y='12' width='40' height='4' rx='1' fill='#444'/>
+  <rect x='128' y='20' width='35' height='3' rx='1' fill='#333'/>
+  <rect x='128' y='26' width='30' height='3' rx='1' fill='#333'/>
+  <rect x='0' y='55' width='177.28' height='1' fill='#333'/>
+  <rect x='50' y='62' width='77' height='3' rx='1' fill='#444'/>
 </svg>`
 
 export interface Footer1Data {
