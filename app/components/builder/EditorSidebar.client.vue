@@ -335,7 +335,7 @@ function applySelectedCategories() {
     } else {
       merged = [...dedupedExisting, ...newChildren]
     }
-  } else if (title === 'Navbar-1') {
+  } else if (title === 'Mega-menu-Header') {
     merged = [
       ...dedupedExisting,
       ...toAdd.map(c => ({ label: c.displayName, href: toHref(c) })),
@@ -565,7 +565,7 @@ onUnmounted(() => {
             </div>
 
             <!-- Category checkbox picker for navLinks on navbar blocks -->
-            <div v-if="field.key === 'navLinks' && (selectedBlockTitle === 'Navbar-1' || selectedBlockTitle === 'Ru1 Techwire Navbar')" class="mb-2">
+            <div v-if="field.key === 'navLinks' && (selectedBlockTitle === 'Mega-menu-Header' || selectedBlockTitle === 'Ru1 Techwire Navbar')" class="mb-2">
               <button v-if="!showCategoryPicker" type="button" @click="openCategoryPicker"
                 class="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
                 + Add from Odoo
