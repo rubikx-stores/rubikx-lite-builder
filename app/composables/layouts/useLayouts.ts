@@ -10,6 +10,10 @@ import {
   ru1FormFields,
   ru1FormSvg,
   renderRu1Form,
+  footer1Defaults,
+  footer1Fields,
+  footer1Svg,
+  renderFooter1,
 } from './components'
 
 export interface LayoutComponentItem {
@@ -36,6 +40,14 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       html_code: renderRu1Form(ru1FormDefaults),
     },
   ],
+  Footer: [
+    {
+      title: 'Footer-1',
+      category: 'Footer',
+      cover_image: footer1Svg,
+      html_code: renderFooter1(footer1Defaults),
+    },
+  ],
 }
 
 export function useLayouts() {
@@ -51,6 +63,12 @@ export function useLayouts() {
     defaults: ru1FormDefaults,
     fields: ru1FormFields,
     render: renderRu1Form,
+  })
+
+  blockRegistry.register('Footer-1', {
+    defaults: footer1Defaults,
+    fields: footer1Fields,
+    render: renderFooter1,
   })
 
   return { layoutComponentRegistry }

@@ -399,5 +399,100 @@ export function renderRu1Form(data: Ru1FormData): string {
   <div style="margin:0 auto;max-width:80rem;display:grid;grid-template-columns:1fr 1fr;">
     ${orderedCols}
   </div>
+
+// ─── Footer-1 ─────────────────────────────────────────────────────────────────
+
+export const footer1Svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 177.28 70">
+  <rect width="177.28" height="70" fill="#1a1a1a"/>
+  <rect x="8" y="12" width="40" height="4" rx="1" fill="#444"/>
+  <rect x="8" y="20" width="30" height="3" rx="1" fill="#333"/>
+  <rect x="8" y="26" width="35" height="3" rx="1" fill="#333"/>
+  <rect x="8" y="32" width="28" height="3" rx="1" fill="#333"/>
+  <rect x="68" y="12" width="40" height="4" rx="1" fill="#444"/>
+  <rect x="68" y="20" width="50" height="3" rx="1" fill="#333"/>
+  <rect x="68" y="26" width="45" height="3" rx="1" fill="#333"/>
+  <rect x="128" y="12" width="40" height="4" rx="1" fill="#444"/>
+  <rect x="128" y="20" width="35" height="3" rx="1" fill="#333"/>
+  <rect x="128" y="26" width="30" height="3" rx="1" fill="#333"/>
+  <rect x="0" y="55" width="177.28" height="1" fill="#333"/>
+  <rect x="50" y="62" width="77" height="3" rx="1" fill="#444"/>
+</svg>`
+
+export interface Footer1Data {
+  usefulLinks: { label: string; url: string }[]
+  aboutText: string
+  contactEmail: string
+  contactPhone: string
+  copyright: string
+  bgColor: string
+  textColor: string
+  paddingY: number
+  paddingX: number
+}
+
+export const footer1Defaults: Footer1Data = {
+  usefulLinks: [
+    { label: 'Home',       url: '/'        },
+    { label: 'Shop',       url: '/shop'    },
+    { label: 'About Us',   url: '/about'   },
+    { label: 'Contact Us', url: '/contact' },
+  ],
+  aboutText: 'This site is for employees to order branded apparel and accessories.',
+  contactEmail: 'support@yourdomain.com',
+  contactPhone: '+1 000-000-0000',
+  copyright: '© Your Store. All rights reserved.',
+  bgColor: '#1a1a1a',
+  textColor: '#ffffff',
+  paddingY: 48,
+  paddingX: 16,
+}
+
+export const footer1Fields: FieldConfig[] = [
+  {
+    key: 'usefulLinks', label: 'Useful Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'url',   label: 'URL',   type: 'url'  },
+    ],
+  },
+  { key: 'aboutText',    label: 'About Text',        type: 'text'   },
+  { key: 'contactEmail', label: 'Contact Email',      type: 'text'   },
+  { key: 'contactPhone', label: 'Contact Phone',      type: 'text'   },
+  { key: 'copyright',    label: 'Copyright',          type: 'text'   },
+  { key: 'bgColor',      label: 'Background Color',   type: 'color'  },
+  { key: 'textColor',    label: 'Text Color',          type: 'color'  },
+  { key: 'paddingY',     label: 'Vertical Padding',   type: 'number' },
+  { key: 'paddingX',     label: 'Horizontal Padding', type: 'number' },
+]
+
+export function renderFooter1(data: Footer1Data): string {
+  return `<section data-component-title="Footer-1">
+<footer style="background-color:${data.bgColor};color:${data.textColor};padding:${data.paddingY}px ${data.paddingX}px;">
+  <div style="max-width:1280px;margin:0 auto;">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;padding-bottom:40px;">
+      <div>
+        <h3 style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;opacity:0.5;">Useful Links</h3>
+        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">
+          ${data.usefulLinks.map(l => `<li><a href="${l.url}" style="font-size:14px;color:${data.textColor};text-decoration:none;opacity:0.7;">${l.label}</a></li>`).join('')}
+        </ul>
+      </div>
+      <div>
+        <h3 style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;opacity:0.5;">About Us</h3>
+        <p data-field-key="aboutText" style="font-size:14px;opacity:0.7;line-height:1.6;">${data.aboutText}</p>
+      </div>
+      <div>
+        <h3 style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;opacity:0.5;">Connect with Us</h3>
+        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">
+          <li style="font-size:14px;opacity:0.7;">${data.contactEmail}</li>
+          <li style="font-size:14px;opacity:0.7;">${data.contactPhone}</li>
+        </ul>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:24px;text-align:center;">
+      <p data-field-key="copyright" style="font-size:14px;opacity:0.5;">${data.copyright}</p>
+    </div>
+  </div>
+</footer>
+
 </section>`
 }
