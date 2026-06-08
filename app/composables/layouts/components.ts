@@ -399,6 +399,8 @@ export function renderRu1Form(data: Ru1FormData): string {
   <div style="margin:0 auto;max-width:80rem;display:grid;grid-template-columns:1fr 1fr;">
     ${orderedCols}
   </div>
+</section>`
+}
 
 // ─── Footer-1 ─────────────────────────────────────────────────────────────────
 
