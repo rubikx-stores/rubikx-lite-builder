@@ -256,24 +256,33 @@ export const ru1HeroDefaults: Ru1HeroData = {
 }
 
 export const ru1HeroFields: FieldConfig[] = [
+  { key: '_h_banner', label: 'Banner', type: 'header' },
   { key: 'imageUrl', label: 'Banner Image', type: 'image' },
-  { key: 'altText', label: 'Alt Text', type: 'text' },
+  { key: 'altText', label: 'Image Alt Text', type: 'text' },
   { key: 'linkUrl', label: 'Banner Link URL', type: 'url' },
   { key: 'aspectRatio', label: 'Aspect Ratio', type: 'select', options: ['4/1', '3/1', '16/9', '2/1', '4/3', '1/1'] },
+
+  { key: '_h_text', label: 'Text', type: 'header' },
   { key: 'headline', label: 'Headline', type: 'text' },
   { key: 'subheadline', label: 'Subheadline', type: 'text' },
   { key: 'textColor', label: 'Text Color', type: 'color' },
   { key: 'textAlign', label: 'Text Alignment', type: 'select', options: ['left', 'center', 'right'] },
+
+  { key: '_h_cta', label: 'CTA Button', type: 'header' },
+  { key: 'ctaText', label: 'Button Text', type: 'text' },
+  { key: 'ctaUrl', label: 'Button URL', type: 'url' },
+  { key: 'ctaBgColor', label: 'Button Background Color', type: 'color' },
+  { key: 'ctaTextColor', label: 'Button Text Color', type: 'color' },
+
+  { key: '_h_overlay', label: 'Overlay', type: 'header' },
   { key: 'overlayColor', label: 'Overlay Color', type: 'color' },
-  { key: 'overlayOpacity', label: 'Overlay Opacity (0–100)', type: 'number' },
-  { key: 'ctaText', label: 'CTA Button Text', type: 'text' },
-  { key: 'ctaUrl', label: 'CTA Button URL', type: 'url' },
-  { key: 'ctaBgColor', label: 'CTA Button BG Color', type: 'color' },
-  { key: 'ctaTextColor', label: 'CTA Button Text Color', type: 'color' },
+  { key: 'overlayOpacity', label: 'Overlay Opacity', type: 'number', unit: '%', step: 5, placeholder: '40' },
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'bgColor', label: 'Section Background', type: 'color' },
-  { key: 'paddingY', label: 'Vertical Padding', type: 'number' },
-  { key: 'paddingX', label: 'Horizontal Padding', type: 'number' },
-  { key: 'borderRadius', label: 'Border Radius', type: 'number' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '32' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '24' },
+  { key: 'borderRadius', label: 'Corner Radius', type: 'number', unit: 'px', step: 2, placeholder: '8' },
 ]
 
 export function renderRu1Hero(data: Ru1HeroData): string {
