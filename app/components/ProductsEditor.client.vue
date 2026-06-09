@@ -156,6 +156,13 @@ onMounted(async () => {
       .filter(Boolean)
     if (matched.length) selected.value = matched
   }
+
+  // Sync registry with restored selection so subsequent _applyBlockRender calls
+  // re-render with the correct Odoo products (not stale/placeholder registry data).
+  if (isThemeBlock.value && selected.value.length > 0) {
+    await nextTick()
+    doApplyThemeBlock()
+  }
 })
 
 function getSection() {
@@ -187,7 +194,9 @@ function doApplyThemeBlock() {
     oldPrice: '',
     buttonLabel: 'Add to Cart',
     buttonUrl: '/shop',
-    colors: '',
+    colors: Array.isArray(p.colors) && p.colors.length
+      ? p.colors.map(c => c.htmlColor || c.name || '').filter(Boolean).join(', ')
+      : (typeof p.colors === 'string' ? p.colors : ''),
   }))
 
   // Store selected IDs on the section element so restore-on-mount works after re-render
