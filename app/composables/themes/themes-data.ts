@@ -455,24 +455,26 @@ export const ru1ProductsFields: FieldConfig[] = [
 
 export function renderRu1Products(data: Ru1ProductsData): string {
   const colCls = _colClass[String(data.columns)] ?? _colClass['4']
-  const _hoverCSS = (effect: string, amount: number): string => {
+  const _hoverOn = (effect: string, amount: number): string => {
     switch (effect) {
-      case 'Lift Up':    return `transform:translateY(-${amount}px)`
-      case 'Drop Down':  return `transform:translateY(${amount}px)`
-      case 'Slide Left': return `transform:translateX(-${amount}px)`
-      case 'Slide Right':return `transform:translateX(${amount}px)`
-      case 'Pop Out':    return `transform:scale(${1 + amount / 100})`
-      case 'Zoom In':    return `transform:scale(${1 + amount / 100});box-shadow:0 25px 50px rgba(0,0,0,0.15)`
-      case 'Glow':       return `box-shadow:0 0 ${amount}px rgba(99,102,241,0.7)`
-      case 'Tilt Left':  return `transform:rotate(-${amount}deg)`
-      case 'Tilt Right': return `transform:rotate(${amount}deg)`
-      default:           return `transform:translateY(-${amount}px)`
+      case 'Lift Up':    return `this.style.transform='translateY(-${amount}px)'`
+      case 'Drop Down':  return `this.style.transform='translateY(${amount}px)'`
+      case 'Slide Left': return `this.style.transform='translateX(-${amount}px)'`
+      case 'Slide Right':return `this.style.transform='translateX(${amount}px)'`
+      case 'Pop Out':    return `this.style.transform='scale(${1 + amount / 100})'`
+      case 'Zoom In':    return `this.style.transform='scale(${1 + amount / 100})';this.style.boxShadow='0 25px 50px rgba(0,0,0,0.15)'`
+      case 'Glow':       return `this.style.boxShadow='0 0 ${amount}px rgba(99,102,241,0.7)'`
+      case 'Tilt Left':  return `this.style.transform='rotate(-${amount}deg)'`
+      case 'Tilt Right': return `this.style.transform='rotate(${amount}deg)'`
+      default:           return `this.style.transform='translateY(-${amount}px)'`
     }
   }
-  const animStyle = data.cardAnimation
-    ? `<style>.ru1-product-card{transition:transform ${data.animationDuration}ms ease,box-shadow ${data.animationDuration}ms ease}.ru1-product-card:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}</style>`
+  const cardAnim = data.cardAnimation
+    ? ` onmouseenter="${_hoverOn(data.hoverEffect, data.hoverAmount)}" onmouseleave="this.style.transform='';this.style.boxShadow=''"`
     : ''
-  const cardCls = data.cardAnimation ? 'ru1-product-card' : ''
+  const cardTransition = data.cardAnimation
+    ? `;transition:transform ${data.animationDuration}ms ease,box-shadow ${data.animationDuration}ms ease`
+    : ''
 
   const sectionStyle = [
     data.bgColor ? `background:${data.bgColor}` : '',
@@ -486,7 +488,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
     ...Array(Math.max(0, maxVisible - data.products.length)).fill(placeholder),
   ]
   const cards = visibleProducts.map(p => `
-      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200 ${cardCls}">
+      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden${cardTransition}" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200"${cardAnim}>
         <img class="pbx-w-full pbx-h-auto pbx-block" src="${p.imageUrl}" alt="${p.name}" />
         <div class="pbx-flex pbx-flex-col pbx-gap-1 pbx-p-3 pbx-flex-1">
           <p class="pbx-font-semibold pbx-text-sm">${p.name}</p>
@@ -500,7 +502,6 @@ export function renderRu1Products(data: Ru1ProductsData): string {
       </div>`).join('')
 
   return `<section data-component-title="Ru1 Homepage Featured Products">
-${animStyle}
 <div style="${sectionStyle}">
   <div class="pbx-mx-auto pbx-max-w-7xl">
     <div class="pbx-mb-8">

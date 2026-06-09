@@ -109,7 +109,10 @@ watch(component, async (newComp) => {
 const mode = computed(() => storedMode.value || 'multiple')
 
 const maxSelection = computed(() => {
-  if (isThemeBlock.value) return Number(props.blockData?.columns ?? 4) * Number(props.blockData?.rows ?? 1)
+  if (isThemeBlock.value) {
+    // Allow selecting up to 10 rows worth — doApplyThemeBlock auto-expands rows to fit.
+    return Number(props.blockData?.columns ?? 4) * 10
+  }
   return mode.value === 'single' ? 1 : mode.value === 'six' ? 6 : mode.value === 'four' ? 4 : 3
 })
 
@@ -183,7 +186,7 @@ function productImageSrc(image) {
   return `data:${mime};base64,${image}`
 }
 
-function doApplyThemeBlock() {
+async function doApplyThemeBlock() {
   const section = getSection()
   const title = component.value?.title ?? props.selectedBlockTitle
 
@@ -205,6 +208,14 @@ function doApplyThemeBlock() {
   }
 
   if (props.updateBlockField && title) {
+    // Auto-expand rows so all selected products are visible.
+    // Never shrink rows — user may have intentionally set extra empty slots.
+    const cols = Number(props.blockData?.columns ?? 4)
+    const currentRows = Number(props.blockData?.rows ?? 1)
+    const neededRows = Math.ceil(selected.value.length / cols) || 1
+    if (neededRows > currentRows) {
+      await props.updateBlockField('rows', neededRows, title)
+    }
     props.updateBlockField('products', mapped, title)
   }
 }
@@ -485,7 +496,7 @@ watch(cardSubtitleEnabled, () => { if (selected.value.length > 0) doApply() })
   <div class="mt-1 mb-3">
     <p class="font-medium text-sm mb-2 px-1">
       Select products
-      <span class="text-gray-400 font-normal text-xs">&nbsp;{{ selected.length }}/{{ maxSelection }}</span>
+      <span class="text-gray-400 font-normal text-xs">&nbsp;{{ selected.length }}{{ isThemeBlock ? '' : '/' + maxSelection }}</span>
     </p>
 
     <!-- Loading -->
