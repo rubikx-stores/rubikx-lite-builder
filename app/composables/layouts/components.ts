@@ -687,17 +687,21 @@ export function renderRu1About(data: Ru1AboutData): string {
 
 export const ru1FaqSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 120">
   <rect fill="#394152" x="0" y="0" width="277.5" height="120"/>
-  <rect fill="#718096" x="10" y="10" width="110" height="11"/>
-  <rect fill="#5a6475" x="10" y="32"  width="257.5" height="1"/>
-  <rect fill="#718096" x="10" y="40"  width="150" height="7"/>
-  <rect fill="#a0aec0" x="252" y="38" width="10" height="10"/>
-  <rect fill="#5a6475" x="10" y="60"  width="257.5" height="1"/>
-  <rect fill="#718096" x="10" y="68"  width="120" height="7"/>
-  <rect fill="#a0aec0" x="252" y="66" width="10" height="10"/>
-  <rect fill="#5a6475" x="10" y="88"  width="257.5" height="1"/>
-  <rect fill="#718096" x="10" y="96"  width="170" height="7"/>
-  <rect fill="#a0aec0" x="252" y="94" width="10" height="10"/>
-  <rect fill="#5a6475" x="10" y="116" width="257.5" height="1"/>
+  <rect fill="#718096" x="10" y="8" width="90" height="9" rx="1"/>
+  <rect fill="#5a6475" x="10" y="20" width="140" height="4" rx="1"/>
+  <rect fill="#5a6475" x="10" y="32" width="257.5" height="1"/>
+  <rect fill="#718096" x="10" y="38" width="80" height="6" rx="1"/>
+  <rect fill="#a0aec0" x="253" y="36" width="10" height="10" rx="1"/>
+  <rect fill="#5a6475" x="10" y="52" width="257.5" height="1"/>
+  <rect fill="#718096" x="10" y="58" width="130" height="6" rx="1"/>
+  <rect fill="#a0aec0" x="253" y="56" width="10" height="10" rx="1"/>
+  <rect fill="#5a6475" x="10" y="72" width="257.5" height="1"/>
+  <rect fill="#718096" x="10" y="78" width="180" height="6" rx="1"/>
+  <rect fill="#a0aec0" x="253" y="76" width="10" height="10" rx="1"/>
+  <rect fill="#5a6475" x="10" y="92" width="257.5" height="1"/>
+  <rect fill="#718096" x="10" y="98" width="220" height="6" rx="1"/>
+  <rect fill="#a0aec0" x="253" y="96" width="10" height="10" rx="1"/>
+  <rect fill="#5a6475" x="10" y="112" width="257.5" height="1"/>
 </svg>`
 
 export interface Ru1FaqData {

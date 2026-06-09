@@ -68,8 +68,12 @@ export function useEditorSidebar() {
         if (!title) return
         const cfg = registry.getConfig(title)
         if (!cfg) return
-        const newState = _extractDataFromSection(sec, cfg.defaults)
-        registry.replaceData(title, newState)
+        sec.querySelectorAll<HTMLElement>('[data-field-key]').forEach((el) => {
+          const key = el.getAttribute('data-field-key')
+          if (!key) return
+          const val = el.tagName === 'IMG' ? (el as HTMLImageElement).src || '' : el.textContent ?? ''
+          registry.setData(title, key, val)
+        })
       })
     },
   )

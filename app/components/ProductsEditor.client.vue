@@ -159,6 +159,10 @@ onMounted(async () => {
 })
 
 function getSection() {
+  if (isThemeBlock.value) {
+    const title = props.selectedBlockTitle
+    return title ? document.querySelector(`section[data-component-title="${title}"]`) : null
+  }
   const id = component.value?.id ?? lastAppliedCompId.value
   if (!id) return null
   return document.querySelector(`section[data-componentid="${id}"]`)
