@@ -3,11 +3,12 @@ import { reactive } from 'vue'
 export interface FieldConfig {
   key: string
   label: string
-  type: 'text' | 'url' | 'color' | 'select' | 'toggle' | 'number' | 'image' | 'list' | 'column-order'
+  type: 'text' | 'url' | 'color' | 'select' | 'toggle' | 'number' | 'image' | 'list' | 'column-order' | 'header'
   options?: string[]
   listFields?: FieldConfig[]
   placeholder?: string
   unit?: string
+  step?: number
 }
 
 export interface BlockEditorConfig<T = Record<string, any>> {
