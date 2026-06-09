@@ -528,6 +528,7 @@ export const ru1FooterDefaults: Ru1FooterData = {
 }
 
 export const ru1FooterFields: FieldConfig[] = [
+  { key: '_h_content', label: 'Content', type: 'header' },
   { key: 'tagline', label: 'Tagline', type: 'text' },
   {
     key: 'usefulLinks', label: 'Useful Links', type: 'list',
@@ -539,11 +540,17 @@ export const ru1FooterFields: FieldConfig[] = [
   { key: 'contactEmail', label: 'Contact Email', type: 'text' },
   { key: 'contactPhone', label: 'Contact Phone', type: 'text' },
   { key: 'copyright', label: 'Copyright Text', type: 'text' },
-  { key: 'paddingY', label: 'Vertical Padding', type: 'number' },
-  { key: 'paddingX', label: 'Horizontal Padding', type: 'number' },
-  { key: 'borderStyle', label: 'Border Style', type: 'select', options: ['none', 'solid', 'dashed', 'dotted'] },
-  { key: 'borderWidth', label: 'Border Width', type: 'number' },
+
+  { key: '_h_colors', label: 'Colors', type: 'header' },
+  { key: 'bgColor', label: 'Background Color', type: 'color' },
+  { key: 'textColor', label: 'Text Color', type: 'color' },
   { key: 'borderColor', label: 'Border Color', type: 'color' },
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '32' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '24' },
+  { key: 'borderStyle', label: 'Border Style', type: 'select', options: ['none', 'solid', 'dashed', 'dotted'] },
+  { key: 'borderWidth', label: 'Border Width', type: 'number', unit: 'px', step: 1, placeholder: '1' },
   { key: 'columnOrder', label: 'Column Order', type: 'column-order' },
 ]
 
