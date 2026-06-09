@@ -113,12 +113,12 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
 }
 
 export const ru1NavbarFields: FieldConfig[] = [
+  { key: '_h_branding', label: 'Branding', type: 'header' },
   { key: 'logoUrl', label: 'Logo Image', type: 'image' },
   { key: 'brandName', label: 'Brand Name', type: 'text' },
-  { key: 'bgColor', label: 'Background Color', type: 'color' },
-  { key: 'sticky', label: 'Sticky Navbar', type: 'toggle' },
-  { key: 'showSearch', label: 'Search Bar', type: 'toggle' },
-  { key: 'searchPlaceholder', label: 'Search Placeholder', type: 'text' },
+  { key: 'logoWidth', label: 'Logo Width', type: 'number', unit: 'px', step: 4, placeholder: '120' },
+
+  { key: '_h_navigation', label: 'Navigation', type: 'header' },
   {
     key: 'navLinks', label: 'Nav Links', type: 'list',
     listFields: [
@@ -127,23 +127,34 @@ export const ru1NavbarFields: FieldConfig[] = [
       { key: 'visible', label: 'Visible', type: 'toggle' },
     ],
   },
+  { key: 'showSearch', label: 'Search Bar', type: 'toggle' },
+  { key: 'searchPlaceholder', label: 'Search Placeholder Text', type: 'text' },
+
+  { key: '_h_buttons', label: 'Buttons', type: 'header' },
   { key: 'showSignIn', label: 'Show Sign In', type: 'toggle' },
   { key: 'signInLabel', label: 'Sign In Label', type: 'text' },
   { key: 'signInUrl', label: 'Sign In URL', type: 'url' },
   { key: 'showContactUs', label: 'Show Contact Us', type: 'toggle' },
   { key: 'contactUsLabel', label: 'Contact Us Label', type: 'text' },
   { key: 'contactUsUrl', label: 'Contact Us URL', type: 'url' },
-  { key: 'showCart', label: 'Show Cart', type: 'toggle' },
+  { key: 'showCart', label: 'Show Cart Icon', type: 'toggle' },
   { key: 'cartUrl', label: 'Cart URL', type: 'url' },
+
+  { key: '_h_colors', label: 'Colors', type: 'header' },
+  { key: 'bgColor', label: 'Background Color', type: 'color' },
   { key: 'textColor', label: 'Text Color', type: 'color' },
-  { key: 'fontSize', label: 'Font Size', type: 'number' },
-  { key: 'fontWeight', label: 'Font Weight', type: 'select', options: ['300', '400', '500', '600', '700', '800'] },
-  { key: 'paddingY', label: 'Vertical Padding', type: 'number' },
-  { key: 'paddingX', label: 'Horizontal Padding', type: 'number' },
-  { key: 'logoWidth', label: 'Logo Width', type: 'number' },
-  { key: 'borderStyle', label: 'Border Style', type: 'select', options: ['none', 'solid', 'dashed', 'dotted'] },
-  { key: 'borderWidth', label: 'Border Width', type: 'number' },
   { key: 'borderColor', label: 'Border Color', type: 'color' },
+
+  { key: '_h_typography', label: 'Typography', type: 'header' },
+  { key: 'fontSize', label: 'Font Size', type: 'number', unit: 'px', step: 1, placeholder: '14' },
+  { key: 'fontWeight', label: 'Font Weight', type: 'select', options: ['300', '400', '500', '600', '700', '800'] },
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '16' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '24' },
+  { key: 'sticky', label: 'Sticky Navbar', type: 'toggle' },
+  { key: 'borderStyle', label: 'Border Style', type: 'select', options: ['none', 'solid', 'dashed', 'dotted'] },
+  { key: 'borderWidth', label: 'Border Width', type: 'number', unit: 'px', step: 1, placeholder: '1' },
 ]
 
 export function renderRu1Navbar(data: Ru1NavbarData): string {
