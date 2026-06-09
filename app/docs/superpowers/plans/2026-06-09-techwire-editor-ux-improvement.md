@@ -1,10 +1,10 @@
-# Techwire Editor UX Improvement Implementation Plan
+﻿# Homepage Editor UX Improvement Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add section headers and numeric steppers to the four Ru1-Techwire block editors so non-technical users can understand and use every field.
+**Goal:** Add section headers and numeric steppers to the four Ru1-Homepage block editors so non-technical users can understand and use every field.
 
-**Architecture:** Three-file change. (1) Extend `FieldConfig` type with `'header'` union and `step` property. (2) Update the EditorSidebar template to render header dividers and stepper controls. (3) Rewrite the four Techwire field arrays in themes-data.ts with grouped headers and step/placeholder values on number fields.
+**Architecture:** Three-file change. (1) Extend `FieldConfig` type with `'header'` union and `step` property. (2) Update the EditorSidebar template to render header dividers and stepper controls. (3) Rewrite the four Homepage field arrays in themes-data.ts with grouped headers and step/placeholder values on number fields.
 
 **Tech Stack:** Vue 3, TypeScript, Tailwind (pbx- prefixed), `app/composables/editor/useBlockRegistry.ts`, `app/composables/themes/themes-data.ts`, `app/components/builder/EditorSidebar.client.vue`
 
@@ -377,7 +377,7 @@ Expected: no new type errors
 ```bash
 cd app && npm run dev
 ```
-Open the builder, add the Ru1 Techwire theme, and click on each block to open its editor. Verify:
+Open the builder, add the Ru1 Homepage theme, and click on each block to open its editor. Verify:
 - Navbar editor shows: Branding / Navigation / Buttons / Colors / Typography / Layout sections with dividers
 - Hero editor shows: Banner / Text / CTA Button / Overlay / Layout sections
 - Products editor shows: Section / Grid / Card Style / Pricing / Layout / Products sections

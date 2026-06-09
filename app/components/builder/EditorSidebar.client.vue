@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { usePageBuilderStateStore, sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
 import ProductsEditor from '../ProductsEditor.client.vue'
@@ -76,7 +76,7 @@ function toHex(v: string | undefined | null): string {
 }
 
 // ── Product block flag ────────────────────────────────────────────────────────
-const _PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 6 Products Minimal', 'Show 4 Products Centered', 'Ru1 Techwire Featured Products']
+const _PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 6 Products Minimal', 'Show 4 Products Centered', 'Ru1 Homepage Featured Products']
 
 const lastProductTitle = ref('')
 
@@ -589,7 +589,7 @@ onUnmounted(() => {
             </div>
 
             <!-- Category checkbox picker for navLinks on navbar blocks -->
-            <div v-if="field.key === 'navLinks' && (selectedBlockTitle === 'Mega-menu-Header' || selectedBlockTitle === 'Ru1 Techwire Navbar')" class="mb-2">
+            <div v-if="field.key === 'navLinks' && (selectedBlockTitle === 'Mega-menu-Header' || selectedBlockTitle === 'Ru1 Homepage Navbar')" class="mb-2">
               <button v-if="!showCategoryPicker" type="button" @click="openCategoryPicker"
                 class="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
                 + Add from Odoo

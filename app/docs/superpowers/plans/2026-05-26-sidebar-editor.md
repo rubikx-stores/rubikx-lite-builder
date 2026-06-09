@@ -1,4 +1,4 @@
-# Sidebar Editor Implementation Plan
+﻿# Sidebar Editor Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -332,7 +332,7 @@ Expected: no errors from `useEditorSidebar.ts`
 **Files:**
 - Modify: `app/composables/themes-data.ts`
 
-Add the following exports to the END of `themes-data.ts` (after the existing `ru1TechwireSections` array). Do not remove or modify any existing code.
+Add the following exports to the END of `themes-data.ts` (after the existing `ru1HomepageSections` array). Do not remove or modify any existing code.
 
 - [ ] **Step 1: Add import type for FieldConfig at the top of the file**
 
@@ -390,7 +390,7 @@ export const ru1NavbarFields: FieldConfig[] = [
 ]
 
 export function renderRu1Navbar(data: Ru1NavbarData): string {
-  return `<section data-component-title="Ru1 Techwire Navbar">
+  return `<section data-component-title="Ru1 Homepage Navbar">
 <nav class="pbx-bg-white pbx-shadow-sm">
   <div class="pbx-max-w-7xl pbx-mx-auto pbx-px-4 sm:pbx-px-6 lg:pbx-px-8">
     <div class="pbx-flex pbx-items-center pbx-justify-between pbx-gap-4 pbx-py-3">
@@ -447,7 +447,7 @@ export const ru1HeroFields: FieldConfig[] = [
 
 export function renderRu1Hero(data: Ru1HeroData): string {
   const inner = `<img class="pbx-w-full pbx-h-auto pbx-block" src="${data.imageUrl}" alt="${data.altText}" />`
-  return `<section data-component-title="Ru1 Techwire Hero">
+  return `<section data-component-title="Ru1 Homepage Hero">
 <div style="background:${data.bgColor};">
   ${data.linkUrl ? `<a href="${data.linkUrl}">${inner}</a>` : inner}
 </div>
@@ -523,7 +523,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
           <a href="${p.buttonUrl}" class="pbx-mySecondaryButton pbx-mt-auto">${p.buttonLabel}</a>
         </div>
       </div>`).join('')
-  return `<section data-component-title="Ru1 Techwire Featured Products">
+  return `<section data-component-title="Ru1 Homepage Featured Products">
 <div class="md:pbx-pt-16 md:pbx-pb-16 pbx-pt-6 pbx-pb-6 lg:pbx-px-4 pbx-px-2">
   <div class="pbx-mx-auto pbx-max-w-7xl">
     <div class="pbx-break-words pbx-font-medium pbx-text-3xl lg:pbx-text-4xl pbx-mb-8">
@@ -579,7 +579,7 @@ export const ru1FooterFields: FieldConfig[] = [
 ]
 
 export function renderRu1Footer(data: Ru1FooterData): string {
-  return `<section data-component-title="Ru1 Techwire Footer">
+  return `<section data-component-title="Ru1 Homepage Footer">
 <footer>
   <div class="pbx-max-w-7xl pbx-mx-auto pbx-px-4 sm:pbx-px-6 lg:pbx-px-8 pbx-py-12">
     <div class="pbx-grid pbx-grid-cols-1 md:pbx-grid-cols-3 pbx-gap-8">
@@ -627,7 +627,7 @@ Expected: no errors
 - [ ] **Step 1: Replace entire file**
 
 ```ts
-import { type ThemeSection, ru1TechwireSections, ru1TechwireSvg } from './themes-data'
+import { type ThemeSection, ru1HomepageSections, ru1HomepageSvg } from './themes-data'
 import {
   ru1NavbarDefaults, ru1NavbarFields, renderRu1Navbar,
   ru1HeroDefaults, ru1HeroFields, renderRu1Hero,
@@ -650,25 +650,25 @@ interface Theme {
 }
 
 export const themeRegistry: Record<string, Theme> = {
-  'ru1-techwire': {
+  'Ru1-Homepage': {
     meta: {
-      id: 'ru1-techwire',
-      name: 'Ru1-Techwire',
+      id: 'Ru1-Homepage',
+      name: 'Ru1-Homepage',
       description: 'Branded employee store theme',
       category: 'General',
-      cover_image: ru1TechwireSvg,
+      cover_image: ru1HomepageSvg,
     },
-    sections: ru1TechwireSections,
+    sections: ru1HomepageSections,
   },
 }
 
 export function useThemes() {
   const blockRegistry = useBlockRegistry()
 
-  blockRegistry.register('Ru1 Techwire Navbar', { defaults: ru1NavbarDefaults, fields: ru1NavbarFields, render: renderRu1Navbar })
-  blockRegistry.register('Ru1 Techwire Hero', { defaults: ru1HeroDefaults, fields: ru1HeroFields, render: renderRu1Hero })
-  blockRegistry.register('Ru1 Techwire Featured Products', { defaults: ru1ProductsDefaults, fields: ru1ProductsFields, render: renderRu1Products })
-  blockRegistry.register('Ru1 Techwire Footer', { defaults: ru1FooterDefaults, fields: ru1FooterFields, render: renderRu1Footer })
+  blockRegistry.register('Ru1 Homepage Navbar', { defaults: ru1NavbarDefaults, fields: ru1NavbarFields, render: renderRu1Navbar })
+  blockRegistry.register('Ru1 Homepage Hero', { defaults: ru1HeroDefaults, fields: ru1HeroFields, render: renderRu1Hero })
+  blockRegistry.register('Ru1 Homepage Featured Products', { defaults: ru1ProductsDefaults, fields: ru1ProductsFields, render: renderRu1Products })
+  blockRegistry.register('Ru1 Homepage Footer', { defaults: ru1FooterDefaults, fields: ru1FooterFields, render: renderRu1Footer })
 
   async function applyTheme(themeId: string) {
     const theme = themeRegistry[themeId]
@@ -1262,9 +1262,9 @@ Confirm:
 - Image editor appears for `<img>` elements
 - Global Page Styles button visible at bottom
 
-- [ ] **Step 4: Test mode = 'block' (click inside Ru1-Techwire Navbar)**
+- [ ] **Step 4: Test mode = 'block' (click inside Ru1-Homepage Navbar)**
 
-Apply the Ru1-Techwire theme first. Click any element inside the Navbar section.
+Apply the Ru1-Homepage theme first. Click any element inside the Navbar section.
 
 Confirm:
 - Sidebar shows "Block Content" section above element editors

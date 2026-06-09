@@ -1,4 +1,4 @@
-import type { FieldConfig } from '../editor/useBlockRegistry'
+﻿import type { FieldConfig } from '../editor/useBlockRegistry'
 
 export interface ThemeSection {
   id: null
@@ -8,7 +8,7 @@ export interface ThemeSection {
 
 const placeholderSvg = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150"><rect fill="#394152" width="200" height="150"/><polygon fill="#718096" points="65 90 90 60 115 90"/><polygon fill="#718096" points="110 90 122.5 75 135 90"/><circle fill="#718096" cx="122.5" cy="64" r="4"/></svg>')}`
 
-export const ru1TechwireSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
+export const ru1HomepageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
   <rect fill="#394152" x="0" y="0" width="280" height="18"/>
   <rect fill="#718096" x="8" y="6" width="30" height="5"/>
   <rect fill="#718096" x="180" y="6" width="18" height="5"/>
@@ -193,7 +193,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 
   const sectionStyle = data.sticky ? 'position:sticky;top:0;z-index:9999' : ''
 
-  return `<section data-component-title="Ru1 Techwire Navbar"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
+  return `<section data-component-title="Ru1 Homepage Navbar"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 <nav style="${navStyle}">
   <div class="pbx-max-w-7xl pbx-mx-auto pbx-px-4 sm:pbx-px-6 lg:pbx-px-8">
     <div class="pbx-flex pbx-items-center pbx-justify-between pbx-gap-4">
@@ -316,7 +316,7 @@ export function renderRu1Hero(data: Ru1HeroData): string {
     ${textLayer}
   </div>`
 
-  return `<section data-component-title="Ru1 Techwire Hero">
+  return `<section data-component-title="Ru1 Homepage Hero">
 <div style="${sectionStyle}">
   ${data.linkUrl ? `<a href="${data.linkUrl}" style="display:block">${inner}</a>` : inner}
 </div>
@@ -477,7 +477,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
         </div>
       </div>`).join('')
 
-  return `<section data-component-title="Ru1 Techwire Featured Products">
+  return `<section data-component-title="Ru1 Homepage Featured Products">
 ${animStyle}
 <div style="${sectionStyle}">
   <div class="pbx-mx-auto pbx-max-w-7xl">
@@ -578,7 +578,7 @@ export function renderRu1Footer(data: Ru1FooterData): string {
   const colMap: Record<string, string> = { links: linksCol, about: aboutCol, contact: contactCol }
   const orderedCols = (data.columnOrder ?? ['links', 'about', 'contact']).map(k => colMap[k] ?? '').join('\n      ')
 
-  return `<section data-component-title="Ru1 Techwire Footer">
+  return `<section data-component-title="Ru1 Homepage Footer">
 <footer style="${footerStyle}">
   <div class="pbx-max-w-7xl pbx-mx-auto">
     <div class="pbx-grid pbx-grid-cols-1 md:pbx-grid-cols-3 pbx-gap-8">
@@ -594,9 +594,9 @@ export function renderRu1Footer(data: Ru1FooterData): string {
 
 // ─── Theme sections (initial HTML derived from render(defaults)) ─────────────
 
-export const ru1TechwireSections: ThemeSection[] = [
-  { id: null, title: 'Ru1 Techwire Navbar',            html_code: renderRu1Navbar(ru1NavbarDefaults) },
-  { id: null, title: 'Ru1 Techwire Hero',              html_code: renderRu1Hero(ru1HeroDefaults) },
-  { id: null, title: 'Ru1 Techwire Featured Products', html_code: renderRu1Products(ru1ProductsDefaults) },
-  { id: null, title: 'Ru1 Techwire Footer',            html_code: renderRu1Footer(ru1FooterDefaults) },
+export const ru1HomepageSections: ThemeSection[] = [
+  { id: null, title: 'Ru1 Homepage Navbar',            html_code: renderRu1Navbar(ru1NavbarDefaults) },
+  { id: null, title: 'Ru1 Homepage Hero',              html_code: renderRu1Hero(ru1HeroDefaults) },
+  { id: null, title: 'Ru1 Homepage Featured Products', html_code: renderRu1Products(ru1ProductsDefaults) },
+  { id: null, title: 'Ru1 Homepage Footer',            html_code: renderRu1Footer(ru1FooterDefaults) },
 ]

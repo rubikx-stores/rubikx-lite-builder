@@ -1,4 +1,4 @@
-# Ru1-Techwire Editor UX Improvement
+﻿# Ru1-Homepage Editor UX Improvement
 
 **Date:** 2026-06-09
 **Scope:** Navbar, Hero, Featured Products, Footer block editors
@@ -70,7 +70,7 @@ A small bold label with a horizontal rule. No interaction, no collapse.
 
 ## Block Field Groups
 
-### Ru1 Techwire Navbar
+### Ru1 Homepage Navbar
 
 | Group | Fields |
 |---|---|
@@ -81,7 +81,7 @@ A small bold label with a horizontal rule. No interaction, no collapse.
 | Typography | fontSize (step:1, placeholder:14), fontWeight |
 | Layout | paddingY (step:4, placeholder:16), paddingX (step:4, placeholder:24), sticky, borderStyle, borderWidth (step:1, placeholder:1) |
 
-### Ru1 Techwire Hero
+### Ru1 Homepage Hero
 
 | Group | Fields |
 |---|---|
@@ -91,7 +91,7 @@ A small bold label with a horizontal rule. No interaction, no collapse.
 | Overlay | overlayColor, overlayOpacity (step:5, placeholder:40) |
 | Layout | bgColor, paddingY (step:4, placeholder:32), paddingX (step:4, placeholder:24), borderRadius (step:2, placeholder:8) |
 
-### Ru1 Techwire Featured Products
+### Ru1 Homepage Featured Products
 
 | Group | Fields |
 |---|---|
@@ -102,7 +102,7 @@ A small bold label with a horizontal rule. No interaction, no collapse.
 | Layout | bgColor, paddingY (step:4, placeholder:32), paddingX (step:4, placeholder:24) |
 | Products | products (list) |
 
-### Ru1 Techwire Footer
+### Ru1 Homepage Footer
 
 | Group | Fields |
 |---|---|
@@ -144,4 +144,4 @@ A small bold label with a horizontal rule. No interaction, no collapse.
 - Font weight labels (stays as current numeric select)
 - Collapsible/accordion sections
 - Any layout/theme changes to the sidebar shell
-- Any block other than the four Techwire blocks
+- Any block other than the four Homepage blocks

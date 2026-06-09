@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { sharedPageBuilderStore, getPageBuilder } from '@myissue/vue-website-page-builder'
 
@@ -8,7 +8,7 @@ const props = defineProps({
   blockData: { type: Object, default: null },
 })
 
-const THEME_REGISTRY_BLOCKS = ['Ru1 Techwire Featured Products']
+const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products']
 
 function debounce(fn, delay) {
   let timer
