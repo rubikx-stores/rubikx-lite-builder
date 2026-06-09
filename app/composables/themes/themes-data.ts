@@ -542,8 +542,6 @@ export const ru1FooterFields: FieldConfig[] = [
   { key: 'copyright', label: 'Copyright Text', type: 'text' },
 
   { key: '_h_colors', label: 'Colors', type: 'header' },
-  { key: 'bgColor', label: 'Background Color', type: 'color' },
-  { key: 'textColor', label: 'Text Color', type: 'color' },
   { key: 'borderColor', label: 'Border Color', type: 'color' },
 
   { key: '_h_layout', label: 'Layout', type: 'header' },
