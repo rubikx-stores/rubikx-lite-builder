@@ -390,29 +390,40 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
 }
 
 export const ru1ProductsFields: FieldConfig[] = [
+  { key: '_h_section', label: 'Section', type: 'header' },
   { key: 'sectionTitle', label: 'Section Title', type: 'text' },
   { key: 'titleAlign', label: 'Title Alignment', type: 'select', options: ['left', 'center', 'right'] },
   { key: 'titleColor', label: 'Title Color', type: 'color' },
+
+  { key: '_h_grid', label: 'Grid', type: 'header' },
   { key: 'columns', label: 'Columns', type: 'select', options: ['1', '2', '3', '4', '5', '6'] },
   { key: 'rows', label: 'Rows', type: 'select', options: ['1', '2', '3', '4', '5', '6'] },
-  { key: 'bgColor', label: 'Section Background', type: 'color' },
-  { key: 'paddingY', label: 'Vertical Padding', type: 'number' },
-  { key: 'paddingX', label: 'Horizontal Padding', type: 'number' },
-  { key: 'cardBorderRadius', label: 'Card Border Radius', type: 'number' },
-  { key: 'buttonBgColor', label: 'Button BG Color', type: 'color' },
-  { key: 'buttonTextColor', label: 'Button Text Color', type: 'color' },
-  { key: 'oldPriceColor', label: 'Old Price Color', type: 'color' },
+
+  { key: '_h_card', label: 'Card Style', type: 'header' },
+  { key: 'cardBorderRadius', label: 'Card Corner Radius', type: 'number', unit: 'px', step: 2, placeholder: '8' },
   { key: 'cardAnimation', label: 'Hover Animation', type: 'toggle' },
   { key: 'hoverEffect', label: 'Animation Type', type: 'select', options: ['Lift Up', 'Drop Down', 'Slide Left', 'Slide Right', 'Pop Out', 'Zoom In', 'Glow', 'Tilt Left', 'Tilt Right'] },
-  { key: 'hoverAmount', label: 'Animation Amount', type: 'number' },
-  { key: 'animationDuration', label: 'Animation Duration', type: 'number', unit: 'ms' },
+  { key: 'hoverAmount', label: 'Animation Amount', type: 'number', unit: 'px', step: 1, placeholder: '8' },
+  { key: 'animationDuration', label: 'Animation Duration', type: 'number', unit: 'ms', step: 50, placeholder: '300' },
+
+  { key: '_h_pricing', label: 'Pricing', type: 'header' },
+  { key: 'oldPriceColor', label: 'Old Price Color', type: 'color' },
+  { key: 'buttonBgColor', label: 'Button Background Color', type: 'color' },
+  { key: 'buttonTextColor', label: 'Button Text Color', type: 'color' },
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'bgColor', label: 'Section Background', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '32' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '24' },
+
+  { key: '_h_products', label: 'Products', type: 'header' },
   {
     key: 'products', label: 'Products', type: 'list',
     listFields: [
       { key: 'imageUrl', label: 'Image', type: 'image' },
       { key: 'name', label: 'Product Name', type: 'text' },
       { key: 'price', label: 'Price', type: 'text' },
-      { key: 'oldPrice', label: 'Old Price', type: 'text' },
+      { key: 'oldPrice', label: 'Old Price (optional)', type: 'text' },
       { key: 'buttonLabel', label: 'Button Text', type: 'text' },
       { key: 'buttonUrl', label: 'Button URL', type: 'url' },
       { key: 'colors', label: 'Color Swatches', type: 'text', placeholder: 'blue, black, #ff0000' },
