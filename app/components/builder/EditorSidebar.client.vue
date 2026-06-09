@@ -476,8 +476,16 @@ onUnmounted(() => {
         <div class="border-b border-gray-100 px-3 pt-3 pb-3">
           <template v-for="field in blockConfig.fields" :key="field.key">
 
+            <!-- header sentinel -->
+            <div v-if="field.type === 'header'" class="mb-2 mt-4 first:mt-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{{ field.label }}</span>
+                <div class="flex-1 h-px bg-gray-200"></div>
+              </div>
+            </div>
+
             <!-- image -->
-            <div v-if="field.type === 'image'" class="mb-2.5">
+            <div v-else-if="field.type === 'image'" class="mb-2.5">
               <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
               <div class="flex items-center gap-1 mb-1">
                 <input type="text" :value="blockData[field.key]" placeholder="https://..."
@@ -494,16 +502,32 @@ onUnmounted(() => {
               <p v-if="uploadError[field.key]" class="text-xs text-red-500">{{ uploadError[field.key] }}</p>
             </div>
 
-            <!-- text / url / number -->
-            <div v-else-if="['text','url','number'].includes(field.type)" class="mb-2.5">
+            <!-- text / url -->
+            <div v-else-if="field.type === 'text' || field.type === 'url'" class="mb-2.5">
               <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
-              <div class="relative">
-                <input type="text" :value="blockData[field.key]"
-                  :placeholder="field.placeholder ?? ''"
-                  :class="field.type === 'number' ? 'pr-7' : ''"
-                  class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
-                  @input="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
-                <span v-if="field.type === 'number'" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">{{ field.unit ?? 'px' }}</span>
+              <input type="text" :value="blockData[field.key]"
+                :placeholder="field.placeholder ?? ''"
+                class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
+                @input="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
+            </div>
+
+            <!-- number → stepper -->
+            <div v-else-if="field.type === 'number'" class="mb-2.5">
+              <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
+              <div class="flex items-center gap-1">
+                <button type="button"
+                  class="w-7 h-7 flex items-center justify-center border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 text-gray-600 text-base font-medium cursor-pointer shrink-0 leading-none"
+                  @click="updateBlockField(field.key, Math.max(0, Number(blockData[field.key] ?? field.placeholder ?? 0) - (field.step ?? 1)))">−</button>
+                <div class="relative flex-1">
+                  <input type="number" :value="blockData[field.key]"
+                    :placeholder="field.placeholder ?? ''"
+                    class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs text-center focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 pr-7"
+                    @input="debouncedUpdateBlockField(field.key, Number(($event.target as HTMLInputElement).value))" />
+                  <span class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">{{ field.unit ?? 'px' }}</span>
+                </div>
+                <button type="button"
+                  class="w-7 h-7 flex items-center justify-center border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 text-gray-600 text-base font-medium cursor-pointer shrink-0 leading-none"
+                  @click="updateBlockField(field.key, Number(blockData[field.key] ?? field.placeholder ?? 0) + (field.step ?? 1))">+</button>
               </div>
             </div>
 
