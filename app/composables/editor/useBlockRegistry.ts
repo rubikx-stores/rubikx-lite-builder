@@ -23,7 +23,7 @@ interface RegistryEntry {
 
 const _registry = reactive<Map<string, RegistryEntry>>(new Map())
 
-const STORAGE_KEY = 'app-block-registry-v5'
+const STORAGE_KEY = 'app-block-registry-v6'
 let _storageCache: Record<string, Record<string, any>> | null = null
 
 function _loadStorage(): Record<string, Record<string, any>> {
@@ -58,7 +58,18 @@ function _saveStorage() {
 
 export function useBlockRegistry() {
   function register(title: string, config: BlockEditorConfig) {
-    if (_registry.has(title)) return
+    if (_registry.has(title)) {
+      // Update config (fields/render) but keep existing state
+      const existing = _registry.get(title)!
+      existing.config = config
+      // Merge any new default fields that don't exist in current state
+      Object.keys(config.defaults).forEach(key => {
+        if (!(key in existing.state)) {
+          existing.state[key] = (config.defaults as any)[key]
+        }
+      })
+      return
+    }
     const stored = _loadStorage()[title]
     // Merge defaults with stored so newly-added fields default-fill,
     // but existing field values from storage win.

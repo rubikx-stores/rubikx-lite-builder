@@ -34,6 +34,7 @@ export interface MegaMenuHeaderData {
   brandFontWeight: string
   navLinks: NavLink[]
   navLinksAlign: string
+  dynamicCategories: boolean
   linkFontSize: number
   linkFontWeight: string
   linkColor: string
@@ -61,14 +62,11 @@ export const megaMenuHeaderDefaults: MegaMenuHeaderData = {
   brandFontWeight: '700',
 
   navLinks: [
-    { label: 'Home',       href: '/'           },
-    { label: 'Contact',    href: '/contact'    },
-    { label: 'Categories', href: '/categories', megaMenu: [
-      { label: 'Women', href: '/women', products: [] },
-      { label: 'Men',   href: '/men',   products: [] },
-    ]},
+    { label: 'Home',    href: '/'        },
+    { label: 'Contact', href: '/contact' },
   ],
   navLinksAlign: 'center',
+  dynamicCategories: false,
   linkFontSize: 14,
   linkFontWeight: '500',
   linkColor: '#1f2937',
@@ -113,15 +111,16 @@ export const megaMenuHeaderFields: FieldConfig[] = [
       { key: 'href',  label: 'URL',   type: 'url',  placeholder: 'e.g. /shop or https://…' },
     ],
   },
-  { key: 'navLinksAlign',   label: 'Links Position',       type: 'select',
+  { key: 'navLinksAlign',      label: 'Links Position',                  type: 'select',
     options: ['left', 'center', 'right']                                    },
-  { key: 'linkColor',       label: 'Link Colour',          type: 'color'   },
+  { key: 'linkColor',          label: 'Link Colour',                       type: 'color'   },
   { key: 'linkFontSize',    label: 'Link Font Size (px)',   type: 'number',
     placeholder: '14'                                                       },
   { key: 'linkFontWeight',  label: 'Link Font Weight',      type: 'select',
     options: ['400', '500', '600', '700']                                   },
 
-  { key: 'showSearch',      label: 'Show Search Bar',       type: 'toggle'  },
+  { key: 'showSearch',        label: 'Show Search Bar',               type: 'toggle'  },
+  { key: 'dynamicCategories', label: 'Dynamic Categories from Odoo',  type: 'toggle'  },
   { key: 'searchPlaceholder', label: 'Search Placeholder',  type: 'text',
     placeholder: 'e.g. Search products…'                                    },
   { key: 'searchAlign',     label: 'Search Position',       type: 'select',
@@ -193,21 +192,43 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     }).join('')
   }
 
-  const linksEl = data.navLinks.length
-    ? `<nav style="display:flex;align-items:center;gap:1.5rem;">${
-        data.navLinks.map(l => {
-          if (l.megaMenu && l.megaMenu.length > 0) {
-            const groups = l.megaMenu.map(g => ({ label: g.label, href: g.href, ids: g.products.map(p => p.id) }))
-            const json = JSON.stringify(groups).replace(/"/g, '&quot;')
-            const staticContent = renderStaticDrop(l.megaMenu)
-            return `<div class="pbx-mega-item" data-mega-json="${json}" style="position:relative;display:inline-block;">` +
-              `<a href="${l.href}" style="${linkStyle}cursor:pointer;">${l.label} ▾</a>` +
-              `<div class="pbx-mega-drop" style="display:none;position:absolute;top:100%;left:0;min-width:260px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100;overflow:hidden;">${staticContent}</div>` +
-              `</div>`
-          }
-          return `<a href="${l.href}" style="${linkStyle}">${l.label}</a>`
-        }).join('')
-      }</nav>`
+  const staticLinks = data.navLinks.length
+    ? data.navLinks.map(l => {
+        if (l.megaMenu && l.megaMenu.length > 0) {
+          const groups = l.megaMenu.map(g => ({ label: g.label, href: g.href, ids: g.products.map(p => p.id) }))
+          const json = JSON.stringify(groups).replace(/'/g, '&quot;')
+          const staticContent = renderStaticDrop(l.megaMenu)
+          return `<div class='pbx-mega-item' data-mega-json='${json}' style='position:relative;display:inline-block;'>` +
+            `<a href='${l.href}' style='${linkStyle}cursor:pointer;'>${l.label} ▾</a>` +
+            `<div class='pbx-mega-drop' style='display:none;position:absolute;top:100%;left:0;min-width:260px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100;overflow:hidden;'>${staticContent}</div>` +
+            `</div>`
+        }
+        return `<a href='${l.href}' style='${linkStyle}'>${l.label}</a>`
+      }).join('')
+    : ''
+
+  const dynamicPlaceholder = data.dynamicCategories
+    ? `<div
+        data-rubikx-component='CategoryNav'
+        data-on-mount='loadCategories'
+        data-max-items='20'
+        data-label='Categories'
+        data-link-color='${data.linkColor}'
+        data-font-size='${data.linkFontSize}'
+        data-font-weight='${data.linkFontWeight}'
+        style='position:relative;display:inline-block;'
+        onmouseover='this.querySelector("div").style.display="block"'
+        onmouseout='this.querySelector("div").style.display="none"'
+      >
+        <a style='${linkStyle}cursor:pointer;'>Categories ▾</a>
+        <div style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;'>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Loads from Odoo on live site</span>
+        </div>
+      </div>`
+    : ''
+
+  const linksEl = (staticLinks || dynamicPlaceholder)
+    ? `<nav style='display:flex;align-items:center;gap:1.5rem;'>${staticLinks}${dynamicPlaceholder}</nav>`
     : ''
 
   const buttonsEl = data.ctaButtons.length
