@@ -2,10 +2,9 @@
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { usePageBuilderStateStore, sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
 import ProductsEditor from '../ProductsEditor.client.vue'
-import { buildCategoryTree } from '~/composables/categories/buildCategoryTree'
-import type { FlatCategory, CategoryNode } from '~/composables/categories/buildCategoryTree'
 import { productImageSrc } from '~/composables/useProductImageSrc'
 import { getDomain, faviconUrl } from '~/composables/useSocialIcons'
+import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
 
 const store = usePageBuilderStateStore() as any
 const {
@@ -120,6 +119,14 @@ function debouncedUpdateBlockField(fieldKey: string, value: any) {
   }, 50)
 }
 
+async function onToggleField(fieldKey: string, newValue: boolean) {
+  await updateBlockField(fieldKey, newValue)
+  if (fieldKey === 'dynamicCategories' && newValue === true) {
+    await nextTick()
+    hydrateComponents()
+  }
+}
+
 // Debounced list-item updater — fires 150ms after the user stops typing so
 // every keystroke reflects in the canvas without hammering _applyBlockRender.
 let _listItemDebounceTimer = 0
@@ -174,34 +181,6 @@ const colOrderLabelMap: Record<string, string> = {
   info: 'Info Panel', form: 'Form',
 }
 
-// ── Category picker for navLinks ──────────────────────────────────────────────
-const loadingCategories = ref(false)
-const availableCategories = ref<CategoryNode[]>([])
-const selectedCategoryIds = ref(new Set<number>())
-const showCategoryPicker = ref(false)
-
-async function openCategoryPicker() {
-  if (availableCategories.value.length > 0) { showCategoryPicker.value = true; return }
-  loadingCategories.value = true
-  try {
-    const flat = await $fetch<FlatCategory[]>('/api/categories')
-    availableCategories.value = buildCategoryTree(flat)
-    showCategoryPicker.value = true
-  } finally {
-    loadingCategories.value = false
-  }
-}
-
-function toggleCategory(id: number) {
-  const s = new Set(selectedCategoryIds.value)
-  s.has(id) ? s.delete(id) : s.add(id)
-  selectedCategoryIds.value = s
-}
-
-function closePicker() {
-  showCategoryPicker.value = false
-  selectedCategoryIds.value = new Set()
-}
 
 // ── Mega menu editor (Mega-menu-Header only) ──────────────────────────────────
 interface MegaProduct { id: number; name: string; price: number; image: string }
@@ -293,62 +272,6 @@ function applyMegaMenuToLink() {
   closeMegaMenuEditor()
 }
 
-function applySelectedCategories() {
-  const title = selectedBlockTitle.value
-  if (!title) return
-  const existing: any[] = (blockData.value as any)?.navLinks ?? []
-  const seen = new Set<string>()
-  const dedupedExisting = existing.filter((l: any) => {
-    if (seen.has(l.label)) return false
-    seen.add(l.label)
-    return true
-  })
-  const toAdd = availableCategories.value.filter(c =>
-    selectedCategoryIds.value.has(c.id) && !seen.has(c.displayName)
-  )
-  const toHref = (c: { headlessName: string; name: string }) =>
-    `/${typeof c.headlessName === 'string' && c.headlessName ? c.headlessName : c.name.toLowerCase()}`
-
-  let merged: any[]
-  if (title === 'Mega-menu-Header') {
-    // Populate children on the existing "Categories" navLink (matched by href or label),
-    // merging newly selected categories into its children. Creates the link if absent.
-    const newChildren = toAdd.map(c => ({
-      label: c.displayName,
-      href: toHref(c),
-      children: c.children.map(ch => ({ label: ch.displayName, href: toHref(ch) })),
-    }))
-    const catIdx = dedupedExisting.findIndex((l: any) =>
-      l.href === '/categories' || l.label?.toLowerCase() === 'categories'
-    )
-    if (catIdx !== -1) {
-      const updated = dedupedExisting.map((l: any, i: number) => {
-        if (i !== catIdx) return l
-        const existingChildren: any[] = l.children ?? []
-        const childSeen = new Set(existingChildren.map((ch: any) => ch.label))
-        return {
-          ...l,
-          children: [...existingChildren, ...newChildren.filter(c => !childSeen.has(c.label))],
-        }
-      })
-      merged = updated
-    } else {
-      merged = [...dedupedExisting, ...newChildren]
-    }
-  } else if (title === 'Mega-menu-Header') {
-    merged = [
-      ...dedupedExisting,
-      ...toAdd.map(c => ({ label: c.displayName, href: toHref(c) })),
-    ]
-  } else {
-    merged = [
-      ...dedupedExisting,
-      ...toAdd.map(c => ({ label: c.displayName, url: toHref(c), visible: true })),
-    ]
-  }
-  updateBlockField('navLinks', merged)
-  closePicker()
-}
 
 // ── Teleport into library right panel scroll area ─────────────────────────────
 const _libStore = usePageBuilderStateStore() as any
@@ -548,7 +471,7 @@ onUnmounted(() => {
               <button type="button"
                 class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors border-none cursor-pointer shrink-0"
                 :class="blockData[field.key] ? 'bg-blue-500' : 'bg-gray-200'"
-                @click="updateBlockField(field.key, !blockData[field.key])">
+                @click="onToggleField(field.key, !blockData[field.key])">
                 <span class="inline-block h-3.5 w-3.5 rounded-full bg-white shadow transform transition-transform"
                   :class="blockData[field.key] ? 'translate-x-4' : 'translate-x-0.5'" />
               </button>
@@ -584,40 +507,6 @@ onUnmounted(() => {
                       {{ colOrderLabelMap[opt] ?? opt }}
                     </option>
                   </select>
-                </div>
-              </div>
-            </div>
-
-            <!-- Category checkbox picker for navLinks on navbar blocks -->
-            <div v-if="field.key === 'navLinks' && (selectedBlockTitle === 'Mega-menu-Header' || selectedBlockTitle === 'Ru1 Homepage Navbar')" class="mb-2">
-              <button v-if="!showCategoryPicker" type="button" @click="openCategoryPicker"
-                class="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
-                + Add from Odoo
-              </button>
-              <div v-else class="border border-gray-200 rounded-md overflow-hidden text-xs">
-                <div class="px-2 py-1.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                  <span class="font-medium text-gray-600">Add categories</span>
-                  <button type="button" @click="closePicker" class="text-gray-400 hover:text-gray-600 bg-transparent border-none cursor-pointer">✕</button>
-                </div>
-                <div v-if="loadingCategories" class="px-2 py-3 text-gray-400 text-center">Loading…</div>
-                <div v-else class="max-h-40 overflow-y-auto">
-                  <label v-for="cat in availableCategories" :key="cat.id"
-                    class="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 cursor-pointer">
-                    <input type="checkbox" :checked="selectedCategoryIds.has(cat.id)"
-                      @change="toggleCategory(cat.id)" class="cursor-pointer" />
-                    <span class="text-gray-700">{{ cat.displayName }}</span>
-                  </label>
-                  <div v-if="!availableCategories.length" class="px-2 py-2 text-gray-400 text-center">No categories found</div>
-                </div>
-                <div class="px-2 py-1.5 bg-gray-50 border-t border-gray-100 flex gap-1.5">
-                  <button type="button" @click="applySelectedCategories" :disabled="selectedCategoryIds.size === 0"
-                    class="flex-1 text-xs border border-gray-900 rounded px-2 py-1 bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
-                    Add Selected
-                  </button>
-                  <button type="button" @click="closePicker"
-                    class="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
-                    Cancel
-                  </button>
                 </div>
               </div>
             </div>

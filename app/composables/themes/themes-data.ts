@@ -62,6 +62,7 @@ export interface Ru1NavbarData {
   showSearch: boolean
   searchPlaceholder: string
   navLinks: NavLink[]
+  dynamicCategories: boolean
   showSignIn: boolean
   signInLabel: string
   signInUrl: string
@@ -93,6 +94,7 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
     { label: 'Shop', url: '/shop', visible: true },
     { label: 'About Us', url: '/about', visible: true },
   ],
+  dynamicCategories: false,
   showSignIn: true,
   signInLabel: 'Sign In',
   signInUrl: '/signin',
@@ -129,6 +131,7 @@ export const ru1NavbarFields: FieldConfig[] = [
   },
   { key: 'showSearch', label: 'Search Bar', type: 'toggle' },
   { key: 'searchPlaceholder', label: 'Search Placeholder Text', type: 'text' },
+  { key: 'dynamicCategories', label: 'Dynamic Categories from Odoo', type: 'toggle' },
 
   { key: '_h_buttons', label: 'Buttons', type: 'header' },
   { key: 'showSignIn', label: 'Show Sign In', type: 'toggle' },
@@ -191,6 +194,25 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   const visibleNavLinks = data.navLinks.filter(l => l.visible !== false)
   const navLinkEls = visibleNavLinks.map(l => `<a href="${l.url}" style="color:${data.textColor}" class="pbx-text-sm pbx-font-medium pbx-no-underline">${l.label}</a>`)
 
+  const dynamicPlaceholder = data.dynamicCategories
+    ? `<div
+        data-rubikx-component='CategoryNav'
+        data-on-mount='loadCategories'
+        data-max-items='20'
+        data-link-color='${data.textColor}'
+        data-font-size='${data.fontSize}'
+        data-font-weight='${data.fontWeight}'
+        style='position:relative;display:inline-block;'
+        onmouseover='this.querySelector("div").style.display="block"'
+        onmouseout='this.querySelector("div").style.display="none"'
+      >
+        <a style='color:${data.textColor};font-size:${data.fontSize}px;cursor:pointer;'>Categories ▾</a>
+        <div style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;'>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Loads from Odoo on live site</span>
+        </div>
+      </div>`
+    : ''
+
   const sectionStyle = data.sticky ? 'position:sticky;top:0;z-index:9999' : ''
 
   return `<section data-component-title="Ru1 Homepage Navbar"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
@@ -203,8 +225,8 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
         ${topRight.join('\n        ')}
       </div>
     </div>
-    ${visibleNavLinks.length ? `<div class="pbx-hidden md:pbx-flex pbx-items-center pbx-gap-6 pbx-py-2">
-      ${navLinkEls.join('\n      ')}
+    ${(visibleNavLinks.length || dynamicPlaceholder) ? `<div class="pbx-hidden md:pbx-flex pbx-items-center pbx-gap-6 pbx-py-2">
+      ${navLinkEls.join('\n      ')}${dynamicPlaceholder}
     </div>` : ''}
   </div>
 </nav>
