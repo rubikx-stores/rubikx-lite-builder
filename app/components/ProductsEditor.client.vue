@@ -8,7 +8,7 @@ const props = defineProps({
   blockData: { type: Object, default: null },
 })
 
-const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products']
+const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru3 Shop Products']
 
 function debounce(fn, delay) {
   let timer

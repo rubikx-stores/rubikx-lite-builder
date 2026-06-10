@@ -623,3 +623,316 @@ export const ru1HomepageSections: ThemeSection[] = [
   { id: null, title: 'Ru1 Homepage Featured Products', html_code: renderRu1Products(ru1ProductsDefaults) },
   { id: null, title: 'Ru1 Homepage Footer',            html_code: renderRu1Footer(ru1FooterDefaults) },
 ]
+
+// ─── Ru3 Shop Header ──────────────────────────────────────────────────────────
+
+export const ru3ShopSvg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 340'>
+  <rect width='280' height='340' fill='#f8f9fa'/>
+  <rect x='0' y='0' width='280' height='32' fill='#394152'/>
+  <rect x='10' y='10' width='60' height='8' rx='2' fill='#718096'/>
+  <rect x='180' y='10' width='40' height='8' rx='2' fill='#718096'/>
+  <rect x='228' y='10' width='40' height='8' rx='2' fill='#718096'/>
+  <rect x='0' y='32' width='280' height='24' fill='#eef0f3'/>
+  <rect x='8' y='39' width='40' height='10' rx='5' fill='#394152'/>
+  <rect x='54' y='39' width='36' height='10' rx='5' fill='#394152'/>
+  <rect x='96' y='39' width='32' height='10' rx='5' fill='#394152'/>
+  <rect x='134' y='39' width='38' height='10' rx='5' fill='#394152'/>
+  <rect x='178' y='39' width='34' height='10' rx='5' fill='#394152'/>
+  <rect x='8' y='68' width='58' height='64' rx='4' fill='#394152'/>
+  <rect x='8' y='136' width='40' height='6' rx='2' fill='#394152'/>
+  <rect x='8' y='146' width='28' height='5' rx='2' fill='#718096'/>
+  <rect x='74' y='68' width='58' height='64' rx='4' fill='#394152'/>
+  <rect x='74' y='136' width='40' height='6' rx='2' fill='#394152'/>
+  <rect x='74' y='146' width='28' height='5' rx='2' fill='#718096'/>
+  <rect x='140' y='68' width='58' height='64' rx='4' fill='#394152'/>
+  <rect x='140' y='136' width='40' height='6' rx='2' fill='#394152'/>
+  <rect x='140' y='242' width='28' height='5' rx='2' fill='#718096'/>
+  <rect x='214' y='68' width='58' height='64' rx='4' fill='#394152'/>
+  <rect x='214' y='136' width='40' height='6' rx='2' fill='#394152'/>
+  <rect x='214' y='146' width='28' height='5' rx='2' fill='#718096'/>
+  <rect x='8' y='164' width='58' height='64' rx='4' fill='#394152'/>
+  <rect x='8' y='232' width='40' height='6' rx='2' fill='#394152'/>
+  <rect x='8' y='242' width='28' height='5' rx='2' fill='#718096'/>
+  <rect x='74' y='164' width='58' height='64' rx='4' fill='#394152'/>
+  <rect x='74' y='232' width='40' height='6' rx='2' fill='#394152'/>
+  <rect x='74' y='242' width='28' height='5' rx='2' fill='#718096'/>
+  <rect x='140' y='164' width='58' height='64' rx='4' fill='#394152'/>
+  <rect x='140' y='232' width='40' height='6' rx='2' fill='#394152'/>
+  <rect x='140' y='146' width='28' height='5' rx='2' fill='#718096'/>
+  <rect x='214' y='164' width='58' height='64' rx='4' fill='#394152'/>
+  <rect x='214' y='232' width='40' height='6' rx='2' fill='#394152'/>
+  <rect x='214' y='242' width='28' height='5' rx='2' fill='#718096'/>
+  <rect x='90' y='260' width='100' height='20' rx='10' fill='#394152'/>
+  <rect x='110' y='266' width='60' height='8' rx='2' fill='#718096'/>
+</svg>`
+
+export interface Ru3ShopHeaderData {
+  pageTitle: string
+  breadcrumb: string
+  bgColor: string
+  textColor: string
+  paddingY: number
+  paddingX: number
+  showProductCount: boolean
+  productCountText: string
+  showSortBy: boolean
+}
+
+export const ru3ShopHeaderDefaults: Ru3ShopHeaderData = {
+  pageTitle: 'Shop All',
+  breadcrumb: 'Home > Shop All',
+  bgColor: '#ffffff',
+  textColor: '#111111',
+  paddingY: 24,
+  paddingX: 16,
+  showProductCount: true,
+  productCountText: '13 Products',
+  showSortBy: true,
+}
+
+export const ru3ShopHeaderFields: FieldConfig[] = [
+  { key: 'pageTitle',         label: 'Page Title',         type: 'text',   placeholder: 'e.g. Shop All' },
+  { key: 'breadcrumb',        label: 'Breadcrumb',         type: 'text',   placeholder: 'e.g. Home > Shop All' },
+  { key: 'bgColor',           label: 'Background Color',   type: 'color' },
+  { key: 'textColor',         label: 'Text Color',         type: 'color' },
+  { key: 'paddingY',          label: 'Vertical Padding (px)',   type: 'number', placeholder: '24' },
+  { key: 'paddingX',          label: 'Horizontal Padding (px)', type: 'number', placeholder: '16' },
+  { key: 'showProductCount',  label: 'Show Product Count', type: 'toggle' },
+  { key: 'productCountText',  label: 'Product Count Text', type: 'text',   placeholder: 'e.g. 13 Products' },
+  { key: 'showSortBy',        label: 'Show Sort By',       type: 'toggle' },
+]
+
+export function renderRu3ShopHeader(data: Ru3ShopHeaderData): string {
+  return `<section data-component-title='Ru3 Shop Header'>
+<div style='background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;border-bottom:1px solid #e5e7eb;'>
+  <div style='max-width:80rem;margin:0 auto;'>
+    <div style='display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:14px;color:#6b7280;'>
+      <span>${data.breadcrumb}</span>
+    </div>
+    <div style='display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;'>
+      <h1 data-field-key='pageTitle' style='font-size:28px;font-weight:700;color:${data.textColor};margin:0;'>${data.pageTitle}</h1>
+      <div style='display:flex;align-items:center;gap:16px;'>
+        ${data.showProductCount ? `<span style='font-size:14px;color:#6b7280;font-weight:500;'>${data.productCountText}</span>` : ''}
+        ${data.showSortBy ? `<div style='display:flex;align-items:center;gap:8px;font-size:14px;color:#374151;'>
+          <span>Sort By:</span>
+          <select style='border:1px solid #e5e7eb;border-radius:6px;padding:6px 12px;font-size:14px;background:#fff;cursor:pointer;outline:none;'>
+            <option>Default</option>
+            <option>Price: Low to High</option>
+            <option>Price: High to Low</option>
+            <option>Newest</option>
+          </select>
+        </div>` : ''}
+      </div>
+    </div>
+  </div>
+</div>
+</section>`
+}
+
+// ─── Ru3 Shop Filters ─────────────────────────────────────────────────────────
+
+export interface Ru3ShopFiltersData {
+  bgColor: string
+  borderColor: string
+  paddingY: number
+  paddingX: number
+  showCategories: boolean
+  showColor: boolean
+  showSize: boolean
+  showBrands: boolean
+  showPrice: boolean
+}
+
+export const ru3ShopFiltersDefaults: Ru3ShopFiltersData = {
+  bgColor: '#ffffff',
+  borderColor: '#e5e7eb',
+  paddingY: 12,
+  paddingX: 16,
+  showCategories: true,
+  showColor: true,
+  showSize: true,
+  showBrands: true,
+  showPrice: true,
+}
+
+export const ru3ShopFiltersFields: FieldConfig[] = [
+  { key: 'bgColor',          label: 'Background Color',       type: 'color' },
+  { key: 'borderColor',      label: 'Border Color',           type: 'color' },
+  { key: 'paddingY',         label: 'Vertical Padding (px)',  type: 'number' },
+  { key: 'paddingX',         label: 'Horizontal Padding (px)',type: 'number' },
+  { key: 'showCategories',   label: 'Show Categories',        type: 'toggle' },
+  { key: 'showColor',        label: 'Show Color',             type: 'toggle' },
+  { key: 'showSize',         label: 'Show Size',              type: 'toggle' },
+  { key: 'showBrands',       label: 'Show Brands',            type: 'toggle' },
+  { key: 'showPrice',        label: 'Show Price',             type: 'toggle' },
+]
+
+export function renderRu3ShopFilters(data: Ru3ShopFiltersData): string {
+  const filters = [
+    data.showCategories ? 'Categories' : null,
+    data.showColor ? 'Color' : null,
+    data.showSize ? 'Size' : null,
+    data.showBrands ? 'Brands' : null,
+    data.showPrice ? 'Price' : null,
+  ].filter(Boolean)
+
+  return `<section data-component-title='Ru3 Shop Filters'>
+<div style='background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;border-bottom:1px solid ${data.borderColor};'>
+  <div style='max-width:80rem;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;'>
+    ${filters.map(f => `<button style='display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid ${data.borderColor};border-radius:6px;background:#fff;font-size:14px;color:#374151;cursor:pointer;white-space:nowrap;'>
+      ${f}
+      <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><polyline points='6 9 12 15 18 9'></polyline></svg>
+    </button>`).join('')}
+  </div>
+</div>
+</section>`
+}
+
+// ─── Ru3 Shop Products ────────────────────────────────────────────────────────
+
+export interface Ru3ShopProductsData {
+  sectionTitle: string
+  titleAlign: string
+  titleColor: string
+  columns: 1 | 2 | 3 | 4 | 5 | 6
+  rows: number
+  products: Product[]
+  bgColor: string
+  paddingY: number
+  paddingX: number
+  cardBorderRadius: number
+  buttonBgColor: string
+  buttonTextColor: string
+  oldPriceColor: string
+  cardAnimation: boolean
+  hoverEffect: string
+  hoverAmount: number
+  animationDuration: number
+  showLoadMore: boolean
+  loadMoreLabel: string
+  loadMoreBgColor: string
+  loadMoreTextColor: string
+}
+
+export const ru3ShopProductsDefaults: Ru3ShopProductsData = {
+  sectionTitle: '',
+  titleAlign: 'left',
+  titleColor: '#111111',
+  columns: 4,
+  rows: 2,
+  products: Array.from({ length: 8 }, () => ({
+    imageUrl: '',
+    name: 'Product Name',
+    price: '$0.00',
+    oldPrice: '',
+    buttonLabel: 'Shop Now',
+    buttonUrl: '/shop',
+    colors: '',
+  })),
+  bgColor: '#ffffff',
+  paddingY: 24,
+  paddingX: 16,
+  cardBorderRadius: 8,
+  buttonBgColor: '#111111',
+  buttonTextColor: '#ffffff',
+  oldPriceColor: '#9ca3af',
+  cardAnimation: false,
+  hoverEffect: 'Lift Up',
+  hoverAmount: 4,
+  animationDuration: 300,
+  showLoadMore: true,
+  loadMoreLabel: 'Load More',
+  loadMoreBgColor: '#111111',
+  loadMoreTextColor: '#ffffff',
+}
+
+export const ru3ShopProductsFields: FieldConfig[] = [
+  { key: 'bgColor',           label: 'Background Color',          type: 'color' },
+  { key: 'paddingY',          label: 'Vertical Padding (px)',     type: 'number' },
+  { key: 'paddingX',          label: 'Horizontal Padding (px)',   type: 'number' },
+  { key: 'columns',           label: 'Columns',                   type: 'select', options: ['2', '3', '4'] },
+  { key: 'rows',              label: 'Rows',                      type: 'number', placeholder: '2' },
+  { key: 'cardBorderRadius',  label: 'Card Border Radius (px)',   type: 'number' },
+  { key: 'buttonBgColor',     label: 'Button Background',         type: 'color' },
+  { key: 'buttonTextColor',   label: 'Button Text Color',         type: 'color' },
+  { key: 'oldPriceColor',     label: 'Old Price Color',           type: 'color' },
+  { key: 'cardAnimation',     label: 'Hover Animation',           type: 'toggle' },
+  { key: 'hoverEffect',       label: 'Animation Type',            type: 'select', options: ['Lift Up', 'Drop Down', 'Slide Left', 'Slide Right', 'Pop Out', 'Zoom In', 'Glow', 'Tilt Left', 'Tilt Right'] },
+  { key: 'hoverAmount',       label: 'Animation Amount',          type: 'number' },
+  { key: 'animationDuration', label: 'Animation Duration (ms)',   type: 'number' },
+  { key: 'showLoadMore',      label: 'Show Load More Button',     type: 'toggle' },
+  { key: 'loadMoreLabel',     label: 'Load More Label',           type: 'text',   placeholder: 'e.g. Load More' },
+  { key: 'loadMoreBgColor',   label: 'Load More BG Color',        type: 'color' },
+  { key: 'loadMoreTextColor', label: 'Load More Text Color',      type: 'color' },
+]
+
+export function renderRu3ShopProducts(data: Ru3ShopProductsData): string {
+  const colCls = _colClass[String(data.columns)] ?? _colClass['4']
+  const _hoverCSS = (effect: string, amount: number): string => {
+    switch (effect) {
+      case 'Lift Up':    return `transform:translateY(-${amount}px)`
+      case 'Drop Down':  return `transform:translateY(${amount}px)`
+      case 'Slide Left': return `transform:translateX(-${amount}px)`
+      case 'Slide Right':return `transform:translateX(${amount}px)`
+      case 'Pop Out':    return `transform:scale(${1 + amount / 100})`
+      case 'Zoom In':    return `transform:scale(${1 + amount / 100});box-shadow:0 25px 50px rgba(0,0,0,0.15)`
+      case 'Glow':       return `box-shadow:0 0 ${amount}px rgba(99,102,241,0.7)`
+      case 'Tilt Left':  return `transform:rotate(-${amount}deg)`
+      case 'Tilt Right': return `transform:rotate(${amount}deg)`
+      default:           return `transform:translateY(-${amount}px)`
+    }
+  }
+  const animStyle = data.cardAnimation
+    ? `<style>.ru3-product-card{transition:transform ${data.animationDuration}ms ease,box-shadow ${data.animationDuration}ms ease}.ru3-product-card:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}</style>`
+    : ''
+  const cardCls = data.cardAnimation ? 'ru3-product-card' : ''
+
+  const sectionStyle = [
+    data.bgColor ? `background:${data.bgColor}` : '',
+    `padding:${data.paddingY}px ${data.paddingX}px`,
+  ].filter(Boolean).join(';')
+
+  const maxVisible = data.columns * (data.rows ?? 1)
+  const placeholder = { imageUrl: placeholderSvg, name: 'Product Name', price: '$0.00', oldPrice: '', buttonLabel: 'Shop Now', buttonUrl: '/shop', colors: '' }
+  const visibleProducts = [
+    ...data.products.slice(0, maxVisible),
+    ...Array(Math.max(0, maxVisible - data.products.length)).fill(placeholder),
+  ]
+  const cards = visibleProducts.map(p => `
+      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200 ${cardCls}">
+        <img class="pbx-w-full pbx-h-auto pbx-block" src="${p.imageUrl || placeholderSvg}" alt="${p.name}" />
+        <div class="pbx-flex pbx-flex-col pbx-gap-1 pbx-p-3 pbx-flex-1">
+          <p class="pbx-font-semibold pbx-text-sm">${p.name}</p>
+          <div class="pbx-flex pbx-items-center pbx-gap-2">
+            <p class="pbx-text-sm">${p.price}</p>
+            ${p.oldPrice ? `<s style="color:${data.oldPriceColor}" class="pbx-text-sm">${p.oldPrice}</s>` : ''}
+          </div>
+          ${(() => { const cs = Array.isArray(p.colors) ? '' : String(p.colors ?? '').trim(); return cs ? `<div style="display:flex;gap:6px;align-items:center;padding:4px 0">${cs.split(',').map((c: string) => c.trim()).filter(Boolean).map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.15);flex-shrink:0"></span>`).join('')}</div>` : '' })()}
+          <a href="${p.buttonUrl}" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.cardBorderRadius}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block">${p.buttonLabel}</a>
+        </div>
+      </div>`).join('')
+
+  const loadMoreBtn = data.showLoadMore
+    ? `<div style="display:flex;justify-content:center;margin-top:32px;">
+        <button style="background:${data.loadMoreBgColor};color:${data.loadMoreTextColor};border:none;border-radius:8px;padding:12px 40px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:0.02em;">${data.loadMoreLabel}</button>
+      </div>`
+    : ''
+
+  return `<section data-component-title="Ru3 Shop Products">
+${animStyle}
+<div style="${sectionStyle}">
+  <div class="pbx-mx-auto pbx-max-w-7xl">
+    <div class="pbx-grid pbx-gap-4 ${colCls}">
+      ${cards}
+    </div>
+    ${loadMoreBtn}
+  </div>
+</div>
+</section>`
+}
+
+export const ru3ShopSections: ThemeSection[] = [
+  { id: null, title: 'Ru3 Shop Header',   html_code: renderRu3ShopHeader(ru3ShopHeaderDefaults) },
+  { id: null, title: 'Ru3 Shop Filters',  html_code: renderRu3ShopFilters(ru3ShopFiltersDefaults) },
+  { id: null, title: 'Ru3 Shop Products', html_code: renderRu3ShopProducts(ru3ShopProductsDefaults) },
+]
