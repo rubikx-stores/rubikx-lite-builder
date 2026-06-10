@@ -187,6 +187,7 @@ onUnmounted(() => {
 
 onMounted(async () => {
   const builder = getPageBuilder()
+  let parsedComponents: any[] | undefined = undefined
 
   if (props.pageId) {
     const storageKey = `page-builder-update-resource-page-${sanitize(props.pageId)}`
@@ -219,6 +220,7 @@ onMounted(async () => {
 
     if (html) {
       const parsed = (builder as any).parsePageBuilderHTML(html)
+      parsedComponents = parsed.components
       localStorage.setItem(
         storageKey,
         JSON.stringify({
@@ -232,7 +234,7 @@ onMounted(async () => {
     }
   }
 
-  await builder.startBuilder(config)
+  await builder.startBuilder(config, parsedComponents)
 
   // The builder wraps sections in a container that has overflow-x:scroll, which
   // CSS spec forces overflow-y from 'visible' to 'auto'. Any overflow value other
