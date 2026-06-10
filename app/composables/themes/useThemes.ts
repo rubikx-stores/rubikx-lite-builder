@@ -1,11 +1,15 @@
-﻿import { type ThemeSection, ru1HomepageSections, ru1HomepageSvg } from './themes-data'
+﻿import { type ThemeSection, ru1HomepageSections, ru1HomepageSvg, ru3ShopSections, ru3ShopSvg } from './themes-data'
 import {
   ru1NavbarDefaults, ru1NavbarFields, renderRu1Navbar,
   ru1HeroDefaults, ru1HeroFields, renderRu1Hero,
   ru1ProductsDefaults, ru1ProductsFields, renderRu1Products,
   ru1FooterDefaults, ru1FooterFields, renderRu1Footer,
+  ru3ShopHeaderDefaults, ru3ShopHeaderFields, renderRu3ShopHeader,
+  ru3ShopFiltersDefaults, ru3ShopFiltersFields, renderRu3ShopFilters,
+  ru3ShopProductsDefaults, ru3ShopProductsFields, renderRu3ShopProducts,
 } from './themes-data'
 import { useBlockRegistry } from '../editor/useBlockRegistry'
+import { NAVBAR_TITLES, FOOTER_TITLES } from '~/composables/useGlobalSections'
 
 interface ThemeMeta {
   id: string
@@ -31,6 +35,16 @@ export const themeRegistry: Record<string, Theme> = {
     },
     sections: ru1HomepageSections,
   },
+  'Ru3-Shop': {
+    meta: {
+      id: 'Ru3-Shop',
+      name: 'Ru3 Shop Page',
+      description: 'A complete shop page with filters, sorting and product grid',
+      category: 'Shop',
+      cover_image: ru3ShopSvg,
+    },
+    sections: ru3ShopSections,
+  },
 }
 
 export function useThemes() {
@@ -40,6 +54,10 @@ export function useThemes() {
   blockRegistry.register('Ru1 Homepage Hero', { defaults: ru1HeroDefaults, fields: ru1HeroFields, render: renderRu1Hero })
   blockRegistry.register('Ru1 Homepage Featured Products', { defaults: ru1ProductsDefaults, fields: ru1ProductsFields, render: renderRu1Products })
   blockRegistry.register('Ru1 Homepage Footer', { defaults: ru1FooterDefaults, fields: ru1FooterFields, render: renderRu1Footer })
+
+  blockRegistry.register('Ru3 Shop Header', { defaults: ru3ShopHeaderDefaults, fields: ru3ShopHeaderFields, render: renderRu3ShopHeader })
+  blockRegistry.register('Ru3 Shop Filters', { defaults: ru3ShopFiltersDefaults, fields: ru3ShopFiltersFields, render: renderRu3ShopFilters })
+  blockRegistry.register('Ru3 Shop Products', { defaults: ru3ShopProductsDefaults, fields: ru3ShopProductsFields, render: renderRu3ShopProducts })
 
   async function applyTheme(themeId: string) {
     const theme = themeRegistry[themeId]

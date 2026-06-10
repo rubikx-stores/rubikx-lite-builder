@@ -4,6 +4,7 @@ import type { PageBuilderConfig } from '@myissue/vue-website-page-builder'
 import BuilderPanel from './BuilderPanel.client.vue'
 import EditorSidebar from './EditorSidebar.client.vue'
 import { productImageSrc } from '~/composables/useProductImageSrc'
+import { NAVBAR_TITLES, FOOTER_TITLES } from '~/composables/useGlobalSections'
 
 // Register all block configs eagerly on builder mount so the editor opens
 // correctly even on page reload with saved canvas data (before the user opens
@@ -66,9 +67,6 @@ async function confirmSave() {
     const parser = new DOMParser()
     const doc = parser.parseFromString(_pendingHtml, 'text/html')
     const allSections = Array.from(doc.querySelectorAll('section[data-component-title]'))
-
-    const NAVBAR_TITLES = ['Mega-menu-Header', 'Ru1 Homepage Navbar']
-    const FOOTER_TITLES = ['Ru1 Homepage Footer', 'Footer-1']
 
     const navbarSections = allSections.filter(s =>
       NAVBAR_TITLES.includes(s.getAttribute('data-component-title') ?? '')
@@ -193,8 +191,6 @@ onMounted(async () => {
   if (props.pageId) {
     const storageKey = `page-builder-update-resource-page-${sanitize(props.pageId)}`
     const pageHtmlCache = usePageHtmlCache()
-    const NAVBAR_TITLES = ['Mega-menu-Header', 'Ru1 Homepage Navbar']
-    const FOOTER_TITLES = ['Ru1 Homepage Footer', 'Footer-1']
 
     let headerHtml = pageHtmlCache.value['global-header'] ?? ''
     let contentHtml = pageHtmlCache.value[props.pageId] ?? ''
