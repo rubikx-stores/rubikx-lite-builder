@@ -118,7 +118,11 @@ async function handleApplyTheme(themeId: string) {
   if (theme) {
     await nextTick()
     for (const section of theme.sections) {
-      if (blockRegistry.hasConfig(section.title)) {
+      if (
+        blockRegistry.hasConfig(section.title) &&
+        !NAVBAR_TITLES.includes(section.title) &&
+        !FOOTER_TITLES.includes(section.title)
+      ) {
         blockRegistry.resetToDefaults(section.title)
         await applyBlockRender(section.title)
       }

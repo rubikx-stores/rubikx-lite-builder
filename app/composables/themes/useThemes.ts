@@ -62,10 +62,46 @@ export function useThemes() {
   async function applyTheme(themeId: string) {
     const theme = themeRegistry[themeId]
     if (!theme) return
+
     const { getPageBuilder } = await import('@myissue/vue-website-page-builder')
-    const builder = getPageBuilder()
-    for (const section of [...theme.sections].reverse()) {
-      await builder.addComponent(section)
+    const builder = getPageBuilder() as any
+
+    // Check if global header/footer already exist on canvas
+    const liveSectionCheck = Array.from(document.querySelectorAll('section[data-component-title]'))
+    const hasGlobals = liveSectionCheck.some(s =>
+      NAVBAR_TITLES.includes(s.getAttribute('data-component-title') ?? '') ||
+      FOOTER_TITLES.includes(s.getAttribute('data-component-title') ?? '')
+    )
+
+    if (hasGlobals) {
+      // Filter out navbar/footer from theme sections
+      const contentSections = theme.sections.filter(s =>
+        !NAVBAR_TITLES.includes(s.title) && !FOOTER_TITLES.includes(s.title)
+      )
+
+      const { usePageBuilderStateStore } = await import('@myissue/vue-website-page-builder')
+      const store = usePageBuilderStateStore() as any
+
+      // Insert in reverse order so they appear in correct order
+      for (const section of [...contentSections].reverse()) {
+        const liveSections = Array.from(document.querySelectorAll('section[data-component-title]'))
+        const headerIdx = liveSections.findIndex(s =>
+          NAVBAR_TITLES.includes(s.getAttribute('data-component-title') ?? '')
+        )
+        const insertAt = headerIdx !== -1 ? headerIdx + 1 : 0
+
+        store.setComponentArrayAddMethod('insert')
+        store.setAddComponentAddIndex(insertAt)
+        await nextTick()
+        await builder.addComponent(section)
+      }
+
+      store.setComponentArrayAddMethod('unshift')
+    } else {
+      // No globals — apply full theme as-is
+      for (const section of [...theme.sections].reverse()) {
+        await builder.addComponent(section)
+      }
     }
   }
 
