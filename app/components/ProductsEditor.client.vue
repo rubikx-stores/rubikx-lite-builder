@@ -8,7 +8,7 @@ const props = defineProps({
   blockData: { type: Object, default: null },
 })
 
-const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru3 Shop Products']
+const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru2 Shop Content', 'Ru3 Shop Products']
 
 function debounce(fn, delay) {
   let timer
@@ -26,6 +26,7 @@ const loading = ref(false)
 const errorMsg = ref('')
 const search = ref('')
 const selected = ref([])
+const applied = ref(false)
 
 const btnEnabled = ref(true)
 const btnText = ref('Shop Now')
@@ -75,6 +76,9 @@ watch(component, async (newComp) => {
   }
   if (newComp?.id && newComp.id !== _lastResetForId.value) {
     _lastResetForId.value = newComp.id
+    // Theme blocks manage selection via selectedBlockTitle watcher + onMounted.
+    // Skipping the reset here prevents updateBlockField re-renders from wiping selection.
+    if (isThemeBlock.value) return
     selected.value = []
     search.value = ''
     btnText.value = 'Shop Now'
@@ -106,6 +110,45 @@ watch(component, async (newComp) => {
     }
   }
 }, { immediate: true })
+
+function restoreSelectionForTitle(title) {
+  if (!title || !THEME_REGISTRY_BLOCKS.includes(title)) return
+  if (!products.value.length) return
+  const section = document.querySelector(`section[data-component-title="${title}"]`)
+  const storedIds = section?.getAttribute('data-selected-products')
+  if (storedIds) {
+    try {
+      const ids = JSON.parse(storedIds)
+      const restored = products.value.filter(p => ids.includes(p.id))
+      if (restored.length) { selected.value = restored; return }
+    } catch { /* ignore */ }
+  }
+  // Fallback: match by name from blockData
+  if (!selected.value.length && props.blockData?.products?.length) {
+    const matched = props.blockData.products
+      .map(tp => products.value.find(op => op.name === tp.name))
+      .filter(Boolean)
+    if (matched.length) selected.value = matched
+  }
+}
+
+// For theme blocks: collapse the applied banner when switching to a different block
+watch(() => props.selectedBlockTitle, async (newTitle, oldTitle) => {
+  if (newTitle !== oldTitle) {
+    applied.value = false
+    search.value = ''
+    // Only wipe selection when navigating away from a theme block entirely
+    if (oldTitle && THEME_REGISTRY_BLOCKS.includes(oldTitle) && !THEME_REGISTRY_BLOCKS.includes(newTitle ?? '')) {
+      selected.value = []
+    }
+    // Restore selection when focusing a theme block
+    if (newTitle && THEME_REGISTRY_BLOCKS.includes(newTitle)) {
+      await nextTick()
+      restoreSelectionForTitle(newTitle)
+    }
+  }
+})
+
 const mode = computed(() => storedMode.value || 'multiple')
 
 const maxSelection = computed(() => {
@@ -139,25 +182,18 @@ onMounted(async () => {
   const PLACEHOLDER_PRICE = 'Start customizing by editing this default text directly in the editor.'
 
   await nextTick()
-  const section = getSection()
 
-  // Pre-populate from stored data attribute (primary)
-  const storedIds = section?.getAttribute('data-selected-products')
-  if (storedIds) {
-    try {
-      const ids = JSON.parse(storedIds)
-      selected.value = products.value.filter(p => ids.includes(p.id))
-    } catch (e) {
-      // ignore parse errors
+  if (isThemeBlock.value) {
+    restoreSelectionForTitle(props.selectedBlockTitle)
+  } else {
+    const section = getSection()
+    const storedIds = section?.getAttribute('data-selected-products')
+    if (storedIds) {
+      try {
+        const ids = JSON.parse(storedIds)
+        selected.value = products.value.filter(p => ids.includes(p.id))
+      } catch { /* ignore */ }
     }
-  }
-
-  // Fallback for theme blocks: match by name from blockData.products when no IDs stored
-  if (!selected.value.length && isThemeBlock.value && props.blockData?.products?.length) {
-    const matched = props.blockData.products
-      .map(tp => products.value.find(op => op.name === tp.name))
-      .filter(Boolean)
-    if (matched.length) selected.value = matched
   }
 
   // Sync registry with restored selection so subsequent _applyBlockRender calls
@@ -186,9 +222,17 @@ function productImageSrc(image) {
   return `data:${mime};base64,${image}`
 }
 
-async function doApplyThemeBlock() {
+async function doApplyThemeBlock(confirm = false) {
   const section = getSection()
   const title = component.value?.title ?? props.selectedBlockTitle
+
+  // Read active page before re-render (re-render always resets to page 1)
+  let currentPage = 1
+  if (section) {
+    section.querySelectorAll('[data-sp]').forEach(function(p) {
+      if (p.style.display !== 'none') currentPage = +(p.dataset.sp || 1)
+    })
+  }
 
   const mapped = selected.value.map(p => ({
     imageUrl: productImageSrc(p.image),
@@ -208,16 +252,31 @@ async function doApplyThemeBlock() {
   }
 
   if (props.updateBlockField && title) {
-    // Auto-expand rows so all selected products are visible.
-    // Never shrink rows — user may have intentionally set extra empty slots.
-    const cols = Number(props.blockData?.columns ?? 4)
-    const currentRows = Number(props.blockData?.rows ?? 1)
-    const neededRows = Math.ceil(selected.value.length / cols) || 1
-    if (neededRows > currentRows) {
-      await props.updateBlockField('rows', neededRows, title)
-    }
     props.updateBlockField('products', mapped, title)
   }
+
+  // Restore the page the user was on — re-render resets to page 1
+  if (currentPage > 1) {
+    await nextTick()
+    const newSection = getSection()
+    if (newSection) {
+      const pageDivs = newSection.querySelectorAll('[data-sp]')
+      const target = Math.min(currentPage, pageDivs.length)
+      pageDivs.forEach(function(p) {
+        p.style.display = +(p.dataset.sp || 0) === target ? '' : 'none'
+      })
+      newSection.querySelectorAll('[data-spb]').forEach(function(x) {
+        const v = +(x.dataset.spb || 0)
+        if (v) {
+          x.style.background = v === target ? '#111827' : '#fff'
+          x.style.color = v === target ? '#fff' : '#374151'
+          x.style.borderColor = v === target ? '#111827' : '#d1d5db'
+        }
+      })
+    }
+  }
+
+  if (confirm) applied.value = true
 }
 
 function doApply() {
@@ -494,6 +553,22 @@ watch(cardSubtitleEnabled, () => { if (selected.value.length > 0) doApply() })
 
 <template>
   <div class="mt-1 mb-3">
+
+    <!-- ── Applied state (theme blocks after confirm) ───────────────────────── -->
+    <div v-if="isThemeBlock && applied" class="px-2 py-5 text-center">
+      <div class="w-10 h-10 rounded-full bg-green-50 border border-green-200 flex items-center justify-content mx-auto mb-2" style="display:flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;border-radius:9999px;background:#f0fdf4;border:1px solid #bbf7d0;margin:0 auto 0.5rem">
+        <span class="text-green-600 text-base">✓</span>
+      </div>
+      <p class="text-sm font-medium text-gray-800 mb-0.5">{{ selected.length }} product{{ selected.length !== 1 ? 's' : '' }} applied</p>
+      <p class="text-xs text-gray-400 mb-3">Click the block on canvas to re-edit</p>
+      <button
+        @click="applied = false"
+        class="text-xs text-blue-600 underline cursor-pointer bg-transparent border-0 p-0"
+      >Edit products</button>
+    </div>
+
+    <!-- ── Picker (default / non-applied state) ─────────────────────────────── -->
+    <template v-else>
     <p class="font-medium text-sm mb-2 px-1">
       Select products
       <span class="text-gray-400 font-normal text-xs">&nbsp;{{ selected.length }}{{ isThemeBlock ? '' : '/' + maxSelection }}</span>
@@ -575,6 +650,16 @@ watch(cardSubtitleEnabled, () => { if (selected.value.length > 0) doApply() })
             <span class="text-white text-xs leading-none">✓</span>
           </div>
         </div>
+      </div>
+
+      <!-- Apply button (theme blocks only) -->
+      <div v-if="isThemeBlock && selected.length > 0" class="px-1 mt-3">
+        <button
+          @click="doApplyThemeBlock(true)"
+          class="w-full bg-gray-900 text-white text-xs font-medium py-2 px-3 rounded cursor-pointer border-0"
+        >
+          Apply {{ selected.length }} Product{{ selected.length !== 1 ? 's' : '' }}
+        </button>
       </div>
 
       <!-- Divider -->
@@ -845,5 +930,6 @@ watch(cardSubtitleEnabled, () => { if (selected.value.length > 0) doApply() })
       </div>
       </template>
     </div>
+    </template><!-- end v-else (picker state) -->
   </div>
 </template>

@@ -624,6 +624,499 @@ export const ru1HomepageSections: ThemeSection[] = [
   { id: null, title: 'Ru1 Homepage Footer',            html_code: renderRu1Footer(ru1FooterDefaults) },
 ]
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// Ru2 Shoppage theme
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const ru2ShoppageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
+  <rect fill="#394152" x="0" y="0" width="280" height="18"/>
+  <rect fill="#718096" x="8" y="6" width="28" height="5"/>
+  <rect fill="#718096" x="185" y="6" width="16" height="5"/>
+  <rect fill="#718096" x="206" y="6" width="16" height="5"/>
+  <rect fill="#718096" x="227" y="6" width="16" height="5"/>
+  <rect fill="#718096" x="250" y="6" width="22" height="5"/>
+  <rect fill="#f3f4f6" x="0" y="18" width="280" height="28"/>
+  <rect fill="#9ca3af" x="8" y="22" width="60" height="2"/>
+  <rect fill="#374151" x="8" y="28" width="52" height="8"/>
+  <rect fill="#e5e7eb" x="0" y="46" width="280" height="1"/>
+  <rect fill="#ffffff" x="0" y="47" width="280" height="19"/>
+  <rect fill="#374151" x="4" y="53" width="18" height="3"/>
+  <rect fill="#9ca3af" x="26" y="53" width="28" height="3"/>
+  <rect fill="#e5e7eb" x="120" y="51" width="28" height="12" rx="2"/>
+  <rect fill="#e5e7eb" x="152" y="51" width="22" height="12" rx="2"/>
+  <rect fill="#e5e7eb" x="178" y="51" width="20" height="12" rx="2"/>
+  <rect fill="#e5e7eb" x="202" y="51" width="26" height="12" rx="2"/>
+  <rect fill="#e5e7eb" x="232" y="51" width="20" height="12" rx="2"/>
+  <rect fill="#e5e7eb" x="0" y="66" width="280" height="1"/>
+  <rect fill="#394152" x="4" y="69" width="65" height="46"/>
+  <polygon fill="#718096" points="10 108 30 84 50 108"/>
+  <polygon fill="#718096" points="46 108 56 96 66 108"/>
+  <rect fill="#374151" x="4" y="118" width="55" height="3"/>
+  <rect fill="#9ca3af" x="4" y="125" width="32" height="2"/>
+  <rect fill="#394152" x="73" y="69" width="65" height="46"/>
+  <polygon fill="#718096" points="79 108 99 84 119 108"/>
+  <polygon fill="#718096" points="115 108 125 96 135 108"/>
+  <rect fill="#374151" x="73" y="118" width="55" height="3"/>
+  <rect fill="#9ca3af" x="73" y="125" width="32" height="2"/>
+  <rect fill="#394152" x="142" y="69" width="65" height="46"/>
+  <polygon fill="#718096" points="148 108 168 84 188 108"/>
+  <polygon fill="#718096" points="184 108 194 96 204 108"/>
+  <rect fill="#374151" x="142" y="118" width="55" height="3"/>
+  <rect fill="#9ca3af" x="142" y="125" width="32" height="2"/>
+  <rect fill="#394152" x="211" y="69" width="65" height="46"/>
+  <polygon fill="#718096" points="217 108 237 84 257 108"/>
+  <polygon fill="#718096" points="253 108 263 96 273 108"/>
+  <rect fill="#374151" x="211" y="118" width="55" height="3"/>
+  <rect fill="#9ca3af" x="211" y="125" width="32" height="2"/>
+  <rect fill="#394152" x="4" y="133" width="65" height="46"/>
+  <polygon fill="#718096" points="10 172 30 148 50 172"/>
+  <polygon fill="#718096" points="46 172 56 160 66 172"/>
+  <rect fill="#374151" x="4" y="182" width="55" height="3"/>
+  <rect fill="#9ca3af" x="4" y="189" width="32" height="2"/>
+  <rect fill="#394152" x="73" y="133" width="65" height="46"/>
+  <polygon fill="#718096" points="79 172 99 148 119 172"/>
+  <rect fill="#374151" x="73" y="182" width="55" height="3"/>
+  <rect fill="#9ca3af" x="73" y="189" width="32" height="2"/>
+  <rect fill="#394152" x="142" y="133" width="65" height="46"/>
+  <polygon fill="#718096" points="148 172 168 148 188 172"/>
+  <rect fill="#374151" x="142" y="182" width="55" height="3"/>
+  <rect fill="#9ca3af" x="142" y="189" width="32" height="2"/>
+  <rect fill="#394152" x="211" y="133" width="65" height="46"/>
+  <polygon fill="#718096" points="217 172 237 148 257 172"/>
+  <rect fill="#374151" x="211" y="182" width="55" height="3"/>
+  <rect fill="#9ca3af" x="211" y="189" width="32" height="2"/>
+  <rect fill="#394152" x="4" y="197" width="65" height="46"/>
+  <polygon fill="#718096" points="10 236 30 212 50 236"/>
+  <polygon fill="#718096" points="46 236 56 224 66 236"/>
+  <rect fill="#374151" x="4" y="246" width="55" height="3"/>
+  <rect fill="#9ca3af" x="4" y="253" width="32" height="2"/>
+  <rect fill="#394152" x="73" y="197" width="65" height="46"/>
+  <polygon fill="#718096" points="79 236 99 212 119 236"/>
+  <rect fill="#374151" x="73" y="246" width="55" height="3"/>
+  <rect fill="#9ca3af" x="73" y="253" width="32" height="2"/>
+  <rect fill="#394152" x="142" y="197" width="65" height="46"/>
+  <polygon fill="#718096" points="148 236 168 212 188 236"/>
+  <rect fill="#374151" x="142" y="246" width="55" height="3"/>
+  <rect fill="#9ca3af" x="142" y="253" width="32" height="2"/>
+  <rect fill="#394152" x="211" y="197" width="65" height="46"/>
+  <polygon fill="#718096" points="217 236 237 212 257 236"/>
+  <rect fill="#374151" x="211" y="246" width="55" height="3"/>
+  <rect fill="#9ca3af" x="211" y="253" width="32" height="2"/>
+  <rect fill="#e5e7eb" x="96" y="270" width="14" height="10" rx="2"/>
+  <rect fill="#374151" x="114" y="270" width="14" height="10" rx="2"/>
+  <rect fill="#e5e7eb" x="132" y="270" width="14" height="10" rx="2"/>
+  <rect fill="#e5e7eb" x="150" y="270" width="14" height="10" rx="2"/>
+  <rect fill="#e5e7eb" x="168" y="270" width="14" height="10" rx="2"/>
+  <rect fill="#394152" x="0" y="314" width="280" height="26"/>
+  <rect fill="#718096" x="8" y="320" width="55" height="4"/>
+  <rect fill="#718096" x="8" y="328" width="45" height="3"/>
+  <rect fill="#718096" x="100" y="320" width="55" height="4"/>
+  <rect fill="#718096" x="100" y="328" width="40" height="3"/>
+  <rect fill="#718096" x="192" y="320" width="55" height="4"/>
+  <rect fill="#718096" x="192" y="328" width="40" height="3"/>
+</svg>`
+// ─── Ru2 Shop Hero block ─────────────────────────────────────────────────────
+
+export interface Ru2ShopHeroData {
+  pageTitle: string
+  showBreadcrumbs: boolean
+  breadcrumbs: { label: string; url: string }[]
+  bgColor: string
+  bgImageUrl: string
+  textColor: string
+  breadcrumbColor: string
+  textAlign: string
+  paddingY: number
+  paddingX: number
+  borderBottom: boolean
+  borderColor: string
+}
+
+export const ru2ShopHeroDefaults: Ru2ShopHeroData = {
+  pageTitle: 'Shop',
+  showBreadcrumbs: true,
+  breadcrumbs: [
+    { label: 'Home', url: '/' },
+    { label: 'Shop', url: '/shop' },
+  ],
+  bgColor: '#f3f4f6',
+  bgImageUrl: '',
+  textColor: '#111827',
+  breadcrumbColor: '#6b7280',
+  textAlign: 'left',
+  paddingY: 24,
+  paddingX: 16,
+  borderBottom: true,
+  borderColor: '#e5e7eb',
+}
+
+export const ru2ShopHeroFields: FieldConfig[] = [
+  { key: '_h_content', label: 'Content', type: 'header' },
+  { key: 'pageTitle', label: 'Page Title', type: 'text' },
+  { key: 'textAlign', label: 'Text Alignment', type: 'select', options: ['left', 'center', 'right'] },
+
+  { key: '_h_breadcrumbs', label: 'Breadcrumbs', type: 'header' },
+  { key: 'showBreadcrumbs', label: 'Show Breadcrumbs', type: 'toggle' },
+  {
+    key: 'breadcrumbs', label: 'Breadcrumb Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'url', label: 'URL', type: 'url' },
+    ],
+  },
+
+  { key: '_h_colors', label: 'Colors', type: 'header' },
+  { key: 'bgColor', label: 'Background Color', type: 'color' },
+  { key: 'bgImageUrl', label: 'Background Image', type: 'image' },
+  { key: 'textColor', label: 'Title Color', type: 'color' },
+  { key: 'breadcrumbColor', label: 'Breadcrumb Color', type: 'color' },
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '24' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '16' },
+  { key: 'borderBottom', label: 'Bottom Border', type: 'toggle' },
+  { key: 'borderColor', label: 'Border Color', type: 'color' },
+]
+
+export function renderRu2ShopHero(data: Ru2ShopHeroData): string {
+  const bgStyles = [
+    `background:${data.bgColor}`,
+    data.bgImageUrl ? `background-image:url('${data.bgImageUrl}');background-size:cover;background-position:center` : '',
+    `padding:${data.paddingY}px ${data.paddingX}px`,
+    data.borderBottom ? `border-bottom:1px solid ${data.borderColor}` : '',
+  ].filter(Boolean).join(';')
+
+  const breadcrumbsHtml = data.showBreadcrumbs ? `
+    <nav style="margin-top:0.5rem">
+      <ol style="display:flex;flex-wrap:wrap;align-items:center;gap:0.25rem;list-style:none;padding:0;margin:0">
+        ${(data.breadcrumbs ?? []).map((crumb, i, arr) => {
+          const isLast = i === arr.length - 1
+          return `<li style="display:flex;align-items:center;gap:0.25rem">
+            ${i > 0 ? `<span style="color:${data.breadcrumbColor};font-size:0.8125rem;margin-right:0.25rem">/</span>` : ''}
+            ${isLast
+              ? `<span style="font-size:0.8125rem;color:${data.breadcrumbColor}">${crumb.label}</span>`
+              : `<a href="${crumb.url}" style="font-size:0.8125rem;color:${data.breadcrumbColor};text-decoration:none;hover:text-decoration:underline">${crumb.label}</a>`
+            }
+          </li>`
+        }).join('')}
+      </ol>
+    </nav>` : ''
+
+  return `<section data-component-title="Ru2 Shop Hero">
+<div style="${bgStyles}">
+  <div class="pbx-mx-auto pbx-max-w-7xl" style="text-align:${data.textAlign}">
+    ${breadcrumbsHtml}
+    <h1 data-field-key="pageTitle" style="font-size:1.75rem;font-weight:700;color:${data.textColor};margin:0.5rem 0 0;line-height:1.2">${data.pageTitle}</h1>
+  </div>
+</div>
+</section>`
+}
+
+// ─── Ru2 Shop Content block ──────────────────────────────────────────────────
+
+export interface FilterDropdown {
+  label: string
+  visible: boolean
+}
+
+export interface Ru2ShopContentData {
+  showFilterBar: boolean
+  filterPosition: 'top' | 'left' | 'right'
+  showProductCount: boolean
+  showSortBy: boolean
+  sortLabel: string
+  filterDropdowns: FilterDropdown[]
+  columns: number
+  rows: number
+  showAddToCart: boolean
+  cardBorderRadius: number
+  hoverBorderColor: string
+  cardAnimation: boolean
+  hoverEffect: string
+  hoverAmount: number
+  animationDuration: number
+  viewProductBg: string
+  viewProductTextColor: string
+  viewProductRadius: number
+  oldPriceColor: string
+  buttonBgColor: string
+  buttonTextColor: string
+  products: Product[]
+  showPagination: boolean
+  totalPages: number
+  bgColor: string
+  paddingY: number
+  paddingX: number
+}
+
+const _shopColClass: Record<string, string> = {
+  '2': 'pbx-grid-cols-2',
+  '3': 'pbx-grid-cols-2 sm:pbx-grid-cols-3',
+  '4': 'pbx-grid-cols-2 sm:pbx-grid-cols-2 lg:pbx-grid-cols-4',
+  '5': 'pbx-grid-cols-2 sm:pbx-grid-cols-3 lg:pbx-grid-cols-5',
+}
+
+export const ru2ShopContentDefaults: Ru2ShopContentData = {
+  showFilterBar: true,
+  filterPosition: 'top',
+  showProductCount: true,
+  showSortBy: true,
+  sortLabel: 'Sort By',
+  filterDropdowns: [
+    { label: 'Color', visible: true },
+    { label: 'Size', visible: true },
+    { label: 'Brands', visible: true },
+    { label: 'Price', visible: true },
+  ],
+  columns: 4,
+  rows: 2,
+  showAddToCart: false,
+  cardBorderRadius: 8,
+  hoverBorderColor: '#2563eb',
+  cardAnimation: false,
+  hoverEffect: 'Lift Up',
+  hoverAmount: 6,
+  animationDuration: 300,
+  viewProductBg: '#2563eb',
+  viewProductTextColor: '#ffffff',
+  viewProductRadius: 24,
+  oldPriceColor: '#9ca3af',
+  buttonBgColor: '#111827',
+  buttonTextColor: '#ffffff',
+  products: [
+    { imageUrl: placeholderSvg, name: 'Gift Card',                     price: '',       oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
+    { imageUrl: placeholderSvg, name: "Men's Performance Polo",         price: '$67.45', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'black' },
+    { imageUrl: placeholderSvg, name: "Women's Performance Polo",       price: '$49.68', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'black' },
+    { imageUrl: placeholderSvg, name: 'Zone Performance Quarter-Zip',   price: '$30.22', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'black' },
+    { imageUrl: placeholderSvg, name: "Men's Crown Collection Shirt",   price: '$65.67', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'white, black' },
+    { imageUrl: placeholderSvg, name: "Women's Crown Collection Shirt", price: '$65.67', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'white, black' },
+    { imageUrl: placeholderSvg, name: '12" Solid Cuffed Beanie',        price: '$10.22', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'black' },
+    { imageUrl: placeholderSvg, name: '12" Pom-Pom Cuffed Beanie',      price: '$11.07', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'black' },
+    { imageUrl: placeholderSvg, name: 'Product 9',                      price: '$24.99', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
+    { imageUrl: placeholderSvg, name: 'Product 10',                     price: '$39.99', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
+    { imageUrl: placeholderSvg, name: 'Product 11',                     price: '$19.99', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
+    { imageUrl: placeholderSvg, name: 'Product 12',                     price: '$14.99', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
+    { imageUrl: placeholderSvg, name: 'City Trek Heavyweight Beanie',   price: '$41.88', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'black' },
+  ],
+  showPagination: true,
+  totalPages: 1,
+  bgColor: '',
+  paddingY: 48,
+  paddingX: 16,
+}
+
+export const ru2ShopContentFields: FieldConfig[] = [
+  // ── Section wrapper ───────────────────────────────────────────────────────
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'bgColor', label: 'Section Background', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '48' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '16' },
+
+  // ── Product grid ─────────────────────────────────────────────────────────
+  { key: '_h_grid', label: 'Grid', type: 'header' },
+  { key: 'columns', label: 'Columns', type: 'select', options: ['2', '3', '4', '5'] },
+  { key: 'rows', label: 'Rows per Page', type: 'select', options: ['1', '2', '3', '4', '5', '6', '7', '8'] },
+
+  // ── Pagination (bottom of section) ───────────────────────────────────────
+  { key: '_h_pagination', label: 'Pagination', type: 'header' },
+  { key: 'showPagination', label: 'Show Pagination', type: 'toggle' },
+
+  // ── Filter bar ────────────────────────────────────────────────────────────
+  { key: '_h_filterbar', label: 'Filter Bar', type: 'header' },
+  { key: 'showFilterBar', label: 'Show Filter Bar', type: 'toggle' },
+  { key: 'filterPosition', label: 'Filter Position', type: 'select', options: ['top', 'left', 'right'] },
+  { key: 'showProductCount', label: 'Show Product Count', type: 'toggle' },
+  { key: 'showSortBy', label: 'Show Sort By', type: 'toggle' },
+  { key: 'sortLabel', label: 'Sort Label', type: 'text' },
+  {
+    key: 'filterDropdowns', label: 'Filter Dropdowns', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'visible', label: 'Visible', type: 'toggle' },
+    ],
+  },
+
+  // ── Card (border, hover animation) ───────────────────────────────────────
+  { key: '_h_card', label: 'Card Style', type: 'header' },
+  { key: 'cardBorderRadius', label: 'Corner Radius', type: 'number', unit: 'px', step: 2, placeholder: '8' },
+  { key: 'hoverBorderColor', label: 'Hover Border Color', type: 'color' },
+  { key: 'cardAnimation', label: 'Hover Animation', type: 'toggle' },
+  { key: 'hoverEffect', label: 'Animation Type', type: 'select', options: ['Lift Up', 'Drop Down', 'Slide Left', 'Slide Right', 'Pop Out', 'Zoom In', 'Glow', 'Tilt Left', 'Tilt Right'] },
+  { key: 'hoverAmount', label: 'Animation Amount', type: 'number', unit: 'px', step: 1, placeholder: '6' },
+  { key: 'animationDuration', label: 'Duration', type: 'number', unit: 'ms', step: 50, placeholder: '300' },
+
+  // ── Image overlay (appears on hover) ─────────────────────────────────────
+  { key: '_h_viewproduct', label: 'View Product Overlay', type: 'header' },
+  { key: 'viewProductBg', label: 'Background Color', type: 'color' },
+  { key: 'viewProductTextColor', label: 'Text Color', type: 'color' },
+  { key: 'viewProductRadius', label: 'Border Radius', type: 'number', unit: 'px', step: 2, placeholder: '24' },
+
+  // ── Card info (price, add to cart) ───────────────────────────────────────
+  { key: '_h_pricing', label: 'Pricing & Button', type: 'header' },
+  { key: 'oldPriceColor', label: 'Old Price Color', type: 'color' },
+  { key: 'showAddToCart', label: 'Show Add to Cart Button', type: 'toggle' },
+  { key: 'buttonBgColor', label: 'Button Background', type: 'color' },
+  { key: 'buttonTextColor', label: 'Button Text Color', type: 'color' },
+
+  // ── Products list ─────────────────────────────────────────────────────────
+  { key: '_h_products', label: 'Products', type: 'header' },
+  {
+    key: 'products', label: 'Products', type: 'list',
+    listFields: [
+      { key: 'imageUrl', label: 'Image', type: 'image' },
+      { key: 'name', label: 'Product Name', type: 'text' },
+      { key: 'price', label: 'Price', type: 'text' },
+      { key: 'oldPrice', label: 'Old Price (optional)', type: 'text' },
+      { key: 'buttonLabel', label: 'Button Text', type: 'text' },
+      { key: 'buttonUrl', label: 'Button URL', type: 'url' },
+      { key: 'colors', label: 'Color Swatches', type: 'text', placeholder: 'blue, black, #ff0000' },
+    ],
+  },
+]
+
+export function renderRu2ShopContent(data: Ru2ShopContentData): string {
+  const colCls = _shopColClass[String(data.columns)] ?? _shopColClass['4']
+
+  const _hoverOn = (effect: string, amount: number): string => {
+    switch (effect) {
+      case 'Lift Up':     return `this.style.transform='translateY(-${amount}px)'`
+      case 'Drop Down':   return `this.style.transform='translateY(${amount}px)'`
+      case 'Slide Left':  return `this.style.transform='translateX(-${amount}px)'`
+      case 'Slide Right': return `this.style.transform='translateX(${amount}px)'`
+      case 'Pop Out':     return `this.style.transform='scale(${1 + amount / 100})'`
+      case 'Zoom In':     return `this.style.transform='scale(${1 + amount / 100})';this.style.boxShadow='0 25px 50px rgba(0,0,0,0.15)'`
+      case 'Glow':        return `this.style.boxShadow='0 0 ${amount}px rgba(99,102,241,0.7)'`
+      case 'Tilt Left':   return `this.style.transform='rotate(-${amount}deg)'`
+      case 'Tilt Right':  return `this.style.transform='rotate(${amount}deg)'`
+      default:            return `this.style.transform='translateY(-${amount}px)'`
+    }
+  }
+
+  const hoverBorder = data.hoverBorderColor || '#2563eb'
+  const dur = data.cardAnimation ? data.animationDuration : 200
+  const enterHandler = [
+    `this.style.borderColor='${hoverBorder}'`,
+    `var ov=this.querySelector('.shop-img-overlay');if(ov)ov.style.opacity='1'`,
+    data.cardAnimation ? _hoverOn(data.hoverEffect, data.hoverAmount) : '',
+  ].filter(Boolean).join(';')
+  const leaveHandler = [
+    `this.style.borderColor='#e5e7eb'`,
+    `var ov=this.querySelector('.shop-img-overlay');if(ov)ov.style.opacity='0'`,
+    data.cardAnimation ? `this.style.transform='';this.style.boxShadow=''` : '',
+  ].filter(Boolean).join(';')
+  const cardTransition = `border-color ${dur}ms ease${data.cardAnimation ? `,transform ${dur}ms ease,box-shadow ${dur}ms ease` : ''}`
+
+  const perPage = (data.columns ?? 4) * (data.rows ?? 1)
+  const productCount = data.products.length
+  const pages = Math.max(1, Math.ceil(productCount / perPage))
+
+  const renderCard = (p: Product) => {
+    const cs = Array.isArray(p.colors) ? '' : String(p.colors ?? '').trim()
+    const colorsHtml = cs
+      ? `<div style="display:flex;gap:5px;align-items:center;margin-top:6px">${cs.split(',').map((c: string) => c.trim()).filter(Boolean).map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.12);flex-shrink:0"></span>`).join('')}</div>`
+      : ''
+    const arrowBtn = `<a href="${p.buttonUrl}" style="width:32px;height:32px;border-radius:50%;background:#1e293b;display:flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`
+    const footerRow = data.showAddToCart
+      ? `<div style="display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:10px">
+           <a href="${p.buttonUrl}" style="flex:1;background:${data.buttonBgColor};color:${data.buttonTextColor};text-align:center;padding:0.5rem 0.25rem;font-size:0.8125rem;font-weight:500;text-decoration:none;border-radius:${data.cardBorderRadius}px">${p.buttonLabel}</a>
+           ${arrowBtn}
+         </div>`
+      : `<div style="display:flex;justify-content:flex-end;margin-top:auto;padding-top:10px">${arrowBtn}</div>`
+    return `
+      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden;background:#fff;border:1.5px solid #e5e7eb;transition:${cardTransition};position:relative" class="pbx-flex pbx-flex-col" onmouseenter="${enterHandler}" onmouseleave="${leaveHandler}">
+        <div style="position:relative;overflow:hidden">
+          <img class="pbx-w-full pbx-block" src="${p.imageUrl}" alt="${p.name}" style="aspect-ratio:1/1;object-fit:cover;display:block" />
+          <div class="shop-img-overlay" style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;padding:10px 12px;opacity:0;transition:opacity 180ms ease;pointer-events:none">
+            <a href="${p.buttonUrl}" style="background:${data.viewProductBg};color:${data.viewProductTextColor};font-size:0.8125rem;font-weight:600;text-decoration:none;pointer-events:auto;padding:0.5rem 1.25rem;border-radius:${data.viewProductRadius}px;letter-spacing:0.01em">View Product</a>
+          </div>
+        </div>
+        <div style="padding:0.875rem;flex:1;display:flex;flex-direction:column">
+          <p style="font-size:0.9375rem;font-weight:600;color:#111827;margin:0 0 4px;line-height:1.35">${p.name}</p>
+          <div style="display:flex;align-items:center;gap:0.375rem;margin-bottom:2px">
+            ${p.price ? `<span style="font-size:0.9375rem;font-weight:700;color:#111827">${p.price}</span>` : ''}
+            ${p.oldPrice ? `<s style="color:${data.oldPriceColor};font-size:0.8125rem">${p.oldPrice}</s>` : ''}
+          </div>
+          ${colorsHtml}
+          ${footerRow}
+        </div>
+      </div>`
+  }
+
+  const pageGrids = Array.from({ length: pages }, (_: any, i: number) => {
+    const pageCards = data.products.slice(i * perPage, (i + 1) * perPage).map(renderCard).join('')
+    return `<div data-sp="${i + 1}" style="display:${i === 0 ? '' : 'none'}"><div class="pbx-grid pbx-gap-4 ${colCls}">${pageCards}</div></div>`
+  }).join('')
+
+  const visibleDropdowns = (data.filterDropdowns ?? []).filter((f: FilterDropdown) => f.visible !== false)
+  const filterPos = data.filterPosition ?? 'top'
+
+  // Self-defining nav function — defines window._sn once, then calls it on every click
+  const navFn = `window._sn=window._sn||function(b,t){var s=b.closest('section'),ps=s.querySelectorAll('[data-sp]'),c=1,n;ps.forEach(function(p){if(p.style.display!='none')c=+p.dataset.sp});n=t==='p'?Math.max(1,c-1):t==='n'?Math.min(c+1,ps.length):+t;ps.forEach(function(p){p.style.display=+p.dataset.sp===n?'':'none'});s.querySelectorAll('[data-spb]').forEach(function(x){var v=+x.dataset.spb;if(v){x.style.background=v===n?'#111827':'#fff';x.style.color=v===n?'#fff':'#374151';x.style.borderColor=v===n?'#111827':'#d1d5db'}})}`
+
+  const paginationHtml = data.showPagination ? `
+    <div style="display:flex;justify-content:center;align-items:center;gap:0.375rem;margin-top:2rem">
+      <button onclick="${navFn};_sn(this,'p')" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid #d1d5db;border-radius:6px;background:#fff;cursor:pointer;font-size:0.875rem;color:#6b7280">&#8249;</button>
+      ${Array.from({length: Math.min(pages, 5)}, (_: any, i: number) => i + 1).map((n: number) => `<button data-spb="${n}" onclick="${navFn};_sn(this,${n})" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid ${n === 1 ? '#111827' : '#d1d5db'};border-radius:6px;background:${n === 1 ? '#111827' : '#fff'};cursor:pointer;font-size:0.875rem;color:${n === 1 ? '#fff' : '#374151'}">${n}</button>`).join('')}
+      ${pages > 5 ? `<span style="font-size:0.875rem;color:#6b7280;padding:0 2px">&hellip;</span><button data-spb="${pages}" onclick="${navFn};_sn(this,${pages})" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid #d1d5db;border-radius:6px;background:#fff;cursor:pointer;font-size:0.875rem;color:#374151">${pages}</button>` : ''}
+      <button onclick="${navFn};_sn(this,'n')" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid #d1d5db;border-radius:6px;background:#fff;cursor:pointer;font-size:0.875rem;color:#6b7280">&#8250;</button>
+    </div>` : ''
+
+  const sectionStyle = [
+    data.bgColor ? `background:${data.bgColor}` : '',
+    `padding:${data.paddingY}px ${data.paddingX}px`,
+  ].filter(Boolean).join(';')
+
+  let innerHtml: string
+  if (!data.showFilterBar) {
+    innerHtml = `${pageGrids}${paginationHtml}`
+  } else if (filterPos === 'top') {
+    const topBar = `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;padding:0.75rem 0;border-bottom:1px solid #e5e7eb;margin-bottom:1.5rem">
+      <div style="display:flex;align-items:center;gap:1rem">
+        ${data.showProductCount ? `<span style="font-size:0.875rem;font-weight:500;color:#111827">${productCount} Products</span>` : ''}
+        ${data.showSortBy ? `<div style="display:flex;align-items:center;gap:0.375rem"><span style="font-size:0.875rem;color:#374151">${data.sortLabel}:</span><button style="display:inline-flex;align-items:center;gap:0.25rem;background:none;border:none;cursor:pointer;font-size:0.875rem;color:#374151;padding:0">Default <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>` : ''}
+      </div>
+      ${visibleDropdowns.length ? `<div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">${visibleDropdowns.map((f: FilterDropdown) => `<button style="display:inline-flex;align-items:center;gap:0.375rem;background:#fff;border:1px solid #d1d5db;border-radius:4px;cursor:pointer;font-size:0.875rem;color:#374151;padding:0.375rem 0.75rem;white-space:nowrap">${f.label} <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`).join('')}</div>` : ''}
+    </div>`
+    innerHtml = `${topBar}${pageGrids}${paginationHtml}`
+  } else {
+    // sidebar layout (left or right)
+    const metaBar = (data.showProductCount || data.showSortBy) ? `<div style="display:flex;align-items:center;gap:1rem;padding:0.5rem 0;margin-bottom:1rem;border-bottom:1px solid #e5e7eb">
+      ${data.showProductCount ? `<span style="font-size:0.875rem;font-weight:500;color:#111827">${productCount} Products</span>` : ''}
+      ${data.showSortBy ? `<div style="display:flex;align-items:center;gap:0.375rem"><span style="font-size:0.875rem;color:#374151">${data.sortLabel}:</span><button style="display:inline-flex;align-items:center;gap:0.25rem;background:none;border:none;cursor:pointer;font-size:0.875rem;color:#374151;padding:0">Default <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>` : ''}
+    </div>` : ''
+    const sidebarAccordion = visibleDropdowns.map((f: FilterDropdown) => `<div style="border-bottom:1px solid #f3f4f6;padding:0.625rem 0"><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:0.875rem;color:#374151">${f.label}</span><button style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:#6b7280;padding:0;line-height:1">+</button></div></div>`).join('')
+    const sidebarBorder = filterPos === 'left'
+      ? 'border-right:1px solid #e5e7eb;padding-right:1.25rem;margin-right:1.5rem'
+      : 'border-left:1px solid #e5e7eb;padding-left:1.25rem;margin-left:1.5rem'
+    const sidebar = `<div style="width:220px;flex-shrink:0;${sidebarBorder}">
+      <div style="display:flex;align-items:center;gap:0.5rem;padding-bottom:0.75rem;border-bottom:1px solid #e5e7eb;margin-bottom:0.25rem">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1 3h13M3.5 7h8M6 11h3" stroke="#374151" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span style="font-size:0.875rem;font-weight:600;color:#111827">Filters</span>
+      </div>
+      ${sidebarAccordion}
+    </div>`
+    const gridArea = `<div style="flex:1;min-width:0">${pageGrids}${paginationHtml}</div>`
+    const flexRow = filterPos === 'left'
+      ? `<div style="display:flex;align-items:flex-start">${sidebar}${gridArea}</div>`
+      : `<div style="display:flex;align-items:flex-start">${gridArea}${sidebar}</div>`
+    innerHtml = `${metaBar}${flexRow}`
+  }
+
+  return `<section data-component-title="Ru2 Shop Content">
+<div style="${sectionStyle}">
+  <div class="pbx-mx-auto pbx-max-w-7xl">
+    ${innerHtml}
+  </div>
+</div>
+</section>`
+}
+// ─── Ru2 Shoppage sections ───────────────────────────────────────────────────
+
+export const ru2ShoppageSections: ThemeSection[] = [
+  { id: null, title: 'Ru2 Shop Hero',    html_code: renderRu2ShopHero(ru2ShopHeroDefaults) },
+  { id: null, title: 'Ru2 Shop Content', html_code: renderRu2ShopContent(ru2ShopContentDefaults) },
+]
+
 // ─── Ru3 Shop Header ──────────────────────────────────────────────────────────
 
 export const ru3ShopSvg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 340'>
