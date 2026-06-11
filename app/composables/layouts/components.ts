@@ -383,7 +383,7 @@ export function renderRu1Form(data: Ru1FormData): string {
     </div>`
 
   const formCol = `<div style="padding:5rem 2rem 6rem;">
-      <div style="max-width:28rem;margin-left:auto;">
+      <div style="max-width:100%;margin:0 auto;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem 2rem;">
           <div>
             <label for="ru1-first-name" style="display:block;font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:0.625rem;">First name</label>
