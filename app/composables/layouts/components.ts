@@ -552,6 +552,8 @@ export interface Ru1AboutData {
   description: string
   descriptionAlign: string
   ctaHref: string
+  showCta: boolean
+  ctaLabel: string
   ctaBgColor: string
   ctaAlign: string
   buttonAnimation: string
@@ -572,6 +574,8 @@ export const ru1AboutDefaults: Ru1AboutData = {
   description: 'Our achievement story stands as a powerful testament to teamwork and perseverance. United, we have faced challenges, celebrated victories, and woven a narrative of growth and success.',
   descriptionAlign: 'center',
   ctaHref: '#',
+  showCta: true,
+  ctaLabel: 'Contact Us',
   ctaBgColor: '#4f46e5',
   ctaAlign: 'center',
   buttonAnimation: 'Lift up',
@@ -597,6 +601,8 @@ export const ru1AboutFields: FieldConfig[] = [
   { key: 'description',     label: 'Description',           type: 'text',   placeholder: 'Short intro paragraph…' },
   { key: 'descriptionAlign',label: 'Description Alignment', type: 'select', options: ['left', 'center', 'right'] },
   { key: 'ctaHref',         label: 'Button URL',            type: 'url',    placeholder: 'https://...' },
+  { key: 'ctaLabel',        label: 'Button Text',           type: 'text',   placeholder: 'e.g. Contact Us' },
+  { key: 'showCta',         label: 'Show Button',           type: 'toggle' },
   { key: 'ctaBgColor',        label: 'Button Colour',       type: 'color' },
   { key: 'ctaAlign',          label: 'Button Alignment',    type: 'select', options: ['left', 'center', 'right'] },
   { key: 'buttonAnimation',   label: 'Button Hover Effect', type: 'select', options: ['None', 'Lift up', 'Grow bigger', 'Glow'] },
@@ -668,9 +674,9 @@ export function renderRu1About(data: Ru1AboutData): string {
       <div style="display:flex;flex-direction:column;gap:1rem;">
         <h2 style="font-size:2.25rem;font-weight:${fontWeight};text-align:${data.titleAlign};color:${data.titleColor};margin:0 0 1rem;">${data.title}</h2>
         <p style="font-size:1.125rem;line-height:1.75;text-align:${data.descriptionAlign};color:#4b5563;margin:0 0 1.5rem;">${data.description}</p>
-        <div style="display:flex;justify-content:${ctaJustify};">
-          <a href="${data.ctaHref}" style="${btnStyle}"${hoverAttrs}>Read More</a>
-        </div>
+        ${data.showCta !== false ? `<div style='display:flex;justify-content:${ctaJustify};'>
+          <a href='${data.ctaHref}' style='${btnStyle}'>${data.ctaLabel ?? 'Contact Us'}</a>
+        </div>` : ''}
       </div>
       <div style="position:relative;width:100%;${aspectStyle};border-radius:0.75rem;margin-bottom:6rem;">
         <img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;border-radius:0.75rem;display:block;opacity:${imgOpacity};" />
