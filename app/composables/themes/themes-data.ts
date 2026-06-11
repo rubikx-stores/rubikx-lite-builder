@@ -1025,7 +1025,7 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
     return `
       <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden;background:#fff;border:1.5px solid #e5e7eb;transition:${cardTransition};position:relative" class="pbx-flex pbx-flex-col" onmouseenter="${enterHandler}" onmouseleave="${leaveHandler}">
         <div style="position:relative;overflow:hidden">
-          <img class="pbx-w-full pbx-block" src="${p.imageUrl}" alt="${p.name}" style="aspect-ratio:1/1;object-fit:cover;display:block" />
+          <img class="pbx-w-full pbx-block" src="${p.imageUrl}" alt="${p.name}" style="aspect-ratio:1/1;object-fit:contain;display:block;background:#f9fafb" />
           <div class="shop-img-overlay" style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;padding:10px 12px;opacity:0;transition:opacity 180ms ease;pointer-events:none">
             <a href="${p.buttonUrl}" style="background:${data.viewProductBg};color:${data.viewProductTextColor};font-size:0.8125rem;font-weight:600;text-decoration:none;pointer-events:auto;padding:0.5rem 1.25rem;border-radius:${data.viewProductRadius}px;letter-spacing:0.01em">View Product</a>
           </div>
