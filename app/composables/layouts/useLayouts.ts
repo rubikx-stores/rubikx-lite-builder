@@ -2,14 +2,28 @@ import { useBlockRegistry } from '../editor/useBlockRegistry'
 // All layout component data (interfaces, defaults, fields, render functions)
 // lives in components.ts — add new components there, then register them below.
 import {
-  navbar1Defaults,
-  navbar1Fields,
-  navbar1Svg,
-  renderNavbar1,
+  megaMenuHeaderDefaults,
+  megaMenuHeaderFields,
+  megaMenuHeaderSvg,
+  renderMegaMenuHeader,
+  ru1FormDefaults,
+  ru1FormFields,
+  ru1FormSvg,
+  renderRu1Form,
+  footer1Defaults,
+  footer1Fields,
+  footer1Svg,
+  renderFooter1,
+  ru1AboutDefaults,
+  ru1AboutFields,
+  ru1AboutSvg,
+  renderRu1About,
+  ru1FaqDefaults,
+  ru1FaqFields,
+  ru1FaqSvg,
+  renderRu1Faq,
 } from './components'
 
-// ─── Layout component descriptor ─────────────────────────────────────────────
-// Used by BuilderPanel to render the card grid for each category.
 export interface LayoutComponentItem {
   title: string
   category: string
@@ -17,33 +31,80 @@ export interface LayoutComponentItem {
   html_code: string
 }
 
-// ─── Registry ─────────────────────────────────────────────────────────────────
-// Add new layout components here as the library grows.
-// BuilderPanel reads this object to build the "Headers", "Footer", etc. sections.
 export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
   Headers: [
     {
       title: 'Mega-menu-Header',
       category: 'Headers',
-      cover_image: navbar1Svg,
-      html_code: renderNavbar1(navbar1Defaults),
+      cover_image: megaMenuHeaderSvg,
+      html_code: renderMegaMenuHeader(megaMenuHeaderDefaults),
     },
   ],
-  // Future categories:
-  // Footer: [ ... ],
-  // Hero: [ ... ],
+  Contact: [
+    {
+      title: 'Ru1-Form',
+      category: 'Contact',
+      cover_image: ru1FormSvg,
+      html_code: renderRu1Form(ru1FormDefaults),
+    },
+  ],
+  'About Us': [
+    {
+      title: 'Ru1-About',
+      category: 'About Us',
+      cover_image: ru1AboutSvg,
+      html_code: renderRu1About(ru1AboutDefaults),
+    },
+  ],
+  FAQs: [
+    {
+      title: 'Ru1-FAQ',
+      category: 'FAQs',
+      cover_image: ru1FaqSvg,
+      html_code: renderRu1Faq(ru1FaqDefaults),
+    },
+  ],
+  Footer: [
+    {
+      title: 'Footer-1',
+      category: 'Footer',
+      cover_image: footer1Svg,
+      html_code: renderFooter1(footer1Defaults),
+    },
+  ],
 }
 
-// ─── Composable ───────────────────────────────────────────────────────────────
-// Call on app mount (PageBuilderWrapper) so block configs are in the registry
-// before any canvas interaction. Idempotent — register() skips duplicates.
 export function useLayouts() {
   const blockRegistry = useBlockRegistry()
 
   blockRegistry.register('Mega-menu-Header', {
-    defaults: navbar1Defaults,
-    fields: navbar1Fields,
-    render: renderNavbar1,
+    defaults: megaMenuHeaderDefaults,
+    fields: megaMenuHeaderFields,
+    render: renderMegaMenuHeader,
+  })
+
+  blockRegistry.register('Ru1-Form', {
+    defaults: ru1FormDefaults,
+    fields: ru1FormFields,
+    render: renderRu1Form,
+  })
+
+  blockRegistry.register('Ru1-About', {
+    defaults: ru1AboutDefaults,
+    fields: ru1AboutFields,
+    render: renderRu1About,
+  })
+
+  blockRegistry.register('Ru1-FAQ', {
+    defaults: ru1FaqDefaults,
+    fields: ru1FaqFields,
+    render: renderRu1Faq,
+  })
+
+  blockRegistry.register('Footer-1', {
+    defaults: footer1Defaults,
+    fields: footer1Fields,
+    render: renderFooter1,
   })
 
   return { layoutComponentRegistry }

@@ -3,11 +3,12 @@ import { reactive } from 'vue'
 export interface FieldConfig {
   key: string
   label: string
-  type: 'text' | 'url' | 'color' | 'select' | 'toggle' | 'number' | 'image' | 'list'
+  type: 'text' | 'url' | 'color' | 'select' | 'toggle' | 'number' | 'image' | 'list' | 'column-order' | 'header'
   options?: string[]
   listFields?: FieldConfig[]
-  placeholder?: string   // example hint shown inside the input
-  unit?: string          // unit label shown inside number inputs, defaults to 'px'
+  placeholder?: string
+  unit?: string
+  step?: number
 }
 
 export interface BlockEditorConfig<T = Record<string, any>> {
@@ -23,10 +24,7 @@ interface RegistryEntry {
 
 const _registry = reactive<Map<string, RegistryEntry>>(new Map())
 
-// ── Persistent storage for registry state ─────────────────────────────────────
-// Saves every block's editor data to localStorage so the editor reopens with
-// the user's last edits after a page reload, not just the defaults.
-const STORAGE_KEY = 'app-block-registry-v4'
+const STORAGE_KEY = 'app-block-registry-v6'
 let _storageCache: Record<string, Record<string, any>> | null = null
 
 function _loadStorage(): Record<string, Record<string, any>> {
@@ -49,7 +47,6 @@ function _saveStorage() {
   try {
     const out: Record<string, any> = {}
     _registry.forEach((entry, title) => {
-      // Deep-clone and strip Vue reactivity proxies
       out[title] = JSON.parse(JSON.stringify(entry.state))
     })
     _storageCache = out
@@ -62,7 +59,18 @@ function _saveStorage() {
 
 export function useBlockRegistry() {
   function register(title: string, config: BlockEditorConfig) {
-    if (_registry.has(title)) return
+    if (_registry.has(title)) {
+      // Update config (fields/render) but keep existing state
+      const existing = _registry.get(title)!
+      existing.config = config
+      // Merge any new default fields that don't exist in current state
+      Object.keys(config.defaults).forEach(key => {
+        if (!(key in existing.state)) {
+          existing.state[key] = (config.defaults as any)[key]
+        }
+      })
+      return
+    }
     const stored = _loadStorage()[title]
     // Merge defaults with stored so newly-added fields default-fill,
     // but existing field values from storage win.
@@ -126,6 +134,17 @@ export function useBlockRegistry() {
     _saveStorage()
   }
 
+  function resetToDefaults(title: string) {
+    const entry = _registry.get(title)
+    if (!entry) return
+    const fresh = JSON.parse(JSON.stringify(entry.config.defaults))
+    for (const k of Object.keys(entry.state)) {
+      if (!(k in fresh)) delete entry.state[k]
+    }
+    Object.assign(entry.state, fresh)
+    _saveStorage()
+  }
+
   // Replace entire state for a block. Used by undo/redo sync from DOM, where
   // multiple fields need to be updated atomically without triggering multiple
   // re-renders.
@@ -143,6 +162,6 @@ export function useBlockRegistry() {
   return {
     register, hasConfig, getConfig, getData,
     setData, setListItem, addListItem, removeListItem, moveListItem,
-    replaceData,
+    replaceData, resetToDefaults,
   }
 }

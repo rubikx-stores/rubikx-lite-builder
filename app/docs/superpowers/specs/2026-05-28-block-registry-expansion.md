@@ -1,4 +1,4 @@
-# Block Registry Expansion — Ru1 Techwire Theme
+﻿# Block Registry Expansion — Ru1 Homepage Theme
 
 **Date:** 2026-05-28
 **Scope:** `app/composables/themes-data.ts` only
@@ -8,7 +8,7 @@
 
 ## Goal
 
-Expand all four Ru1 Techwire block editor configs (Navbar, Hero, Featured Products, Footer) with richer fields so store owners can fully customise their storefront from the editor panel without touching code. All editor changes reflect on the builder canvas in real time.
+Expand all four Ru1 Homepage block editor configs (Navbar, Hero, Featured Products, Footer) with richer fields so store owners can fully customise their storefront from the editor panel without touching code. All editor changes reflect on the builder canvas in real time.
 
 ---
 
@@ -27,7 +27,7 @@ No new files. All logic stays in `themes-data.ts`.
 
 ---
 
-## Block 1 — Ru1 Techwire Navbar
+## Block 1 — Ru1 Homepage Navbar
 
 ### Interface
 
@@ -125,7 +125,7 @@ borderStyle: 'none', borderWidth: 1, borderColor: '#e5e7eb'
 
 ---
 
-## Block 2 — Ru1 Techwire Hero
+## Block 2 — Ru1 Homepage Hero
 
 ### Interface
 
@@ -196,7 +196,7 @@ bgColor: '#394152', paddingY: 0, paddingX: 0, borderRadius: 0
 
 ---
 
-## Block 3 — Ru1 Techwire Featured Products
+## Block 3 — Ru1 Homepage Featured Products
 
 ### Interface
 
@@ -269,7 +269,7 @@ products: [
 
 ---
 
-## Block 4 — Ru1 Techwire Footer
+## Block 4 — Ru1 Homepage Footer
 
 ### Interface
 
@@ -342,7 +342,7 @@ paddingY: 48, paddingX: 16, borderStyle: 'none', borderColor: '#e5e7eb'
 
 ## Verification
 
-1. Apply the Ru1 Techwire theme to a fresh page
+1. Apply the Ru1 Homepage theme to a fresh page
 2. Click the **Navbar** section → editor panel shows all 24 fields; toggling Sticky, Show Cart, navLink visibility all re-renders instantly
 3. Change navbar bg color → nav background updates without page reload
 4. Click **Hero** section → set headline + CTA text → overlay appears on canvas; opacity slider dims the image

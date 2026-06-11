@@ -1,4 +1,4 @@
-# Sidebar Editor — Design Spec
+﻿# Sidebar Editor — Design Spec
 
 > **Status:** Approved  
 > **Date:** 2026-05-26
@@ -95,14 +95,14 @@ export const ru1NavbarFields: FieldConfig[] = [
 ]
 
 export function renderRu1Navbar(data: typeof ru1NavbarDefaults): string {
-  return `<section data-component-title="Ru1 Techwire Navbar">...</section>`
+  return `<section data-component-title="Ru1 Homepage Navbar">...</section>`
 }
 ```
 
 Registration call in `composables/useThemes.ts`:
 
 ```ts
-blockRegistry.register('Ru1 Techwire Navbar', {
+blockRegistry.register('Ru1 Homepage Navbar', {
   defaults: ru1NavbarDefaults,
   fields: ru1NavbarFields,
   render: renderRu1Navbar,

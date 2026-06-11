@@ -12,6 +12,7 @@ interface PageVersion {
   updatedAt: string
   status: string
   value: string
+  updatedBy?: string
 }
 
 interface Page {
@@ -43,24 +44,20 @@ watchEffect(() => {
   }
 })
 
-watch(
-  selectedWebsiteId,
-  async (id) => {
-    if (!id) return
-    loadingPages.value = true
-    try {
-      pages.value = await $fetch<Page[]>('/api/pages', {
-        query: { websiteId: 3 },
-      })
-      pages.value.forEach((p) => {
-        selectedVersions.value[p.id] = p.versions[0]?.version ?? 1
-      })
-    } finally {
-      loadingPages.value = false
-    }
-  },
-  { immediate: true }
-)
+async function fetchPages() {
+  if (!selectedWebsiteId.value) return
+  loadingPages.value = true
+  try {
+    pages.value = await $fetch<Page[]>('/api/pages', { query: { websiteId: 3 } })
+    pages.value.forEach((p) => {
+      selectedVersions.value[p.id] = p.versions[0]?.version ?? 1
+    })
+  } finally {
+    loadingPages.value = false
+  }
+}
+watch(selectedWebsiteId, fetchPages, { immediate: true })
+onMounted(fetchPages)
 
 function selectedVersionData(page: Page) {
   const vNum = selectedVersions.value[page.id]
@@ -96,9 +93,23 @@ async function publishPage(page: Page) {
 
 const pageHtmlCache = usePageHtmlCache()
 
+const GLOBAL_KEYS = ['global-header', 'global-footer']
+const displayPages = computed(() => pages.value.filter(p => !GLOBAL_KEYS.includes(p.id)))
+
 function editPage(page: Page) {
   const vData = selectedVersionData(page)
   pageHtmlCache.value[page.id] = vData.value
+
+  const headerPage = pages.value.find(p => p.id === 'global-header')
+  const footerPage = pages.value.find(p => p.id === 'global-footer')
+
+  if (headerPage) {
+    pageHtmlCache.value['global-header'] = headerPage.versions[0]?.value ?? ''
+  }
+  if (footerPage) {
+    pageHtmlCache.value['global-footer'] = footerPage.versions[0]?.value ?? ''
+  }
+
   navigateTo(`/editor?pageId=${page.id}&pageName=${encodeURIComponent(page.name)}&pageVersion=${vData.version}`)
 }
 
@@ -199,7 +210,7 @@ function handleModalKeydown(e: KeyboardEvent) {
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
       <!-- Page cards -->
       <div
-        v-for="page in pages"
+        v-for="page in displayPages"
         :key="page.id"
         class="flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white"
       >

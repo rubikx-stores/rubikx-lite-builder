@@ -1,12 +1,16 @@
 <script setup lang="ts">
+import { nextTick, ref, computed } from 'vue'
 import componentHelpers from '#lib/componentHelpers'
 import componentData from '#lib/component'
 import themesData from '#lib/themes'
-import { getPageBuilder, usePageBuilderModal } from '@myissue/vue-website-page-builder'
+import { getPageBuilder, usePageBuilderModal, usePageBuilderStateStore } from '@myissue/vue-website-page-builder'
+import { NAVBAR_TITLES, FOOTER_TITLES } from '~/composables/useGlobalSections'
 
 const { themeRegistry, applyTheme } = useThemes()
 const { layoutComponentRegistry } = useLayouts()
 const { closeAddComponentModal } = usePageBuilderModal()
+const { applyBlockRender } = useEditorSidebar()
+const blockRegistry = useBlockRegistry()
 
 const isLoading = ref(false)
 const selectedTab = ref<'Components' | 'Themes'>('Components')
@@ -43,9 +47,60 @@ const filteredLibThemes = computed(() => {
 
 async function handleDropComponent(comp: { id: string | number | null; html_code: string; title: string }) {
   isLoading.value = true
-  await getPageBuilder().addComponent(comp)
-  closeAddComponentModal()
-  isLoading.value = false
+  try {
+    const store = usePageBuilderStateStore() as any
+
+    const allSections = Array.from(document.querySelectorAll('section[data-component-title]'))
+    const headerIndex = allSections.findIndex(s => NAVBAR_TITLES.includes(s.getAttribute('data-component-title') ?? ''))
+    const footerIndex = allSections.findIndex(s => FOOTER_TITLES.includes(s.getAttribute('data-component-title') ?? ''))
+
+    const currentMethod = store.getComponentArrayAddMethod
+    const currentIndex = store.getAddComponentAddIndex ?? 0
+    const minIndex = headerIndex !== -1 ? headerIndex + 1 : 0
+    const maxIndex = footerIndex !== -1 ? footerIndex : allSections.length
+
+    console.log('[ADD] method:', currentMethod, 'headerIndex:', headerIndex, 'footerIndex:', footerIndex, 'currentIndex:', currentIndex, 'minIndex:', minIndex, 'maxIndex:', maxIndex)
+
+    let methodOverridden = false
+
+    if (headerIndex !== -1 || footerIndex !== -1) {
+      if (currentMethod === 'unshift') {
+        store.setComponentArrayAddMethod('insert')
+        store.setAddComponentAddIndex(minIndex)
+        methodOverridden = true
+        await nextTick()
+      } else if (currentMethod === 'push') {
+        store.setComponentArrayAddMethod('insert')
+        store.setAddComponentAddIndex(maxIndex)
+        methodOverridden = true
+        await nextTick()
+      } else {
+        const clampedIndex = Math.min(Math.max(currentIndex, minIndex), maxIndex)
+        if (clampedIndex !== currentIndex) {
+          store.setAddComponentAddIndex(clampedIndex)
+          await nextTick()
+        }
+      }
+    }
+
+    await getPageBuilder().addComponent(comp)
+
+    // Restore original method if we overrode it
+    if (methodOverridden) {
+      store.setComponentArrayAddMethod(currentMethod)
+    }
+
+    if (comp.title && blockRegistry.hasConfig(comp.title)) {
+      blockRegistry.resetToDefaults(comp.title)
+      await nextTick()
+      await applyBlockRender(comp.title)
+    }
+  } catch (e) {
+    console.error('[ADD] Error:', e)
+  } finally {
+    closeAddComponentModal()
+    isLoading.value = false
+  }
 }
 
 async function handleDropLibTheme(html_code: string) {
@@ -59,6 +114,20 @@ async function handleDropLibTheme(html_code: string) {
 async function handleApplyTheme(themeId: string) {
   isLoading.value = true
   await applyTheme(themeId)
+  const theme = themeRegistry[themeId]
+  if (theme) {
+    await nextTick()
+    for (const section of theme.sections) {
+      if (
+        blockRegistry.hasConfig(section.title) &&
+        !NAVBAR_TITLES.includes(section.title) &&
+        !FOOTER_TITLES.includes(section.title)
+      ) {
+        blockRegistry.resetToDefaults(section.title)
+        await applyBlockRender(section.title)
+      }
+    }
+  }
   closeAddComponentModal()
   isLoading.value = false
 }

@@ -1,10 +1,10 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { usePageBuilderStateStore, sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
 import ProductsEditor from '../ProductsEditor.client.vue'
-import { buildCategoryTree } from '~/composables/categories/buildCategoryTree'
-import type { FlatCategory, CategoryNode } from '~/composables/categories/buildCategoryTree'
 import { productImageSrc } from '~/composables/useProductImageSrc'
+import { getDomain, faviconUrl } from '~/composables/useSocialIcons'
+import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
 
 const store = usePageBuilderStateStore() as any
 const {
@@ -75,7 +75,7 @@ function toHex(v: string | undefined | null): string {
 }
 
 // ── Product block flag ────────────────────────────────────────────────────────
-const _PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 6 Products Minimal', 'Show 4 Products Centered', 'Ru1 Techwire Featured Products']
+const _PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 6 Products Minimal', 'Show 4 Products Centered', 'Ru1 Homepage Featured Products', 'Ru2 Shop Content', 'Ru3 Shop Products']
 
 const lastProductTitle = ref('')
 
@@ -119,6 +119,14 @@ function debouncedUpdateBlockField(fieldKey: string, value: any) {
   }, 50)
 }
 
+async function onToggleField(fieldKey: string, newValue: boolean) {
+  await updateBlockField(fieldKey, newValue)
+  if (fieldKey === 'dynamicCategories' && newValue === true) {
+    await nextTick()
+    hydrateComponents()
+  }
+}
+
 // Debounced list-item updater — fires 150ms after the user stops typing so
 // every keystroke reflects in the canvas without hammering _applyBlockRender.
 let _listItemDebounceTimer = 0
@@ -158,34 +166,21 @@ function onUploadSubImage(listKey: string, idx: number, subKey: string, file: Fi
   reader.readAsDataURL(file)
 }
 
-// ── Category picker for navLinks ──────────────────────────────────────────────
-const loadingCategories = ref(false)
-const availableCategories = ref<CategoryNode[]>([])
-const selectedCategoryIds = ref(new Set<number>())
-const showCategoryPicker = ref(false)
-
-async function openCategoryPicker() {
-  if (availableCategories.value.length > 0) { showCategoryPicker.value = true; return }
-  loadingCategories.value = true
-  try {
-    const flat = await $fetch<FlatCategory[]>('/api/categories')
-    availableCategories.value = buildCategoryTree(flat)
-    showCategoryPicker.value = true
-  } finally {
-    loadingCategories.value = false
+function updateColumnOrder(fieldKey: string, index: number, newVal: string) {
+  const currentOrder = [...((blockData.value?.[fieldKey] as string[]) ?? [])]
+  const swapIdx = currentOrder.indexOf(newVal)
+  if (swapIdx !== -1 && swapIdx !== index) {
+    currentOrder[swapIdx] = currentOrder[index]
   }
+  currentOrder[index] = newVal
+  updateBlockField(fieldKey, currentOrder)
 }
 
-function toggleCategory(id: number) {
-  const s = new Set(selectedCategoryIds.value)
-  s.has(id) ? s.delete(id) : s.add(id)
-  selectedCategoryIds.value = s
+const colOrderLabelMap: Record<string, string> = {
+  links: 'Links', about: 'About', contact: 'Contact',
+  info: 'Info Panel', form: 'Form',
 }
 
-function closePicker() {
-  showCategoryPicker.value = false
-  selectedCategoryIds.value = new Set()
-}
 
 // ── Mega menu editor (Mega-menu-Header only) ──────────────────────────────────
 interface MegaProduct { id: number; name: string; price: number; image: string }
@@ -277,62 +272,6 @@ function applyMegaMenuToLink() {
   closeMegaMenuEditor()
 }
 
-function applySelectedCategories() {
-  const title = selectedBlockTitle.value
-  if (!title) return
-  const existing: any[] = (blockData.value as any)?.navLinks ?? []
-  const seen = new Set<string>()
-  const dedupedExisting = existing.filter((l: any) => {
-    if (seen.has(l.label)) return false
-    seen.add(l.label)
-    return true
-  })
-  const toAdd = availableCategories.value.filter(c =>
-    selectedCategoryIds.value.has(c.id) && !seen.has(c.displayName)
-  )
-  const toHref = (c: { headlessName: string; name: string }) =>
-    `/${typeof c.headlessName === 'string' && c.headlessName ? c.headlessName : c.name.toLowerCase()}`
-
-  let merged: any[]
-  if (title === 'Mega-menu-Header') {
-    // Populate children on the existing "Categories" navLink (matched by href or label),
-    // merging newly selected categories into its children. Creates the link if absent.
-    const newChildren = toAdd.map(c => ({
-      label: c.displayName,
-      href: toHref(c),
-      children: c.children.map(ch => ({ label: ch.displayName, href: toHref(ch) })),
-    }))
-    const catIdx = dedupedExisting.findIndex((l: any) =>
-      l.href === '/categories' || l.label?.toLowerCase() === 'categories'
-    )
-    if (catIdx !== -1) {
-      const updated = dedupedExisting.map((l: any, i: number) => {
-        if (i !== catIdx) return l
-        const existingChildren: any[] = l.children ?? []
-        const childSeen = new Set(existingChildren.map((ch: any) => ch.label))
-        return {
-          ...l,
-          children: [...existingChildren, ...newChildren.filter(c => !childSeen.has(c.label))],
-        }
-      })
-      merged = updated
-    } else {
-      merged = [...dedupedExisting, ...newChildren]
-    }
-  } else if (title === 'Navbar-1') {
-    merged = [
-      ...dedupedExisting,
-      ...toAdd.map(c => ({ label: c.displayName, href: toHref(c) })),
-    ]
-  } else {
-    merged = [
-      ...dedupedExisting,
-      ...toAdd.map(c => ({ label: c.displayName, url: toHref(c), visible: true })),
-    ]
-  }
-  updateBlockField('navLinks', merged)
-  closePicker()
-}
 
 // ── Teleport into library right panel scroll area ─────────────────────────────
 const _libStore = usePageBuilderStateStore() as any
@@ -460,8 +399,16 @@ onUnmounted(() => {
         <div class="border-b border-gray-100 px-3 pt-3 pb-3">
           <template v-for="field in blockConfig.fields" :key="field.key">
 
+            <!-- header sentinel -->
+            <div v-if="field.type === 'header'" class="mb-2 mt-4 first:mt-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{{ field.label }}</span>
+                <div class="flex-1 h-px bg-gray-200"></div>
+              </div>
+            </div>
+
             <!-- image -->
-            <div v-if="field.type === 'image'" class="mb-2.5">
+            <div v-else-if="field.type === 'image'" class="mb-2.5">
               <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
               <div class="flex items-center gap-1 mb-1">
                 <input type="text" :value="blockData[field.key]" placeholder="https://..."
@@ -478,16 +425,32 @@ onUnmounted(() => {
               <p v-if="uploadError[field.key]" class="text-xs text-red-500">{{ uploadError[field.key] }}</p>
             </div>
 
-            <!-- text / url / number -->
-            <div v-else-if="['text','url','number'].includes(field.type)" class="mb-2.5">
+            <!-- text / url -->
+            <div v-else-if="field.type === 'text' || field.type === 'url'" class="mb-2.5">
               <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
-              <div class="relative">
-                <input type="text" :value="blockData[field.key]"
-                  :placeholder="field.placeholder ?? ''"
-                  :class="field.type === 'number' ? 'pr-7' : ''"
-                  class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
-                  @input="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
-                <span v-if="field.type === 'number'" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">{{ field.unit ?? 'px' }}</span>
+              <input type="text" :value="blockData[field.key]"
+                :placeholder="field.placeholder ?? ''"
+                class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
+                @input="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
+            </div>
+
+            <!-- number → stepper -->
+            <div v-else-if="field.type === 'number'" class="mb-2.5">
+              <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
+              <div class="flex items-center gap-1">
+                <button type="button"
+                  class="w-7 h-7 flex items-center justify-center border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 text-gray-600 text-base font-medium cursor-pointer shrink-0 leading-none"
+                  @click="updateBlockField(field.key, Math.max(0, Number(blockData[field.key] ?? field.placeholder ?? 0) - (field.step ?? 1)))">−</button>
+                <div class="relative flex-1">
+                  <input type="number" :value="blockData[field.key]"
+                    :placeholder="field.placeholder ?? ''"
+                    class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs text-center focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 pr-7"
+                    @input="debouncedUpdateBlockField(field.key, Number(($event.target as HTMLInputElement).value))" />
+                  <span class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">{{ field.unit ?? 'px' }}</span>
+                </div>
+                <button type="button"
+                  class="w-7 h-7 flex items-center justify-center border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 text-gray-600 text-base font-medium cursor-pointer shrink-0 leading-none"
+                  @click="updateBlockField(field.key, Number(blockData[field.key] ?? field.placeholder ?? 0) + (field.step ?? 1))">+</button>
               </div>
             </div>
 
@@ -508,7 +471,7 @@ onUnmounted(() => {
               <button type="button"
                 class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors border-none cursor-pointer shrink-0"
                 :class="blockData[field.key] ? 'bg-blue-500' : 'bg-gray-200'"
-                @click="updateBlockField(field.key, !blockData[field.key])">
+                @click="onToggleField(field.key, !blockData[field.key])">
                 <span class="inline-block h-3.5 w-3.5 rounded-full bg-white shadow transform transition-transform"
                   :class="blockData[field.key] ? 'translate-x-4' : 'translate-x-0.5'" />
               </button>
@@ -518,41 +481,32 @@ onUnmounted(() => {
             <div v-else-if="field.type === 'select'" class="mb-2.5">
               <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
               <select class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 bg-white"
+                :value="String(blockData[field.key])"
                 @change="updateBlockField(field.key, Number(($event.target as HTMLSelectElement).value) || ($event.target as HTMLSelectElement).value)">
-                <option v-for="opt in field.options" :key="opt" :value="opt" :selected="String(blockData[field.key]) === opt">{{ opt }}</option>
+                <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
               </select>
             </div>
 
-            <!-- Category checkbox picker for navLinks on navbar blocks -->
-            <div v-if="field.key === 'navLinks' && (selectedBlockTitle === 'Navbar-1' || selectedBlockTitle === 'Ru1 Techwire Navbar')" class="mb-2">
-              <button v-if="!showCategoryPicker" type="button" @click="openCategoryPicker"
-                class="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
-                + Add from Odoo
-              </button>
-              <div v-else class="border border-gray-200 rounded-md overflow-hidden text-xs">
-                <div class="px-2 py-1.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                  <span class="font-medium text-gray-600">Add categories</span>
-                  <button type="button" @click="closePicker" class="text-gray-400 hover:text-gray-600 bg-transparent border-none cursor-pointer">✕</button>
-                </div>
-                <div v-if="loadingCategories" class="px-2 py-3 text-gray-400 text-center">Loading…</div>
-                <div v-else class="max-h-40 overflow-y-auto">
-                  <label v-for="cat in availableCategories" :key="cat.id"
-                    class="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 cursor-pointer">
-                    <input type="checkbox" :checked="selectedCategoryIds.has(cat.id)"
-                      @change="toggleCategory(cat.id)" class="cursor-pointer" />
-                    <span class="text-gray-700">{{ cat.displayName }}</span>
-                  </label>
-                  <div v-if="!availableCategories.length" class="px-2 py-2 text-gray-400 text-center">No categories found</div>
-                </div>
-                <div class="px-2 py-1.5 bg-gray-50 border-t border-gray-100 flex gap-1.5">
-                  <button type="button" @click="applySelectedCategories" :disabled="selectedCategoryIds.size === 0"
-                    class="flex-1 text-xs border border-gray-900 rounded px-2 py-1 bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
-                    Add Selected
-                  </button>
-                  <button type="button" @click="closePicker"
-                    class="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
-                    Cancel
-                  </button>
+            <!-- column-order -->
+            <div v-else-if="field.type === 'column-order'" class="mb-2.5">
+              <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
+              <div class="flex gap-1.5">
+                <div
+                  v-for="(pos, i) in ((blockData[field.key] as string[] ?? []).length === 2 ? ['Left', 'Right'] : ['Left', 'Center', 'Right'])"
+                  :key="pos"
+                  class="flex-1">
+                  <label class="block text-xs text-gray-400 mb-0.5">{{ pos }}</label>
+                  <select
+                    class="w-full border border-gray-200 rounded px-1.5 py-1 text-xs bg-white focus:outline-none"
+                    :value="(blockData[field.key] as string[])?.[i]"
+                    @change="updateColumnOrder(field.key, i, ($event.target as HTMLSelectElement).value)">
+                    <option
+                      v-for="opt in (blockData[field.key] as string[] ?? [])"
+                      :key="opt"
+                      :value="opt">
+                      {{ colOrderLabelMap[opt] ?? opt }}
+                    </option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -568,7 +522,23 @@ onUnmounted(() => {
               <div v-for="(item, idx) in (blockData[field.key] as Record<string,any>[])" :key="idx"
                 class="mb-1.5 border border-gray-200 rounded-md overflow-hidden">
                 <div class="flex justify-between items-center px-2 py-1 bg-gray-50 border-b border-gray-100">
-                  <span class="text-xs text-gray-400 font-medium">{{ idx + 1 }}</span>
+                  <!-- Social link: show live brand icon + platform name -->
+                  <template v-if="field.key === 'socials' && selectedBlockTitle === 'Ru1-Form'">
+                    <div class="flex items-center gap-1.5">
+                      <template v-if="item.href">
+                        <span
+                          class="flex items-center justify-center w-6 h-6 rounded-full shrink-0 overflow-hidden"
+                          style="background:#fff;border:1.5px solid #e5e7eb;">
+                          <img :src="faviconUrl(item.href)" width="16" height="16" style="object-fit:contain;" :alt="getDomain(item.href)" />
+                        </span>
+                      </template>
+                      <span v-else class="flex items-center justify-center w-6 h-6 rounded-full border border-dashed border-gray-300 text-gray-300 text-xs">+</span>
+                      <span class="text-xs font-medium" :style="item.href ? 'color:#374151;' : 'color:#9ca3af;'">
+                        {{ item.href ? (getDomain(item.href) || 'Link') : 'Paste URL below' }}
+                      </span>
+                    </div>
+                  </template>
+                  <span v-else class="text-xs text-gray-400 font-medium">{{ idx + 1 }}</span>
                   <div class="flex gap-1">
                     <button v-if="idx > 0" type="button" class="text-xs text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="moveListItemUp(field.key, idx)">↑</button>
                     <button v-if="idx < (blockData[field.key] as any[]).length - 1" type="button" class="text-xs text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="moveListItemDown(field.key, idx)">↓</button>
@@ -617,9 +587,9 @@ onUnmounted(() => {
                       <!-- select sub-field: dropdown, instant on selection -->
                       <template v-else-if="subField.type === 'select'">
                         <select class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs bg-white focus:outline-none focus:border-blue-400"
+                          :value="item[subField.key]"
                           @change="updateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLSelectElement).value)">
-                          <option v-for="opt in subField.options" :key="opt" :value="opt"
-                            :selected="item[subField.key] === opt">{{ opt }}</option>
+                          <option v-for="opt in subField.options" :key="opt" :value="opt">{{ opt }}</option>
                         </select>
                       </template>
 

@@ -1,9 +1,10 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { PageBuilder, getPageBuilder } from '@myissue/vue-website-page-builder'
 import type { PageBuilderConfig } from '@myissue/vue-website-page-builder'
 import BuilderPanel from './BuilderPanel.client.vue'
 import EditorSidebar from './EditorSidebar.client.vue'
 import { productImageSrc } from '~/composables/useProductImageSrc'
+import { NAVBAR_TITLES, FOOTER_TITLES } from '~/composables/useGlobalSections'
 
 // Register all block configs eagerly on builder mount so the editor opens
 // correctly even on page reload with saved canvas data (before the user opens
@@ -63,17 +64,55 @@ async function confirmSave() {
   if (!props.pageId || !_pendingHtml) return
   saveInFlight.value = true
   try {
-    await $fetch('/api/proxy/odoo/cms', {
-      method: 'POST',
-      body: {
-        key: props.pageId,
-        value: _pendingHtml,
-        updatedBy: 'editor',
-        updatedOn: new Date().toISOString(),
-        version: String(selectedVersion.value),
-        state: 'draft' as const,
-      },
-    })
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(_pendingHtml, 'text/html')
+    const allSections = Array.from(doc.querySelectorAll('section[data-component-title]'))
+
+    const navbarSections = allSections.filter(s =>
+      NAVBAR_TITLES.includes(s.getAttribute('data-component-title') ?? '')
+    )
+    const footerSections = allSections.filter(s =>
+      FOOTER_TITLES.includes(s.getAttribute('data-component-title') ?? '')
+    )
+    const contentSections = allSections.filter(s =>
+      !navbarSections.includes(s) && !footerSections.includes(s)
+    )
+
+    const toHtml = (secs: Element[]) => secs.map(s => s.outerHTML).join('\n')
+    const version = String(selectedVersion.value)
+    const baseBody = { updatedBy: 'editor', updatedOn: new Date().toISOString(), state: 'draft' as const, version }
+
+    const saves: Promise<any>[] = []
+
+    if (navbarSections.length > 0) {
+      saves.push($fetch('/api/proxy/odoo/cms', {
+        method: 'POST',
+        body: { ...baseBody, key: 'global-header', value: toHtml(navbarSections) },
+      }))
+    }
+
+    if (contentSections.length > 0) {
+      saves.push($fetch('/api/proxy/odoo/cms', {
+        method: 'POST',
+        body: { ...baseBody, key: props.pageId, value: toHtml(contentSections) },
+      }))
+    }
+
+    if (footerSections.length > 0) {
+      saves.push($fetch('/api/proxy/odoo/cms', {
+        method: 'POST',
+        body: { ...baseBody, key: 'global-footer', value: toHtml(footerSections) },
+      }))
+    }
+
+    if (saves.length === 0) {
+      console.warn('[CMS] Nothing to save — canvas is empty')
+      showVersionModal.value = false
+      await navigateTo('/')
+      return
+    }
+
+    await Promise.all(saves)
     showVersionModal.value = false
     await navigateTo('/')
   } catch (error) {
@@ -148,14 +187,40 @@ onUnmounted(() => {
 
 onMounted(async () => {
   const builder = getPageBuilder()
+  let parsedComponents: any[] | undefined = undefined
 
   if (props.pageId) {
     const storageKey = `page-builder-update-resource-page-${sanitize(props.pageId)}`
     const pageHtmlCache = usePageHtmlCache()
-    const html = pageHtmlCache.value[props.pageId] ?? null
+
+    let headerHtml = pageHtmlCache.value['global-header'] ?? ''
+    let contentHtml = pageHtmlCache.value[props.pageId] ?? ''
+    let footerHtml = pageHtmlCache.value['global-footer'] ?? ''
+
+    // Strip navbar and footer from contentHtml to prevent duplication
+    // Handles pages saved before the global split existed
+    if (contentHtml) {
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(contentHtml, 'text/html')
+      const allSections = Array.from(doc.querySelectorAll('section[data-component-title]'))
+
+      allSections.filter(s =>
+        NAVBAR_TITLES.includes(s.getAttribute('data-component-title') ?? '')
+      ).forEach(s => s.remove())
+
+      allSections.filter(s =>
+        FOOTER_TITLES.includes(s.getAttribute('data-component-title') ?? '')
+      ).forEach(s => s.remove())
+
+      contentHtml = Array.from(doc.querySelectorAll('section[data-component-title]'))
+        .map(s => s.outerHTML).join('\n')
+    }
+
+    const html = [headerHtml, contentHtml, footerHtml].filter(Boolean).join('\n') || null
 
     if (html) {
       const parsed = (builder as any).parsePageBuilderHTML(html)
+      parsedComponents = parsed.components
       localStorage.setItem(
         storageKey,
         JSON.stringify({
@@ -169,7 +234,7 @@ onMounted(async () => {
     }
   }
 
-  await builder.startBuilder(config)
+  await builder.startBuilder(config, parsedComponents)
 
   // The builder wraps sections in a container that has overflow-x:scroll, which
   // CSS spec forces overflow-y from 'visible' to 'auto'. Any overflow value other

@@ -4,7 +4,6 @@ import { useBlockRegistry } from './useBlockRegistry'
 
 export type SidebarMode = 'none' | 'block' | 'element'
 
-// ── Element override store ─────────────────────────────────────────────────────
 // When the user applies styles via the element editor while inside a registered
 // block, _applyBlockRender() replaces section.innerHTML and wipes those styles.
 // We record every user-applied property here and re-apply after each re-render.
@@ -42,12 +41,8 @@ function _getElementByKey(key: string, section: HTMLElement): HTMLElement | null
   return null
 }
 
-// Extract a best-effort field-value snapshot from a section in the DOM.
-// Used to re-sync the registry after the library performs undo/redo, which
-// modifies DOM directly without touching our registry.
 function _extractDataFromSection(section: HTMLElement, defaults: Record<string, any>): Record<string, any> {
   const out: Record<string, any> = JSON.parse(JSON.stringify(defaults))
-  // For each editable text node we tagged with data-field-key, pull its text
   section.querySelectorAll<HTMLElement>('[data-field-key]').forEach((el) => {
     const key = el.getAttribute('data-field-key')
     if (!key) return
@@ -64,11 +59,6 @@ export function useEditorSidebar() {
   const store = usePageBuilderStateStore() as any
   const registry = useBlockRegistry()
 
-  // ── Undo/redo sync ──────────────────────────────────────────────────────────
-  // The library has its own history (history index in the store). When the user
-  // hits undo/redo, the library restores the canvas DOM but our registry stays
-  // stale. Watch the history index and re-sync registry data from the DOM for
-  // every registered block in the document.
   watch(
     () => store.getHistoryIndex,
     () => {
@@ -78,8 +68,12 @@ export function useEditorSidebar() {
         if (!title) return
         const cfg = registry.getConfig(title)
         if (!cfg) return
-        const newState = _extractDataFromSection(sec, cfg.defaults)
-        registry.replaceData(title, newState)
+        sec.querySelectorAll<HTMLElement>('[data-field-key]').forEach((el) => {
+          const key = el.getAttribute('data-field-key')
+          if (!key) return
+          const val = el.tagName === 'IMG' ? (el as HTMLImageElement).src || '' : el.textContent ?? ''
+          registry.setData(title, key, val)
+        })
       })
     },
   )
@@ -97,13 +91,11 @@ export function useEditorSidebar() {
   const selectedBlockTitle = computed<string | null>(() => {
     const el = selectedEl.value
     if (el && el.isConnected) {
-      // Live element: resolve from DOM and update the fallback
       const section = el.closest('[data-component-title]')
       const title = section?.getAttribute('data-component-title') ?? null
       if (title) _lastKnownBlockTitle = title
       return title
     }
-    // No live element: fall back to the last known title so the editor stays open
     return _lastKnownBlockTitle
   })
 
@@ -111,13 +103,8 @@ export function useEditorSidebar() {
     const el = selectedEl.value
     const title = selectedBlockTitle.value
 
-    // No live element AND no fallback title → nothing selected
     if ((!el || !el.isConnected) && !title) return 'none'
-
-    // Block-mode whenever a registered block title is in scope
     if (title && registry.hasConfig(title)) return 'block'
-
-    // Live element outside any registered block → element mode
     if (el && el.isConnected) return 'element'
 
     return 'none'
@@ -138,7 +125,6 @@ export function useEditorSidebar() {
     return selectedEl.value?.tagName?.toLowerCase() ?? 'element'
   })
 
-  // ── Builder sync ────────────────────────────────────────────────────────────
   async function _syncBuilder() {
     const { getPageBuilder } = await import('@myissue/vue-website-page-builder')
     const builder = getPageBuilder() as any
@@ -168,7 +154,6 @@ export function useEditorSidebar() {
     await builder.addListenersToEditableElements()
   }
 
-  // ── Block render ────────────────────────────────────────────────────────────
   async function _applyBlockRender(title: string) {
     const config = registry.getConfig(title)
     const data = registry.getData(title)
@@ -234,11 +219,11 @@ export function useEditorSidebar() {
     await _syncBuilderWithListeners()
   }
 
-  // ── Block field API ─────────────────────────────────────────────────────────
   async function updateBlockField(key: string, value: any, forcedTitle?: string) {
     const title = forcedTitle ?? selectedBlockTitle.value
     if (!title || !registry.getConfig(title)) return
     registry.setData(title, key, value)
+    _elementOverrides.delete(title)
     await _applyBlockRender(title)
   }
 
@@ -251,6 +236,7 @@ export function useEditorSidebar() {
     const title = selectedBlockTitle.value
     if (!title || !registry.getConfig(title)) return
     registry.setListItem(title, listKey, index, itemKey, value)
+    _elementOverrides.delete(title)
     await _applyBlockRender(title)
   }
 
@@ -258,6 +244,7 @@ export function useEditorSidebar() {
     const title = selectedBlockTitle.value
     if (!title || !registry.getConfig(title)) return
     registry.addListItem(title, listKey, template)
+    _elementOverrides.delete(title)
     await _applyBlockRender(title)
   }
 
@@ -265,10 +252,10 @@ export function useEditorSidebar() {
     const title = selectedBlockTitle.value
     if (!title || !registry.getConfig(title)) return
     registry.removeListItem(title, listKey, index)
+    _elementOverrides.delete(title)
     await _applyBlockRender(title)
   }
 
-  // ── Element style API (library compatibility) ───────────────────────────────
   async function updateElementStyle(prop: string, value: string) {
     const el = selectedEl.value
     if (!el) return
@@ -355,6 +342,7 @@ export function useEditorSidebar() {
     blockConfig,
     blockData,
     selectedTag,
+    applyBlockRender: _applyBlockRender,
     updateBlockField,
     updateBlockListItem,
     addBlockListItem,

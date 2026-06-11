@@ -1,10 +1,10 @@
-# Block Registry Expansion Implementation Plan
+﻿# Block Registry Expansion Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Expand all four Ru1 Techwire block editor configs with richer fields so every visual aspect of each section is editable in the sidebar with real-time canvas updates.
+**Goal:** Expand all four Ru1 Homepage block editor configs with richer fields so every visual aspect of each section is editable in the sidebar with real-time canvas updates.
 
-**Architecture:** All changes are confined to `app/composables/themes-data.ts`. Each block's TypeScript interface, defaults object, `FieldConfig[]` array, and `render()` function are replaced in place. The `ru1TechwireSections` array is moved to the bottom of the file and populated by calling `render(defaults)` so the initial HTML always matches the defaults exactly. No other files change.
+**Architecture:** All changes are confined to `app/composables/themes-data.ts`. Each block's TypeScript interface, defaults object, `FieldConfig[]` array, and `render()` function are replaced in place. The `ru1HomepageSections` array is moved to the bottom of the file and populated by calling `render(defaults)` so the initial HTML always matches the defaults exactly. No other files change.
 
 **Tech Stack:** TypeScript, Vue 3, Tailwind CSS (pbx-prefixed utility classes from the page builder library)
 
@@ -163,7 +163,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     .filter(l => l.visible)
     .map(l => `<a href="${l.url}" style="color:${data.textColor}" class="pbx-text-sm pbx-font-medium pbx-no-underline">${l.label}</a>`)
 
-  return `<section data-component-title="Ru1 Techwire Navbar">
+  return `<section data-component-title="Ru1 Homepage Navbar">
 <nav style="${navStyle}">
   <div class="pbx-max-w-7xl pbx-mx-auto pbx-px-4 sm:pbx-px-6 lg:pbx-px-8">
     <div class="pbx-flex pbx-items-center pbx-justify-between pbx-gap-4 pbx-py-3">
@@ -296,7 +296,7 @@ export function renderRu1Hero(data: Ru1HeroData): string {
     ${textLayer}
   </div>`
 
-  return `<section data-component-title="Ru1 Techwire Hero">
+  return `<section data-component-title="Ru1 Homepage Hero">
 <div style="${sectionStyle}">
   ${data.linkUrl ? `<a href="${data.linkUrl}" style="display:block">${inner}</a>` : inner}
 </div>
@@ -416,7 +416,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
         </div>
       </div>`).join('')
 
-  return `<section data-component-title="Ru1 Techwire Featured Products">
+  return `<section data-component-title="Ru1 Homepage Featured Products">
 <div style="${sectionStyle}">
   <div class="pbx-mx-auto pbx-max-w-7xl">
     <div class="pbx-break-words pbx-font-medium pbx-text-3xl lg:pbx-text-4xl pbx-mb-8">
@@ -508,7 +508,7 @@ export function renderRu1Footer(data: Ru1FooterData): string {
     data.borderStyle !== 'none' ? `border-top:${data.borderWidth}px ${data.borderStyle} ${data.borderColor}` : '',
   ].filter(Boolean).join(';')
 
-  return `<section data-component-title="Ru1 Techwire Footer">
+  return `<section data-component-title="Ru1 Homepage Footer">
 <footer style="${footerStyle}">
   <div class="pbx-max-w-7xl pbx-mx-auto">
     <div class="pbx-grid pbx-grid-cols-1 md:pbx-grid-cols-3 pbx-gap-8">
@@ -548,25 +548,25 @@ git commit -m "feat: expand Footer block — padding and border style/width/colo
 
 ---
 
-### Task 5: Move ru1TechwireSections to bottom, derive from render functions
+### Task 5: Move ru1HomepageSections to bottom, derive from render functions
 
 **Files:**
 - Modify: `app/composables/themes-data.ts`
 
-- [ ] **Step 1: Remove the old static `ru1TechwireSections` array from the top of the file**
+- [ ] **Step 1: Remove the old static `ru1HomepageSections` array from the top of the file**
 
-Delete the existing `export const ru1TechwireSections: ThemeSection[] = [ ... ]` block (the one with hardcoded `html_code` strings, lines ~53–203).
+Delete the existing `export const ru1HomepageSections: ThemeSection[] = [ ... ]` block (the one with hardcoded `html_code` strings, lines ~53–203).
 
 - [ ] **Step 2: Add the derived sections array at the very bottom of the file (after all render functions)**
 
 ```ts
 // ─── Theme sections (derived from render functions so initial HTML = defaults) ─
 
-export const ru1TechwireSections: ThemeSection[] = [
-  { id: null, title: 'Ru1 Techwire Navbar',            html_code: renderRu1Navbar(ru1NavbarDefaults) },
-  { id: null, title: 'Ru1 Techwire Hero',              html_code: renderRu1Hero(ru1HeroDefaults) },
-  { id: null, title: 'Ru1 Techwire Featured Products', html_code: renderRu1Products(ru1ProductsDefaults) },
-  { id: null, title: 'Ru1 Techwire Footer',            html_code: renderRu1Footer(ru1FooterDefaults) },
+export const ru1HomepageSections: ThemeSection[] = [
+  { id: null, title: 'Ru1 Homepage Navbar',            html_code: renderRu1Navbar(ru1NavbarDefaults) },
+  { id: null, title: 'Ru1 Homepage Hero',              html_code: renderRu1Hero(ru1HeroDefaults) },
+  { id: null, title: 'Ru1 Homepage Featured Products', html_code: renderRu1Products(ru1ProductsDefaults) },
+  { id: null, title: 'Ru1 Homepage Footer',            html_code: renderRu1Footer(ru1FooterDefaults) },
 ]
 ```
 

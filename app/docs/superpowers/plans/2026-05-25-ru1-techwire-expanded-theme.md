@@ -1,8 +1,8 @@
-# Ru1-Techwire Expanded Theme Implementation Plan
+﻿# Ru1-Homepage Expanded Theme Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the 4-section Ru1-Techwire theme with a complete 9-section premium eCommerce layout where each section is independently removable.
+**Goal:** Replace the 4-section Ru1-Homepage theme with a complete 9-section premium eCommerce layout where each section is independently removable.
 
 **Architecture:** Section HTML data is extracted into `composables/themes-data.ts`; `composables/useThemes.ts` keeps only registry logic and imports from that file. Adding future themes requires only appending to `themes-data.ts` and registering metadata in `useThemes.ts` — no new files per theme.
 
@@ -26,23 +26,23 @@ Expected: `TypeScript: No errors found`
 
 The file exports:
 - `ThemeSection` interface (`{ id: null, title: string, html_code: string }`)
-- `ru1TechwireSvg` — SVG string for builder panel cover image
-- `ru1TechwireSections` — array of 9 `ThemeSection` objects
+- `ru1HomepageSvg` — SVG string for builder panel cover image
+- `ru1HomepageSections` — array of 9 `ThemeSection` objects
 
 - [x] **Step 2: Verify 9 sections are present**
 
-Check that `ru1TechwireSections` contains exactly these titles in order:
-1. `'Ru1 Techwire Navbar'`
-2. `'Ru1 Techwire Hero'`
-3. `'Ru1 Techwire Featured Cards'`
-4. `'Ru1 Techwire Product Grid'`
-5. `'Ru1 Techwire Categories'`
-6. `'Ru1 Techwire Stats'`
-7. `'Ru1 Techwire Testimonials'`
-8. `'Ru1 Techwire Newsletter'`
-9. `'Ru1 Techwire Footer'`
+Check that `ru1HomepageSections` contains exactly these titles in order:
+1. `'Ru1 Homepage Navbar'`
+2. `'Ru1 Homepage Hero'`
+3. `'Ru1 Homepage Featured Cards'`
+4. `'Ru1 Homepage Product Grid'`
+5. `'Ru1 Homepage Categories'`
+6. `'Ru1 Homepage Stats'`
+7. `'Ru1 Homepage Testimonials'`
+8. `'Ru1 Homepage Newsletter'`
+9. `'Ru1 Homepage Footer'`
 
-Each entry has `id: null`, a `title` string, and an `html_code` string that starts with `<section data-component-title="Ru1 Techwire ...">`.
+Each entry has `id: null`, a `title` string, and an `html_code` string that starts with `<section data-component-title="Ru1 Homepage ...">`.
 
 ---
 
@@ -58,24 +58,24 @@ Each entry has `id: null`, a `title` string, and an `html_code` string that star
 `useThemes.ts` should begin with:
 
 ```ts
-import { type ThemeSection, ru1TechwireSections, ru1TechwireSvg } from './themes-data'
+import { type ThemeSection, ru1HomepageSections, ru1HomepageSvg } from './themes-data'
 ```
 
-The file should contain NO inline `html_code` strings and NO `ru1TechwireSvg` SVG definition.
+The file should contain NO inline `html_code` strings and NO `ru1HomepageSvg` SVG definition.
 
 - [x] **Step 2: Confirm `themeRegistry` shape is intact**
 
 ```ts
 export const themeRegistry: Record<string, Theme> = {
-  'ru1-techwire': {
+  'Ru1-Homepage': {
     meta: {
-      id: 'ru1-techwire',
-      name: 'Ru1-Techwire',
+      id: 'Ru1-Homepage',
+      name: 'Ru1-Homepage',
       description: 'Branded employee store theme',
       category: 'General',
-      cover_image: ru1TechwireSvg,
+      cover_image: ru1HomepageSvg,
     },
-    sections: ru1TechwireSections,
+    sections: ru1HomepageSections,
   },
 }
 ```
@@ -115,12 +115,12 @@ Navigate to the page builder editor (login → dashboard → editor).
 - [ ] **Step 2: Open the component panel → Themes tab**
 
 Click `General` or `All` category filter. Confirm:
-- `Ru1-Techwire` card is visible
+- `Ru1-Homepage` card is visible
 - Cover image SVG shows a recognisable 9-section wireframe layout
 
 - [ ] **Step 3: Apply the theme**
 
-Click the `Ru1-Techwire` card. Confirm:
+Click the `Ru1-Homepage` card. Confirm:
 - All 9 sections appear on the canvas in correct order (Navbar → Hero → Featured Cards → Product Grid → Categories → Stats → Testimonials → Newsletter → Footer)
 - Each section renders visually distinct (no blank or broken sections)
 
@@ -141,14 +141,14 @@ Undo or reset and re-apply the theme. Confirm the full 9 sections reload correct
 **Files:**
 - `app/composables/themes-data.ts` (new)
 - `app/composables/useThemes.ts` (modified)
-- `app/docs/superpowers/specs/2026-05-25-ru1-techwire-expanded-theme-design.md` (new)
-- `app/docs/superpowers/plans/2026-05-25-ru1-techwire-expanded-theme.md` (new)
+- `app/docs/superpowers/specs/2026-05-25-Ru1-Homepage-expanded-theme-design.md` (new)
+- `app/docs/superpowers/plans/2026-05-25-Ru1-Homepage-expanded-theme.md` (new)
 
 - [ ] **Step 1: Stage and commit**
 
 ```bash
-git add app/composables/themes-data.ts app/composables/useThemes.ts app/docs/superpowers/specs/2026-05-25-ru1-techwire-expanded-theme-design.md app/docs/superpowers/plans/2026-05-25-ru1-techwire-expanded-theme.md
-git commit -m "feat: expand Ru1-Techwire theme to 9 independent sections and extract theme data layer"
+git add app/composables/themes-data.ts app/composables/useThemes.ts app/docs/superpowers/specs/2026-05-25-Ru1-Homepage-expanded-theme-design.md app/docs/superpowers/plans/2026-05-25-Ru1-Homepage-expanded-theme.md
+git commit -m "feat: expand Ru1-Homepage theme to 9 independent sections and extract theme data layer"
 ```
 
 ---
@@ -175,10 +175,10 @@ export const myThemeSvg = `<svg>...</svg>`
 **2. Register in `app/composables/useThemes.ts`:**
 
 ```ts
-import { type ThemeSection, ru1TechwireSections, ru1TechwireSvg, myThemeSections, myThemeSvg } from './themes-data'
+import { type ThemeSection, ru1HomepageSections, ru1HomepageSvg, myThemeSections, myThemeSvg } from './themes-data'
 
 export const themeRegistry: Record<string, Theme> = {
-  'ru1-techwire': { /* existing */ },
+  'Ru1-Homepage': { /* existing */ },
   'my-theme': {
     meta: {
       id: 'my-theme',

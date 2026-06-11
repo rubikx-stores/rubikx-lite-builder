@@ -1,4 +1,4 @@
-# Ru1-Techwire Expanded Theme — Design Spec
+﻿# Ru1-Homepage Expanded Theme — Design Spec
 
 > **Status:** Approved and implemented  
 > **Date:** 2026-05-25
@@ -7,7 +7,7 @@
 
 ## Goal
 
-Replace the original 4-section Ru1-Techwire theme with a complete 9-section premium eCommerce layout. Each section is fully independent — removing any one section from the page builder causes zero data loss to others.
+Replace the original 4-section Ru1-Homepage theme with a complete 9-section premium eCommerce layout. Each section is fully independent — removing any one section from the page builder causes zero data loss to others.
 
 ## Architecture
 
@@ -25,7 +25,7 @@ All theme section HTML lives in a single data file (`composables/themes-data.ts`
 
 - All changes in `/app` only — no changes to the page builder lib
 - No inline `<script>` or `<style>` tags in section HTML (page builder convention)
-- Each section wrapped in `<section data-component-title="Ru1 Techwire [Name]">` for builder identity
+- Each section wrapped in `<section data-component-title="Ru1 Homepage [Name]">` for builder identity
 - Static layouts only — JS-dependent features (counter animation, carousel) replaced with equivalent static design
 
 ## Sections (9 total)
@@ -59,7 +59,7 @@ export const myNewThemeSections: ThemeSection[] = [ /* ... */ ]
 import { myNewThemeSections } from './themes-data'
 
 export const themeRegistry: Record<string, Theme> = {
-  'ru1-techwire': { /* existing */ },
+  'Ru1-Homepage': { /* existing */ },
   'my-new-theme': {
     meta: { id: 'my-new-theme', name: '...', description: '...', category: 'General', cover_image: '...' },
     sections: myNewThemeSections,
