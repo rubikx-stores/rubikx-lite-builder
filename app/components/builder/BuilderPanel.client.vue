@@ -35,13 +35,20 @@ const filteredComponents = computed(() => {
 })
 
 const themeCategories = computed(() => {
+  const registryCats = Object.values(themeRegistry).map(t => t.meta.category)
   const libCats = themesData[0]?.themes?.data?.map((t) => t.category) ?? []
-  return ['All', 'General', ...new Set(libCats)]
+  return ['All', ...new Set([...registryCats, ...libCats])]
+})
+
+const filteredRegistryThemes = computed(() => {
+  const entries = Object.entries(themeRegistry)
+  if (selectedThemeCategory.value === 'All') return Object.fromEntries(entries)
+  return Object.fromEntries(entries.filter(([, t]) => t.meta.category === selectedThemeCategory.value))
 })
 
 const filteredLibThemes = computed(() => {
   const data = themesData[0]?.themes?.data ?? []
-  if (selectedThemeCategory.value === 'All' || selectedThemeCategory.value === 'General') return data
+  if (selectedThemeCategory.value === 'All') return data
   return data.filter((t) => t.category === selectedThemeCategory.value)
 })
 
@@ -201,10 +208,10 @@ async function handleApplyTheme(themeId: string) {
           <div class="pbx-min-h-[96rem]">
             <div class="pbx-grid pbx-grid-cols-1 sm:pbx-grid-cols-2 md:pbx-grid-cols-3 pbx-gap-4 pbx-pb-4">
 
-              <!-- Custom (General) themes — shown when General or All is selected -->
-              <template v-if="selectedThemeCategory === 'General' || selectedThemeCategory === 'All'">
+              <!-- Registry themes — filtered by selected category -->
+              <template v-if="Object.keys(filteredRegistryThemes).length > 0">
                 <div
-                  v-for="(theme, id) in themeRegistry"
+                  v-for="(theme, id) in filteredRegistryThemes"
                   :key="id"
                   class="pbx-border-solid pbx-border pbx-border-gray-400 pbx-overflow-hidden hover:pbx-border-myPrimaryLinkColor pbx-duration-100 pbx-cursor-pointer pbx-max-h-[30rem]"
                   @click="handleApplyTheme(String(id))"
@@ -224,8 +231,8 @@ async function handleApplyTheme(themeId: string) {
                 </div>
               </template>
 
-              <!-- Library themes (Article, Marketing, etc.) — shown when not General-only -->
-              <template v-if="selectedThemeCategory !== 'General'">
+              <!-- Library themes — shown when any match the selected category -->
+              <template v-if="filteredLibThemes.length > 0">
                 <div
                   v-for="theme in filteredLibThemes"
                   :key="theme.title"
