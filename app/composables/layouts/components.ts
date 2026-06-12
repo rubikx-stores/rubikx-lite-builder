@@ -66,7 +66,7 @@ export const megaMenuHeaderDefaults: MegaMenuHeaderData = {
     { label: 'Contact', href: '/contact' },
   ],
   navLinksAlign: 'center',
-  dynamicCategories: false,
+  dynamicCategories: true,
   linkFontSize: 14,
   linkFontWeight: '500',
   linkColor: '#1f2937',
@@ -120,7 +120,7 @@ export const megaMenuHeaderFields: FieldConfig[] = [
     options: ['400', '500', '600', '700']                                   },
 
   { key: 'showSearch',        label: 'Show Search Bar',               type: 'toggle'  },
-  { key: 'dynamicCategories', label: 'Dynamic Categories from Odoo',  type: 'toggle'  },
+  { key: 'dynamicCategories', label: 'Dynamic Categories',  type: 'toggle'  },
   { key: 'searchPlaceholder', label: 'Search Placeholder',  type: 'text',
     placeholder: 'e.g. Search products…'                                    },
   { key: 'searchAlign',     label: 'Search Position',       type: 'select',
@@ -307,6 +307,9 @@ export interface Ru1FormData {
   submitAlign: string
   socials: Array<{ href: string }>
   columnOrder: string[]
+  showInfo: boolean
+  showForm: boolean
+  singleBlockAlign: string
 }
 
 export const ru1FormDefaults: Ru1FormData = {
@@ -321,6 +324,9 @@ export const ru1FormDefaults: Ru1FormData = {
   submitAlign: 'right',
   socials: [],
   columnOrder: ['info', 'form'],
+  showInfo: true,
+  showForm: true,
+  singleBlockAlign: 'center',
 }
 
 export const ru1FormFields: FieldConfig[] = [
@@ -340,6 +346,10 @@ export const ru1FormFields: FieldConfig[] = [
     ],
   },
   { key: 'columnOrder', label: 'Column Order', type: 'column-order' },
+  { key: '_h_blocks', label: 'Blocks', type: 'header' },
+  { key: 'showInfo', label: 'Show "Get in Touch" Block', type: 'toggle' },
+  { key: 'showForm', label: 'Show Form Block', type: 'toggle' },
+  { key: 'singleBlockAlign', label: 'Single Block Alignment', type: 'select', options: ['left', 'center', 'right'] },
 ]
 
 const iconBuilding = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="height:28px;width:24px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"/></svg>`
@@ -412,15 +422,32 @@ export function renderRu1Form(data: Ru1FormData): string {
       </div>
     </div>`
 
-  const colMap: Record<string, string> = { info: infoCol, form: formCol }
-  const order = data.columnOrder ?? ['info', 'form']
-  const orderedCols = order.map(k => colMap[k] ?? '').join('\n    ')
+  const showInfo = data.showInfo !== false
+  const showForm = data.showForm !== false
 
-  return `<section data-component-title="Ru1-Form" style="position:relative;background:#fff;">
+  if (showInfo && showForm) {
+    const colMap: Record<string, string> = { info: infoCol, form: formCol }
+    const order = data.columnOrder ?? ['info', 'form']
+    const orderedCols = order.map(k => colMap[k] ?? '').join('\n    ')
+    return `<section data-component-title="Ru1-Form" style="position:relative;background:#fff;">
   <div style="margin:0 auto;max-width:80rem;display:grid;grid-template-columns:1fr 1fr;">
     ${orderedCols}
   </div>
 </section>`
+  }
+
+  if (showInfo || showForm) {
+    const singleCol = showInfo ? infoCol : formCol
+    const alignMap: Record<string, string> = { left: '0 auto 0 0', center: '0 auto', right: '0 0 0 auto' }
+    const margin = alignMap[data.singleBlockAlign ?? 'center'] ?? '0 auto'
+    return `<section data-component-title="Ru1-Form" style="position:relative;background:#fff;">
+  <div style="margin:0 auto;max-width:80rem;">
+    <div style="max-width:50%;margin:${margin};">${singleCol}</div>
+  </div>
+</section>`
+  }
+
+  return `<section data-component-title="Ru1-Form" style="position:relative;background:#fff;min-height:4rem;"></section>`
 }
 
 // ─── Footer-1 ─────────────────────────────────────────────────────────────────

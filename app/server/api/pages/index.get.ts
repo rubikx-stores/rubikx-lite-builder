@@ -1,3 +1,5 @@
+import { getCookie, getQuery } from 'h3'
+
 const GRAPHQL_QUERY = `query MyQuery { RubikxCms { key version state updatedBy updatedOn value } }`
 
 export default defineEventHandler(async (event) => {
@@ -16,12 +18,15 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  const companyId = Number(getQuery(event).companyId) || undefined
+  const token = getCookie(event, 'rb_auth_token') ?? 'ec66a59946ecae022949f32f5c65cc67'
+
   const url = 'https://rubikx-stores-rubikx-2-0-prod.odoo.com/graphql'
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     accept: 'application/json',
-    Authorization: `Bearer ec66a59946ecae022949f32f5c65cc67`,
+    Authorization: `Bearer ${token}`,
   }
 
   if (config.odooAccessToken) {
@@ -29,7 +34,9 @@ export default defineEventHandler(async (event) => {
       `access_token=${config.odooAccessToken}; frontend_lang=en_US`
   }
 
-  const variables = { context: { allowed_company_ids: [3] } }
+  const variables = companyId
+    ? { context: { allowed_company_ids: [companyId] } }
+    : {}
 
   const response = await fetch(url, {
     method: 'POST',

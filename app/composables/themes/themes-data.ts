@@ -94,7 +94,7 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
     { label: 'Shop', url: '/shop', visible: true },
     { label: 'About Us', url: '/about', visible: true },
   ],
-  dynamicCategories: false,
+  dynamicCategories: true,
   showSignIn: true,
   signInLabel: 'Sign In',
   signInUrl: '/signin',
@@ -129,9 +129,9 @@ export const ru1NavbarFields: FieldConfig[] = [
       { key: 'visible', label: 'Visible', type: 'toggle' },
     ],
   },
-  { key: 'showSearch', label: 'Search Bar', type: 'toggle' },
-  { key: 'searchPlaceholder', label: 'Search Placeholder Text', type: 'text' },
-  { key: 'dynamicCategories', label: 'Dynamic Categories from Odoo', type: 'toggle' },
+  { key: 'dynamicCategories', label: 'Dynamic Categories', type: 'toggle' },
+  { key: 'showSearch', label: 'Show Search Bar', type: 'toggle' },
+  { key: 'searchPlaceholder', label: 'Search Placeholder', type: 'text' },
 
   { key: '_h_buttons', label: 'Buttons', type: 'header' },
   { key: 'showSignIn', label: 'Show Sign In', type: 'toggle' },
@@ -143,12 +143,9 @@ export const ru1NavbarFields: FieldConfig[] = [
   { key: 'showCart', label: 'Show Cart Icon', type: 'toggle' },
   { key: 'cartUrl', label: 'Cart URL', type: 'url' },
 
-  { key: '_h_colors', label: 'Colors', type: 'header' },
+  { key: '_h_style', label: 'Style', type: 'header' },
   { key: 'bgColor', label: 'Background Color', type: 'color' },
   { key: 'textColor', label: 'Text Color', type: 'color' },
-  { key: 'borderColor', label: 'Border Color', type: 'color' },
-
-  { key: '_h_typography', label: 'Typography', type: 'header' },
   { key: 'fontSize', label: 'Font Size', type: 'number', unit: 'px', step: 1, placeholder: '14' },
   { key: 'fontWeight', label: 'Font Weight', type: 'select', options: ['300', '400', '500', '600', '700', '800'] },
 
@@ -158,6 +155,7 @@ export const ru1NavbarFields: FieldConfig[] = [
   { key: 'sticky', label: 'Sticky Navbar', type: 'toggle' },
   { key: 'borderStyle', label: 'Border Style', type: 'select', options: ['none', 'solid', 'dashed', 'dotted'] },
   { key: 'borderWidth', label: 'Border Width', type: 'number', unit: 'px', step: 1, placeholder: '1' },
+  { key: 'borderColor', label: 'Border Color', type: 'color' },
 ]
 
 export function renderRu1Navbar(data: Ru1NavbarData): string {
@@ -278,11 +276,15 @@ export const ru1HeroDefaults: Ru1HeroData = {
 }
 
 export const ru1HeroFields: FieldConfig[] = [
-  { key: '_h_banner', label: 'Banner', type: 'header' },
+  { key: '_h_image', label: 'Image', type: 'header' },
   { key: 'imageUrl', label: 'Banner Image', type: 'image' },
-  { key: 'altText', label: 'Image Alt Text', type: 'text' },
-  { key: 'linkUrl', label: 'Banner Link URL', type: 'url' },
+  { key: 'altText', label: 'Alt Text', type: 'text' },
+  { key: 'linkUrl', label: 'Link URL', type: 'url' },
   { key: 'aspectRatio', label: 'Aspect Ratio', type: 'select', options: ['4/1', '3/1', '16/9', '2/1', '4/3', '1/1'] },
+
+  { key: '_h_overlay', label: 'Overlay', type: 'header' },
+  { key: 'overlayColor', label: 'Overlay Color', type: 'color' },
+  { key: 'overlayOpacity', label: 'Overlay Opacity', type: 'number', unit: '%', step: 5, placeholder: '40' },
 
   { key: '_h_text', label: 'Text', type: 'header' },
   { key: 'headline', label: 'Headline', type: 'text' },
@@ -293,12 +295,8 @@ export const ru1HeroFields: FieldConfig[] = [
   { key: '_h_cta', label: 'CTA Button', type: 'header' },
   { key: 'ctaText', label: 'Button Text', type: 'text' },
   { key: 'ctaUrl', label: 'Button URL', type: 'url' },
-  { key: 'ctaBgColor', label: 'Button Background Color', type: 'color' },
+  { key: 'ctaBgColor', label: 'Button Background', type: 'color' },
   { key: 'ctaTextColor', label: 'Button Text Color', type: 'color' },
-
-  { key: '_h_overlay', label: 'Overlay', type: 'header' },
-  { key: 'overlayColor', label: 'Overlay Color', type: 'color' },
-  { key: 'overlayOpacity', label: 'Overlay Opacity', type: 'number', unit: '%', step: 5, placeholder: '40' },
 
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'bgColor', label: 'Section Background', type: 'color' },
@@ -375,6 +373,17 @@ export interface Ru1ProductsData {
   hoverEffect: string
   hoverAmount: number
   animationDuration: number
+  showAddToCart: boolean
+  addToCartRadius: number
+  showViewProduct: boolean
+  viewProductLabel: string
+  viewProductBg: string
+  viewProductTextColor: string
+  viewProductRadius: number
+  showArrowBtn: boolean
+  arrowBtnBg: string
+  arrowBtnColor: string
+  arrowBtnPosition: 'top' | 'center' | 'bottom'
 }
 
 const _colClass: Record<string, string> = {
@@ -403,6 +412,17 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   hoverEffect: 'Lift Up',
   hoverAmount: 6,
   animationDuration: 300,
+  showAddToCart: true,
+  addToCartRadius: 6,
+  showViewProduct: false,
+  viewProductLabel: 'View Product',
+  viewProductBg: '#2563eb',
+  viewProductTextColor: '#ffffff',
+  viewProductRadius: 24,
+  showArrowBtn: false,
+  arrowBtnBg: '#1e293b',
+  arrowBtnColor: '#ffffff',
+  arrowBtnPosition: 'center',
   products: [
     { imageUrl: placeholderSvg, name: 'Product One',   price: '$29.99', oldPrice: '',       buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
     { imageUrl: placeholderSvg, name: 'Product Two',   price: '$39.99', oldPrice: '$49.99', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
@@ -417,26 +437,41 @@ export const ru1ProductsFields: FieldConfig[] = [
   { key: 'titleAlign', label: 'Title Alignment', type: 'select', options: ['left', 'center', 'right'] },
   { key: 'titleColor', label: 'Title Color', type: 'color' },
 
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'bgColor', label: 'Section Background', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '48' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '16' },
+
   { key: '_h_grid', label: 'Grid', type: 'header' },
   { key: 'columns', label: 'Columns', type: 'select', options: ['1', '2', '3', '4', '5', '6'] },
   { key: 'rows', label: 'Rows', type: 'select', options: ['1', '2', '3', '4', '5', '6'] },
 
   { key: '_h_card', label: 'Card Style', type: 'header' },
-  { key: 'cardBorderRadius', label: 'Card Corner Radius', type: 'number', unit: 'px', step: 2, placeholder: '8' },
+  { key: 'cardBorderRadius', label: 'Corner Radius', type: 'number', unit: 'px', step: 2, placeholder: '8' },
   { key: 'cardAnimation', label: 'Hover Animation', type: 'toggle' },
   { key: 'hoverEffect', label: 'Animation Type', type: 'select', options: ['Lift Up', 'Drop Down', 'Slide Left', 'Slide Right', 'Pop Out', 'Zoom In', 'Glow', 'Tilt Left', 'Tilt Right'] },
   { key: 'hoverAmount', label: 'Animation Amount', type: 'number', unit: 'px', step: 1, placeholder: '8' },
   { key: 'animationDuration', label: 'Animation Duration', type: 'number', unit: 'ms', step: 50, placeholder: '300' },
 
-  { key: '_h_pricing', label: 'Pricing', type: 'header' },
-  { key: 'oldPriceColor', label: 'Old Price Color', type: 'color' },
-  { key: 'buttonBgColor', label: 'Button Background Color', type: 'color' },
-  { key: 'buttonTextColor', label: 'Button Text Color', type: 'color' },
+  { key: '_h_viewproduct', label: 'View Product Overlay', type: 'header' },
+  { key: 'showViewProduct', label: 'Show View Product', type: 'toggle' },
+  { key: 'viewProductLabel', label: 'Button Text', type: 'text' },
+  { key: 'viewProductBg', label: 'Background Color', type: 'color' },
+  { key: 'viewProductTextColor', label: 'Text Color', type: 'color' },
+  { key: 'viewProductRadius', label: 'Border Radius', type: 'number', unit: 'px', step: 2, placeholder: '24' },
 
-  { key: '_h_layout', label: 'Layout', type: 'header' },
-  { key: 'bgColor', label: 'Section Background', type: 'color' },
-  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '32' },
-  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '24' },
+  { key: '_h_arrowbtn', label: 'Arrow Button', type: 'header' },
+  { key: 'showArrowBtn', label: 'Show Arrow Button', type: 'toggle' },
+  { key: 'arrowBtnPosition', label: 'Position', type: 'select', options: ['top', 'center', 'bottom'] },
+  { key: 'arrowBtnBg', label: 'Background Color', type: 'color' },
+  { key: 'arrowBtnColor', label: 'Icon Color', type: 'color' },
+
+  { key: '_h_pricing', label: 'Pricing & Button', type: 'header' },
+  { key: 'oldPriceColor', label: 'Old Price Color', type: 'color' },
+  { key: 'showAddToCart', label: 'Show Add to Cart Button', type: 'toggle' },
+  { key: 'buttonBgColor', label: 'Button Background', type: 'color' },
+  { key: 'buttonTextColor', label: 'Button Text Color', type: 'color' },
+  { key: 'addToCartRadius', label: 'Button Border Radius', type: 'number', unit: 'px', step: 2, placeholder: '6' },
 
   { key: '_h_products', label: 'Products', type: 'header' },
   {
@@ -455,26 +490,31 @@ export const ru1ProductsFields: FieldConfig[] = [
 
 export function renderRu1Products(data: Ru1ProductsData): string {
   const colCls = _colClass[String(data.columns)] ?? _colClass['4']
-  const _hoverOn = (effect: string, amount: number): string => {
+  const _hoverCSS = (effect: string, amount: number): string => {
     switch (effect) {
-      case 'Lift Up':    return `this.style.transform='translateY(-${amount}px)'`
-      case 'Drop Down':  return `this.style.transform='translateY(${amount}px)'`
-      case 'Slide Left': return `this.style.transform='translateX(-${amount}px)'`
-      case 'Slide Right':return `this.style.transform='translateX(${amount}px)'`
-      case 'Pop Out':    return `this.style.transform='scale(${1 + amount / 100})'`
-      case 'Zoom In':    return `this.style.transform='scale(${1 + amount / 100})';this.style.boxShadow='0 25px 50px rgba(0,0,0,0.15)'`
-      case 'Glow':       return `this.style.boxShadow='0 0 ${amount}px rgba(99,102,241,0.7)'`
-      case 'Tilt Left':  return `this.style.transform='rotate(-${amount}deg)'`
-      case 'Tilt Right': return `this.style.transform='rotate(${amount}deg)'`
-      default:           return `this.style.transform='translateY(-${amount}px)'`
+      case 'Lift Up':    return `transform:translateY(-${amount}px)`
+      case 'Drop Down':  return `transform:translateY(${amount}px)`
+      case 'Slide Left': return `transform:translateX(-${amount}px)`
+      case 'Slide Right':return `transform:translateX(${amount}px)`
+      case 'Pop Out':    return `transform:scale(${1 + amount / 100})`
+      case 'Zoom In':    return `transform:scale(${1 + amount / 100});box-shadow:0 25px 50px rgba(0,0,0,0.15)`
+      case 'Glow':       return `box-shadow:0 0 ${amount}px rgba(99,102,241,0.7)`
+      case 'Tilt Left':  return `transform:rotate(-${amount}deg)`
+      case 'Tilt Right': return `transform:rotate(${amount}deg)`
+      default:           return `transform:translateY(-${amount}px)`
     }
   }
-  const cardAnim = data.cardAnimation
-    ? ` onmouseenter="${_hoverOn(data.hoverEffect, data.hoverAmount)}" onmouseleave="this.style.transform='';this.style.boxShadow=''"`
-    : ''
-  const cardTransition = data.cardAnimation
-    ? `;transition:transform ${data.animationDuration}ms ease,box-shadow ${data.animationDuration}ms ease`
-    : ''
+  const dur = data.animationDuration ?? 300
+  const arrowBtnPos = data.showArrowBtn !== false ? (data.arrowBtnPosition ?? 'center') : 'hidden'
+  const needsOverlay = data.showViewProduct !== false || arrowBtnPos === 'top'
+
+  const styleRules: string[] = []
+  if (needsOverlay) styleRules.push(`.fp-prod-card:hover .fp-img-overlay{opacity:1!important}`)
+  if (data.cardAnimation) {
+    styleRules.push(`.fp-prod-card{transition:transform ${dur}ms ease,box-shadow ${dur}ms ease}`)
+    styleRules.push(`.fp-prod-card:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}`)
+  }
+  const animStyle = styleRules.length ? `<style>${styleRules.join('')}</style>` : ''
 
   const sectionStyle = [
     data.bgColor ? `background:${data.bgColor}` : '',
@@ -487,21 +527,66 @@ export function renderRu1Products(data: Ru1ProductsData): string {
     ...data.products.slice(0, maxVisible),
     ...Array(Math.max(0, maxVisible - data.products.length)).fill(placeholder),
   ]
-  const cards = visibleProducts.map(p => `
-      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden${cardTransition}" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200"${cardAnim}>
-        <img class="pbx-w-full pbx-h-auto pbx-block" src="${p.imageUrl}" alt="${p.name}" />
-        <div class="pbx-flex pbx-flex-col pbx-gap-1 pbx-p-3 pbx-flex-1">
-          <p class="pbx-font-semibold pbx-text-sm">${p.name}</p>
-          <div class="pbx-flex pbx-items-center pbx-gap-2">
+
+  const cards = visibleProducts.map(p => {
+    const cs = Array.isArray(p.colors) ? '' : String(p.colors ?? '').trim()
+    const colorsHtml = cs
+      ? `<div style="display:flex;gap:6px;align-items:center;padding:4px 0">${cs.split(',').map((c: string) => c.trim()).filter(Boolean).map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.15);flex-shrink:0"></span>`).join('')}</div>`
+      : ''
+
+    const vpLabel = data.viewProductLabel || 'View Product'
+    const viewProductBtn = data.showViewProduct !== false
+      ? `<a href="${p.buttonUrl}" style="background:${data.viewProductBg};color:${data.viewProductTextColor};font-size:0.8125rem;font-weight:600;text-decoration:none;pointer-events:auto;padding:0.5rem 1.25rem;border-radius:${data.viewProductRadius}px;letter-spacing:0.01em">${vpLabel}</a>`
+      : ''
+
+    const arrowBtnEl = `<a href="${p.buttonUrl}" style="width:32px;height:32px;border-radius:50%;background:${data.arrowBtnBg ?? '#1e293b'};display:flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0;pointer-events:auto"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="${data.arrowBtnColor ?? '#ffffff'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`
+    const arrowBtnAbsolute = `<a href="${p.buttonUrl}" style="position:absolute;right:12px;width:32px;height:32px;border-radius:50%;background:${data.arrowBtnBg ?? '#1e293b'};display:flex;align-items:center;justify-content:center;text-decoration:none;pointer-events:auto;flex-shrink:0"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="${data.arrowBtnColor ?? '#ffffff'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`
+
+    const overlayHtml = needsOverlay
+      ? (arrowBtnPos === 'top'
+          ? `<div class="fp-img-overlay" style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;padding:10px 12px;opacity:0;transition:opacity 180ms ease;pointer-events:none">
+              ${viewProductBtn}${arrowBtnAbsolute}
+            </div>`
+          : `<div class="fp-img-overlay" style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;padding:10px 12px;opacity:0;transition:opacity 180ms ease;pointer-events:none">
+              ${viewProductBtn}
+            </div>`)
+      : ''
+
+    const priceRow = arrowBtnPos === 'center'
+      ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:0.375rem">
+          <div style="display:flex;align-items:center;gap:0.5rem">
             <p class="pbx-text-sm">${p.price}</p>
             ${p.oldPrice ? `<s style="color:${data.oldPriceColor}" class="pbx-text-sm">${p.oldPrice}</s>` : ''}
           </div>
-          ${(() => { const cs = Array.isArray(p.colors) ? '' : String(p.colors ?? '').trim(); return cs ? `<div style="display:flex;gap:6px;align-items:center;padding:4px 0">${cs.split(',').map((c: string) => c.trim()).filter(Boolean).map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.15);flex-shrink:0"></span>`).join('')}</div>` : '' })()}
-          <a href="${p.buttonUrl}" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.cardBorderRadius}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block">${p.buttonLabel}</a>
+          ${arrowBtnEl}
+        </div>`
+      : `<div class="pbx-flex pbx-items-center pbx-gap-2">
+          <p class="pbx-text-sm">${p.price}</p>
+          ${p.oldPrice ? `<s style="color:${data.oldPriceColor}" class="pbx-text-sm">${p.oldPrice}</s>` : ''}
+        </div>`
+
+    const bottomRow = arrowBtnPos === 'bottom'
+      ? `<div style="display:flex;justify-content:flex-end;margin-top:auto;padding-top:8px">${arrowBtnEl}</div>`
+      : ''
+
+    return `
+      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200 fp-prod-card">
+        <div style="position:relative;overflow:hidden">
+          <img class="pbx-w-full pbx-h-auto pbx-block" src="${p.imageUrl}" alt="${p.name}" />
+          ${overlayHtml}
         </div>
-      </div>`).join('')
+        <div class="pbx-flex pbx-flex-col pbx-gap-1 pbx-p-3 pbx-flex-1">
+          <p class="pbx-font-semibold pbx-text-sm">${p.name}</p>
+          ${priceRow}
+          ${colorsHtml}
+          ${data.showAddToCart !== false ? `<a href="${p.buttonUrl}" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.addToCartRadius ?? 6}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block">${p.buttonLabel}</a>` : ''}
+          ${bottomRow}
+        </div>
+      </div>`
+  }).join('')
 
   return `<section data-component-title="Ru1 Homepage Featured Products">
+${animStyle}
 <div style="${sectionStyle}">
   <div class="pbx-mx-auto pbx-max-w-7xl">
     <div class="pbx-mb-8">
@@ -553,6 +638,9 @@ export const ru1FooterDefaults: Ru1FooterData = {
 export const ru1FooterFields: FieldConfig[] = [
   { key: '_h_content', label: 'Content', type: 'header' },
   { key: 'tagline', label: 'Tagline', type: 'text' },
+  { key: 'contactEmail', label: 'Contact Email', type: 'text' },
+  { key: 'contactPhone', label: 'Contact Phone', type: 'text' },
+  { key: 'copyright', label: 'Copyright Text', type: 'text' },
   {
     key: 'usefulLinks', label: 'Useful Links', type: 'list',
     listFields: [
@@ -560,19 +648,18 @@ export const ru1FooterFields: FieldConfig[] = [
       { key: 'url', label: 'URL', type: 'url' },
     ],
   },
-  { key: 'contactEmail', label: 'Contact Email', type: 'text' },
-  { key: 'contactPhone', label: 'Contact Phone', type: 'text' },
-  { key: 'copyright', label: 'Copyright Text', type: 'text' },
 
-  { key: '_h_colors', label: 'Colors', type: 'header' },
+  { key: '_h_columns', label: 'Column Order', type: 'header' },
+  { key: 'columnOrder', label: 'Column Order', type: 'column-order' },
+
+  { key: '_h_style', label: 'Style', type: 'header' },
+  { key: 'borderStyle', label: 'Border Style', type: 'select', options: ['none', 'solid', 'dashed', 'dotted'] },
+  { key: 'borderWidth', label: 'Border Width', type: 'number', unit: 'px', step: 1, placeholder: '1' },
   { key: 'borderColor', label: 'Border Color', type: 'color' },
 
   { key: '_h_layout', label: 'Layout', type: 'header' },
-  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '32' },
-  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '24' },
-  { key: 'borderStyle', label: 'Border Style', type: 'select', options: ['none', 'solid', 'dashed', 'dotted'] },
-  { key: 'borderWidth', label: 'Border Width', type: 'number', unit: 'px', step: 1, placeholder: '1' },
-  { key: 'columnOrder', label: 'Column Order', type: 'column-order' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '48' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '16' },
 ]
 
 export function renderRu1Footer(data: Ru1FooterData): string {
@@ -625,7 +712,7 @@ export const ru1HomepageSections: ThemeSection[] = [
 ]
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Ru2 Shoppage theme
+// Ru1 ShopPage theme
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const ru2ShoppageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
@@ -715,7 +802,7 @@ export const ru2ShoppageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="
   <rect fill="#718096" x="192" y="320" width="55" height="4"/>
   <rect fill="#718096" x="192" y="328" width="40" height="3"/>
 </svg>`
-// ─── Ru2 Shop Hero block ─────────────────────────────────────────────────────
+// ─── Ru1 Shop Hero block ─────────────────────────────────────────────────────
 
 export interface Ru2ShopHeroData {
   pageTitle: string
@@ -802,7 +889,7 @@ export function renderRu2ShopHero(data: Ru2ShopHeroData): string {
       </ol>
     </nav>` : ''
 
-  return `<section data-component-title="Ru2 Shop Hero">
+  return `<section data-component-title="Ru1 Shop Hero">
 <div style="${bgStyles}">
   <div class="pbx-mx-auto pbx-max-w-7xl" style="text-align:${data.textAlign}">
     ${breadcrumbsHtml}
@@ -812,7 +899,7 @@ export function renderRu2ShopHero(data: Ru2ShopHeroData): string {
 </section>`
 }
 
-// ─── Ru2 Shop Content block ──────────────────────────────────────────────────
+// ─── Ru1 Shop Content block ──────────────────────────────────────────────────
 
 export interface FilterDropdown {
   label: string
@@ -835,12 +922,19 @@ export interface Ru2ShopContentData {
   hoverEffect: string
   hoverAmount: number
   animationDuration: number
+  showViewProduct: boolean
+  viewProductLabel: string
   viewProductBg: string
   viewProductTextColor: string
   viewProductRadius: number
+  showArrowBtn: boolean
+  arrowBtnBg: string
+  arrowBtnColor: string
+  arrowBtnPosition: 'top' | 'center' | 'bottom'
   oldPriceColor: string
   buttonBgColor: string
   buttonTextColor: string
+  addToCartRadius: number
   products: Product[]
   showPagination: boolean
   totalPages: number
@@ -877,12 +971,19 @@ export const ru2ShopContentDefaults: Ru2ShopContentData = {
   hoverEffect: 'Lift Up',
   hoverAmount: 6,
   animationDuration: 300,
+  showViewProduct: true,
+  viewProductLabel: 'View Product',
   viewProductBg: '#2563eb',
   viewProductTextColor: '#ffffff',
   viewProductRadius: 24,
+  showArrowBtn: true,
+  arrowBtnBg: '#1e293b',
+  arrowBtnColor: '#ffffff',
+  arrowBtnPosition: 'center',
   oldPriceColor: '#9ca3af',
   buttonBgColor: '#111827',
   buttonTextColor: '#ffffff',
+  addToCartRadius: 6,
   products: [
     { imageUrl: placeholderSvg, name: 'Gift Card',                     price: '',       oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
     { imageUrl: placeholderSvg, name: "Men's Performance Polo",         price: '$67.45', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'black' },
@@ -947,9 +1048,17 @@ export const ru2ShopContentFields: FieldConfig[] = [
 
   // ── Image overlay (appears on hover) ─────────────────────────────────────
   { key: '_h_viewproduct', label: 'View Product Overlay', type: 'header' },
+  { key: 'showViewProduct', label: 'Show View Product', type: 'toggle' },
+  { key: 'viewProductLabel', label: 'Button Text', type: 'text' },
   { key: 'viewProductBg', label: 'Background Color', type: 'color' },
   { key: 'viewProductTextColor', label: 'Text Color', type: 'color' },
   { key: 'viewProductRadius', label: 'Border Radius', type: 'number', unit: 'px', step: 2, placeholder: '24' },
+
+  { key: '_h_arrowbtn', label: 'Arrow Button', type: 'header' },
+  { key: 'showArrowBtn', label: 'Show Arrow Button', type: 'toggle' },
+  { key: 'arrowBtnPosition', label: 'Position', type: 'select', options: ['top', 'center', 'bottom'] },
+  { key: 'arrowBtnBg', label: 'Background Color', type: 'color' },
+  { key: 'arrowBtnColor', label: 'Icon Color', type: 'color' },
 
   // ── Card info (price, add to cart) ───────────────────────────────────────
   { key: '_h_pricing', label: 'Pricing & Button', type: 'header' },
@@ -957,6 +1066,7 @@ export const ru2ShopContentFields: FieldConfig[] = [
   { key: 'showAddToCart', label: 'Show Add to Cart Button', type: 'toggle' },
   { key: 'buttonBgColor', label: 'Button Background', type: 'color' },
   { key: 'buttonTextColor', label: 'Button Text Color', type: 'color' },
+  { key: 'addToCartRadius', label: 'Button Border Radius', type: 'number', unit: 'px', step: 2, placeholder: '6' },
 
   // ── Products list ─────────────────────────────────────────────────────────
   { key: '_h_products', label: 'Products', type: 'header' },
@@ -1015,27 +1125,62 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
     const colorsHtml = cs
       ? `<div style="display:flex;gap:5px;align-items:center;margin-top:6px">${cs.split(',').map((c: string) => c.trim()).filter(Boolean).map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.12);flex-shrink:0"></span>`).join('')}</div>`
       : ''
-    const arrowBtn = `<a href="${p.buttonUrl}" style="width:32px;height:32px;border-radius:50%;background:#1e293b;display:flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`
-    const footerRow = data.showAddToCart
-      ? `<div style="display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:10px">
-           <a href="${p.buttonUrl}" style="flex:1;background:${data.buttonBgColor};color:${data.buttonTextColor};text-align:center;padding:0.5rem 0.25rem;font-size:0.8125rem;font-weight:500;text-decoration:none;border-radius:${data.cardBorderRadius}px">${p.buttonLabel}</a>
-           ${arrowBtn}
-         </div>`
-      : `<div style="display:flex;justify-content:flex-end;margin-top:auto;padding-top:10px">${arrowBtn}</div>`
-    return `
-      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden;background:#fff;border:1.5px solid #e5e7eb;transition:${cardTransition};position:relative" class="pbx-flex pbx-flex-col" onmouseenter="${enterHandler}" onmouseleave="${leaveHandler}">
-        <div style="position:relative;overflow:hidden">
-          <img class="pbx-w-full pbx-block" src="${p.imageUrl}" alt="${p.name}" style="aspect-ratio:1/1;object-fit:cover;display:block" />
-          <div class="shop-img-overlay" style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;padding:10px 12px;opacity:0;transition:opacity 180ms ease;pointer-events:none">
-            <a href="${p.buttonUrl}" style="background:${data.viewProductBg};color:${data.viewProductTextColor};font-size:0.8125rem;font-weight:600;text-decoration:none;pointer-events:auto;padding:0.5rem 1.25rem;border-radius:${data.viewProductRadius}px;letter-spacing:0.01em">View Product</a>
-          </div>
-        </div>
-        <div style="padding:0.875rem;flex:1;display:flex;flex-direction:column">
-          <p style="font-size:0.9375rem;font-weight:600;color:#111827;margin:0 0 4px;line-height:1.35">${p.name}</p>
-          <div style="display:flex;align-items:center;gap:0.375rem;margin-bottom:2px">
+    const arrowBtnPos = data.showArrowBtn !== false ? (data.arrowBtnPosition ?? 'center') : 'hidden'
+    const arrowBtnEl = `<a href="${p.buttonUrl}" style="width:32px;height:32px;border-radius:50%;background:${data.arrowBtnBg ?? '#1e293b'};display:flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0;pointer-events:auto"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="${data.arrowBtnColor ?? '#ffffff'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`
+
+    const vpLabel = data.viewProductLabel || 'View Product'
+    const viewProductBtn = data.showViewProduct !== false
+      ? `<a href="${p.buttonUrl}" style="background:${data.viewProductBg};color:${data.viewProductTextColor};font-size:0.8125rem;font-weight:600;text-decoration:none;pointer-events:auto;padding:0.5rem 1.25rem;border-radius:${data.viewProductRadius}px;letter-spacing:0.01em">${vpLabel}</a>`
+      : ''
+
+    const arrowBtnAbsolute = `<a href="${p.buttonUrl}" style="position:absolute;right:12px;width:32px;height:32px;border-radius:50%;background:${data.arrowBtnBg ?? '#1e293b'};display:flex;align-items:center;justify-content:center;text-decoration:none;pointer-events:auto;flex-shrink:0"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="${data.arrowBtnColor ?? '#ffffff'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`
+
+    const hasOverlay = data.showViewProduct !== false || arrowBtnPos === 'top'
+    // top: View Product centered, arrow pinned to the far right
+    const overlayHtml = hasOverlay
+      ? (arrowBtnPos === 'top'
+          ? `<div class="shop-img-overlay" style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;padding:10px 12px;opacity:0;transition:opacity 180ms ease;pointer-events:none">
+              ${viewProductBtn}
+              ${arrowBtnAbsolute}
+            </div>`
+          : `<div class="shop-img-overlay" style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;padding:10px 12px;opacity:0;transition:opacity 180ms ease;pointer-events:none">
+              ${viewProductBtn}
+            </div>`)
+      : ''
+
+    // center: arrow inline with price row
+    const priceRow = arrowBtnPos === 'center'
+      ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:0.375rem;margin-bottom:2px">
+          <div style="display:flex;align-items:center;gap:0.375rem">
             ${p.price ? `<span style="font-size:0.9375rem;font-weight:700;color:#111827">${p.price}</span>` : ''}
             ${p.oldPrice ? `<s style="color:${data.oldPriceColor};font-size:0.8125rem">${p.oldPrice}</s>` : ''}
           </div>
+          ${arrowBtnEl}
+        </div>`
+      : `<div style="display:flex;align-items:center;gap:0.375rem;margin-bottom:2px">
+          ${p.price ? `<span style="font-size:0.9375rem;font-weight:700;color:#111827">${p.price}</span>` : ''}
+          ${p.oldPrice ? `<s style="color:${data.oldPriceColor};font-size:0.8125rem">${p.oldPrice}</s>` : ''}
+        </div>`
+
+    // bottom: arrow at the very end of the card
+    const footerRow = data.showAddToCart
+      ? `<div style="display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:10px">
+           <a href="${p.buttonUrl}" style="flex:1;background:${data.buttonBgColor};color:${data.buttonTextColor};text-align:center;padding:0.5rem 0.25rem;font-size:0.8125rem;font-weight:500;text-decoration:none;border-radius:${data.addToCartRadius ?? 6}px">${p.buttonLabel}</a>
+           ${arrowBtnPos === 'bottom' ? arrowBtnEl : ''}
+         </div>`
+      : arrowBtnPos === 'bottom'
+        ? `<div style="display:flex;justify-content:flex-end;margin-top:auto;padding-top:10px">${arrowBtnEl}</div>`
+        : ''
+
+    return `
+      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden;background:#fff;border:1.5px solid #e5e7eb;transition:${cardTransition};position:relative" class="pbx-flex pbx-flex-col" onmouseenter="${enterHandler}" onmouseleave="${leaveHandler}">
+        <div style="position:relative;overflow:hidden">
+          <img class="pbx-w-full pbx-block" src="${p.imageUrl}" alt="${p.name}" style="aspect-ratio:1/1;object-fit:contain;display:block;background:#f9fafb" />
+          ${overlayHtml}
+        </div>
+        <div style="padding:0.875rem;flex:1;display:flex;flex-direction:column">
+          <p style="font-size:0.9375rem;font-weight:600;color:#111827;margin:0 0 4px;line-height:1.35">${p.name}</p>
+          ${priceRow}
           ${colorsHtml}
           ${footerRow}
         </div>
@@ -1075,7 +1220,7 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
         ${data.showProductCount ? `<span style="font-size:0.875rem;font-weight:500;color:#111827">${productCount} Products</span>` : ''}
         ${data.showSortBy ? `<div style="display:flex;align-items:center;gap:0.375rem"><span style="font-size:0.875rem;color:#374151">${data.sortLabel}:</span><button style="display:inline-flex;align-items:center;gap:0.25rem;background:none;border:none;cursor:pointer;font-size:0.875rem;color:#374151;padding:0">Default <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>` : ''}
       </div>
-      ${visibleDropdowns.length ? `<div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">${visibleDropdowns.map((f: FilterDropdown) => `<button style="display:inline-flex;align-items:center;gap:0.375rem;background:#fff;border:1px solid #d1d5db;border-radius:4px;cursor:pointer;font-size:0.875rem;color:#374151;padding:0.375rem 0.75rem;white-space:nowrap">${f.label} <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`).join('')}</div>` : ''}
+      ${visibleDropdowns.length ? `<div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">${visibleDropdowns.map((f: FilterDropdown) => `<div data-rubikx-component="${f.label.replace(/\s+/g, '')}Filter" data-on-mount="loadProductFilters" data-filter-style="top" style="position:relative;display:inline-block;"><button style="display:inline-flex;align-items:center;gap:0.375rem;background:#fff;border:1px solid #d1d5db;border-radius:4px;cursor:pointer;font-size:0.875rem;color:#374151;padding:0.375rem 0.75rem;white-space:nowrap">${f.label} <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="rubikx-filter-dropdown" style="display:none;position:absolute;top:100%;left:0;background:#fff;min-width:160px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px;z-index:100;"><span style="display:block;padding:8px;color:#999;font-size:12px;font-style:italic;">⟳ Loads from Odoo on live site</span></div></div>`).join('')}</div>` : ''}
     </div>`
     innerHtml = `${topBar}${pageGrids}${paginationHtml}`
   } else {
@@ -1084,7 +1229,7 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
       ${data.showProductCount ? `<span style="font-size:0.875rem;font-weight:500;color:#111827">${productCount} Products</span>` : ''}
       ${data.showSortBy ? `<div style="display:flex;align-items:center;gap:0.375rem"><span style="font-size:0.875rem;color:#374151">${data.sortLabel}:</span><button style="display:inline-flex;align-items:center;gap:0.25rem;background:none;border:none;cursor:pointer;font-size:0.875rem;color:#374151;padding:0">Default <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>` : ''}
     </div>` : ''
-    const sidebarAccordion = visibleDropdowns.map((f: FilterDropdown) => `<div style="border-bottom:1px solid #f3f4f6;padding:0.625rem 0"><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:0.875rem;color:#374151">${f.label}</span><button style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:#6b7280;padding:0;line-height:1">+</button></div></div>`).join('')
+    const sidebarAccordion = visibleDropdowns.map((f: FilterDropdown) => `<div data-rubikx-component="${f.label.replace(/\s+/g, '')}Filter" data-on-mount="loadProductFilters" data-filter-style="sidebar" style="border-bottom:1px solid #f3f4f6;padding:0.625rem 0;"><div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:0.875rem;color:#374151;">${f.label}</span><button class="rubikx-filter-toggle" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:#6b7280;padding:0;line-height:1">+</button></div><div class="rubikx-filter-values" style="display:none;padding-top:0.5rem;"><span style="display:block;padding:4px 0;color:#999;font-size:12px;font-style:italic;">⟳ Loads from Odoo on live site</span></div></div>`).join('')
     const sidebarBorder = filterPos === 'left'
       ? 'border-right:1px solid #e5e7eb;padding-right:1.25rem;margin-right:1.5rem'
       : 'border-left:1px solid #e5e7eb;padding-left:1.25rem;margin-left:1.5rem'
@@ -1102,7 +1247,7 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
     innerHtml = `${metaBar}${flexRow}`
   }
 
-  return `<section data-component-title="Ru2 Shop Content">
+  return `<section data-component-title="Ru1 Shop Content">
 <div style="${sectionStyle}">
   <div class="pbx-mx-auto pbx-max-w-7xl">
     ${innerHtml}
@@ -1110,14 +1255,14 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
 </div>
 </section>`
 }
-// ─── Ru2 Shoppage sections ───────────────────────────────────────────────────
+// ─── Ru1 ShopPage sections ───────────────────────────────────────────────────
 
 export const ru2ShoppageSections: ThemeSection[] = [
-  { id: null, title: 'Ru2 Shop Hero',    html_code: renderRu2ShopHero(ru2ShopHeroDefaults) },
-  { id: null, title: 'Ru2 Shop Content', html_code: renderRu2ShopContent(ru2ShopContentDefaults) },
+  { id: null, title: 'Ru1 Shop Hero',    html_code: renderRu2ShopHero(ru2ShopHeroDefaults) },
+  { id: null, title: 'Ru1 Shop Content', html_code: renderRu2ShopContent(ru2ShopContentDefaults) },
 ]
 
-// ─── Ru3 Shop Header ──────────────────────────────────────────────────────────
+// ─── Ru2 Shop Header ──────────────────────────────────────────────────────────
 
 export const ru3ShopSvg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 340'>
   <rect width='280' height='340' fill='#f8f9fa'/>
@@ -1196,7 +1341,7 @@ export const ru3ShopHeaderFields: FieldConfig[] = [
 ]
 
 export function renderRu3ShopHeader(data: Ru3ShopHeaderData): string {
-  return `<section data-component-title='Ru3 Shop Header'>
+  return `<section data-component-title='Ru2 Shop Header'>
 <div style='background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;border-bottom:1px solid #e5e7eb;'>
   <div style='max-width:80rem;margin:0 auto;'>
     <div style='display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:14px;color:#6b7280;'>
@@ -1222,7 +1367,7 @@ export function renderRu3ShopHeader(data: Ru3ShopHeaderData): string {
 </section>`
 }
 
-// ─── Ru3 Shop Filters ─────────────────────────────────────────────────────────
+// ─── Ru2 Shop Filters ─────────────────────────────────────────────────────────
 
 export interface Ru3ShopFiltersData {
   bgColor: string
@@ -1269,7 +1414,7 @@ export function renderRu3ShopFilters(data: Ru3ShopFiltersData): string {
     data.showPrice ? 'Price' : null,
   ].filter(Boolean)
 
-  return `<section data-component-title='Ru3 Shop Filters'>
+  return `<section data-component-title='Ru2 Shop Filters'>
 <div style='background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;border-bottom:1px solid ${data.borderColor};'>
   <div style='max-width:80rem;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;'>
     ${filters.map(f => `<button style='display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid ${data.borderColor};border-radius:6px;background:#fff;font-size:14px;color:#374151;cursor:pointer;white-space:nowrap;'>
@@ -1281,7 +1426,7 @@ export function renderRu3ShopFilters(data: Ru3ShopFiltersData): string {
 </section>`
 }
 
-// ─── Ru3 Shop Products ────────────────────────────────────────────────────────
+// ─── Ru2 Shop Products ────────────────────────────────────────────────────────
 
 export interface Ru3ShopProductsData {
   sectionTitle: string
@@ -1411,7 +1556,7 @@ export function renderRu3ShopProducts(data: Ru3ShopProductsData): string {
       </div>`
     : ''
 
-  return `<section data-component-title="Ru3 Shop Products">
+  return `<section data-component-title="Ru2 Shop Products">
 ${animStyle}
 <div style="${sectionStyle}">
   <div class="pbx-mx-auto pbx-max-w-7xl">
@@ -1425,7 +1570,7 @@ ${animStyle}
 }
 
 export const ru3ShopSections: ThemeSection[] = [
-  { id: null, title: 'Ru3 Shop Header',   html_code: renderRu3ShopHeader(ru3ShopHeaderDefaults) },
-  { id: null, title: 'Ru3 Shop Filters',  html_code: renderRu3ShopFilters(ru3ShopFiltersDefaults) },
-  { id: null, title: 'Ru3 Shop Products', html_code: renderRu3ShopProducts(ru3ShopProductsDefaults) },
+  { id: null, title: 'Ru2 Shop Header',   html_code: renderRu3ShopHeader(ru3ShopHeaderDefaults) },
+  { id: null, title: 'Ru2 Shop Filters',  html_code: renderRu3ShopFilters(ru3ShopFiltersDefaults) },
+  { id: null, title: 'Ru2 Shop Products', html_code: renderRu3ShopProducts(ru3ShopProductsDefaults) },
 ]

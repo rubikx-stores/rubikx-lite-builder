@@ -1,12 +1,31 @@
-export default defineEventHandler(async (_event) => {
-  // TODO: replace with real API call
-  // const config = useRuntimeConfig(event)
-  // return await $fetch(`${config.apiBaseUrl}/websites`, {
-  //   headers: { 'X-Api-Key': config.apiSecretKey },
-  // })
+export default defineEventHandler(async (event) => {
+  const ODOO_URL = 'https://rubikx-stores-rubikx-2-0-prod.odoo.com/graphql'
 
-  return [
-    { id: 1, name: 'RubikX Store', domain: 'rubikxstores.com' },
-    { id: 2, name: 'RubikX B2B', domain: 'b2b.rubikxstores.com' },
-  ]
+  const token = getCookie(event, 'rb_auth_token')
+  if (!token) {
+    return []
+  }
+
+  try {
+    const res = await $fetch<any>(ODOO_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: {
+        query: `query company { ResCompany { id name } }`,
+        variables: {}
+      }
+    })
+
+    const companies = res?.data?.company?.ResCompany ?? []
+    return companies.map((c: any) => ({
+      id: c.id,
+      name: c.name,
+    }))
+  } catch (e) {
+    console.error('[WEBSITES] Failed to fetch companies from Odoo:', e)
+    return []
+  }
 })

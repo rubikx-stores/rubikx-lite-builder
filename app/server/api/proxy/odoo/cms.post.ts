@@ -20,6 +20,7 @@ interface CmsPayload {
   value: string
   version: string
   state: 'published' | 'draft'
+  companyId?: number
 }
 
 export default defineEventHandler(async (event) => {
@@ -72,7 +73,7 @@ export default defineEventHandler(async (event) => {
   const response = await fetch(url, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ ...body, updatedBy, updatedOn }),
+    body: JSON.stringify({ ...body, updatedBy, updatedOn, ...(body.companyId ? { company_id: body.companyId } : {}) }),
   })
 
   const responseText = await response.text()
