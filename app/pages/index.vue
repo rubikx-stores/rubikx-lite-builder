@@ -25,6 +25,7 @@ interface Page {
 }
 
 const { data: websites } = await useFetch<Website[]>('/api/websites')
+const { user } = useAuth()
 
 const selectedWebsiteId = ref<number | null>(null)
 const pages = ref<Page[]>([])
@@ -52,7 +53,7 @@ async function fetchPages() {
   if (!selectedWebsiteId.value) return
   loadingPages.value = true
   try {
-    pages.value = await $fetch<Page[]>('/api/pages', { query: { websiteId: 3 } })
+    pages.value = await $fetch<Page[]>('/api/pages', { query: { companyId: selectedWebsiteId.value } })
     pages.value.forEach((p) => {
       selectedVersions.value[p.id] = p.versions[0]?.version ?? 1
     })
@@ -79,7 +80,7 @@ async function publishPage(page: Page) {
         value: vData.value,
         version: String(vData.version),
         state: 'published',
-        updatedBy: 'editor',
+        updatedBy: user.value?.name ?? 'editor',
         updatedOn: new Date().toISOString(),
       },
     })
@@ -135,7 +136,7 @@ function editPage(page: Page) {
     pageHtmlCache.value['global-footer'] = footerPage.versions[0]?.value ?? ''
   }
 
-  navigateTo(`/editor?pageId=${page.id}&pageName=${encodeURIComponent(page.name)}&pageVersion=${vData.version}`)
+  navigateTo(`/editor?pageId=${page.id}&pageName=${encodeURIComponent(page.name)}&pageVersion=${vData.version}&companyId=${selectedWebsiteId.value}`)
 }
 
 function formatDate(iso: string) {
@@ -206,7 +207,7 @@ async function createNewPage() {
         value: ' ',
         version: 1,
         state: 'draft',
-        updatedBy: 'editor',
+        updatedBy: user.value?.name ?? 'editor',
         updatedOn: new Date().toISOString(),
       }
     })

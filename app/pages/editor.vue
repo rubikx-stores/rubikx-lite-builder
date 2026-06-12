@@ -5,6 +5,7 @@ const route = useRoute()
 const pageId = computed(() => route.query.pageId as string | undefined)
 const pageName = computed(() => (route.query.pageName as string) ?? 'Untitled')
 const pageVersion = computed(() => Number(route.query.pageVersion) || 1)
+const companyId = computed(() => Number(route.query.companyId) || undefined)
 </script>
 
 <template>
@@ -24,7 +25,7 @@ const pageVersion = computed(() => Number(route.query.pageVersion) || 1)
 
     <!-- Page builder fills remaining height -->
     <div class="flex-1 overflow-hidden">
-      <PageBuilderWrapper :page-id="pageId" :page-name="pageName" :page-version="pageVersion" />
+      <PageBuilderWrapper :page-id="pageId" :page-name="pageName" :page-version="pageVersion" :company-id="companyId" />
     </div>
   </div>
 </template>

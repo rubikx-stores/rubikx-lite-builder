@@ -16,6 +16,7 @@ const props = defineProps<{
   pageId?: string
   pageName?: string
   pageVersion?: number
+  companyId?: number
 }>()
 
 const config: PageBuilderConfig = {
@@ -80,7 +81,7 @@ async function confirmSave() {
 
     const toHtml = (secs: Element[]) => secs.map(s => s.outerHTML).join('\n')
     const version = String(selectedVersion.value)
-    const baseBody = { updatedBy: 'editor', updatedOn: new Date().toISOString(), state: 'draft' as const, version }
+    const baseBody = { updatedBy: 'editor', updatedOn: new Date().toISOString(), state: 'draft' as const, version, ...(props.companyId ? { companyId: props.companyId } : {}) }
 
     const saves: Promise<any>[] = []
 
