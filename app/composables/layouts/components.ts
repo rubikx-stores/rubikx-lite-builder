@@ -66,7 +66,7 @@ export const megaMenuHeaderDefaults: MegaMenuHeaderData = {
     { label: 'Contact', href: '/contact' },
   ],
   navLinksAlign: 'center',
-  dynamicCategories: false,
+  dynamicCategories: true,
   linkFontSize: 14,
   linkFontWeight: '500',
   linkColor: '#1f2937',
@@ -120,7 +120,7 @@ export const megaMenuHeaderFields: FieldConfig[] = [
     options: ['400', '500', '600', '700']                                   },
 
   { key: 'showSearch',        label: 'Show Search Bar',               type: 'toggle'  },
-  { key: 'dynamicCategories', label: 'Dynamic Categories from Odoo',  type: 'toggle'  },
+  { key: 'dynamicCategories', label: 'Dynamic Categories',  type: 'toggle'  },
   { key: 'searchPlaceholder', label: 'Search Placeholder',  type: 'text',
     placeholder: 'e.g. Search products…'                                    },
   { key: 'searchAlign',     label: 'Search Position',       type: 'select',

@@ -13,7 +13,7 @@ const pageVersion = computed(() => Number(route.query.pageVersion) || 1)
     <div class="shrink-0 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3">
       <NuxtLink
         to="/"
-        class="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+        class="flex items-center gap-1 text-base font-semibold text-gray-500 hover:text-gray-900 transition-colors"
       >
         ← Pages
       </NuxtLink>

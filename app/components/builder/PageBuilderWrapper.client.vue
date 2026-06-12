@@ -114,7 +114,6 @@ async function confirmSave() {
 
     await Promise.all(saves)
     showVersionModal.value = false
-    await navigateTo('/')
   } catch (error) {
     console.error('[CMS] Save error:', error)
   } finally {

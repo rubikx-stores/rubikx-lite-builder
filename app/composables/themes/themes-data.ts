@@ -94,7 +94,7 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
     { label: 'Shop', url: '/shop', visible: true },
     { label: 'About Us', url: '/about', visible: true },
   ],
-  dynamicCategories: false,
+  dynamicCategories: true,
   showSignIn: true,
   signInLabel: 'Sign In',
   signInUrl: '/signin',
@@ -131,7 +131,7 @@ export const ru1NavbarFields: FieldConfig[] = [
   },
   { key: 'showSearch', label: 'Search Bar', type: 'toggle' },
   { key: 'searchPlaceholder', label: 'Search Placeholder Text', type: 'text' },
-  { key: 'dynamicCategories', label: 'Dynamic Categories from Odoo', type: 'toggle' },
+  { key: 'dynamicCategories', label: 'Dynamic Categories', type: 'toggle' },
 
   { key: '_h_buttons', label: 'Buttons', type: 'header' },
   { key: 'showSignIn', label: 'Show Sign In', type: 'toggle' },
