@@ -31,6 +31,10 @@ const pages = ref<Page[]>([])
 const loadingPages = ref(false)
 const selectedVersions = ref<Record<string, number>>({})
 const publishing = ref<Record<string, boolean>>({})
+const deleting = ref<Record<string, boolean>>({})
+
+const showDeleteModal = ref(false)
+const pageToDelete = ref<Page | null>(null)
 
 // New page modal state
 const showNewPageModal = ref(false)
@@ -91,6 +95,27 @@ async function publishPage(page: Page) {
   }
 }
 
+function confirmDeletePage(page: Page) {
+  pageToDelete.value = page
+  showDeleteModal.value = true
+}
+
+async function deletePage() {
+  if (!pageToDelete.value) return
+  const page = pageToDelete.value
+  showDeleteModal.value = false
+  deleting.value[page.id] = true
+  try {
+    await $fetch(`/api/pages/${page.id}`, { method: 'DELETE' })
+    pages.value = pages.value.filter(p => p.id !== page.id)
+  } catch (e: any) {
+    alert(e?.data?.message ?? 'Failed to delete page')
+  } finally {
+    deleting.value[page.id] = false
+    pageToDelete.value = null
+  }
+}
+
 const pageHtmlCache = usePageHtmlCache()
 
 const GLOBAL_KEYS = ['global-header', 'global-footer']
@@ -145,7 +170,7 @@ function closeNewPageModal() {
   newPageError.value = ''
 }
 
-function createNewPage() {
+async function createNewPage() {
   const name = newPageName.value.trim()
   if (!name) {
     newPageError.value = 'Page name is required.'
@@ -161,16 +186,33 @@ function createNewPage() {
     return
   }
   const now = new Date().toISOString()
-  pages.value.push({
+  const newPage = {
     id: slug,
     name,
     slug: `/${slug}`,
     status: 'draft',
     updatedAt: now,
     versions: [{ version: 1, updatedAt: now, status: 'draft', value: '' }],
-  })
+  }
+  pages.value.unshift(newPage)
   selectedVersions.value[slug] = 1
   pageHtmlCache.value[slug] = ''
+  // Save empty page to Odoo so it persists on refresh
+  try {
+    await $fetch('/api/proxy/odoo/cms', {
+      method: 'POST',
+      body: {
+        key: slug,
+        value: ' ',
+        version: 1,
+        state: 'draft',
+        updatedBy: 'editor',
+        updatedOn: new Date().toISOString(),
+      }
+    })
+  } catch (e) {
+    console.error('[NEW PAGE] Failed to save to Odoo:', e)
+  }
   closeNewPageModal()
 }
 
@@ -248,14 +290,26 @@ function handleModalKeydown(e: KeyboardEvent) {
           <!-- Name + version dropdown -->
           <div class="flex items-center justify-between gap-2">
             <span class="truncate text-sm font-semibold text-gray-900">{{ page.name }}</span>
-            <select
-              v-model="selectedVersions[page.id]"
-              class="shrink-0 rounded border border-gray-200 bg-white px-2 py-0.5 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-400"
-            >
-              <option v-for="v in page.versions" :key="v.version" :value="v.version">
-                v{{ v.version }}
-              </option>
-            </select>
+            <div class="flex items-center gap-2">
+              <select
+                v-model="selectedVersions[page.id]"
+                class="shrink-0 rounded border border-gray-200 bg-white px-2 py-0.5 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-400"
+              >
+                <option v-for="v in page.versions" :key="v.version" :value="v.version">
+                  v{{ v.version }}
+                </option>
+              </select>
+              <button
+                :disabled="deleting[page.id]"
+                class="p-1.5 rounded-lg border border-red-200 text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                @click.stop="confirmDeletePage(page)"
+                title="Delete page"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <!-- Updated date -->
@@ -340,6 +394,30 @@ function handleModalKeydown(e: KeyboardEvent) {
               @click="createNewPage"
             >
               Create Page
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Delete confirmation modal -->
+    <Teleport to="body">
+      <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
+          <h3 class="text-base font-semibold text-gray-900 mb-2">Delete page</h3>
+          <p class="text-sm text-gray-500 mb-6">Are you sure you want to delete <span class="font-medium text-gray-900">{{ pageToDelete?.name }}</span>? This cannot be undone.</p>
+          <div class="flex gap-3">
+            <button
+              class="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              @click="showDeleteModal = false; pageToDelete = null"
+            >
+              Cancel
+            </button>
+            <button
+              class="flex-1 rounded-xl bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition-colors"
+              @click="deletePage()"
+            >
+              Delete
             </button>
           </div>
         </div>
