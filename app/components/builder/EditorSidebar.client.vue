@@ -409,9 +409,10 @@ onUnmounted(() => {
             <div v-else-if="field.type === 'image'" class="mb-2.5">
               <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
               <div class="flex items-center gap-1 mb-1">
-                <input type="text" :value="blockData[field.key]" placeholder="https://..."
+                <input type="text" :value="blockData[field.key]" :placeholder="field.placeholder || 'Paste URL'"
                   class="flex-1 border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400"
-                  @input="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value); uploadError[field.key] = ''" />
+                  @change="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value.trim()); uploadError[field.key] = ''"
+                  @input="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value.trim()); uploadError[field.key] = ''" />
                 <label class="shrink-0 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 rounded-md px-2 py-1.5 cursor-pointer">
                   ↑ Upload
                   <input type="file" accept="image/*" class="sr-only"
@@ -420,6 +421,16 @@ onUnmounted(() => {
               </div>
               <img v-if="blockData[field.key]" :src="blockData[field.key]"
                 class="w-full h-20 object-cover rounded border border-gray-200 mb-1" alt="preview" />
+              <div v-if="blockData[field.key] && !field.noAspectRatio" class="flex items-center gap-1.5 mt-1">
+                <label class="text-xs text-gray-400 shrink-0">Aspect ratio</label>
+                <select
+                  :value="(blockData[field.key + 'AspectRatio'] as string) ?? 'Auto'"
+                  class="flex-1 border border-gray-200 rounded-md px-2 py-1 text-xs focus:outline-none focus:border-blue-400"
+                  @change="updateBlockField(field.key + 'AspectRatio', ($event.target as HTMLSelectElement).value)"
+                >
+                  <option v-for="opt in ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)']" :key="opt" :value="opt">{{ opt }}</option>
+                </select>
+              </div>
               <p v-if="uploadError[field.key]" class="text-xs text-red-500">{{ uploadError[field.key] }}</p>
             </div>
 
@@ -562,9 +573,10 @@ onUnmounted(() => {
                       <label class="block text-sm font-medium text-gray-700 mb-0.5">{{ subField.label }}</label>
                       <template v-if="subField.type === 'image'">
                         <div class="flex items-center gap-1 mb-1">
-                          <input type="text" :value="item[subField.key]" placeholder="https://..."
+                          <input type="text" :value="item[subField.key]" :placeholder="subField.placeholder || 'Paste URL'"
                             class="flex-1 border border-gray-200 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-blue-400"
-                            @input="debouncedUpdateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value)" />
+                            @change="debouncedUpdateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value.trim())"
+                            @input="debouncedUpdateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value.trim())" />
                           <label class="shrink-0 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 rounded px-1.5 py-0.5 cursor-pointer">
                             ↑ <input type="file" accept="image/*" class="sr-only"
                               @change="{ const f=($event.target as HTMLInputElement).files; if(f?.length) onUploadSubImage(field.key,idx,subField.key,f[0]) }" />

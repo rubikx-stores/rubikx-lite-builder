@@ -92,7 +92,7 @@ export const megaMenuHeaderDefaults: MegaMenuHeaderData = {
 
 export const megaMenuHeaderFields: FieldConfig[] = [
   { key: 'logoUrl',         label: 'Logo Image',           type: 'image',
-    placeholder: 'https://example.com/logo.png'                             },
+    placeholder: 'https://example.com/logo.png', noAspectRatio: true       },
   { key: 'logoText',        label: 'Brand Name',           type: 'text',
     placeholder: 'e.g. Acme Co'                                             },
   { key: 'logoWidth',       label: 'Logo Width (px)',      type: 'number',
@@ -635,7 +635,6 @@ export const ru1AboutFields: FieldConfig[] = [
   { key: 'buttonAnimation',   label: 'Button Hover Effect', type: 'select', options: ['None', 'Lift up', 'Grow bigger', 'Glow'] },
   { key: 'image',             label: 'Cover Image',         type: 'image' },
   { key: 'imageOpacity',     label: 'Image Opacity (0 = invisible, 100 = fully visible)', type: 'number', placeholder: '100', unit: '%' },
-  { key: 'imageAspectRatio', label: 'Image Shape',          type: 'select', options: ['Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
   { key: 'statsBgColor',   label: 'Stats Card Background', type: 'color' },
   { key: 'statsIconColor', label: 'Stats Icon Colour',     type: 'color' },
   {
@@ -658,14 +657,19 @@ const statIcons = [
 
 export function renderRu1About(data: Ru1AboutData): string {
   const imgSrc = productImageSrc(data.image)
+  const ratio = data.imageAspectRatio ?? 'Wide (16:9)'
   const aspectMap: Record<string, string> = {
+    'Auto':            '',
     'Wide (16:9)':     'aspect-ratio:16/9',
     'Standard (4:3)':  'aspect-ratio:4/3',
     'Square (1:1)':    'aspect-ratio:1/1',
     'Tall (3:4)':      'aspect-ratio:3/4',
     'Cinematic (21:9)':'aspect-ratio:21/9',
   }
-  const aspectStyle = aspectMap[data.imageAspectRatio] ?? 'aspect-ratio:16/9'
+  const aspectStyle = aspectMap[ratio] ?? 'aspect-ratio:16/9'
+  const autoRatioAttr = (ratio === 'Auto' && imgSrc)
+    ? ` onload="this.parentElement.style.aspectRatio=this.naturalWidth+'/'+this.naturalHeight"`
+    : ''
   const imgOpacity = Math.min(100, Math.max(0, data.imageOpacity ?? 100)) / 100
   const weightMap: Record<string, string> = { Normal: '400', Medium: '500', Semibold: '600', Bold: '700', Extrabold: '800' }
   const fontWeight = weightMap[data.titleWeight] ?? '600'
@@ -702,11 +706,11 @@ export function renderRu1About(data: Ru1AboutData): string {
         <h2 style="font-size:2.25rem;font-weight:${fontWeight};text-align:${data.titleAlign};color:${data.titleColor};margin:0 0 1rem;">${data.title}</h2>
         <p style="font-size:1.125rem;line-height:1.75;text-align:${data.descriptionAlign};color:#4b5563;margin:0 0 1.5rem;">${data.description}</p>
         ${data.showCta !== false ? `<div style='display:flex;justify-content:${ctaJustify};'>
-          <a href='${data.ctaHref}' style='${btnStyle}'>${data.ctaLabel ?? 'Contact Us'}</a>
+          <a href='${data.ctaHref}' style='${btnStyle}'${hoverAttrs}>${data.ctaLabel ?? 'Contact Us'}</a>
         </div>` : ''}
       </div>
       <div style="position:relative;width:100%;${aspectStyle};border-radius:0.75rem;margin-bottom:6rem;">
-        <img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;border-radius:0.75rem;display:block;opacity:${imgOpacity};" />
+        <img src="${imgSrc}"${autoRatioAttr} style="width:100%;height:100%;object-fit:cover;border-radius:0.75rem;display:block;opacity:${imgOpacity};" />
         <div style="position:absolute;bottom:-4rem;left:50%;transform:translateX(-50%);background:${data.statsBgColor};border:1px solid #e5e7eb;border-radius:0.75rem;display:grid;grid-template-columns:repeat(4,1fr);gap:2.5rem;padding:2rem 2.5rem;white-space:nowrap;">
             ${statsHtml}
         </div>
@@ -813,6 +817,128 @@ export const ru1FaqFields: FieldConfig[] = [
   },
 ]
 
+// ─── Ru1-Banner ──────────────────────────────────────────────────────────────
+
+export const bannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
+  <rect fill="#1f2937" x="0" y="0" width="277.5" height="80"/>
+  <rect fill="#9ca3af" x="80" y="18" width="118" height="8" rx="1"/>
+  <rect fill="#6b7280" x="96" y="31" width="86" height="4" rx="1"/>
+  <rect fill="#4b5563" x="110" y="44" width="58" height="13" rx="3"/>
+</svg>`
+
+export interface BannerData {
+  title: string
+  subtitle: string
+  bgColor: string
+  bgImage: string
+  bgImageAspectRatio: string
+  overlayColor: string
+  overlayOpacity: number
+  textColor: string
+  textAlign: string
+  showCta: boolean
+  ctaLabel: string
+  ctaHref: string
+  ctaBgColor: string
+  ctaTextColor: string
+  paddingY: number
+}
+
+export const bannerDefaults: BannerData = {
+  title: 'Welcome to Our Store',
+  subtitle: 'Discover our latest collection and find something you love.',
+  bgColor: '#1f2937',
+  bgImage: '',
+  bgImageAspectRatio: 'Auto',
+  overlayColor: '#000000',
+  overlayOpacity: 40,
+  textColor: '#ffffff',
+  textAlign: 'center',
+  showCta: true,
+  ctaLabel: 'Shop Now',
+  ctaHref: '/shop',
+  ctaBgColor: '#ffffff',
+  ctaTextColor: '#111827',
+  paddingY: 80,
+}
+
+export const bannerFields: FieldConfig[] = [
+  { key: 'title',    label: 'Title',    type: 'text',  placeholder: 'e.g. Welcome to Our Store' },
+  { key: 'subtitle', label: 'Subtitle', type: 'text',  placeholder: 'Short supporting line…' },
+  { key: 'textColor',  label: 'Text Colour',       type: 'color' },
+  { key: 'textAlign',  label: 'Text Alignment',    type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'bgColor',    label: 'Background Colour', type: 'color' },
+  { key: 'bgImage',    label: 'Background Image',  type: 'image' },
+  { key: 'overlayColor',   label: 'Overlay Colour',          type: 'color' },
+  { key: 'overlayOpacity', label: 'Overlay Opacity (0–100)', type: 'number', placeholder: '40' },
+  { key: 'showCta',    label: 'Show Button',      type: 'toggle' },
+  { key: 'ctaLabel',   label: 'Button Text',      type: 'text', placeholder: 'e.g. Shop Now' },
+  { key: 'ctaHref',    label: 'Button URL',       type: 'url',  placeholder: '/shop' },
+  { key: 'ctaBgColor',   label: 'Button Background',  type: 'color' },
+  { key: 'ctaTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '80' },
+]
+
+function hexToRgba(hex: string, opacity: number): string {
+  const h = hex.replace('#', '')
+  const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h
+  const r = parseInt(full.slice(0, 2), 16)
+  const g = parseInt(full.slice(2, 4), 16)
+  const b = parseInt(full.slice(4, 6), 16)
+  return `rgba(${r},${g},${b},${opacity})`
+}
+
+export function renderBanner(data: BannerData): string {
+  const imgSrc = productImageSrc(data.bgImage)
+  const overlayOpacity = Math.min(100, Math.max(0, data.overlayOpacity ?? 40)) / 100
+  const alignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
+  const textAlign = data.textAlign ?? 'center'
+  const itemsAlign = alignMap[textAlign] ?? 'center'
+
+  const ratio = data.bgImageAspectRatio ?? 'Auto'
+  const aspectRatioMap: Record<string, string> = {
+    'Wide (16:9)':      'aspect-ratio:16/9;',
+    'Standard (4:3)':   'aspect-ratio:4/3;',
+    'Square (1:1)':     'aspect-ratio:1/1;',
+    'Cinematic (21:9)': 'aspect-ratio:21/9;',
+  }
+  const aspectStyle = ratio !== 'Auto' ? (aspectRatioMap[ratio] ?? '') : ''
+
+  // Auto: read natural image dimensions at runtime and set aspect-ratio to match exactly
+  const autoRatioScript = (imgSrc && ratio === 'Auto')
+    ? `<script>(function(){var s=document.currentScript.parentElement;var i=new Image();i.onload=function(){s.style.aspectRatio=i.naturalWidth+'/'+i.naturalHeight;};i.src='${imgSrc}';})()</script>`
+    : ''
+
+  const bgStyle = imgSrc
+    ? `background:url('${imgSrc}') center/cover no-repeat;background-color:${data.bgColor};`
+    : `background:${data.bgColor};`
+
+  // inset box-shadow acts as overlay on top of the background image without
+  // any extra DOM element — avoids z-index conflicts with the builder's
+  // hover/selection indicator (which uses position:absolute inside the section)
+  const overlayShadow = (imgSrc && overlayOpacity > 0)
+    ? `box-shadow:inset 0 0 0 9999px ${hexToRgba(data.overlayColor ?? '#000000', overlayOpacity)};`
+    : ''
+
+  const ctaHtml = data.showCta !== false
+    ? `<a href="${data.ctaHref}" style="display:inline-block;margin-top:2rem;padding:0.75rem 2rem;background:${data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:6px;font-size:1rem;font-weight:600;">${data.ctaLabel}</a>`
+    : ''
+
+  // Section uses display:flex so the inner div can flex:1 and fill the full
+  // aspect-ratio height — the builder's hover/select arm fires on that div,
+  // so it must cover the entire section area, not just the text content height.
+  return `<section data-component-title="Ru1-Banner" style="${bgStyle}${aspectStyle}${overlayShadow}display:flex;flex-direction:column;">
+  ${autoRatioScript}
+  <div style="width:100%;box-sizing:border-box;flex:1;display:flex;align-items:center;padding:${data.paddingY}px 1rem;">
+    <div style="max-width:80rem;margin:0 auto;width:100%;display:flex;flex-direction:column;align-items:${itemsAlign};text-align:${textAlign};">
+      <h2 style="font-size:2.5rem;font-weight:700;color:${data.textColor};margin:0;line-height:1.2;">${data.title}</h2>
+      <p style="font-size:1.125rem;color:${data.textColor};opacity:0.85;margin:1rem 0 0;max-width:42rem;">${data.subtitle}</p>
+      ${ctaHtml}
+    </div>
+  </div>
+</section>`
+}
+
 export function renderRu1Faq(data: Ru1FaqData): string {
   const weightMap: Record<string, string> = { Normal: '400', Medium: '500', Semibold: '600', Bold: '700', Extrabold: '800' }
   const fontWeight = weightMap[data.titleWeight] ?? '600'
@@ -841,6 +967,298 @@ export function renderRu1Faq(data: Ru1FaqData): string {
       <dl style="border-bottom:1px solid ${data.dividerColor};margin:0;padding:0;">
         ${faqItems}
       </dl>
+    </div>
+  </div>
+</section>`
+}
+
+// ─── Ru2-Split-Banner-Collage ────────────────────────────────────────────────
+
+export const ru2SplitBannerCollageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
+  <rect fill="#1f2937" width="277.5" height="100"/>
+  <rect fill="#9ca3af" x="10" y="14" width="50" height="2.5" rx="1"/>
+  <rect fill="#f3f4f6" x="10" y="21" width="95" height="11" rx="1"/>
+  <rect fill="#6b7280" x="10" y="38" width="80" height="2.5" rx="1"/>
+  <rect fill="#6b7280" x="10" y="43" width="65" height="2.5" rx="1"/>
+  <rect fill="#16a34a" x="10" y="54" width="40" height="10" rx="3"/>
+  <rect fill="#374151" x="137" y="3"  width="41" height="42" rx="2"/>
+  <rect fill="#4b5563" x="181" y="3"  width="41" height="14" rx="2"/>
+  <rect fill="#374151" x="225" y="3"  width="50" height="42" rx="2"/>
+  <rect fill="#4b5563" x="181" y="20" width="41" height="40" rx="2"/>
+  <rect fill="#374151" x="137" y="48" width="41" height="49" rx="2"/>
+  <rect fill="#4a5568" x="225" y="48" width="50" height="49" rx="2"/>
+  <rect fill="#4a5568" x="181" y="63" width="41" height="34" rx="2"/>
+</svg>`
+
+export interface Ru2CollageImage {
+  src: string
+  alt: string
+}
+
+export interface Ru2SplitBannerCollageData {
+  bgImage: string
+  bgColor: string
+  overlayColor: string
+  overlayOpacity: number
+  title: string
+  titleSize: number
+  titleWeight: string
+  titleColor: string
+  titleLetterSpacing: number
+  subtitle: string
+  subtitleColor: string
+  subtitleSize: number
+  description: string
+  descriptionColor: string
+  textSide: string
+  textAlign: string
+  showCta: boolean
+  ctaLabel: string
+  ctaHref: string
+  ctaBgColor: string
+  ctaTextColor: string
+  ctaBorderRadius: number
+  paddingY: number
+  splitRatio: string
+  bgImageAspectRatio?: string
+  collageGap: number
+  collageBorderRadius: number
+  collageImages: Ru2CollageImage[]
+}
+
+export const ru2SplitBannerCollageDefaults: Ru2SplitBannerCollageData = {
+  bgImage: '',
+  bgImageAspectRatio: 'Auto',
+  bgColor: '#1f2937',
+  overlayColor: '#000000',
+  overlayOpacity: 30,
+  title: 'OUTFITTER',
+  titleSize: 72,
+  titleWeight: '800',
+  titleColor: '#ffffff',
+  titleLetterSpacing: 2,
+  subtitle: 'BRANDED APPAREL & GOODS',
+  subtitleColor: '#d1d5db',
+  subtitleSize: 13,
+  description: 'From the shop to the field to the weekend — discover a collection built for every moment.',
+  descriptionColor: '#9ca3af',
+  textSide: 'left',
+  textAlign: 'left',
+  showCta: true,
+  ctaLabel: 'Shop Now',
+  ctaHref: '/shop',
+  ctaBgColor: '#16a34a',
+  ctaTextColor: '#ffffff',
+  ctaBorderRadius: 6,
+  paddingY: 0,
+  splitRatio: '50/50',
+  collageGap: 6,
+  collageBorderRadius: 16,
+  collageImages: [
+    { src: '', alt: 'Photo 1' },
+    { src: '', alt: 'Photo 2' },
+    { src: '', alt: 'Photo 3' },
+    { src: '', alt: 'Photo 4' },
+    { src: '', alt: 'Photo 5' },
+    { src: '', alt: 'Photo 6' },
+    { src: '', alt: 'Photo 7' },
+  ],
+}
+
+export const ru2SplitBannerCollageFields: FieldConfig[] = [
+  { key: '_h_bg',    label: 'Background', type: 'header' },
+  { key: 'bgImage',  label: 'Background Image',      type: 'image', placeholder: 'Paste URL' },
+  { key: 'bgColor',  label: 'Background Colour',     type: 'color' },
+  { key: 'overlayColor',   label: 'Overlay Colour',          type: 'color' },
+  { key: 'overlayOpacity', label: 'Overlay Opacity (0–100)', type: 'number', placeholder: '30' },
+
+  { key: '_h_title',          label: 'Title', type: 'header' },
+  { key: 'title',             label: 'Title',             type: 'text',   placeholder: 'e.g. OUTFITTER' },
+  { key: 'titleSize',         label: 'Title Size (px)',   type: 'number', placeholder: '72' },
+  { key: 'titleWeight',       label: 'Title Weight',      type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
+  { key: 'titleColor',        label: 'Title Colour',      type: 'color' },
+  { key: 'titleLetterSpacing',label: 'Letter Spacing (px)', type: 'number', placeholder: '2' },
+
+  { key: '_h_subtitle',   label: 'Subtitle', type: 'header' },
+  { key: 'subtitle',      label: 'Subtitle',          type: 'text',   placeholder: 'e.g. BRANDED APPAREL & GOODS' },
+  { key: 'subtitleSize',  label: 'Subtitle Size (px)', type: 'number', placeholder: '13' },
+  { key: 'subtitleColor', label: 'Subtitle Colour',   type: 'color' },
+
+  { key: '_h_desc',          label: 'Description', type: 'header' },
+  { key: 'description',      label: 'Description',       type: 'text',  placeholder: 'Short paragraph…' },
+  { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
+
+  { key: '_h_cta',          label: 'CTA Button', type: 'header' },
+  { key: 'showCta',         label: 'Show Button',        type: 'toggle' },
+  { key: 'ctaLabel',        label: 'Button Text',        type: 'text',  placeholder: 'e.g. Shop Now' },
+  { key: 'ctaHref',         label: 'Button URL',         type: 'url',   placeholder: '/shop' },
+  { key: 'ctaBgColor',      label: 'Button Background',  type: 'color' },
+  { key: 'ctaTextColor',    label: 'Button Text Colour', type: 'color' },
+  { key: 'ctaBorderRadius', label: 'Button Radius (px)', type: 'number', placeholder: '6' },
+
+  { key: '_h_layout',  label: 'Layout', type: 'header' },
+  { key: 'textSide',   label: 'Text Side',                     type: 'select', options: ['left', 'right'] },
+  { key: 'textAlign',  label: 'Text Alignment',                type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'paddingY',   label: 'Vertical Padding (px)',         type: 'number', placeholder: '0' },
+  { key: 'splitRatio', label: 'Split Ratio (text / collage)',  type: 'select', options: ['50/50', '55/45', '60/40', '40/60'] },
+
+  { key: '_h_collage',          label: 'Collage', type: 'header' },
+  { key: 'collageGap',          label: 'Gap between images (px)',   type: 'number', placeholder: '6' },
+  { key: 'collageBorderRadius', label: 'Image Corner Radius (px)',  type: 'number', placeholder: '16' },
+  {
+    key: 'collageImages',
+    label: 'Collage Images (7)',
+    type: 'list',
+    listFields: [
+      { key: 'src', label: 'Image', type: 'image', noAspectRatio: true },
+      { key: 'alt', label: 'Alt Text', type: 'text', placeholder: 'e.g. Person wearing polo shirt' },
+    ],
+  },
+]
+
+export function renderRu2SplitBannerCollage(data: Ru2SplitBannerCollageData): string {
+  const imgSrc = productImageSrc(data.bgImage)
+  const overlayOpacity = Math.min(100, Math.max(0, data.overlayOpacity ?? 30)) / 100
+
+  const bgStyle = imgSrc
+    ? `background-image:url('${imgSrc}');background-size:cover;background-position:center;background-repeat:no-repeat;background-color:${data.bgColor};`
+    : `background-color:${data.bgColor};`
+
+  const overlayShadow = (imgSrc && overlayOpacity > 0)
+    ? `box-shadow:inset 0 0 0 9999px ${hexToRgba(data.overlayColor ?? '#000000', overlayOpacity)};`
+    : ''
+
+  const ratio = data.bgImageAspectRatio ?? 'Auto'
+  const aspectRatioMap: Record<string, string> = {
+    'Wide (16:9)':      'aspect-ratio:16/9;',
+    'Standard (4:3)':   'aspect-ratio:4/3;',
+    'Square (1:1)':     'aspect-ratio:1/1;',
+    'Tall (3:4)':       'aspect-ratio:3/4;',
+    'Cinematic (21:9)': 'aspect-ratio:21/9;',
+  }
+  // Auto = no aspect-ratio set, section height driven by collage content.
+  // Specific ratios are applied directly via CSS — autoRatioScript is not used
+  // here because scripts inside innerHTML replacements never execute in the builder.
+  const aspectStyle = ratio !== 'Auto' ? (aspectRatioMap[ratio] ?? '') : ''
+
+  const splitMap: Record<string, [string, string]> = {
+    '50/50': ['1fr',     '1fr'  ],
+    '55/45': ['1.22fr',  '1fr'  ],
+    '60/40': ['1.5fr',   '1fr'  ],
+    '40/60': ['0.67fr',  '1fr'  ],
+  }
+  const [textFr, collageFr] = splitMap[data.splitRatio ?? '50/50'] ?? ['1fr', '1fr']
+  const gridCols = data.textSide === 'right'
+    ? `${collageFr} ${textFr}`
+    : `${textFr} ${collageFr}`
+
+  const alignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
+  const itemsAlign = alignMap[data.textAlign ?? 'left'] ?? 'flex-start'
+
+  const py    = Math.max(data.paddingY ?? 0, 48)
+  const gap   = data.collageGap ?? 6
+  const radius = data.collageBorderRadius ?? 16
+
+  const letterSpacing = data.titleLetterSpacing ? `letter-spacing:${data.titleLetterSpacing}px;` : ''
+
+  const ctaHtml = data.showCta !== false
+    ? `<a href="${data.ctaHref}" style="display:inline-block;margin-top:2rem;padding:0.75rem 2rem;background:${data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:${data.ctaBorderRadius ?? 6}px;font-size:1rem;font-weight:600;">${data.ctaLabel}</a>`
+    : ''
+
+  const textCol = `<div style="padding:${py}px 3rem;display:flex;flex-direction:column;align-items:${itemsAlign};text-align:${data.textAlign ?? 'left'};align-self:center;">
+    ${data.subtitle ? `<p style="font-size:${data.subtitleSize ?? 13}px;font-weight:600;color:${data.subtitleColor};letter-spacing:0.14em;text-transform:uppercase;margin:0 0 1rem;">${data.subtitle}</p>` : ''}
+    <h2 style="font-size:${data.titleSize ?? 72}px;font-weight:${data.titleWeight ?? '800'};color:${data.titleColor};margin:0 0 1.25rem;line-height:1;${letterSpacing}">${data.title}</h2>
+    ${data.description ? `<p style="font-size:1rem;line-height:1.7;color:${data.descriptionColor};margin:0;max-width:36rem;">${data.description}</p>` : ''}
+    ${ctaHtml}
+  </div>`
+
+  // 7 images in 3 flex columns:
+  //   col0 (idx 0,3): tall images, equal height — anchor the outer edges
+  //   col1 (idx 1,4,6): short→tall→mid — the staggered middle creates the mosaic rhythm
+  //   col2 (idx 2,5): mirrors col0
+  // Heights per slot: idx 1 (image 2) matches idx 6 (image 7) at 280px
+  const staggerHeights = [320, 280, 320, 360, 330, 360, 280]
+  const images = [...(data.collageImages ?? []), ...Array(7).fill({ src: '', alt: '' })].slice(0, 7)
+  const hasAspectRatio = ratio !== 'Auto'
+
+  const renderCollageImg = (idx: number) => {
+    const src = productImageSrc(images[idx]?.src ?? '')
+    const h = staggerHeights[idx] ?? 280
+    const br = `${radius}px`
+    // Both states are a single childless <div> — only CSS properties differ.
+    // No structural DOM change when a URL is added, so the collage never re-layouts.
+    // border-radius clips background-image natively (no overflow:hidden wrapper needed).
+    // When a fixed aspect-ratio is set, use flex-grow weights so the mosaic scales to fill
+    // the section height exactly. For Auto, use fixed pixel heights (content-driven).
+    const sizeStyle = hasAspectRatio
+      ? `flex:${h} 1 0;min-height:0;`
+      : `height:${h}px;flex-shrink:0;`
+    return src
+      ? `<div data-rbx-idx="${idx}" style="width:100%;${sizeStyle}border-radius:${br};background-image:url('${src}');background-size:cover;background-position:center;background-repeat:no-repeat;"></div>`
+      : `<div data-rbx-idx="${idx}" style="width:100%;${sizeStyle}border-radius:${br};background-color:#2d3748;border:2px dashed #4b5563;box-sizing:border-box;"></div>`
+  }
+
+  // Outer padding for the collage group: use paddingY for top/bottom, 2rem for left/right
+  // so the 7-image mosaic has equal breathing room on all sides (centered within its column).
+  const py2  = Math.max(data.paddingY ?? 0, 0)
+  const collagePad = `${py2}px 2rem`
+
+  // When a fixed aspect-ratio is set, propagate section height through the flex chain so
+  // the collage fills exactly — sub-columns become flex containers with flex-grow images.
+  // When Auto, use fixed pixel heights driven by content (no height cascade needed).
+  const collageCol = hasAspectRatio
+    ? `<div style="height:100%;box-sizing:border-box;padding:${collagePad};display:flex;flex-direction:column;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:${gap}px;flex:1;min-height:0;">
+          <div style="display:flex;flex-direction:column;gap:${gap}px;min-height:0;">
+            ${renderCollageImg(0)}
+            ${renderCollageImg(3)}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:${gap}px;min-height:0;">
+            ${renderCollageImg(1)}
+            ${renderCollageImg(4)}
+            ${renderCollageImg(6)}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:${gap}px;min-height:0;">
+            ${renderCollageImg(2)}
+            ${renderCollageImg(5)}
+          </div>
+        </div>
+      </div>`
+    : `<div style="padding:${collagePad};display:grid;grid-template-columns:1fr 1fr 1fr;gap:${gap}px;align-items:start;">
+        <div style="display:flex;flex-direction:column;gap:${gap}px;">
+          ${renderCollageImg(0)}
+          ${renderCollageImg(3)}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:${gap}px;">
+          ${renderCollageImg(1)}
+          ${renderCollageImg(4)}
+          ${renderCollageImg(6)}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:${gap}px;">
+          ${renderCollageImg(2)}
+          ${renderCollageImg(5)}
+        </div>
+      </div>`
+
+  const leftCol  = data.textSide === 'right' ? collageCol : textCol
+  const rightCol = data.textSide === 'right' ? textCol    : collageCol
+
+  if (hasAspectRatio) {
+    return `<section data-component-title="Ru2-Split-Banner-Collage" style="${bgStyle}${aspectStyle}${overlayShadow}overflow:hidden;display:flex;align-items:stretch;">
+  <div style="width:100%;box-sizing:border-box;flex:1;min-height:0;display:flex;flex-direction:column;">
+    <div style="display:grid;grid-template-columns:${gridCols};flex:1;min-height:0;align-items:stretch;">
+      ${leftCol}
+      ${rightCol}
+    </div>
+  </div>
+</section>`
+  }
+
+  return `<section data-component-title="Ru2-Split-Banner-Collage" style="${bgStyle}${aspectStyle}${overlayShadow}overflow:hidden;display:flex;align-items:center;">
+  <div style="width:100%;box-sizing:border-box;">
+    <div style="display:grid;grid-template-columns:${gridCols};align-items:center;">
+      ${leftCol}
+      ${rightCol}
     </div>
   </div>
 </section>`

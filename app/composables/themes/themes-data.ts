@@ -116,7 +116,7 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
 
 export const ru1NavbarFields: FieldConfig[] = [
   { key: '_h_branding', label: 'Branding', type: 'header' },
-  { key: 'logoUrl', label: 'Logo Image', type: 'image' },
+  { key: 'logoUrl', label: 'Logo Image', type: 'image', noAspectRatio: true },
   { key: 'brandName', label: 'Brand Name', type: 'text' },
   { key: 'logoWidth', label: 'Logo Width', type: 'number', unit: 'px', step: 4, placeholder: '120' },
 
@@ -277,7 +277,7 @@ export const ru1HeroDefaults: Ru1HeroData = {
 
 export const ru1HeroFields: FieldConfig[] = [
   { key: '_h_image', label: 'Image', type: 'header' },
-  { key: 'imageUrl', label: 'Banner Image', type: 'image' },
+  { key: 'imageUrl', label: 'Banner Image', type: 'image', noAspectRatio: true },
   { key: 'altText', label: 'Alt Text', type: 'text' },
   { key: 'linkUrl', label: 'Link URL', type: 'url' },
   { key: 'aspectRatio', label: 'Aspect Ratio', type: 'select', options: ['4/1', '3/1', '16/9', '2/1', '4/3', '1/1'] },
@@ -477,7 +477,7 @@ export const ru1ProductsFields: FieldConfig[] = [
   {
     key: 'products', label: 'Products', type: 'list',
     listFields: [
-      { key: 'imageUrl', label: 'Image', type: 'image' },
+      { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
       { key: 'name', label: 'Product Name', type: 'text' },
       { key: 'price', label: 'Price', type: 'text' },
       { key: 'oldPrice', label: 'Old Price (optional)', type: 'text' },
@@ -1073,7 +1073,7 @@ export const ru2ShopContentFields: FieldConfig[] = [
   {
     key: 'products', label: 'Products', type: 'list',
     listFields: [
-      { key: 'imageUrl', label: 'Image', type: 'image' },
+      { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
       { key: 'name', label: 'Product Name', type: 'text' },
       { key: 'price', label: 'Price', type: 'text' },
       { key: 'oldPrice', label: 'Old Price (optional)', type: 'text' },
