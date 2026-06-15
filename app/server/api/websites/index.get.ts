@@ -1,4 +1,19 @@
-export default defineEventHandler(async (event) => {
+import { getCookie } from 'h3'
+
+interface OdooCompany {
+  id: number
+  name: string
+}
+
+interface OdooCompanyResponse {
+  data?: {
+    company?: {
+      ResCompany?: OdooCompany[]
+    }
+  }
+}
+
+export default defineEventHandler(async (event): Promise<OdooCompany[]> => {
   const ODOO_URL = 'https://rubikx-stores-rubikx-2-0-prod.odoo.com/graphql'
 
   const token = getCookie(event, 'rb_auth_token')
@@ -7,7 +22,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const res = await $fetch<any>(ODOO_URL, {
+    const res = await $fetch<OdooCompanyResponse>(ODOO_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -19,8 +34,8 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    const companies = res?.data?.company?.ResCompany ?? []
-    return companies.map((c: any) => ({
+    const companies: OdooCompany[] = res?.data?.company?.ResCompany ?? []
+    return companies.map((c) => ({
       id: c.id,
       name: c.name,
     }))

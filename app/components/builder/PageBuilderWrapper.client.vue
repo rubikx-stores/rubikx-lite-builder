@@ -86,21 +86,21 @@ async function confirmSave() {
     const saves: Promise<any>[] = []
 
     if (navbarSections.length > 0) {
-      saves.push($fetch('/api/proxy/odoo/cms', {
+      saves.push($fetch<any>('/api/proxy/odoo/cms', {
         method: 'POST',
         body: { ...baseBody, key: 'global-header', value: toHtml(navbarSections) },
       }))
     }
 
     if (contentSections.length > 0) {
-      saves.push($fetch('/api/proxy/odoo/cms', {
+      saves.push($fetch<any>('/api/proxy/odoo/cms', {
         method: 'POST',
         body: { ...baseBody, key: props.pageId, value: toHtml(contentSections) },
       }))
     }
 
     if (footerSections.length > 0) {
-      saves.push($fetch('/api/proxy/odoo/cms', {
+      saves.push($fetch<any>('/api/proxy/odoo/cms', {
         method: 'POST',
         body: { ...baseBody, key: 'global-footer', value: toHtml(footerSections) },
       }))
