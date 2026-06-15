@@ -186,7 +186,7 @@ onUnmounted(() => {
 })
 
 onMounted(async () => {
-  const builder = getPageBuilder()
+  const builder = getPageBuilder() as any
   let parsedComponents: any[] | undefined = undefined
 
   if (props.pageId) {
@@ -219,7 +219,7 @@ onMounted(async () => {
     const html = [headerHtml, contentHtml, footerHtml].filter(Boolean).join('\n') || null
 
     if (html) {
-      const parsed = (builder as any).parsePageBuilderHTML(html)
+      const parsed = builder.parsePageBuilderHTML(html)
       parsedComponents = parsed.components
       localStorage.setItem(
         storageKey,
