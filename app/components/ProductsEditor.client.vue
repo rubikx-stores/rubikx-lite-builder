@@ -8,7 +8,7 @@ const props = defineProps({
   blockData: { type: Object, default: null },
 })
 
-const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru2 Shop Content']
+const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products']
 
 function debounce(fn, delay) {
   let timer
@@ -233,6 +233,15 @@ async function doApplyThemeBlock(confirm = false) {
   }
 
   if (props.updateBlockField && title) {
+    // Ru2 Shop Products caps visible items by columns×rows — expand rows to fit selection
+    if (title === 'Ru2 Shop Products') {
+      const cols = Number(props.blockData?.columns ?? 4)
+      const neededRows = Math.ceil(mapped.length / cols)
+      const currentRows = Number(props.blockData?.rows ?? 1)
+      if (neededRows > currentRows) {
+        props.updateBlockField('rows', String(neededRows), title)
+      }
+    }
     props.updateBlockField('products', mapped, title)
   }
 
