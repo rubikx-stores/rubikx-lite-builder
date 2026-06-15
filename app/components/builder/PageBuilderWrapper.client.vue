@@ -5,6 +5,8 @@ import BuilderPanel from './BuilderPanel.client.vue'
 import EditorSidebar from './EditorSidebar.client.vue'
 import { productImageSrc } from '~/composables/useProductImageSrc'
 import { NAVBAR_TITLES, FOOTER_TITLES } from '~/composables/useGlobalSections'
+import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
+import { sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
 
 // Register all block configs eagerly on builder mount so the editor opens
 // correctly even on page reload with saved canvas data (before the user opens
@@ -235,6 +237,16 @@ onMounted(async () => {
   }
 
   await builder.startBuilder(config, parsedComponents)
+
+  const stopHydrationWatch = watch(
+    () => (sharedPageBuilderStore as any).getIsLoadingGlobal,
+    (loading) => {
+      if (!loading) {
+        hydrateComponents()
+        stopHydrationWatch()
+      }
+    }
+  )
 
   // The builder wraps sections in a container that has overflow-x:scroll, which
   // CSS spec forces overflow-y from 'visible' to 'auto'. Any overflow value other

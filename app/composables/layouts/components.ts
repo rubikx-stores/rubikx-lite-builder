@@ -222,7 +222,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
       >
         <a style='${linkStyle}cursor:pointer;'>Categories ▾</a>
         <div style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;'>
-          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Loads from Odoo on live site</span>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Load Categories</span>
         </div>
       </div>`
     : ''
@@ -331,7 +331,7 @@ export const ru1FormDefaults: Ru1FormData = {
 
 export const ru1FormFields: FieldConfig[] = [
   { key: 'title',       label: 'Section Title',      type: 'text',   placeholder: 'e.g. Get in touch'         },
-  { key: 'description', label: 'Description',        type: 'text',   placeholder: 'Short intro paragraph…'   },
+  { key: 'description', label: 'Description',        type: 'textarea',   placeholder: 'Short intro paragraph…'   },
   { key: 'addressLine1',label: 'Address Line 1',     type: 'text',   placeholder: 'Street address'            },
   { key: 'addressLine2',label: 'Address Line 2',     type: 'text',   placeholder: 'City, State ZIP'           },
   { key: 'phone',       label: 'Phone Number',       type: 'text',   placeholder: 'Your phone number'         },
@@ -505,10 +505,10 @@ export const footer1Fields: FieldConfig[] = [
       { key: 'url',   label: 'URL',   type: 'url'  },
     ],
   },
-  { key: 'aboutText',    label: 'About Text',        type: 'text'   },
+  { key: 'aboutText',    label: 'About Text',        type: 'textarea'   },
   { key: 'contactEmail', label: 'Contact Email',      type: 'text'   },
   { key: 'contactPhone', label: 'Contact Phone',      type: 'text'   },
-  { key: 'copyright',    label: 'Copyright',          type: 'text'   },
+  { key: 'copyright',    label: 'Copyright',          type: 'textarea'   },
   { key: 'bgColor',      label: 'Background Color',   type: 'color'  },
   { key: 'textColor',    label: 'Text Color',          type: 'color'  },
   { key: 'paddingY',     label: 'Vertical Padding',   type: 'number' },
@@ -625,7 +625,7 @@ export const ru1AboutFields: FieldConfig[] = [
   { key: 'titleColor',      label: 'Title Colour',          type: 'color' },
   { key: 'titleAlign',      label: 'Title Alignment',       type: 'select', options: ['left', 'center', 'right'] },
   { key: 'titleWeight',     label: 'Title Weight',          type: 'select', options: ['Normal', 'Medium', 'Semibold', 'Bold', 'Extrabold'] },
-  { key: 'description',     label: 'Description',           type: 'text',   placeholder: 'Short intro paragraph…' },
+  { key: 'description',     label: 'Description',           type: 'textarea',   placeholder: 'Short intro paragraph…' },
   { key: 'descriptionAlign',label: 'Description Alignment', type: 'select', options: ['left', 'center', 'right'] },
   { key: 'ctaHref',         label: 'Button URL',            type: 'url',    placeholder: 'https://...' },
   { key: 'ctaLabel',        label: 'Button Text',           type: 'text',   placeholder: 'e.g. Contact Us' },
@@ -792,10 +792,10 @@ export const ru1FaqFields: FieldConfig[] = [
   { key: 'titleColor',     label: 'Title Colour',         type: 'color' },
   { key: 'titleAlign',     label: 'Title Alignment',      type: 'select', options: ['left', 'center', 'right'] },
   { key: 'titleWeight',    label: 'Title Weight',         type: 'select', options: ['Normal', 'Medium', 'Semibold', 'Bold', 'Extrabold'] },
-  { key: 'subtitleText',      label: 'Subtitle Text (before link)', type: 'text', placeholder: "Have a different question…" },
+  { key: 'subtitleText',      label: 'Subtitle Text (before link)', type: 'textarea', placeholder: "Have a different question…" },
   { key: 'subtitleLinkText',  label: 'Subtitle Link Label',         type: 'text', placeholder: 'e.g. sending us an email' },
   { key: 'subtitleLinkHref',  label: 'Subtitle Link URL',           type: 'url',  placeholder: 'https://...' },
-  { key: 'subtitleAfterLink', label: 'Subtitle Text (after link)',  type: 'text', placeholder: "and we'll get back to you…" },
+  { key: 'subtitleAfterLink', label: 'Subtitle Text (after link)',  type: 'textarea', placeholder: "and we'll get back to you…" },
   { key: 'subtitleColor',     label: 'Subtitle Text Colour',        type: 'color' },
   { key: 'subtitleLinkColor', label: 'Subtitle Link Colour',        type: 'color' },
   { key: 'subtitleAlign',     label: 'Subtitle Alignment',          type: 'select', options: ['left', 'center', 'right'] },

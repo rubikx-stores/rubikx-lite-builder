@@ -32,7 +32,7 @@ async function loadCategories(el: HTMLElement) {
   const fontWeight = el.dataset.fontWeight ?? '400'
   const linkStyle = `color:${linkColor};font-size:${fontSize}px;font-weight:${fontWeight};white-space:nowrap;text-decoration:none;`
 
-  const dropdown = el.querySelector<HTMLElement>('div[style*="position:absolute"]')
+  const dropdown = el.querySelector<HTMLElement>('div[style*="position:absolute"], div[style*="position: absolute"]')
   if (!dropdown) return
 
   try {

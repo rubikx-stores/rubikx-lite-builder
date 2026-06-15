@@ -27,7 +27,7 @@ interface Page {
 const { data: websites } = await useFetch<Website[]>('/api/websites')
 const { user } = useAuth()
 
-const selectedWebsiteId = ref<number | null>(null)
+const selectedWebsiteId = useState<number | null>('selectedCompanyId', () => null)
 const pages = ref<Page[]>([])
 const loadingPages = ref(false)
 const selectedVersions = ref<Record<string, number>>({})

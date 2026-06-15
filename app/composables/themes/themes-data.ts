@@ -206,7 +206,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
       >
         <a style='color:${data.textColor};font-size:${data.fontSize}px;cursor:pointer;'>Categories ▾</a>
         <div style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;'>
-          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Loads from Odoo on live site</span>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Load Categories</span>
         </div>
       </div>`
     : ''
@@ -637,10 +637,10 @@ export const ru1FooterDefaults: Ru1FooterData = {
 
 export const ru1FooterFields: FieldConfig[] = [
   { key: '_h_content', label: 'Content', type: 'header' },
-  { key: 'tagline', label: 'Tagline', type: 'text' },
+  { key: 'tagline', label: 'Tagline', type: 'textarea' },
   { key: 'contactEmail', label: 'Contact Email', type: 'text' },
   { key: 'contactPhone', label: 'Contact Phone', type: 'text' },
-  { key: 'copyright', label: 'Copyright Text', type: 'text' },
+  { key: 'copyright', label: 'Copyright Text', type: 'textarea' },
   {
     key: 'usefulLinks', label: 'Useful Links', type: 'list',
     listFields: [
