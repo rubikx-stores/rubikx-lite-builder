@@ -8,7 +8,7 @@ const props = defineProps({
   blockData: { type: Object, default: null },
 })
 
-const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products']
+const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru2 Shop Content']
 
 function debounce(fn, delay) {
   let timer
@@ -111,40 +111,14 @@ watch(component, async (newComp) => {
   }
 }, { immediate: true })
 
-function restoreSelectionForTitle(title) {
-  if (!title || !THEME_REGISTRY_BLOCKS.includes(title)) return
-  if (!products.value.length) return
-  const section = document.querySelector(`section[data-component-title="${title}"]`)
-  const storedIds = section?.getAttribute('data-selected-products')
-  if (storedIds) {
-    try {
-      const ids = JSON.parse(storedIds)
-      const restored = products.value.filter(p => ids.includes(p.id))
-      if (restored.length) { selected.value = restored; return }
-    } catch { /* ignore */ }
-  }
-  // Fallback: match by name from blockData
-  if (!selected.value.length && props.blockData?.products?.length) {
-    const matched = props.blockData.products
-      .map(tp => products.value.find(op => op.name === tp.name))
-      .filter(Boolean)
-    if (matched.length) selected.value = matched
-  }
-}
-
 // For theme blocks: collapse the applied banner when switching to a different block
-watch(() => props.selectedBlockTitle, async (newTitle, oldTitle) => {
+watch(() => props.selectedBlockTitle, (newTitle, oldTitle) => {
   if (newTitle !== oldTitle) {
     applied.value = false
     search.value = ''
     // Only wipe selection when navigating away from a theme block entirely
     if (oldTitle && THEME_REGISTRY_BLOCKS.includes(oldTitle) && !THEME_REGISTRY_BLOCKS.includes(newTitle ?? '')) {
       selected.value = []
-    }
-    // Restore selection when focusing a theme block
-    if (newTitle && THEME_REGISTRY_BLOCKS.includes(newTitle)) {
-      await nextTick()
-      restoreSelectionForTitle(newTitle)
     }
   }
 })
@@ -182,18 +156,25 @@ onMounted(async () => {
   const PLACEHOLDER_PRICE = 'Start customizing by editing this default text directly in the editor.'
 
   await nextTick()
+  const section = getSection()
 
-  if (isThemeBlock.value) {
-    restoreSelectionForTitle(props.selectedBlockTitle)
-  } else {
-    const section = getSection()
-    const storedIds = section?.getAttribute('data-selected-products')
-    if (storedIds) {
-      try {
-        const ids = JSON.parse(storedIds)
-        selected.value = products.value.filter(p => ids.includes(p.id))
-      } catch { /* ignore */ }
+  // Pre-populate from stored data attribute (primary)
+  const storedIds = section?.getAttribute('data-selected-products')
+  if (storedIds) {
+    try {
+      const ids = JSON.parse(storedIds)
+      selected.value = products.value.filter(p => ids.includes(p.id))
+    } catch (e) {
+      // ignore parse errors
     }
+  }
+
+  // Fallback for theme blocks: match by name from blockData.products when no IDs stored
+  if (!selected.value.length && isThemeBlock.value && props.blockData?.products?.length) {
+    const matched = props.blockData.products
+      .map(tp => products.value.find(op => op.name === tp.name))
+      .filter(Boolean)
+    if (matched.length) selected.value = matched
   }
 
   // Sync registry with restored selection so subsequent _applyBlockRender calls

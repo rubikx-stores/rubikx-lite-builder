@@ -75,7 +75,7 @@ function toHex(v: string | undefined | null): string {
 }
 
 // ── Product block flag ────────────────────────────────────────────────────────
-const _PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 6 Products Minimal', 'Show 4 Products Centered', 'Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products']
+const _PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 6 Products Minimal', 'Show 4 Products Centered', 'Ru1 Homepage Featured Products', 'Ru2 Shop Content']
 
 const lastProductTitle = ref('')
 
@@ -409,7 +409,7 @@ onUnmounted(() => {
 
             <!-- image -->
             <div v-else-if="field.type === 'image'" class="mb-2.5">
-              <label class="block text-xs text-gray-900 mb-1">{{ field.label }}</label>
+              <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
               <div class="flex items-center gap-1 mb-1">
                 <input type="text" :value="blockData[field.key]" placeholder="https://..."
                   class="flex-1 border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400"
@@ -427,7 +427,7 @@ onUnmounted(() => {
 
             <!-- text / url -->
             <div v-else-if="field.type === 'text' || field.type === 'url'" class="mb-2.5">
-              <label class="block text-xs text-gray-900 mb-1">{{ field.label }}</label>
+              <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
               <input type="text" :value="blockData[field.key]"
                 :placeholder="field.placeholder ?? ''"
                 class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
@@ -436,7 +436,7 @@ onUnmounted(() => {
 
             <!-- number → stepper -->
             <div v-else-if="field.type === 'number'" class="mb-2.5">
-              <label class="block text-xs text-gray-900 mb-1">{{ field.label }}</label>
+              <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
               <div class="flex items-center gap-1">
                 <button type="button"
                   class="w-7 h-7 flex items-center justify-center border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 text-gray-600 text-base font-medium cursor-pointer shrink-0 leading-none"
@@ -456,7 +456,7 @@ onUnmounted(() => {
 
             <!-- color -->
             <div v-else-if="field.type === 'color'" class="mb-2.5">
-              <label class="block text-xs text-gray-900 mb-1">{{ field.label }}</label>
+              <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
               <div class="flex items-center gap-2 border border-gray-200 rounded-md px-2 py-1">
                 <input type="color" :value="toHex(blockData[field.key])" class="w-6 h-6 rounded cursor-pointer border-none p-0"
                   @input="updateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
@@ -467,7 +467,7 @@ onUnmounted(() => {
 
             <!-- toggle -->
             <div v-else-if="field.type === 'toggle'" class="mb-2.5 flex items-center justify-between py-1">
-              <label class="text-xs text-gray-900">{{ field.label }}</label>
+              <label class="text-xs text-gray-600">{{ field.label }}</label>
               <button type="button"
                 class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors border-none cursor-pointer shrink-0"
                 :class="blockData[field.key] ? 'bg-blue-500' : 'bg-gray-200'"
@@ -479,7 +479,7 @@ onUnmounted(() => {
 
             <!-- select -->
             <div v-else-if="field.type === 'select'" class="mb-2.5">
-              <label class="block text-xs text-gray-900 mb-1">{{ field.label }}</label>
+              <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
               <select class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400 bg-white"
                 :value="String(blockData[field.key])"
                 @change="updateBlockField(field.key, Number(($event.target as HTMLSelectElement).value) || ($event.target as HTMLSelectElement).value)">
@@ -489,13 +489,13 @@ onUnmounted(() => {
 
             <!-- column-order -->
             <div v-else-if="field.type === 'column-order'" class="mb-2.5">
-              <label class="block text-xs text-gray-900 mb-1">{{ field.label }}</label>
+              <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
               <div class="flex gap-1.5">
                 <div
                   v-for="(pos, i) in ((blockData[field.key] as string[] ?? []).length === 2 ? ['Left', 'Right'] : ['Left', 'Center', 'Right'])"
                   :key="pos"
                   class="flex-1">
-                  <label class="block text-xs text-gray-600 mb-0.5">{{ pos }}</label>
+                  <label class="block text-xs text-gray-400 mb-0.5">{{ pos }}</label>
                   <select
                     class="w-full border border-gray-200 rounded px-1.5 py-1 text-xs bg-white focus:outline-none"
                     :value="(blockData[field.key] as string[])?.[i]"
@@ -548,7 +548,7 @@ onUnmounted(() => {
                 <div class="px-2 py-1.5">
                   <template v-for="subField in field.listFields" :key="subField.key">
                     <div class="mb-1">
-                      <label class="block text-xs text-gray-600 mb-0.5">{{ subField.label }}</label>
+                      <label class="block text-xs text-gray-400 mb-0.5">{{ subField.label }}</label>
                       <template v-if="subField.type === 'image'">
                         <div class="flex items-center gap-1 mb-1">
                           <input type="text" :value="item[subField.key]" placeholder="https://..."
@@ -736,7 +736,7 @@ onUnmounted(() => {
           </summary>
           <div class="px-3 pb-3 space-y-2.5">
             <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-900">Size</span>
+              <span class="text-xs text-gray-500">Size</span>
               <div class="flex items-center gap-1">
                 <button @click="adjFs(-1)" class="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600 border-none cursor-pointer text-sm leading-none font-medium">−</button>
                 <input type="number" :value="fsVal" class="w-11 text-center text-xs border border-gray-200 rounded py-0.5 focus:outline-none focus:border-blue-400"
@@ -746,7 +746,7 @@ onUnmounted(() => {
               </div>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-900">Line height</span>
+              <span class="text-xs text-gray-500">Line height</span>
               <div class="flex items-center gap-1">
                 <button @click="adjLh(-1)" class="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600 border-none cursor-pointer text-sm leading-none font-medium">−</button>
                 <input type="number" :value="lhVal" class="w-11 text-center text-xs border border-gray-200 rounded py-0.5 focus:outline-none focus:border-blue-400"
@@ -756,7 +756,7 @@ onUnmounted(() => {
               </div>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-900">Spacing</span>
+              <span class="text-xs text-gray-500">Spacing</span>
               <div class="flex items-center gap-1">
                 <button @click="adjLs(-1)" class="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600 border-none cursor-pointer text-sm leading-none font-medium">−</button>
                 <input type="number" :value="lsVal" class="w-11 text-center text-xs border border-gray-200 rounded py-0.5 focus:outline-none focus:border-blue-400"
@@ -766,7 +766,7 @@ onUnmounted(() => {
               </div>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-900">Weight</span>
+              <span class="text-xs text-gray-500">Weight</span>
               <select class="border border-gray-200 rounded px-2 py-0.5 text-xs bg-white focus:outline-none focus:border-blue-400"
                 @change="updateElementStyle('fontWeight', ($event.target as HTMLSelectElement).value)">
                 <option value="">—</option>
@@ -774,7 +774,7 @@ onUnmounted(() => {
               </select>
             </div>
             <div>
-              <span class="text-xs text-gray-900 block mb-1">Font Family</span>
+              <span class="text-xs text-gray-500 block mb-1">Font Family</span>
               <select class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs bg-white focus:outline-none focus:border-blue-400"
                 @change="updateElementStyle('fontFamily', ($event.target as HTMLSelectElement).value)">
                 <option value="">— family —</option>
@@ -782,7 +782,7 @@ onUnmounted(() => {
               </select>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-900">Align</span>
+              <span class="text-xs text-gray-500">Align</span>
               <div class="flex gap-1">
                 <button v-for="a in textAligns" :key="a" type="button"
                   class="w-7 h-7 text-xs border rounded border-gray-200 cursor-pointer flex items-center justify-center hover:bg-gray-100"
