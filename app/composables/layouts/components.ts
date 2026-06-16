@@ -112,7 +112,7 @@ export const megaMenuHeaderFields: FieldConfig[] = [
     ],
   },
   { key: 'navLinksAlign',      label: 'Links Position',                  type: 'select',
-    options: ['left', 'center', 'right']                                    },
+    options: ['left', 'center', 'right', 'lower-left', 'lower-center', 'lower-right'] },
   { key: 'linkColor',          label: 'Link Colour',                       type: 'color'   },
   { key: 'linkFontSize',    label: 'Link Font Size (px)',   type: 'number',
     placeholder: '14'                                                       },
@@ -158,7 +158,6 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     `background:${data.bgColor}`,
     `color:${data.textColor}`,
     `padding:${data.paddingY}px ${data.paddingX}px`,
-    data.sticky ? 'position:sticky;top:0;z-index:50' : '',
     data.showBottomBorder ? `border-bottom:1px solid ${data.bottomBorderColor}` : '',
   ].filter(Boolean).join(';')
 
@@ -235,22 +234,32 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     ? `<div style="display:flex;align-items:center;gap:0.5rem;">${
         data.ctaButtons.map(btn => {
           const base = `display:inline-block;padding:0.4375rem 1rem;border-radius:${data.buttonBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:500;white-space:nowrap;`
-          return btn.style === 'filled'
-            ? `<a href="${btn.href}" style="${base}background:${btn.bgColor};color:${btn.textColor};border:1.5px solid ${btn.borderColor};">${btn.label}</a>`
-            : `<a href="${btn.href}" style="${base}background:transparent;color:${btn.textColor};border:1.5px solid ${btn.borderColor};">${btn.label}</a>`
+          const bg = btn.style === 'outline' ? (btn.bgColor || 'transparent') : btn.bgColor
+          return `<a href="${btn.href}" style="${base}background:${bg};color:${btn.textColor};border:1.5px solid ${btn.borderColor};">${btn.label}</a>`
         }).join('')
       }</div>`
     : ''
 
+  const lowerJustifyMap: Record<string, string> = {
+    'lower-left': 'flex-start',
+    'lower-center': 'center',
+    'lower-right': 'flex-end',
+  }
+  const isLowerLinks = data.navLinksAlign in lowerJustifyMap
+
   const cols: Record<string, string[]> = { left: [], center: [], right: [] }
   const put = (zone: string, el: string) => { if (el && zone in cols) cols[zone].push(el) }
-  put(data.logoAlign,     logoEl)
-  put(data.navLinksAlign, linksEl)
-  put(data.searchAlign,   searchEl)
-  put(data.buttonsAlign,  buttonsEl)
+  put(data.logoAlign,   logoEl)
+  if (!isLowerLinks) put(data.navLinksAlign, linksEl)
+  put(data.searchAlign,  searchEl)
+  put(data.buttonsAlign, buttonsEl)
 
   const zone = (items: string[], justify: string) =>
     `<div style="display:flex;align-items:center;gap:0.75rem;justify-content:${justify};">${items.join('')}</div>`
+
+  const lowerRow = isLowerLinks && linksEl
+    ? `<div class="pbx-max-w-7xl pbx-mx-auto" style="display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding-top:0.5rem;">${linksEl}</div>`
+    : ''
 
   const hasMegaMenu = data.navLinks.some(l => l.megaMenu && l.megaMenu.length > 0)
 
@@ -259,7 +268,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     ? `<script>(function(){function wireTiles(sec){sec.querySelectorAll('.pbx-ptile').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var panel=sec.querySelector('.pbx-pd');if(!panel)return;var imgEl=a.querySelector('img');var imgSrc=imgEl?imgEl.src:'';var name=(a.querySelector('.pbx-ptile-name')||{}).textContent||'';var price=(a.querySelector('.pbx-ptile-price')||{}).textContent||'';var imgCol=imgSrc?'<img src="'+imgSrc+'" style="width:100%;height:100%;object-fit:cover;display:block;" />':'<div style="width:100%;height:100%;background:#f3f4f6;"></div>';panel.innerHTML='<div style="display:grid;grid-template-columns:40% 60%;height:380px;position:relative;">'+  '<div style="overflow:hidden;">'+imgCol+'</div>'+  '<div style="padding:40px 48px;display:flex;flex-direction:column;justify-content:center;background:#fff;">'+    '<div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;">Featured Product</div>'+    '<div style="font-size:26px;font-weight:700;color:#111827;line-height:1.25;margin-bottom:12px;">'+name+'</div>'+    '<div style="font-size:22px;font-weight:600;color:#374151;margin-bottom:28px;">'+price+'</div>'+    '<div><a href="'+a.href+'" style="display:inline-block;padding:12px 28px;background:#111827;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:500;letter-spacing:.02em;">View Product →</a></div>'+  '</div>'+  '<button onclick="this.closest(\\'.pbx-pd\\').style.display=\\'none\\'" style="position:absolute;top:12px;right:16px;background:rgba(255,255,255,.9);border:1px solid #e5e7eb;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;color:#6b7280;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>'+  '</div>';panel.style.display='block';panel.scrollIntoView({behavior:'smooth',block:'nearest'});});})}function init(){var ts=document.querySelectorAll('.pbx-mega-item[data-mega-json]');if(!ts.length)return;var allIds=[];ts.forEach(function(t){try{JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"')).forEach(function(g){(g.ids||[]).forEach(function(id){if(allIds.indexOf(id)<0)allIds.push(id);});});}catch(e){}});ts.forEach(function(t){var sec=t.closest('section');if(sec)wireTiles(sec);});if(!allIds.length)return;fetch('/api/products?ids='+allIds.join(',')).then(function(r){return r.json();}).then(function(prods){var map={};prods.forEach(function(p){map[p.id]=p;});ts.forEach(function(t){var groups;try{groups=JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"'));}catch(e){return;}var drop=t.querySelector('.pbx-mega-drop');if(!drop)return;var html=groups.map(function(g){var items=(g.ids||[]).map(function(id){var p=map[id];if(!p)return'';var img=p.image?'<img src="data:image/png;base64,'+p.image+'" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;"/>':'<div style="width:44px;height:44px;background:#f3f4f6;border-radius:6px;flex-shrink:0;"></div>';var price=p.price!=null?'<span class="pbx-ptile-price" style="font-size:11px;color:#6b7280;">$'+Number(p.price).toFixed(2)+'</span>':'';return'<a href="/shop/'+p.id+'" class="pbx-ptile" style="display:flex;align-items:center;gap:10px;padding:7px 14px;text-decoration:none;cursor:pointer;" onmouseover="this.style.background=\\'#f9fafb\\'" onmouseout="this.style.background=\\'\\''">'+img+'<div style="min-width:0;"><div class="pbx-ptile-name" style="font-size:13px;font-weight:500;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">'+p.name+'</div>'+price+'</div></a>';}).join('');if(!items.trim())return'';return'<div><a href="'+(g.href||'#')+'" style="display:block;padding:8px 14px 4px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;">'+g.label+'</a>'+items+'</div>';}).filter(Boolean).join('<div style="height:1px;background:#f3f4f6;margin:4px 0;"></div>');drop.innerHTML=html;var sec=t.closest('section');if(sec)wireTiles(sec);});}).catch(function(){});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();<\/script>`
     : ''
 
-  return `<section data-component-title="Mega-menu-Header">
+  return `<section data-component-title="Mega-menu-Header"${data.sticky ? ' style="position:sticky;top:0;z-index:9999"' : ''}>
 <style>
 .pbx-mega-item:hover .pbx-mega-drop{display:block !important;}
 .pbx-pd{display:none;width:100%;border-top:1px solid #e5e7eb;overflow:hidden;}
@@ -270,6 +279,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     ${zone(cols.center, 'center')}
     ${zone(cols.right,  'flex-end')}
   </div>
+  ${lowerRow}
 </nav>
 ${hasMegaMenu ? '<div class="pbx-pd"></div>' : ''}
 ${megaScript}</section>`
