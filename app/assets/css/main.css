@@ -40,3 +40,14 @@ body {
 #pagebuilder [data-inline-active="1"] {
   cursor: text !important;
 }
+
+/* ── Builder scroll fix ───────────────────────────────────────────────────── */
+
+/* The library hardcodes height:100vh on #page-builder-wrapper, which makes the
+   scroll container taller than the available layout space and causes excess
+   scrolling past page content. Override to fill the parent (constrained by
+   the editor's flex chain) instead of the full viewport. */
+#page-builder-wrapper {
+  height: 100% !important;
+  min-height: 0 !important;
+}

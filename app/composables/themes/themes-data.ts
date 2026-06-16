@@ -366,6 +366,7 @@ export interface Ru1ProductsData {
   paddingY: number
   paddingX: number
   cardBorderRadius: number
+  hoverBorderColor: string
   buttonBgColor: string
   buttonTextColor: string
   oldPriceColor: string
@@ -405,6 +406,7 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   paddingY: 48,
   paddingX: 16,
   cardBorderRadius: 8,
+  hoverBorderColor: '',
   buttonBgColor: '#111827',
   buttonTextColor: '#ffffff',
   oldPriceColor: '#9ca3af',
@@ -448,6 +450,7 @@ export const ru1ProductsFields: FieldConfig[] = [
 
   { key: '_h_card', label: 'Card Style', type: 'header' },
   { key: 'cardBorderRadius', label: 'Corner Radius', type: 'number', unit: 'px', step: 2, placeholder: '8' },
+  { key: 'hoverBorderColor', label: 'Hover Border Color', type: 'color' },
   { key: 'cardAnimation', label: 'Hover Animation', type: 'toggle' },
   { key: 'hoverEffect', label: 'Animation Type', type: 'select', options: ['Lift Up', 'Drop Down', 'Slide Left', 'Slide Right', 'Pop Out', 'Zoom In', 'Glow', 'Tilt Left', 'Tilt Right'] },
   { key: 'hoverAmount', label: 'Animation Amount', type: 'number', unit: 'px', step: 1, placeholder: '8' },
@@ -509,17 +512,18 @@ export function renderRu1Products(data: Ru1ProductsData): string {
   const needsOverlay = data.showViewProduct !== false || arrowBtnPos === 'top'
 
   const styleRules: string[] = []
-  if (needsOverlay) styleRules.push(`.fp-prod-card:hover .fp-img-overlay{opacity:1!important}`)
+  if (needsOverlay) styleRules.push(`[data-fp-card]:hover [data-fp-overlay]{opacity:1!important}`)
+  if (data.hoverBorderColor) {
+    styleRules.push(`[data-fp-card]:hover{border-color:${data.hoverBorderColor}!important}`)
+  }
   if (data.cardAnimation) {
-    styleRules.push(`.fp-prod-card{transition:transform ${dur}ms ease,box-shadow ${dur}ms ease}`)
-    styleRules.push(`.fp-prod-card:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}`)
+    styleRules.push(`[data-fp-card]{transition:transform ${dur}ms ease,box-shadow ${dur}ms ease}`)
+    styleRules.push(`[data-fp-card]:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}`)
   }
   const animStyle = styleRules.length ? `<style>${styleRules.join('')}</style>` : ''
 
-  const sectionStyle = [
-    data.bgColor ? `background:${data.bgColor}` : '',
-    `padding:${data.paddingY}px ${data.paddingX}px`,
-  ].filter(Boolean).join(';')
+  const sectionBg = data.bgColor ? `background:${data.bgColor}` : ''
+  const innerStyle = `padding:${data.paddingY}px ${data.paddingX}px`
 
   const maxVisible = data.columns * (data.rows ?? 1)
   const placeholder = { imageUrl: placeholderSvg, name: 'Product Name', price: '$0.00', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' }
@@ -544,10 +548,10 @@ export function renderRu1Products(data: Ru1ProductsData): string {
 
     const overlayHtml = needsOverlay
       ? (arrowBtnPos === 'top'
-          ? `<div class="fp-img-overlay" style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;padding:10px 12px;opacity:0;transition:opacity 180ms ease;pointer-events:none">
+          ? `<div data-fp-overlay="1" style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;padding:10px 12px;opacity:0;transition:opacity 180ms ease;pointer-events:none">
               ${viewProductBtn}${arrowBtnAbsolute}
             </div>`
-          : `<div class="fp-img-overlay" style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;padding:10px 12px;opacity:0;transition:opacity 180ms ease;pointer-events:none">
+          : `<div data-fp-overlay="1" style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;padding:10px 12px;opacity:0;transition:opacity 180ms ease;pointer-events:none">
               ${viewProductBtn}
             </div>`)
       : ''
@@ -570,7 +574,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
       : ''
 
     return `
-      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200 fp-prod-card">
+      <div data-fp-card="1" style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200">
         <div style="position:relative;overflow:hidden">
           <img class="pbx-w-full pbx-h-auto pbx-block" src="${p.imageUrl}" alt="${p.name}" />
           ${overlayHtml}
@@ -585,9 +589,9 @@ export function renderRu1Products(data: Ru1ProductsData): string {
       </div>`
   }).join('')
 
-  return `<section data-component-title="Ru1 Homepage Featured Products">
+  return `<section data-component-title="Ru1 Homepage Featured Products"${sectionBg ? ` style="${sectionBg}"` : ''}>
 ${animStyle}
-<div style="${sectionStyle}">
+<div style="${innerStyle}">
   <div class="pbx-mx-auto pbx-max-w-7xl">
     <div class="pbx-mb-8">
       <h1 data-field-key="sectionTitle" style="margin:0;font-size:2rem;font-weight:600;text-align:${data.titleAlign};color:${data.titleColor}">${data.sectionTitle}</h1>
@@ -1521,9 +1525,9 @@ export function renderRu3ShopProducts(data: Ru3ShopProductsData): string {
     }
   }
   const animStyle = data.cardAnimation
-    ? `<style>.ru3-product-card{transition:transform ${data.animationDuration}ms ease,box-shadow ${data.animationDuration}ms ease}.ru3-product-card:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}</style>`
+    ? `<style>[data-ru3-card]{transition:transform ${data.animationDuration}ms ease,box-shadow ${data.animationDuration}ms ease}[data-ru3-card]:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}</style>`
     : ''
-  const cardCls = data.cardAnimation ? 'ru3-product-card' : ''
+  const cardAttr = data.cardAnimation ? ' data-ru3-card="1"' : ''
 
   const sectionStyle = [
     data.bgColor ? `background:${data.bgColor}` : '',
@@ -1537,7 +1541,7 @@ export function renderRu3ShopProducts(data: Ru3ShopProductsData): string {
     ...Array(Math.max(0, maxVisible - data.products.length)).fill(placeholder),
   ]
   const cards = visibleProducts.map(p => `
-      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200 ${cardCls}">
+      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200"${cardAttr}>
         <img class="pbx-w-full pbx-h-auto pbx-block" src="${p.imageUrl || placeholderSvg}" alt="${p.name}" />
         <div class="pbx-flex pbx-flex-col pbx-gap-1 pbx-p-3 pbx-flex-1">
           <p class="pbx-font-semibold pbx-text-sm">${p.name}</p>

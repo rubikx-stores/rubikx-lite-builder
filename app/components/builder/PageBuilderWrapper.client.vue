@@ -260,6 +260,9 @@ onMounted(async () => {
     let el = pagebuilderEl.parentElement
     while (el && el !== wrapperEl) {
       el.style.overflow = 'visible'
+      // Also remove the library's hardcoded 90vh height so the element
+      // grows with content instead of creating a fixed-size scroll vessel.
+      el.style.height = 'auto'
       el = el.parentElement
     }
   }
