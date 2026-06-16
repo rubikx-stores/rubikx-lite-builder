@@ -71,11 +71,6 @@ export interface Ru1NavbarData {
   contactUsUrl: string
   showCart: boolean
   cartUrl: string
-  showCta: boolean
-  ctaLabel: string
-  ctaUrl: string
-  ctaBgColor: string
-  ctaTextColor: string
   textColor: string
   fontSize: number
   fontWeight: string
@@ -108,11 +103,6 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   contactUsUrl: '/contact',
   showCart: true,
   cartUrl: '/cart',
-  showCta: false,
-  ctaLabel: 'Get Started',
-  ctaUrl: '/contact',
-  ctaBgColor: '#111827',
-  ctaTextColor: '#ffffff',
   textColor: '#111827',
   fontSize: 14,
   fontWeight: '500',
@@ -152,11 +142,6 @@ export const ru1NavbarFields: FieldConfig[] = [
   { key: 'contactUsUrl', label: 'Contact Us URL', type: 'url' },
   { key: 'showCart', label: 'Show Cart Icon', type: 'toggle' },
   { key: 'cartUrl', label: 'Cart URL', type: 'url' },
-  { key: 'showCta', label: 'Show CTA Button', type: 'toggle' },
-  { key: 'ctaLabel', label: 'CTA Label', type: 'text' },
-  { key: 'ctaUrl', label: 'CTA URL', type: 'url' },
-  { key: 'ctaBgColor', label: 'CTA Background Color', type: 'color' },
-  { key: 'ctaTextColor', label: 'CTA Text Color', type: 'color' },
 
   { key: '_h_style', label: 'Style', type: 'header' },
   { key: 'bgColor', label: 'Background Color', type: 'color' },
@@ -202,7 +187,6 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     data.showCart
       ? `<a href="${data.cartUrl}" style="color:${data.textColor}"><svg class="pbx-h-6 pbx-w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg></a>`
       : '',
-    data.showCta ? `<a href="${data.ctaUrl}" style="background:${data.ctaBgColor};color:${data.ctaTextColor};padding:0.375rem 1rem;border-radius:0.375rem;font-size:0.875rem;font-weight:600;text-decoration:none;white-space:nowrap;">${data.ctaLabel}</a>` : '',
   ].filter(Boolean)
 
   const visibleNavLinks = data.navLinks.filter(l => l.visible !== false)
