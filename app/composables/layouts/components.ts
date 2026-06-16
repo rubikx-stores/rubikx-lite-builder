@@ -143,7 +143,6 @@ export const megaMenuHeaderFields: FieldConfig[] = [
     placeholder: '6 — corner roundness for all CTA buttons'                },
 
   { key: 'bgColor',         label: 'Background Colour',     type: 'color'   },
-  { key: 'textColor',       label: 'Global Text Colour',    type: 'color'   },
   { key: 'paddingY',        label: 'Vertical Padding (px)', type: 'number',
     placeholder: '12'                                                       },
   { key: 'paddingX',        label: 'Horizontal Padding (px)', type: 'number',

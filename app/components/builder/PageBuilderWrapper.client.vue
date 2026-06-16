@@ -256,21 +256,30 @@ onMounted(async () => {
   // position:sticky, so sticky sections never reach the real scroll container
   // (#page-builder-wrapper). Fix: walk from #pagebuilder up to the wrapper and
   // clear overflow on every intermediate element.
-  const pagebuilderEl = document.getElementById('pagebuilder')
-  const wrapperEl = document.getElementById('page-builder-wrapper')
-  if (pagebuilderEl && wrapperEl) {
-    let el = pagebuilderEl.parentElement
-    while (el && el !== wrapperEl) {
-      el.style.overflow = 'visible'
-      // Also remove the library's hardcoded 90vh height so the element
-      // grows with content instead of creating a fixed-size scroll vessel.
-      el.style.height = 'auto'
-      el = el.parentElement
+  function clearBuilderScroll() {
+    const pagebuilderEl = document.getElementById('pagebuilder')
+    const wrapperEl = document.getElementById('page-builder-wrapper')
+    if (pagebuilderEl && wrapperEl) {
+      let el = pagebuilderEl.parentElement
+      while (el && el !== wrapperEl) {
+        el.style.overflow = 'visible'
+        el.style.height = 'auto'
+        el.style.minHeight = '0'
+        el = el.parentElement
+      }
     }
   }
 
+  // Run early, then again after the builder UI is fully rendered.
+  clearBuilderScroll()
+
   _saveBtn = await waitForSaveButton()
   _saveBtn.addEventListener('click', handleSaveClick)
+
+  // Second pass: some library elements get their height set reactively after
+  // startBuilder resolves — re-applying after the UI is fully settled ensures
+  // the 90vh min-height is cleared for all pages.
+  clearBuilderScroll()
 
   // Capture-phase so we intercept before the builder's own click handler
   document.addEventListener('click', handleProductTileClick, true)

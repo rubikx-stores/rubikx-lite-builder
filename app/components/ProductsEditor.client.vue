@@ -8,7 +8,7 @@ const props = defineProps({
   blockData: { type: Object, default: null },
 })
 
-const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products']
+const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products']
 
 function debounce(fn, delay) {
   let timer
@@ -127,8 +127,9 @@ const mode = computed(() => storedMode.value || 'multiple')
 
 const maxSelection = computed(() => {
   if (isThemeBlock.value) {
-    // Allow selecting up to 10 rows worth — doApplyThemeBlock auto-expands rows to fit.
-    return Number(props.blockData?.columns ?? 4) * 10
+    // Capacity = exactly the current grid: columns × rows.
+    // Products beyond this are blurred; user must increase rows/cols to add more.
+    return Number(props.blockData?.columns ?? 4) * Number(props.blockData?.rows ?? 1)
   }
   return mode.value === 'single' ? 1 : mode.value === 'six' ? 6 : mode.value === 'four' ? 4 : 3
 })
@@ -179,11 +180,12 @@ onMounted(async () => {
     if (matched.length) selected.value = matched
   }
 
-  // Sync registry with restored selection so subsequent _applyBlockRender calls
-  // re-render with the correct Odoo products (not stale/placeholder registry data).
+  // Sync registry with restored selection and show applied state so the user
+  // sees "N products applied" immediately after save/reload.
   if (isThemeBlock.value && selected.value.length > 0) {
     await nextTick()
     doApplyThemeBlock()
+    applied.value = true
   }
 })
 
@@ -235,15 +237,6 @@ async function doApplyThemeBlock(confirm = false) {
   }
 
   if (props.updateBlockField && title) {
-    // Ru2 Shop Products caps visible items by columns×rows — expand rows to fit selection
-    if (title === 'Ru2 Shop Products') {
-      const cols = Number(props.blockData?.columns ?? 4)
-      const neededRows = Math.ceil(mapped.length / cols)
-      const currentRows = Number(props.blockData?.rows ?? 1)
-      if (neededRows > currentRows) {
-        props.updateBlockField('rows', String(neededRows), title)
-      }
-    }
     props.updateBlockField('products', mapped, title)
   }
 
@@ -440,16 +433,15 @@ function doApply() {
 }
 
 function toggle(product) {
-  const idx = selected.value.findIndex(
-    p => p.id === product.id
-  )
+  const idx = selected.value.findIndex(p => p.id === product.id)
   if (idx >= 0) {
     selected.value.splice(idx, 1)
   } else if (selected.value.length < maxSelection.value) {
     selected.value.push(product)
   }
-  // Always re-apply all selected products
-  doApply()
+  // Theme blocks: only stage the selection — the Apply button commits to canvas.
+  // Non-theme blocks: apply immediately (live preview).
+  if (!isThemeBlock.value) doApply()
 }
 
 function isSelected(product) {
@@ -541,6 +533,14 @@ watch(btnText, debouncedButtonText)
 const debouncedSubtitle = debounce(doApply, 300)
 watch(cardSubtitle, debouncedSubtitle)
 watch(cardSubtitleEnabled, () => { if (selected.value.length > 0) doApply() })
+
+// When rows/columns change the grid capacity: trim any excess selected products
+// so the count never silently exceeds what the block will actually render.
+watch(maxSelection, (newMax) => {
+  if (isThemeBlock.value && selected.value.length > newMax) {
+    selected.value = selected.value.slice(0, newMax)
+  }
+})
 </script>
 
 <template>
@@ -608,13 +608,14 @@ watch(cardSubtitleEnabled, () => { if (selected.value.length > 0) doApply() })
           :key="product.id"
           @click="!isDisabled(product) && toggle(product)"
           :class="[
-            'relative border-2 rounded overflow-hidden transition-colors',
+            'relative border-2 rounded overflow-hidden transition-all',
             isSelected(product)
               ? 'border-blue-500 cursor-pointer'
               : isDisabled(product)
-              ? 'border-transparent opacity-40 cursor-not-allowed'
-              : 'border-transparent cursor-pointer hover:border-gray-300',
+                ? 'border-transparent cursor-not-allowed'
+                : 'border-transparent cursor-pointer hover:border-gray-300',
           ]"
+          :style="isDisabled(product) ? (isThemeBlock ? { filter: 'blur(2px)', opacity: '0.55', pointerEvents: 'none' } : { opacity: '0.4' }) : {}"
         >
           <img
             :src="productImageSrc(product.image)"
@@ -643,6 +644,11 @@ watch(cardSubtitleEnabled, () => { if (selected.value.length > 0) doApply() })
           </div>
         </div>
       </div>
+
+      <!-- Capacity hint (theme blocks at max) -->
+      <p v-if="isThemeBlock && selected.length >= maxSelection" class="text-xs text-gray-400 text-center mt-2 px-1">
+        Grid full ({{ selected.length }}/{{ maxSelection }}). Increase Rows or Columns to add more.
+      </p>
 
       <!-- Apply button (theme blocks only) -->
       <div v-if="isThemeBlock && selected.length > 0" class="px-1 mt-3">

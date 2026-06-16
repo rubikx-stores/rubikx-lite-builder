@@ -43,11 +43,16 @@ body {
 
 /* ── Builder scroll fix ───────────────────────────────────────────────────── */
 
-/* The library hardcodes height:100vh on #page-builder-wrapper, which makes the
-   scroll container taller than the available layout space and causes excess
-   scrolling past page content. Override to fill the parent (constrained by
-   the editor's flex chain) instead of the full viewport. */
+/* The library hardcodes height:100vh on #page-builder-wrapper and pbx-h-[90vh]/
+   pbx-min-h-[90vh] on its canvas child, causing excess scroll past content.
+   Override both to let the content drive the scroll height naturally. */
 #page-builder-wrapper {
   height: 100% !important;
+  min-height: 0 !important;
+}
+
+#page-builder-wrapper .pbx-h-\[90vh\],
+#page-builder-wrapper .pbx-min-h-\[90vh\] {
+  height: auto !important;
   min-height: 0 !important;
 }

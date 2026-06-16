@@ -66,6 +66,7 @@ export interface Ru1NavbarData {
   showSearch: boolean
   searchPlaceholder: string
   searchAlign: string
+  searchWidth: number
   navLinks: NavLink[]
   dynamicCategories: boolean
   navLinksAlign: string
@@ -103,6 +104,7 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   showSearch: true,
   searchPlaceholder: 'Search...',
   searchAlign: 'center',
+  searchWidth: 220,
   navLinks: [
     { label: 'Home', url: '/', visible: true },
     { label: 'Shop', url: '/shop', visible: true },
@@ -158,6 +160,7 @@ export const ru1NavbarFields: FieldConfig[] = [
   { key: 'showSearch', label: 'Show Search Bar', type: 'toggle' },
   { key: 'searchPlaceholder', label: 'Search Placeholder', type: 'text' },
   { key: 'searchAlign', label: 'Search Position', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'searchWidth', label: 'Search Width (px)', type: 'number', unit: 'px', step: 10, placeholder: '220' },
 
   { key: '_h_buttons', label: 'Buttons', type: 'header' },
   { key: 'showSignIn', label: 'Show Sign In', type: 'toggle' },
@@ -172,7 +175,6 @@ export const ru1NavbarFields: FieldConfig[] = [
 
   { key: '_h_style', label: 'Style', type: 'header' },
   { key: 'bgColor', label: 'Background Colour', type: 'color' },
-  { key: 'textColor', label: 'Global Text Colour', type: 'color' },
   { key: 'fontSize', label: 'Font Size (px)', type: 'number', step: 1, placeholder: '14' },
   { key: 'fontWeight', label: 'Font Weight', type: 'select', options: ['300', '400', '500', '600', '700', '800'] },
 
@@ -200,8 +202,9 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 
   const linkStyle = `color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;white-space:nowrap;`
 
+  const searchW = data.searchWidth || 220
   const searchEl = data.showSearch
-    ? `<div style="display:flex;align-items:center;border:1px solid #d1d5db;border-radius:9999px;padding:0.375rem 0.75rem;gap:0.5rem;min-width:160px;max-width:220px;">
+    ? `<div style="display:flex;align-items:center;border:1px solid #d1d5db;border-radius:9999px;padding:0.375rem 0.75rem;gap:0.5rem;width:${searchW}px;">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
         <input type="text" placeholder="${data.searchPlaceholder}" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:${data.textColor};" />
       </div>`
