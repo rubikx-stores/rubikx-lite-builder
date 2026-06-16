@@ -594,6 +594,7 @@ export interface Ru1AboutData {
   image: string
   imageOpacity: number
   imageAspectRatio: string
+  showStats: boolean
   statsBgColor: string
   statsIconColor: string
   stats: Array<{ value: string; label: string }>
@@ -616,6 +617,7 @@ export const ru1AboutDefaults: Ru1AboutData = {
   image: 'https://cdn.flyonui.com/fy-assets/blocks/marketing-ui/about/about-9.png',
   imageOpacity: 100,
   imageAspectRatio: 'Wide (16:9)',
+  showStats: true,
   statsBgColor: '#ffffff',
   statsIconColor: '#7c3aed',
   stats: [
@@ -642,6 +644,7 @@ export const ru1AboutFields: FieldConfig[] = [
   { key: 'buttonAnimation',   label: 'Button Hover Effect', type: 'select', options: ['None', 'Lift up', 'Grow bigger', 'Glow'] },
   { key: 'image',             label: 'Cover Image',         type: 'image' },
   { key: 'imageOpacity',     label: 'Image Opacity (0 = invisible, 100 = fully visible)', type: 'number', placeholder: '100', unit: '%' },
+  { key: 'showStats',      label: 'Show Stats Cards',      type: 'toggle' },
   { key: 'statsBgColor',   label: 'Stats Card Background', type: 'color' },
   { key: 'statsIconColor', label: 'Stats Icon Colour',     type: 'color' },
   {
@@ -716,11 +719,11 @@ export function renderRu1About(data: Ru1AboutData): string {
           <a href='${data.ctaHref}' style='${btnStyle}'${hoverAttrs}>${data.ctaLabel ?? 'Contact Us'}</a>
         </div>` : ''}
       </div>
-      <div style="position:relative;width:100%;${aspectStyle};border-radius:0.75rem;margin-bottom:6rem;">
+      <div style="position:relative;width:100%;${aspectStyle};border-radius:0.75rem;${data.showStats !== false ? 'margin-bottom:6rem;' : ''}">
         <img src="${imgSrc}"${autoRatioAttr} style="width:100%;height:100%;object-fit:cover;border-radius:0.75rem;display:block;opacity:${imgOpacity};" />
-        <div style="position:absolute;bottom:-4rem;left:50%;transform:translateX(-50%);background:${data.statsBgColor};border:1px solid #e5e7eb;border-radius:0.75rem;display:grid;grid-template-columns:repeat(4,1fr);gap:2.5rem;padding:2rem 2.5rem;white-space:nowrap;">
+        ${data.showStats !== false ? `<div style="position:absolute;bottom:-4rem;left:50%;transform:translateX(-50%);background:${data.statsBgColor};border:1px solid #e5e7eb;border-radius:0.75rem;display:grid;grid-template-columns:repeat(4,1fr);gap:2.5rem;padding:2rem 2.5rem;white-space:nowrap;">
             ${statsHtml}
-        </div>
+        </div>` : ''}
       </div>
     </div>
   </div>
