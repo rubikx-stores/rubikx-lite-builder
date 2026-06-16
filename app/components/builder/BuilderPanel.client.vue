@@ -5,6 +5,9 @@ import componentData from '#lib/component'
 import themesData from '#lib/themes'
 import { getPageBuilder, usePageBuilderModal, usePageBuilderStateStore } from '@myissue/vue-website-page-builder'
 import { NAVBAR_TITLES, FOOTER_TITLES } from '~/composables/useGlobalSections'
+import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
+
+const selectedCompanyId = useState<number | null>('selectedCompanyId')
 
 const { themeRegistry, applyTheme } = useThemes()
 const { layoutComponentRegistry } = useLayouts()
@@ -102,6 +105,10 @@ async function handleDropComponent(comp: { id: string | number | null; html_code
       await nextTick()
       await applyBlockRender(comp.title)
     }
+
+    // Hydrate dynamic components after adding new component
+    await nextTick()
+    hydrateComponents(selectedCompanyId.value ?? 3)
   } catch (e) {
     console.error('[ADD] Error:', e)
   } finally {

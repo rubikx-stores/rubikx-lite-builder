@@ -25,7 +25,10 @@ function renderCategoryTree(categories: any[], linkStyle: string, depth = 0): st
   }).join('')
 }
 
-async function loadCategories(el: HTMLElement) {
+async function loadCategories(el: HTMLElement, companyId = 3) {
+  if (el.dataset.hydrated === 'true') return
+  el.dataset.hydrated = 'true'
+
   const maxItems = parseInt(el.dataset.maxItems ?? '20')
   const linkColor = el.dataset.linkColor ?? '#000000'
   const fontSize = el.dataset.fontSize ?? '14'
@@ -35,8 +38,18 @@ async function loadCategories(el: HTMLElement) {
   const dropdown = el.querySelector<HTMLElement>('div[style*="position:absolute"], div[style*="position: absolute"]')
   if (!dropdown) return
 
+  if (!document.getElementById('rubikx-cat-styles')) {
+    const style = document.createElement('style')
+    style.id = 'rubikx-cat-styles'
+    style.textContent = '.rubikx-cat-dropdown { display: none; } .rubikx-cat-nav:hover .rubikx-cat-dropdown { display: block !important; }'
+    document.head.appendChild(style)
+  }
+  // Remove inline display style so CSS :hover can control visibility
+  dropdown.style.display = ''
+  dropdown.style.removeProperty('display')
+
   try {
-    const flat = await $fetch<FlatCategory[]>('/api/categories')
+    const flat = await $fetch<FlatCategory[]>('/api/categories', { query: { companyId } })
     const tree = buildCategoryTree(flat).slice(0, maxItems)
 
     dropdown.innerHTML = renderCategoryTree(tree, linkStyle)
@@ -53,21 +66,17 @@ async function loadCategories(el: HTMLElement) {
         if (arrow) arrow.textContent = isOpen ? '▶' : '▼'
       })
     })
-
-    // Wire hover for the main Categories dropdown
-    el.addEventListener('mouseenter', () => { dropdown.style.display = 'block' })
-    el.addEventListener('mouseleave', () => { dropdown.style.display = 'none' })
   } catch (e) {
     console.error('[Rubikx] Failed to load categories:', e)
     if (dropdown) dropdown.innerHTML = ''
   }
 }
 
-const HANDLERS: Record<string, (el: HTMLElement) => void> = {
+const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> = {
   loadCategories,
 }
 
-export function hydrateComponents() {
+export function hydrateComponents(companyId = 3) {
   document.querySelectorAll<HTMLElement>('[data-rubikx-component]').forEach(el => {
     const onMount = el.dataset.onMount
     if (!onMount) return
@@ -76,14 +85,10 @@ export function hydrateComponents() {
       console.warn(`[Rubikx] No handler registered for: ${onMount}`)
       return
     }
-    handler(el)
+    handler(el, companyId)
   })
 }
 
 export default defineNuxtPlugin(() => {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', hydrateComponents)
-  } else {
-    hydrateComponents()
-  }
+  hydrateComponents()
 })

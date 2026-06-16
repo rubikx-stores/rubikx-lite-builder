@@ -44,6 +44,8 @@ let _destroyed = false
 let _saveBtn: Element | null = null
 let _pendingHtml: string | null = null
 
+const selectedCompanyId = useState<number | null>('selectedCompanyId')
+
 const showVersionModal = ref(false)
 const selectedVersion = ref(1)
 const saveInFlight = ref(false)
@@ -242,7 +244,7 @@ onMounted(async () => {
     () => (sharedPageBuilderStore as any).getIsLoadingGlobal,
     (loading) => {
       if (!loading) {
-        hydrateComponents()
+        hydrateComponents(selectedCompanyId.value ?? 3)
         stopHydrationWatch()
       }
     }

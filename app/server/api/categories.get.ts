@@ -12,19 +12,23 @@ export default defineEventHandler(async (event) => {
   if (!config.odooBaseUrl) throw createError({ statusCode: 500, message: 'ODOO_BASE_URL is not configured' })
   if (!config.odooGraphqlApiKey) throw createError({ statusCode: 500, message: 'ODOO_GRAPHQL_API_KEY is not configured' })
 
+  const { companyId: companyIdParam } = getQuery(event) as { companyId?: string }
+  const companyId = companyIdParam ? Number(companyIdParam) : 3
+  const token = getCookie(event, 'rb_auth_token') ?? config.odooGraphqlApiKey
+
   const url = `${config.odooBaseUrl}/graphql`
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     accept: 'application/json',
-    Authorization: `Bearer ${config.odooGraphqlApiKey}`,
+    Authorization: `Bearer ${token}`,
   }
 
   if (config.odooAccessToken) {
     headers['Cookie'] = `access_token=${config.odooAccessToken}; frontend_lang=en_US`
   }
 
-  const variables = { context: { allowed_company_ids: [3] } }
+  const variables = { context: { allowed_company_ids: [companyId] } }
 
   const response = await fetch(url, {
     method: 'POST',

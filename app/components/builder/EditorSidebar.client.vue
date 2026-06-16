@@ -6,6 +6,8 @@ import { productImageSrc } from '~/composables/useProductImageSrc'
 import { getDomain, faviconUrl } from '~/composables/useSocialIcons'
 import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
 
+const selectedCompanyId = useState<number | null>('selectedCompanyId')
+
 const store = usePageBuilderStateStore() as any
 const {
   selectedEl, selectedBlockTitle, mode,
@@ -75,7 +77,7 @@ function toHex(v: string | undefined | null): string {
 }
 
 // ── Product block flag ────────────────────────────────────────────────────────
-const _PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 6 Products Minimal', 'Show 4 Products Centered', 'Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products']
+const _PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 6 Products Minimal', 'Show 4 Products Centered', 'Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products']
 
 const lastProductTitle = ref('')
 
@@ -123,7 +125,7 @@ async function onToggleField(fieldKey: string, newValue: boolean) {
   await updateBlockField(fieldKey, newValue)
   if (fieldKey === 'dynamicCategories' && newValue === true) {
     await nextTick()
-    hydrateComponents()
+    hydrateComponents(selectedCompanyId.value ?? 3)
   }
 }
 

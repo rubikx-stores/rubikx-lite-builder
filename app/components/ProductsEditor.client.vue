@@ -139,10 +139,12 @@ const filteredProducts = computed(() => {
   return products.value.filter((p) => p.name?.toLowerCase().includes(q))
 })
 
+const selectedCompanyId = useState('selectedCompanyId', () => null)
+
 onMounted(async () => {
   loading.value = true
   try {
-    const res = await fetch('/api/products')
+    const res = await fetch(`/api/products?companyId=${selectedCompanyId.value ?? 3}`)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     products.value = await res.json()
   } catch (e) {
