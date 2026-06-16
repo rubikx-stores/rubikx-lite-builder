@@ -57,12 +57,22 @@ export interface NavLink { label: string; url: string; visible?: boolean }
 export interface Ru1NavbarData {
   logoUrl: string
   brandName: string
+  logoWidth: number
+  logoAlign: string
+  brandFontSize: number
+  brandFontWeight: string
   bgColor: string
   sticky: boolean
   showSearch: boolean
   searchPlaceholder: string
+  searchAlign: string
+  searchWidth: number
   navLinks: NavLink[]
   dynamicCategories: boolean
+  navLinksAlign: string
+  linkColor: string
+  linkFontSize: number
+  linkFontWeight: string
   showSignIn: boolean
   signInLabel: string
   signInUrl: string
@@ -71,12 +81,12 @@ export interface Ru1NavbarData {
   contactUsUrl: string
   showCart: boolean
   cartUrl: string
+  buttonsAlign: string
   textColor: string
   fontSize: number
   fontWeight: string
   paddingY: number
   paddingX: number
-  logoWidth: number
   borderStyle: string
   borderWidth: number
   borderColor: string
@@ -85,16 +95,26 @@ export interface Ru1NavbarData {
 export const ru1NavbarDefaults: Ru1NavbarData = {
   logoUrl: '',
   brandName: 'Your Logo',
+  logoWidth: 120,
+  logoAlign: 'left',
+  brandFontSize: 20,
+  brandFontWeight: '700',
   bgColor: '#ffffff',
   sticky: false,
   showSearch: true,
   searchPlaceholder: 'Search...',
+  searchAlign: 'center',
+  searchWidth: 220,
   navLinks: [
     { label: 'Home', url: '/', visible: true },
     { label: 'Shop', url: '/shop', visible: true },
     { label: 'About Us', url: '/about', visible: true },
   ],
   dynamicCategories: true,
+  navLinksAlign: 'lower-left',
+  linkColor: '#111827',
+  linkFontSize: 14,
+  linkFontWeight: '500',
   showSignIn: true,
   signInLabel: 'Sign In',
   signInUrl: '/signin',
@@ -103,12 +123,12 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   contactUsUrl: '/contact',
   showCart: true,
   cartUrl: '/cart',
+  buttonsAlign: 'right',
   textColor: '#111827',
   fontSize: 14,
   fontWeight: '500',
   paddingY: 12,
   paddingX: 16,
-  logoWidth: 120,
   borderStyle: 'none',
   borderWidth: 1,
   borderColor: '#e5e7eb',
@@ -116,9 +136,12 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
 
 export const ru1NavbarFields: FieldConfig[] = [
   { key: '_h_branding', label: 'Branding', type: 'header' },
-  { key: 'logoUrl', label: 'Logo Image', type: 'image' },
+  { key: 'logoUrl', label: 'Logo Image', type: 'image', noAspectRatio: true },
   { key: 'brandName', label: 'Brand Name', type: 'text' },
-  { key: 'logoWidth', label: 'Logo Width', type: 'number', unit: 'px', step: 4, placeholder: '120' },
+  { key: 'logoWidth', label: 'Logo Width (px)', type: 'number', step: 4, placeholder: '120' },
+  { key: 'logoAlign', label: 'Logo Position', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'brandFontSize', label: 'Brand Font Size (px)', type: 'number', step: 1, placeholder: '20' },
+  { key: 'brandFontWeight', label: 'Brand Font Weight', type: 'select', options: ['300', '400', '500', '600', '700', '800'] },
 
   { key: '_h_navigation', label: 'Navigation', type: 'header' },
   {
@@ -129,9 +152,15 @@ export const ru1NavbarFields: FieldConfig[] = [
       { key: 'visible', label: 'Visible', type: 'toggle' },
     ],
   },
+  { key: 'navLinksAlign', label: 'Links Position', type: 'select', options: ['left', 'center', 'right', 'lower-left', 'lower-center', 'lower-right'] },
   { key: 'dynamicCategories', label: 'Dynamic Categories', type: 'toggle' },
+  { key: 'linkColor', label: 'Link Colour', type: 'color' },
+  { key: 'linkFontSize', label: 'Link Font Size (px)', type: 'number', step: 1, placeholder: '14' },
+  { key: 'linkFontWeight', label: 'Link Font Weight', type: 'select', options: ['300', '400', '500', '600', '700', '800'] },
   { key: 'showSearch', label: 'Show Search Bar', type: 'toggle' },
   { key: 'searchPlaceholder', label: 'Search Placeholder', type: 'text' },
+  { key: 'searchAlign', label: 'Search Position', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'searchWidth', label: 'Search Width (px)', type: 'number', unit: 'px', step: 10, placeholder: '220' },
 
   { key: '_h_buttons', label: 'Buttons', type: 'header' },
   { key: 'showSignIn', label: 'Show Sign In', type: 'toggle' },
@@ -142,91 +171,109 @@ export const ru1NavbarFields: FieldConfig[] = [
   { key: 'contactUsUrl', label: 'Contact Us URL', type: 'url' },
   { key: 'showCart', label: 'Show Cart Icon', type: 'toggle' },
   { key: 'cartUrl', label: 'Cart URL', type: 'url' },
+  { key: 'buttonsAlign', label: 'Buttons Position', type: 'select', options: ['left', 'center', 'right'] },
 
   { key: '_h_style', label: 'Style', type: 'header' },
-  { key: 'bgColor', label: 'Background Color', type: 'color' },
-  { key: 'textColor', label: 'Text Color', type: 'color' },
-  { key: 'fontSize', label: 'Font Size', type: 'number', unit: 'px', step: 1, placeholder: '14' },
+  { key: 'bgColor', label: 'Background Colour', type: 'color' },
+  { key: 'fontSize', label: 'Font Size (px)', type: 'number', step: 1, placeholder: '14' },
   { key: 'fontWeight', label: 'Font Weight', type: 'select', options: ['300', '400', '500', '600', '700', '800'] },
 
   { key: '_h_layout', label: 'Layout', type: 'header' },
-  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '16' },
-  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '24' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', step: 4, placeholder: '12' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', step: 4, placeholder: '16' },
   { key: 'sticky', label: 'Sticky Navbar', type: 'toggle' },
   { key: 'borderStyle', label: 'Border Style', type: 'select', options: ['none', 'solid', 'dashed', 'dotted'] },
-  { key: 'borderWidth', label: 'Border Width', type: 'number', unit: 'px', step: 1, placeholder: '1' },
-  { key: 'borderColor', label: 'Border Color', type: 'color' },
+  { key: 'borderWidth', label: 'Border Width (px)', type: 'number', step: 1, placeholder: '1' },
+  { key: 'borderColor', label: 'Border Colour', type: 'color' },
 ]
 
 export function renderRu1Navbar(data: Ru1NavbarData): string {
   const navStyle = [
     `background:${data.bgColor}`,
     `color:${data.textColor}`,
-    `font-size:${data.fontSize}px`,
-    `font-weight:${data.fontWeight}`,
-    (data.paddingY || data.paddingX) ? `padding:${data.paddingY}px ${data.paddingX}px` : '',
+    `padding:${data.paddingY}px ${data.paddingX}px`,
     data.borderStyle !== 'none' ? `border-bottom:${data.borderWidth}px ${data.borderStyle} ${data.borderColor}` : '',
   ].filter(Boolean).join(';')
 
-  const logo = data.logoUrl
+  const logoInner = data.logoUrl
     ? `<img src="${data.logoUrl}" alt="${data.brandName}" style="width:${data.logoWidth}px;height:auto;display:block;" />`
-    : `<span data-field-key="brandName" style="font-size:1.125rem;font-weight:700;">${data.brandName}</span>`
+    : `<span data-field-key="brandName" style="font-size:${data.brandFontSize}px;font-weight:${data.brandFontWeight};color:inherit;">${data.brandName}</span>`
+  const logoEl = `<a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;">${logoInner}</a>`
 
-  const searchBar = data.showSearch
-    ? `<div class="pbx-flex-1 pbx-flex pbx-justify-center">
-        <div class="pbx-flex pbx-items-center pbx-border pbx-border-gray-300 pbx-rounded-full pbx-px-3 pbx-py-1.5 pbx-gap-2 pbx-w-full pbx-max-w-xs">
-          <svg class="pbx-h-4 pbx-w-4 pbx-flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
-          <input type="text" placeholder="${data.searchPlaceholder}" class="pbx-w-full pbx-bg-transparent pbx-text-sm focus:pbx-outline-none" />
-        </div>
+  const linkStyle = `color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;white-space:nowrap;`
+
+  const searchW = data.searchWidth || 220
+  const searchEl = data.showSearch
+    ? `<div style="display:flex;align-items:center;border:1px solid #d1d5db;border-radius:9999px;padding:0.375rem 0.75rem;gap:0.5rem;width:${searchW}px;">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+        <input type="text" placeholder="${data.searchPlaceholder}" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:${data.textColor};" />
       </div>`
-    : '<div class="pbx-flex-1"></div>'
+    : ''
 
-  const topRight = [
-    data.showSignIn ? `<a href="${data.signInUrl}" style="color:${data.textColor}" class="pbx-text-sm pbx-font-medium pbx-no-underline">${data.signInLabel}</a>` : '',
-    data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${data.textColor}" class="pbx-text-sm pbx-font-medium pbx-no-underline">${data.contactUsLabel}</a>` : '',
+  const buttonsArr = [
+    data.showSignIn ? `<a href="${data.signInUrl}" style="${linkStyle}">${data.signInLabel}</a>` : '',
+    data.showContactUs ? `<a href="${data.contactUsUrl}" style="${linkStyle}">${data.contactUsLabel}</a>` : '',
     data.showCart
-      ? `<a href="${data.cartUrl}" style="color:${data.textColor}"><svg class="pbx-h-6 pbx-w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg></a>`
+      ? `<a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;"><svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg></a>`
       : '',
   ].filter(Boolean)
+  const buttonsEl = buttonsArr.length
+    ? `<div style="display:flex;align-items:center;gap:0.5rem;">${buttonsArr.join('')}</div>`
+    : ''
 
   const visibleNavLinks = data.navLinks.filter(l => l.visible !== false)
-  const navLinkEls = visibleNavLinks.map(l => `<a href="${l.url}" style="color:${data.textColor}" class="pbx-text-sm pbx-font-medium pbx-no-underline">${l.label}</a>`)
-
+  const staticLinks = visibleNavLinks.map(l => `<a href="${l.url}" style="${linkStyle}">${l.label}</a>`).join('')
   const dynamicPlaceholder = data.dynamicCategories
     ? `<div
         data-rubikx-component='CategoryNav'
         data-on-mount='loadCategories'
         data-max-items='20'
-        data-link-color='${data.textColor}'
-        data-font-size='${data.fontSize}'
-        data-font-weight='${data.fontWeight}'
-        style='position:relative;display:inline-block;'
-        onmouseover='this.querySelector("div").style.display="block"'
-        onmouseout='this.querySelector("div").style.display="none"'
+        data-link-color='${data.linkColor}'
+        data-font-size='${data.linkFontSize}'
+        data-font-weight='${data.linkFontWeight}'
+        style='position:relative;display:inline-block;' data-cat-nav='true'
       >
-        <a style='color:${data.textColor};font-size:${data.fontSize}px;cursor:pointer;'>Categories ▾</a>
-        <div style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;'>
-          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Loads from Odoo on live site</span>
+        <a style='${linkStyle}cursor:pointer;'>Categories ▾</a>
+        <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Load Categories</span>
         </div>
       </div>`
+    : ''
+  const linksEl = (staticLinks || dynamicPlaceholder)
+    ? `<nav style="display:flex;align-items:center;gap:1.5rem;">${staticLinks}${dynamicPlaceholder}</nav>`
+    : ''
+
+  const lowerJustifyMap: Record<string, string> = {
+    'lower-left': 'flex-start',
+    'lower-center': 'center',
+    'lower-right': 'flex-end',
+  }
+  const isLowerLinks = data.navLinksAlign in lowerJustifyMap
+
+  const cols: Record<string, string[]> = { left: [], center: [], right: [] }
+  const put = (zone: string, el: string) => { if (el && zone in cols) cols[zone].push(el) }
+  put(data.logoAlign,    logoEl)
+  if (!isLowerLinks) put(data.navLinksAlign, linksEl)
+  put(data.searchAlign,  searchEl)
+  put(data.buttonsAlign, buttonsEl)
+
+  const zone = (items: string[], justify: string) =>
+    `<div style="display:flex;align-items:center;gap:0.75rem;justify-content:${justify};">${items.join('')}</div>`
+
+  const lowerRow = isLowerLinks && linksEl
+    ? `<div class="pbx-max-w-7xl pbx-mx-auto" style="display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding-top:0.5rem;">${linksEl}</div>`
     : ''
 
   const sectionStyle = data.sticky ? 'position:sticky;top:0;z-index:9999' : ''
 
   return `<section data-component-title="Ru1 Homepage Navbar"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 <nav style="${navStyle}">
-  <div class="pbx-max-w-7xl pbx-mx-auto pbx-px-4 sm:pbx-px-6 lg:pbx-px-8">
-    <div class="pbx-flex pbx-items-center pbx-justify-between pbx-gap-4">
-      <div class="pbx-flex-shrink-0">${logo}</div>
-      ${searchBar}
-      <div class="pbx-flex pbx-items-center pbx-gap-2">
-        ${topRight.join('\n        ')}
-      </div>
-    </div>
-    ${(visibleNavLinks.length || dynamicPlaceholder) ? `<div class="pbx-hidden md:pbx-flex pbx-items-center pbx-gap-6 pbx-py-2">
-      ${navLinkEls.join('\n      ')}${dynamicPlaceholder}
-    </div>` : ''}
+  <div class="pbx-max-w-7xl pbx-mx-auto" style="display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
+    ${zone(cols.left,   'flex-start')}
+    ${zone(cols.center, 'center')}
+    ${zone(cols.right,  'flex-end')}
   </div>
+  ${lowerRow}
 </nav>
 </section>`
 }
@@ -277,7 +324,7 @@ export const ru1HeroDefaults: Ru1HeroData = {
 
 export const ru1HeroFields: FieldConfig[] = [
   { key: '_h_image', label: 'Image', type: 'header' },
-  { key: 'imageUrl', label: 'Banner Image', type: 'image' },
+  { key: 'imageUrl', label: 'Banner Image', type: 'image', noAspectRatio: true },
   { key: 'altText', label: 'Alt Text', type: 'text' },
   { key: 'linkUrl', label: 'Link URL', type: 'url' },
   { key: 'aspectRatio', label: 'Aspect Ratio', type: 'select', options: ['4/1', '3/1', '16/9', '2/1', '4/3', '1/1'] },
@@ -366,6 +413,7 @@ export interface Ru1ProductsData {
   paddingY: number
   paddingX: number
   cardBorderRadius: number
+  hoverBorderColor: string
   buttonBgColor: string
   buttonTextColor: string
   oldPriceColor: string
@@ -405,6 +453,7 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   paddingY: 48,
   paddingX: 16,
   cardBorderRadius: 8,
+  hoverBorderColor: '',
   buttonBgColor: '#111827',
   buttonTextColor: '#ffffff',
   oldPriceColor: '#9ca3af',
@@ -448,6 +497,7 @@ export const ru1ProductsFields: FieldConfig[] = [
 
   { key: '_h_card', label: 'Card Style', type: 'header' },
   { key: 'cardBorderRadius', label: 'Corner Radius', type: 'number', unit: 'px', step: 2, placeholder: '8' },
+  { key: 'hoverBorderColor', label: 'Hover Border Color', type: 'color' },
   { key: 'cardAnimation', label: 'Hover Animation', type: 'toggle' },
   { key: 'hoverEffect', label: 'Animation Type', type: 'select', options: ['Lift Up', 'Drop Down', 'Slide Left', 'Slide Right', 'Pop Out', 'Zoom In', 'Glow', 'Tilt Left', 'Tilt Right'] },
   { key: 'hoverAmount', label: 'Animation Amount', type: 'number', unit: 'px', step: 1, placeholder: '8' },
@@ -477,7 +527,7 @@ export const ru1ProductsFields: FieldConfig[] = [
   {
     key: 'products', label: 'Products', type: 'list',
     listFields: [
-      { key: 'imageUrl', label: 'Image', type: 'image' },
+      { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
       { key: 'name', label: 'Product Name', type: 'text' },
       { key: 'price', label: 'Price', type: 'text' },
       { key: 'oldPrice', label: 'Old Price (optional)', type: 'text' },
@@ -509,17 +559,18 @@ export function renderRu1Products(data: Ru1ProductsData): string {
   const needsOverlay = data.showViewProduct !== false || arrowBtnPos === 'top'
 
   const styleRules: string[] = []
-  if (needsOverlay) styleRules.push(`.fp-prod-card:hover .fp-img-overlay{opacity:1!important}`)
+  if (needsOverlay) styleRules.push(`[data-fp-card]:hover [data-fp-overlay]{opacity:1!important}`)
+  if (data.hoverBorderColor) {
+    styleRules.push(`[data-fp-card]:hover{border-color:${data.hoverBorderColor}!important}`)
+  }
   if (data.cardAnimation) {
-    styleRules.push(`.fp-prod-card{transition:transform ${dur}ms ease,box-shadow ${dur}ms ease}`)
-    styleRules.push(`.fp-prod-card:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}`)
+    styleRules.push(`[data-fp-card]{transition:transform ${dur}ms ease,box-shadow ${dur}ms ease}`)
+    styleRules.push(`[data-fp-card]:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}`)
   }
   const animStyle = styleRules.length ? `<style>${styleRules.join('')}</style>` : ''
 
-  const sectionStyle = [
-    data.bgColor ? `background:${data.bgColor}` : '',
-    `padding:${data.paddingY}px ${data.paddingX}px`,
-  ].filter(Boolean).join(';')
+  const sectionBg = data.bgColor ? `background:${data.bgColor}` : ''
+  const innerStyle = `padding:${data.paddingY}px ${data.paddingX}px`
 
   const maxVisible = data.columns * (data.rows ?? 1)
   const placeholder = { imageUrl: placeholderSvg, name: 'Product Name', price: '$0.00', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' }
@@ -544,10 +595,10 @@ export function renderRu1Products(data: Ru1ProductsData): string {
 
     const overlayHtml = needsOverlay
       ? (arrowBtnPos === 'top'
-          ? `<div class="fp-img-overlay" style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;padding:10px 12px;opacity:0;transition:opacity 180ms ease;pointer-events:none">
+          ? `<div data-fp-overlay="1" style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;padding:10px 12px;opacity:0;transition:opacity 180ms ease;pointer-events:none">
               ${viewProductBtn}${arrowBtnAbsolute}
             </div>`
-          : `<div class="fp-img-overlay" style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;padding:10px 12px;opacity:0;transition:opacity 180ms ease;pointer-events:none">
+          : `<div data-fp-overlay="1" style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;padding:10px 12px;opacity:0;transition:opacity 180ms ease;pointer-events:none">
               ${viewProductBtn}
             </div>`)
       : ''
@@ -570,7 +621,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
       : ''
 
     return `
-      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200 fp-prod-card">
+      <div data-fp-card="1" style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200">
         <div style="position:relative;overflow:hidden">
           <img class="pbx-w-full pbx-h-auto pbx-block" src="${p.imageUrl}" alt="${p.name}" />
           ${overlayHtml}
@@ -585,9 +636,9 @@ export function renderRu1Products(data: Ru1ProductsData): string {
       </div>`
   }).join('')
 
-  return `<section data-component-title="Ru1 Homepage Featured Products">
+  return `<section data-component-title="Ru1 Homepage Featured Products"${sectionBg ? ` style="${sectionBg}"` : ''}>
 ${animStyle}
-<div style="${sectionStyle}">
+<div style="${innerStyle}">
   <div class="pbx-mx-auto pbx-max-w-7xl">
     <div class="pbx-mb-8">
       <h1 data-field-key="sectionTitle" style="margin:0;font-size:2rem;font-weight:600;text-align:${data.titleAlign};color:${data.titleColor}">${data.sectionTitle}</h1>
@@ -608,6 +659,10 @@ export interface Ru1FooterData {
   contactEmail: string
   contactPhone: string
   copyright: string
+  bgColor: string
+  textColor: string
+  linkColor: string
+  headingColor: string
   paddingY: number
   paddingX: number
   borderStyle: string
@@ -627,9 +682,13 @@ export const ru1FooterDefaults: Ru1FooterData = {
   contactEmail: 'support@yourdomain.com',
   contactPhone: '+1 000-000-0000',
   copyright: '© Your Store. All rights reserved.',
+  bgColor: '#f9fafb',
+  textColor: '#374151',
+  linkColor: '#111827',
+  headingColor: '#111827',
   paddingY: 48,
   paddingX: 16,
-  borderStyle: 'none',
+  borderStyle: 'solid',
   borderWidth: 1,
   borderColor: '#e5e7eb',
   columnOrder: ['links', 'about', 'contact'],
@@ -637,10 +696,10 @@ export const ru1FooterDefaults: Ru1FooterData = {
 
 export const ru1FooterFields: FieldConfig[] = [
   { key: '_h_content', label: 'Content', type: 'header' },
-  { key: 'tagline', label: 'Tagline', type: 'text' },
+  { key: 'tagline', label: 'Tagline', type: 'textarea' },
   { key: 'contactEmail', label: 'Contact Email', type: 'text' },
   { key: 'contactPhone', label: 'Contact Phone', type: 'text' },
-  { key: 'copyright', label: 'Copyright Text', type: 'text' },
+  { key: 'copyright', label: 'Copyright Text', type: 'textarea' },
   {
     key: 'usefulLinks', label: 'Useful Links', type: 'list',
     listFields: [
@@ -653,6 +712,10 @@ export const ru1FooterFields: FieldConfig[] = [
   { key: 'columnOrder', label: 'Column Order', type: 'column-order' },
 
   { key: '_h_style', label: 'Style', type: 'header' },
+  { key: 'bgColor', label: 'Background Color', type: 'color' },
+  { key: 'textColor', label: 'Text Color', type: 'color' },
+  { key: 'linkColor', label: 'Link Color', type: 'color' },
+  { key: 'headingColor', label: 'Heading Color', type: 'color' },
   { key: 'borderStyle', label: 'Border Style', type: 'select', options: ['none', 'solid', 'dashed', 'dotted'] },
   { key: 'borderWidth', label: 'Border Width', type: 'number', unit: 'px', step: 1, placeholder: '1' },
   { key: 'borderColor', label: 'Border Color', type: 'color' },
@@ -663,26 +726,37 @@ export const ru1FooterFields: FieldConfig[] = [
 ]
 
 export function renderRu1Footer(data: Ru1FooterData): string {
+  const bg = data.bgColor || '#f9fafb'
+  const text = data.textColor || '#374151'
+  const link = data.linkColor || '#111827'
+  const heading = data.headingColor || '#111827'
+
   const footerStyle = [
+    `background:${bg}`,
+    `color:${text}`,
     `padding:${data.paddingY}px ${data.paddingX}px`,
     data.borderStyle !== 'none' ? `border-top:${data.borderWidth}px ${data.borderStyle} ${data.borderColor}` : '',
   ].filter(Boolean).join(';')
 
+  const hStyle = `font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:${heading};margin-bottom:1rem;`
+  const pStyle = `font-size:0.875rem;color:${text};line-height:1.625;`
+  const aStyle = `font-size:0.875rem;color:${link};text-decoration:none;`
+
   const linksCol = `<div>
-        <h3 class="pbx-text-sm pbx-font-semibold pbx-uppercase pbx-tracking-wider pbx-mb-4">Useful Links</h3>
-        <ul class="pbx-space-y-2">
-          ${data.usefulLinks.map(l => `<li><a href="${l.url}" class="pbx-text-sm pbx-text-gray-700 hover:pbx-text-gray-900">${l.label}</a></li>`).join('\n          ')}
+        <h3 style="${hStyle}">Useful Links</h3>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.5rem;">
+          ${data.usefulLinks.map(l => `<li><a href="${l.url}" style="${aStyle}">${l.label}</a></li>`).join('\n          ')}
         </ul>
       </div>`
   const aboutCol = `<div>
-        <h3 class="pbx-text-sm pbx-font-semibold pbx-uppercase pbx-tracking-wider pbx-mb-4">About Us</h3>
-        <p data-field-key="tagline" class="pbx-text-sm pbx-text-gray-700 pbx-leading-relaxed">${data.tagline}</p>
+        <h3 style="${hStyle}">About Us</h3>
+        <p data-field-key="tagline" style="${pStyle}">${data.tagline}</p>
       </div>`
   const contactCol = `<div>
-        <h3 class="pbx-text-sm pbx-font-semibold pbx-uppercase pbx-tracking-wider pbx-mb-4">Connect with Us</h3>
-        <ul class="pbx-space-y-2">
-          <li class="pbx-text-sm pbx-text-gray-700">${data.contactEmail}</li>
-          <li class="pbx-text-sm pbx-text-gray-700">${data.contactPhone}</li>
+        <h3 style="${hStyle}">Connect with Us</h3>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.5rem;">
+          <li style="${pStyle}">${data.contactEmail}</li>
+          <li style="${pStyle}">${data.contactPhone}</li>
         </ul>
       </div>`
   const colMap: Record<string, string> = { links: linksCol, about: aboutCol, contact: contactCol }
@@ -691,11 +765,11 @@ export function renderRu1Footer(data: Ru1FooterData): string {
   return `<section data-component-title="Ru1 Homepage Footer">
 <footer style="${footerStyle}">
   <div class="pbx-max-w-7xl pbx-mx-auto">
-    <div class="pbx-grid pbx-grid-cols-1 md:pbx-grid-cols-3 pbx-gap-8">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;">
       ${orderedCols}
     </div>
-    <div class="pbx-border-t pbx-border-gray-200 pbx-mt-8 pbx-pt-6 pbx-text-center">
-      <p data-field-key="copyright" class="pbx-text-sm pbx-text-gray-500">${data.copyright}</p>
+    <div style="border-top:1px solid ${data.borderColor || '#e5e7eb'};margin-top:2rem;padding-top:1.5rem;text-align:center;">
+      <p data-field-key="copyright" style="font-size:0.875rem;color:${text};">${data.copyright}</p>
     </div>
   </div>
 </footer>
@@ -1073,7 +1147,7 @@ export const ru2ShopContentFields: FieldConfig[] = [
   {
     key: 'products', label: 'Products', type: 'list',
     listFields: [
-      { key: 'imageUrl', label: 'Image', type: 'image' },
+      { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
       { key: 'name', label: 'Product Name', type: 'text' },
       { key: 'price', label: 'Price', type: 'text' },
       { key: 'oldPrice', label: 'Old Price (optional)', type: 'text' },
@@ -1521,9 +1595,9 @@ export function renderRu3ShopProducts(data: Ru3ShopProductsData): string {
     }
   }
   const animStyle = data.cardAnimation
-    ? `<style>.ru3-product-card{transition:transform ${data.animationDuration}ms ease,box-shadow ${data.animationDuration}ms ease}.ru3-product-card:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}</style>`
+    ? `<style>[data-ru3-card]{transition:transform ${data.animationDuration}ms ease,box-shadow ${data.animationDuration}ms ease}[data-ru3-card]:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}</style>`
     : ''
-  const cardCls = data.cardAnimation ? 'ru3-product-card' : ''
+  const cardAttr = data.cardAnimation ? ' data-ru3-card="1"' : ''
 
   const sectionStyle = [
     data.bgColor ? `background:${data.bgColor}` : '',
@@ -1537,7 +1611,7 @@ export function renderRu3ShopProducts(data: Ru3ShopProductsData): string {
     ...Array(Math.max(0, maxVisible - data.products.length)).fill(placeholder),
   ]
   const cards = visibleProducts.map(p => `
-      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200 ${cardCls}">
+      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="pbx-flex pbx-flex-col pbx-border pbx-border-gray-200"${cardAttr}>
         <img class="pbx-w-full pbx-h-auto pbx-block" src="${p.imageUrl || placeholderSvg}" alt="${p.name}" />
         <div class="pbx-flex pbx-flex-col pbx-gap-1 pbx-p-3 pbx-flex-1">
           <p class="pbx-font-semibold pbx-text-sm">${p.name}</p>

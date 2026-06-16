@@ -6,6 +6,10 @@ import {
   megaMenuHeaderFields,
   megaMenuHeaderSvg,
   renderMegaMenuHeader,
+  bannerDefaults,
+  bannerFields,
+  bannerSvg,
+  renderBanner,
   ru1FormDefaults,
   ru1FormFields,
   ru1FormSvg,
@@ -22,6 +26,10 @@ import {
   ru1FaqFields,
   ru1FaqSvg,
   renderRu1Faq,
+  ru2SplitBannerCollageDefaults,
+  ru2SplitBannerCollageFields,
+  ru2SplitBannerCollageSvg,
+  renderRu2SplitBannerCollage,
 } from './components'
 
 export interface LayoutComponentItem {
@@ -38,6 +46,20 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Headers',
       cover_image: megaMenuHeaderSvg,
       html_code: renderMegaMenuHeader(megaMenuHeaderDefaults),
+    },
+  ],
+  Banner: [
+    {
+      title: 'Ru1-Banner',
+      category: 'Banner',
+      cover_image: bannerSvg,
+      html_code: renderBanner(bannerDefaults),
+    },
+    {
+      title: 'Ru2-Split-Banner-Collage',
+      category: 'Banner',
+      cover_image: ru2SplitBannerCollageSvg,
+      html_code: renderRu2SplitBannerCollage(ru2SplitBannerCollageDefaults),
     },
   ],
   Contact: [
@@ -83,6 +105,12 @@ export function useLayouts() {
     render: renderMegaMenuHeader,
   })
 
+  blockRegistry.register('Ru1-Banner', {
+    defaults: bannerDefaults,
+    fields: bannerFields,
+    render: renderBanner,
+  })
+
   blockRegistry.register('Ru1-Form', {
     defaults: ru1FormDefaults,
     fields: ru1FormFields,
@@ -99,6 +127,12 @@ export function useLayouts() {
     defaults: ru1FaqDefaults,
     fields: ru1FaqFields,
     render: renderRu1Faq,
+  })
+
+  blockRegistry.register('Ru2-Split-Banner-Collage', {
+    defaults: ru2SplitBannerCollageDefaults,
+    fields: ru2SplitBannerCollageFields,
+    render: renderRu2SplitBannerCollage,
   })
 
   blockRegistry.register('Footer-1', {

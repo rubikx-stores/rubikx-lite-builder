@@ -27,7 +27,7 @@ interface Page {
 const { data: websites } = await useFetch<Website[]>('/api/websites')
 const { user } = useAuth()
 
-const selectedWebsiteId = ref<number | null>(null)
+const selectedWebsiteId = useState<number | null>('selectedCompanyId', () => null)
 const pages = ref<Page[]>([])
 const loadingPages = ref(false)
 const selectedVersions = ref<Record<string, number>>({})
@@ -107,7 +107,7 @@ async function deletePage() {
   showDeleteModal.value = false
   deleting.value[page.id] = true
   try {
-    await $fetch(`/api/pages/${page.id}`, { method: 'DELETE' })
+    await $fetch(`/api/pages/${page.id}`, { method: 'DELETE', query: { companyId: selectedWebsiteId.value } })
     pages.value = pages.value.filter(p => p.id !== page.id)
   } catch (e: any) {
     alert(e?.data?.message ?? 'Failed to delete page')

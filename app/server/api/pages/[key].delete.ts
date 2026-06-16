@@ -7,15 +7,22 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: `Cannot delete protected key: ${key}` })
   }
 
-  const ODOO_URL = 'https://rubikx-stores-rubikx-2-0-prod.odoo.com/graphql'
-  const API_KEY = 'ec66a59946ecae022949f32f5c65cc67'
+  const config = useRuntimeConfig(event)
+  const ODOO_URL = `${config.odooBaseUrl}/graphql`
+  const token = getCookie(event, 'rb_auth_token') ?? config.odooGraphqlApiKey
+
+  const { companyId: companyIdParam } = getQuery(event) as { companyId?: string }
+  const companyId = companyIdParam ? Number(companyIdParam) : undefined
 
   const fetchRes = await $fetch<any>(ODOO_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
     body: {
-      query: `query MyQuery { RubikxCms { id key state } }`,
-      variables: { context: { allowed_company_ids: [3] } }
+      query: `query MyQuery($context: Any) { RubikxCms(context: $context) { id key state } }`,
+      variables: { context: companyId ? { allowed_company_ids: [companyId] } : {} }
     }
   })
 
@@ -37,10 +44,13 @@ export default defineEventHandler(async (event) => {
     idsToDelete.map((id: number) =>
       $fetch<any>(ODOO_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: {
           query: `mutation Delete { deleteRubikxCms: RubikxCms(id: ${id}) }`,
-          variables: { context: { allowed_company_ids: [3] } }
+          variables: { context: companyId ? { allowed_company_ids: [companyId] } : {} }
         }
       })
     )

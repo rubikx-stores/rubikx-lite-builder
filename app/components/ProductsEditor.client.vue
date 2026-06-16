@@ -8,7 +8,9 @@ const props = defineProps({
   blockData: { type: Object, default: null },
 })
 
-const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products']
+const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products']
+// Blocks that support pagination — allow many products across multiple pages
+const PAGINATED_BLOCKS = ['Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products']
 
 function debounce(fn, delay) {
   let timer
@@ -111,29 +113,8 @@ watch(component, async (newComp) => {
   }
 }, { immediate: true })
 
-function restoreSelectionForTitle(title) {
-  if (!title || !THEME_REGISTRY_BLOCKS.includes(title)) return
-  if (!products.value.length) return
-  const section = document.querySelector(`section[data-component-title="${title}"]`)
-  const storedIds = section?.getAttribute('data-selected-products')
-  if (storedIds) {
-    try {
-      const ids = JSON.parse(storedIds)
-      const restored = products.value.filter(p => ids.includes(p.id))
-      if (restored.length) { selected.value = restored; return }
-    } catch { /* ignore */ }
-  }
-  // Fallback: match by name from blockData
-  if (!selected.value.length && props.blockData?.products?.length) {
-    const matched = props.blockData.products
-      .map(tp => products.value.find(op => op.name === tp.name))
-      .filter(Boolean)
-    if (matched.length) selected.value = matched
-  }
-}
-
 // For theme blocks: collapse the applied banner when switching to a different block
-watch(() => props.selectedBlockTitle, async (newTitle, oldTitle) => {
+watch(() => props.selectedBlockTitle, (newTitle, oldTitle) => {
   if (newTitle !== oldTitle) {
     applied.value = false
     search.value = ''
@@ -141,20 +122,27 @@ watch(() => props.selectedBlockTitle, async (newTitle, oldTitle) => {
     if (oldTitle && THEME_REGISTRY_BLOCKS.includes(oldTitle) && !THEME_REGISTRY_BLOCKS.includes(newTitle ?? '')) {
       selected.value = []
     }
-    // Restore selection when focusing a theme block
-    if (newTitle && THEME_REGISTRY_BLOCKS.includes(newTitle)) {
-      await nextTick()
-      restoreSelectionForTitle(newTitle)
-    }
   }
 })
 
 const mode = computed(() => storedMode.value || 'multiple')
 
+const isPaginatedBlock = computed(() => {
+  const title = props.selectedBlockTitle ?? ''
+  return PAGINATED_BLOCKS.includes(title)
+})
+
+// Per-page capacity = columns × rows
+const perPage = computed(() =>
+  Number(props.blockData?.columns ?? 4) * Number(props.blockData?.rows ?? 1)
+)
+
 const maxSelection = computed(() => {
   if (isThemeBlock.value) {
-    // Allow selecting up to 10 rows worth — doApplyThemeBlock auto-expands rows to fit.
-    return Number(props.blockData?.columns ?? 4) * 10
+    // Shop/paginated blocks: allow up to 10 pages worth of products
+    if (isPaginatedBlock.value) return perPage.value * 10
+    // Featured Products: exactly one grid — blur beyond capacity
+    return perPage.value
   }
   return mode.value === 'single' ? 1 : mode.value === 'six' ? 6 : mode.value === 'four' ? 4 : 3
 })
@@ -165,10 +153,12 @@ const filteredProducts = computed(() => {
   return products.value.filter((p) => p.name?.toLowerCase().includes(q))
 })
 
+const selectedCompanyId = useState('selectedCompanyId', () => null)
+
 onMounted(async () => {
   loading.value = true
   try {
-    const res = await fetch('/api/products')
+    const res = await fetch(`/api/products?companyId=${selectedCompanyId.value ?? 3}`)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     products.value = await res.json()
   } catch (e) {
@@ -182,25 +172,33 @@ onMounted(async () => {
   const PLACEHOLDER_PRICE = 'Start customizing by editing this default text directly in the editor.'
 
   await nextTick()
+  const section = getSection()
 
-  if (isThemeBlock.value) {
-    restoreSelectionForTitle(props.selectedBlockTitle)
-  } else {
-    const section = getSection()
-    const storedIds = section?.getAttribute('data-selected-products')
-    if (storedIds) {
-      try {
-        const ids = JSON.parse(storedIds)
-        selected.value = products.value.filter(p => ids.includes(p.id))
-      } catch { /* ignore */ }
+  // Pre-populate from stored data attribute (primary)
+  const storedIds = section?.getAttribute('data-selected-products')
+  if (storedIds) {
+    try {
+      const ids = JSON.parse(storedIds)
+      selected.value = products.value.filter(p => ids.includes(p.id))
+    } catch (e) {
+      // ignore parse errors
     }
   }
 
-  // Sync registry with restored selection so subsequent _applyBlockRender calls
-  // re-render with the correct Odoo products (not stale/placeholder registry data).
+  // Fallback for theme blocks: match by name from blockData.products when no IDs stored
+  if (!selected.value.length && isThemeBlock.value && props.blockData?.products?.length) {
+    const matched = props.blockData.products
+      .map(tp => products.value.find(op => op.name === tp.name))
+      .filter(Boolean)
+    if (matched.length) selected.value = matched
+  }
+
+  // Sync registry with restored selection and show applied state so the user
+  // sees "N products applied" immediately after save/reload.
   if (isThemeBlock.value && selected.value.length > 0) {
     await nextTick()
     doApplyThemeBlock()
+    applied.value = true
   }
 })
 
@@ -448,15 +446,12 @@ function doApply() {
 }
 
 function toggle(product) {
-  const idx = selected.value.findIndex(
-    p => p.id === product.id
-  )
+  const idx = selected.value.findIndex(p => p.id === product.id)
   if (idx >= 0) {
     selected.value.splice(idx, 1)
   } else if (selected.value.length < maxSelection.value) {
     selected.value.push(product)
   }
-  // Always re-apply all selected products
   doApply()
 }
 
@@ -549,6 +544,14 @@ watch(btnText, debouncedButtonText)
 const debouncedSubtitle = debounce(doApply, 300)
 watch(cardSubtitle, debouncedSubtitle)
 watch(cardSubtitleEnabled, () => { if (selected.value.length > 0) doApply() })
+
+// For non-paginated blocks: trim excess products when the grid shrinks.
+// Paginated blocks keep all products — pages recompute from the new perPage.
+watch(perPage, (newPerPage) => {
+  if (isThemeBlock.value && !isPaginatedBlock.value && selected.value.length > newPerPage) {
+    selected.value = selected.value.slice(0, newPerPage)
+  }
+})
 </script>
 
 <template>
@@ -616,13 +619,14 @@ watch(cardSubtitleEnabled, () => { if (selected.value.length > 0) doApply() })
           :key="product.id"
           @click="!isDisabled(product) && toggle(product)"
           :class="[
-            'relative border-2 rounded overflow-hidden transition-colors',
+            'relative border-2 rounded overflow-hidden transition-all',
             isSelected(product)
               ? 'border-blue-500 cursor-pointer'
               : isDisabled(product)
-              ? 'border-transparent opacity-40 cursor-not-allowed'
-              : 'border-transparent cursor-pointer hover:border-gray-300',
+                ? 'border-transparent cursor-not-allowed'
+                : 'border-transparent cursor-pointer hover:border-gray-300',
           ]"
+          :style="isDisabled(product) ? (isThemeBlock ? { filter: 'blur(2px)', opacity: '0.55', pointerEvents: 'none' } : { opacity: '0.4' }) : {}"
         >
           <img
             :src="productImageSrc(product.image)"
@@ -651,6 +655,14 @@ watch(cardSubtitleEnabled, () => { if (selected.value.length > 0) doApply() })
           </div>
         </div>
       </div>
+
+      <!-- Capacity hint -->
+      <p v-if="isThemeBlock && !isPaginatedBlock && selected.length >= maxSelection" class="text-xs text-gray-400 text-center mt-2 px-1">
+        Grid full ({{ selected.length }}/{{ maxSelection }}). Increase Rows or Columns to add more.
+      </p>
+      <p v-if="isPaginatedBlock && selected.length > 0" class="text-xs text-gray-400 text-center mt-2 px-1">
+        {{ selected.length }} product{{ selected.length !== 1 ? 's' : '' }} · {{ Math.ceil(selected.length / perPage) }} page{{ Math.ceil(selected.length / perPage) !== 1 ? 's' : '' }} ({{ perPage }} per page)
+      </p>
 
       <!-- Apply button (theme blocks only) -->
       <div v-if="isThemeBlock && selected.length > 0" class="px-1 mt-3">

@@ -5,6 +5,8 @@ import BuilderPanel from './BuilderPanel.client.vue'
 import EditorSidebar from './EditorSidebar.client.vue'
 import { productImageSrc } from '~/composables/useProductImageSrc'
 import { NAVBAR_TITLES, FOOTER_TITLES } from '~/composables/useGlobalSections'
+import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
+import { sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
 
 // Register all block configs eagerly on builder mount so the editor opens
 // correctly even on page reload with saved canvas data (before the user opens
@@ -41,6 +43,8 @@ const sanitize = (s: string) =>
 let _destroyed = false
 let _saveBtn: Element | null = null
 let _pendingHtml: string | null = null
+
+const selectedCompanyId = useState<number | null>('selectedCompanyId')
 
 const showVersionModal = ref(false)
 const selectedVersion = ref(1)
@@ -86,21 +90,21 @@ async function confirmSave() {
     const saves: Promise<any>[] = []
 
     if (navbarSections.length > 0) {
-      saves.push($fetch('/api/proxy/odoo/cms', {
+      saves.push($fetch<any>('/api/proxy/odoo/cms', {
         method: 'POST',
         body: { ...baseBody, key: 'global-header', value: toHtml(navbarSections) },
       }))
     }
 
     if (contentSections.length > 0) {
-      saves.push($fetch('/api/proxy/odoo/cms', {
+      saves.push($fetch<any>('/api/proxy/odoo/cms', {
         method: 'POST',
         body: { ...baseBody, key: props.pageId, value: toHtml(contentSections) },
       }))
     }
 
     if (footerSections.length > 0) {
-      saves.push($fetch('/api/proxy/odoo/cms', {
+      saves.push($fetch<any>('/api/proxy/odoo/cms', {
         method: 'POST',
         body: { ...baseBody, key: 'global-footer', value: toHtml(footerSections) },
       }))
@@ -186,7 +190,7 @@ onUnmounted(() => {
 })
 
 onMounted(async () => {
-  const builder = getPageBuilder()
+  const builder = getPageBuilder() as any
   let parsedComponents: any[] | undefined = undefined
 
   if (props.pageId) {
@@ -219,7 +223,7 @@ onMounted(async () => {
     const html = [headerHtml, contentHtml, footerHtml].filter(Boolean).join('\n') || null
 
     if (html) {
-      const parsed = (builder as any).parsePageBuilderHTML(html)
+      const parsed = builder.parsePageBuilderHTML(html)
       parsedComponents = parsed.components
       localStorage.setItem(
         storageKey,
@@ -236,24 +240,46 @@ onMounted(async () => {
 
   await builder.startBuilder(config, parsedComponents)
 
+  const stopHydrationWatch = watch(
+    () => (sharedPageBuilderStore as any).getIsLoadingGlobal,
+    (loading) => {
+      if (!loading) {
+        hydrateComponents(selectedCompanyId.value ?? 3)
+        stopHydrationWatch()
+      }
+    }
+  )
+
   // The builder wraps sections in a container that has overflow-x:scroll, which
   // CSS spec forces overflow-y from 'visible' to 'auto'. Any overflow value other
   // than 'visible' on an ancestor creates an overflow context that intercepts
   // position:sticky, so sticky sections never reach the real scroll container
   // (#page-builder-wrapper). Fix: walk from #pagebuilder up to the wrapper and
   // clear overflow on every intermediate element.
-  const pagebuilderEl = document.getElementById('pagebuilder')
-  const wrapperEl = document.getElementById('page-builder-wrapper')
-  if (pagebuilderEl && wrapperEl) {
-    let el = pagebuilderEl.parentElement
-    while (el && el !== wrapperEl) {
-      el.style.overflow = 'visible'
-      el = el.parentElement
+  function clearBuilderScroll() {
+    const pagebuilderEl = document.getElementById('pagebuilder')
+    const wrapperEl = document.getElementById('page-builder-wrapper')
+    if (pagebuilderEl && wrapperEl) {
+      let el = pagebuilderEl.parentElement
+      while (el && el !== wrapperEl) {
+        el.style.overflow = 'visible'
+        el.style.height = 'auto'
+        el.style.minHeight = '0'
+        el = el.parentElement
+      }
     }
   }
 
+  // Run early, then again after the builder UI is fully rendered.
+  clearBuilderScroll()
+
   _saveBtn = await waitForSaveButton()
   _saveBtn.addEventListener('click', handleSaveClick)
+
+  // Second pass: some library elements get their height set reactively after
+  // startBuilder resolves — re-applying after the UI is fully settled ensures
+  // the 90vh min-height is cleared for all pages.
+  clearBuilderScroll()
 
   // Capture-phase so we intercept before the builder's own click handler
   document.addEventListener('click', handleProductTileClick, true)
