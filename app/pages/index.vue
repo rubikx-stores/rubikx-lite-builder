@@ -107,7 +107,7 @@ async function deletePage() {
   showDeleteModal.value = false
   deleting.value[page.id] = true
   try {
-    await $fetch(`/api/pages/${page.id}`, { method: 'DELETE' })
+    await $fetch(`/api/pages/${page.id}`, { method: 'DELETE', query: { companyId: selectedWebsiteId.value } })
     pages.value = pages.value.filter(p => p.id !== page.id)
   } catch (e: any) {
     alert(e?.data?.message ?? 'Failed to delete page')

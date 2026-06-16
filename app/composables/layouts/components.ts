@@ -215,10 +215,10 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
         data-link-color='${data.linkColor}'
         data-font-size='${data.linkFontSize}'
         data-font-weight='${data.linkFontWeight}'
-        style='position:relative;display:inline-block;' class='rubikx-cat-nav'
+        style='position:relative;display:inline-block;' data-cat-nav='true'
       >
         <a style='${linkStyle}cursor:pointer;'>Categories ▾</a>
-        <div class='rubikx-cat-dropdown' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
+        <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
           <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Load Categories</span>
         </div>
       </div>`

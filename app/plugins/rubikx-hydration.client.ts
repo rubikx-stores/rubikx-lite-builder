@@ -41,12 +41,9 @@ async function loadCategories(el: HTMLElement, companyId = 3) {
   if (!document.getElementById('rubikx-cat-styles')) {
     const style = document.createElement('style')
     style.id = 'rubikx-cat-styles'
-    style.textContent = '.rubikx-cat-dropdown { display: none; } .rubikx-cat-nav:hover .rubikx-cat-dropdown { display: block !important; }'
+    style.textContent = '[data-cat-nav]:hover [data-cat-dropdown] { display: block !important; }'
     document.head.appendChild(style)
   }
-  // Remove inline display style so CSS :hover can control visibility
-  dropdown.style.display = ''
-  dropdown.style.removeProperty('display')
 
   try {
     const flat = await $fetch<FlatCategory[]>('/api/categories', { query: { companyId } })
