@@ -9,6 +9,8 @@ const props = defineProps({
 })
 
 const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products']
+// Blocks that support pagination — allow many products across multiple pages
+const PAGINATED_BLOCKS = ['Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products']
 
 function debounce(fn, delay) {
   let timer
@@ -125,11 +127,22 @@ watch(() => props.selectedBlockTitle, (newTitle, oldTitle) => {
 
 const mode = computed(() => storedMode.value || 'multiple')
 
+const isPaginatedBlock = computed(() => {
+  const title = props.selectedBlockTitle ?? ''
+  return PAGINATED_BLOCKS.includes(title)
+})
+
+// Per-page capacity = columns × rows
+const perPage = computed(() =>
+  Number(props.blockData?.columns ?? 4) * Number(props.blockData?.rows ?? 1)
+)
+
 const maxSelection = computed(() => {
   if (isThemeBlock.value) {
-    // Capacity = exactly the current grid: columns × rows.
-    // Products beyond this are blurred; user must increase rows/cols to add more.
-    return Number(props.blockData?.columns ?? 4) * Number(props.blockData?.rows ?? 1)
+    // Shop/paginated blocks: allow up to 10 pages worth of products
+    if (isPaginatedBlock.value) return perPage.value * 10
+    // Featured Products: exactly one grid — blur beyond capacity
+    return perPage.value
   }
   return mode.value === 'single' ? 1 : mode.value === 'six' ? 6 : mode.value === 'four' ? 4 : 3
 })
@@ -439,9 +452,7 @@ function toggle(product) {
   } else if (selected.value.length < maxSelection.value) {
     selected.value.push(product)
   }
-  // Theme blocks: only stage the selection — the Apply button commits to canvas.
-  // Non-theme blocks: apply immediately (live preview).
-  if (!isThemeBlock.value) doApply()
+  doApply()
 }
 
 function isSelected(product) {
@@ -534,11 +545,11 @@ const debouncedSubtitle = debounce(doApply, 300)
 watch(cardSubtitle, debouncedSubtitle)
 watch(cardSubtitleEnabled, () => { if (selected.value.length > 0) doApply() })
 
-// When rows/columns change the grid capacity: trim any excess selected products
-// so the count never silently exceeds what the block will actually render.
-watch(maxSelection, (newMax) => {
-  if (isThemeBlock.value && selected.value.length > newMax) {
-    selected.value = selected.value.slice(0, newMax)
+// For non-paginated blocks: trim excess products when the grid shrinks.
+// Paginated blocks keep all products — pages recompute from the new perPage.
+watch(perPage, (newPerPage) => {
+  if (isThemeBlock.value && !isPaginatedBlock.value && selected.value.length > newPerPage) {
+    selected.value = selected.value.slice(0, newPerPage)
   }
 })
 </script>
@@ -645,9 +656,12 @@ watch(maxSelection, (newMax) => {
         </div>
       </div>
 
-      <!-- Capacity hint (theme blocks at max) -->
-      <p v-if="isThemeBlock && selected.length >= maxSelection" class="text-xs text-gray-400 text-center mt-2 px-1">
+      <!-- Capacity hint -->
+      <p v-if="isThemeBlock && !isPaginatedBlock && selected.length >= maxSelection" class="text-xs text-gray-400 text-center mt-2 px-1">
         Grid full ({{ selected.length }}/{{ maxSelection }}). Increase Rows or Columns to add more.
+      </p>
+      <p v-if="isPaginatedBlock && selected.length > 0" class="text-xs text-gray-400 text-center mt-2 px-1">
+        {{ selected.length }} product{{ selected.length !== 1 ? 's' : '' }} · {{ Math.ceil(selected.length / perPage) }} page{{ Math.ceil(selected.length / perPage) !== 1 ? 's' : '' }} ({{ perPage }} per page)
       </p>
 
       <!-- Apply button (theme blocks only) -->
