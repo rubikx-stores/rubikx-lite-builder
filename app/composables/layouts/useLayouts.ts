@@ -94,12 +94,6 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       html_code: renderRu2SplitBannerCollage(ru2SplitBannerCollageDefaults),
     },
     {
-      title: 'Ru5-Image-Carousel',
-      category: 'Banner',
-      cover_image: ru5ImageCarouselSvg,
-      html_code: renderRu5ImageCarousel(ru5ImageCarouselDefaults),
-    },
-    {
       title: 'Ru3-Text + Image Hero',
       category: 'Banner',
       cover_image: ru3TextImageHeroSvg,
@@ -110,6 +104,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Banner',
       cover_image: ru4OverlayPanelSvg,
       html_code: renderRu4OverlayPanel(ru4OverlayPanelDefaults),
+    },
+    {
+      title: 'Ru5-Image-Carousel',
+      category: 'Banner',
+      cover_image: ru5ImageCarouselSvg,
+      html_code: renderRu5ImageCarousel(ru5ImageCarouselDefaults),
     },
     {
       title: 'Ru6-Split-Hero',

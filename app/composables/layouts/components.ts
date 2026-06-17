@@ -2719,6 +2719,7 @@ export interface Ru4OverlayPanelData {
   panelPosition: string
   panelWidth: string
   panelBgColor: string
+  panelBgOpacity: number
   panelBorderRadius: number
   panelShadow: string
   panelPaddingY: number
@@ -2755,6 +2756,7 @@ export const ru4OverlayPanelDefaults: Ru4OverlayPanelData = {
   panelPosition: 'left',
   panelWidth: '45%',
   panelBgColor: '#ffffff',
+  panelBgOpacity: 100,
   panelBorderRadius: 8,
   panelShadow: 'lg',
   panelPaddingY: 48,
@@ -2794,6 +2796,7 @@ export const ru4OverlayPanelFields: FieldConfig[] = [
   { key: 'panelPosition', label: 'Panel Position', type: 'select', options: ['left', 'center', 'right'] },
   { key: 'panelWidth', label: 'Panel Width', type: 'select', options: ['30%', '35%', '40%', '45%', '50%', '55%', '60%'] },
   { key: 'panelBgColor', label: 'Panel Background', type: 'color' },
+  { key: 'panelBgOpacity', label: 'Panel Opacity (%)', type: 'number', step: 5, placeholder: '100' },
   { key: 'panelShadow', label: 'Shadow', type: 'select', options: ['none', 'sm', 'md', 'lg', 'xl'] },
   { key: 'panelPaddingY', label: 'Panel Vertical Padding (px)', type: 'number', placeholder: '48' },
   { key: 'panelPaddingX', label: 'Panel Horizontal Padding (px)', type: 'number', placeholder: '40' },
@@ -2853,10 +2856,10 @@ export function renderRu4OverlayPanel(data: Ru4OverlayPanelData): string {
 
   const shadowMap: Record<string, string> = {
     none: '',
-    sm: 'box-shadow:0 1px 3px rgba(0,0,0,0.12),0 1px 2px rgba(0,0,0,0.08);',
-    md: 'box-shadow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06);',
-    lg: 'box-shadow:0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05);',
-    xl: 'box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);',
+    sm: 'filter:drop-shadow(0 1px 3px rgba(0,0,0,0.15)) drop-shadow(0 1px 2px rgba(0,0,0,0.10));',
+    md: 'filter:drop-shadow(0 4px 6px rgba(0,0,0,0.12)) drop-shadow(0 2px 4px rgba(0,0,0,0.08));',
+    lg: 'filter:drop-shadow(0 10px 15px rgba(0,0,0,0.12)) drop-shadow(0 4px 6px rgba(0,0,0,0.07));',
+    xl: 'filter:drop-shadow(0 20px 25px rgba(0,0,0,0.12)) drop-shadow(0 10px 10px rgba(0,0,0,0.06));',
   }
   const shadowStyle = shadowMap[data.panelShadow ?? 'lg'] ?? ''
 
@@ -2887,7 +2890,10 @@ export function renderRu4OverlayPanel(data: Ru4OverlayPanelData): string {
     ? `<a href="${data.ctaUrl}" style="display:inline-block;margin-top:1.5rem;padding:0.75rem 2rem;text-decoration:none;border-radius:${data.ctaBorderRadius ?? 6}px;font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;${ctaBtnStyle}">${data.ctaText}</a>`
     : ''
 
-  const panelStyle = `background:${data.panelBgColor};${borderRadiusStyle}${shadowStyle}${clipStyle}padding:${data.panelPaddingY ?? 48}px ${data.panelPaddingX ?? 40}px;box-sizing:border-box;`
+  const panelBg = (data.panelBgOpacity ?? 100) < 100
+    ? hexToRgba(data.panelBgColor, (data.panelBgOpacity ?? 100) / 100)
+    : data.panelBgColor
+  const panelStyle = `background:${panelBg};${borderRadiusStyle}${shadowStyle}${clipStyle}padding:${data.panelPaddingY ?? 48}px ${data.panelPaddingX ?? 40}px;box-sizing:border-box;`
 
   return `<section data-component-title="Ru4-Overlay Panel" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${overlayStyle}${heightStyle}position:relative;display:flex;align-items:center;overflow:hidden;">
   <style>@media(max-width:767px){.ru4-op-panel{width:100%!important;clip-path:none!important;}}</style>
