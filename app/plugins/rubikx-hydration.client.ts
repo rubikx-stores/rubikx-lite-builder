@@ -18,9 +18,6 @@ function renderCategoryTree(categories: CategoryNode[], linkStyle: string, depth
 }
 
 async function loadCategories(el: HTMLElement, companyId = 3) {
-  if (el.dataset.hydrated === 'true') return
-  el.dataset.hydrated = 'true'
-
   const maxItems = parseInt(el.dataset.maxItems ?? '20')
   const linkColor = el.dataset.linkColor ?? '#000000'
   const fontSize = el.dataset.fontSize ?? '14'
@@ -41,7 +38,8 @@ async function loadCategories(el: HTMLElement, companyId = 3) {
         const slug = cat.headlessName ?? cat.name.toLowerCase().replace(/\s+/g, '-')
         const childrenHtml = (cat.children ?? []).map(child => {
           const childSlug = child.headlessName ?? child.name.toLowerCase().replace(/\s+/g, '-')
-          return `<div class='rubikx-mega-child'><a href='/${childSlug}'>${child.displayName}</a></div>`
+          const childLabel = child.displayName.includes(' / ') ? child.displayName.split(' / ').pop()! : child.displayName
+          return `<div class='rubikx-mega-child'><a href='/${childSlug}'>${childLabel}</a></div>`
         }).join('')
         return `<div>
           <div class='rubikx-mega-header'><a href='/${slug}'>${cat.displayName}</a></div>
@@ -76,7 +74,6 @@ export function hydrateComponents(companyId = 3) {
   [data-cat-nav] [data-cat-dropdown] a:hover { color: #000; opacity: 0.7; }
   [data-cat-nav] [data-cat-dropdown] > div > a { font-weight: 600; font-size: 13px; padding: 4px 8px 2px; display: block; border-bottom: 1px solid #f0f0f0; margin-bottom: 4px; }
   [data-cat-nav] [data-cat-dropdown] > div > div a { font-size: 12px; color: #555; padding: 2px 8px; display: block; }
-  .rubikx-cat-children { display: block !important; }
 `
     document.head.appendChild(style)
   }
