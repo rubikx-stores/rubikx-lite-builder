@@ -30,6 +30,22 @@ import {
   ru2SplitBannerCollageFields,
   ru2SplitBannerCollageSvg,
   renderRu2SplitBannerCollage,
+  ru1StatsDefaults,
+  ru1StatsFields,
+  ru1StatsSvg,
+  renderRu1Stats,
+  ru2StatsDefaults,
+  ru2StatsFields,
+  ru2StatsSvg,
+  renderRu2Stats,
+  ru3StatsDefaults,
+  ru3StatsFields,
+  ru3StatsSvg,
+  renderRu3Stats,
+  ru4StatsDefaults,
+  ru4StatsFields,
+  ru4StatsSvg,
+  renderRu4Stats,
 } from './components'
 
 export interface LayoutComponentItem {
@@ -86,6 +102,32 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       html_code: renderRu1Faq(ru1FaqDefaults),
     },
   ],
+  Stats: [
+    {
+      title: 'Ru1-Stats',
+      category: 'Stats',
+      cover_image: ru1StatsSvg,
+      html_code: renderRu1Stats(ru1StatsDefaults),
+    },
+    {
+      title: 'Ru2-Stats',
+      category: 'Stats',
+      cover_image: ru2StatsSvg,
+      html_code: renderRu2Stats(ru2StatsDefaults),
+    },
+    {
+      title: 'Ru3-Stats',
+      category: 'Stats',
+      cover_image: ru3StatsSvg,
+      html_code: renderRu3Stats(ru3StatsDefaults),
+    },
+    {
+      title: 'Ru4-Stats',
+      category: 'Stats',
+      cover_image: ru4StatsSvg,
+      html_code: renderRu4Stats(ru4StatsDefaults),
+    },
+  ],
   Footer: [
     {
       title: 'Footer-1',
@@ -139,6 +181,30 @@ export function useLayouts() {
     defaults: footer1Defaults,
     fields: footer1Fields,
     render: renderFooter1,
+  })
+
+  blockRegistry.register('Ru1-Stats', {
+    defaults: ru1StatsDefaults,
+    fields: ru1StatsFields,
+    render: renderRu1Stats,
+  })
+
+  blockRegistry.register('Ru2-Stats', {
+    defaults: ru2StatsDefaults,
+    fields: ru2StatsFields,
+    render: renderRu2Stats,
+  })
+
+  blockRegistry.register('Ru3-Stats', {
+    defaults: ru3StatsDefaults,
+    fields: ru3StatsFields,
+    render: renderRu3Stats,
+  })
+
+  blockRegistry.register('Ru4-Stats', {
+    defaults: ru4StatsDefaults,
+    fields: ru4StatsFields,
+    render: renderRu4Stats,
   })
 
   return { layoutComponentRegistry }
