@@ -125,6 +125,9 @@ async function onToggleField(fieldKey: string, newValue: boolean) {
   await updateBlockField(fieldKey, newValue)
   if (fieldKey === 'dynamicCategories' && newValue === true) {
     await nextTick()
+    document.querySelectorAll('[data-rubikx-component="CategoryNav"]').forEach(el => {
+      (el as HTMLElement).removeAttribute('data-hydrated')
+    })
     hydrateComponents(selectedCompanyId.value ?? 3)
   }
 }

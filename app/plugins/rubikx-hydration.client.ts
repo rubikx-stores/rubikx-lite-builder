@@ -18,6 +18,9 @@ function renderCategoryTree(categories: CategoryNode[], linkStyle: string, depth
 }
 
 async function loadCategories(el: HTMLElement, companyId = 3) {
+  if (el.dataset.hydrated === 'true') return
+  el.dataset.hydrated = 'true'
+
   const maxItems = parseInt(el.dataset.maxItems ?? '20')
   const linkColor = el.dataset.linkColor ?? '#000000'
   const fontSize = el.dataset.fontSize ?? '14'
