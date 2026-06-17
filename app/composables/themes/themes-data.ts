@@ -266,7 +266,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 
   const sectionStyle = data.sticky ? 'position:sticky;top:0;z-index:9999' : ''
 
-  return `<section data-component-title="Ru1 Homepage Navbar"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
+  return `<section data-component-title="Ru1 Homepage Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 <nav style="${navStyle}">
   <div class="pbx-max-w-7xl pbx-mx-auto" style="display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
     ${zone(cols.left,   'flex-start')}
@@ -383,7 +383,7 @@ export function renderRu1Hero(data: Ru1HeroData): string {
     ${textLayer}
   </div>`
 
-  return `<section data-component-title="Ru1 Homepage Hero">
+  return `<section data-component-title="Ru1 Homepage Hero" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
 <div style="${sectionStyle}">
   ${data.linkUrl ? `<a href="${data.linkUrl}" style="display:block">${inner}</a>` : inner}
 </div>
@@ -636,7 +636,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
       </div>`
   }).join('')
 
-  return `<section data-component-title="Ru1 Homepage Featured Products"${sectionBg ? ` style="${sectionBg}"` : ''}>
+  return `<section data-component-title="Ru1 Homepage Featured Products" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionBg ? ` style="${sectionBg}"` : ''}>
 ${animStyle}
 <div style="${innerStyle}">
   <div class="pbx-mx-auto pbx-max-w-7xl">
@@ -762,7 +762,7 @@ export function renderRu1Footer(data: Ru1FooterData): string {
   const colMap: Record<string, string> = { links: linksCol, about: aboutCol, contact: contactCol }
   const orderedCols = (data.columnOrder ?? ['links', 'about', 'contact']).map(k => colMap[k] ?? '').join('\n      ')
 
-  return `<section data-component-title="Ru1 Homepage Footer">
+  return `<section data-component-title="Ru1 Homepage Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
 <footer style="${footerStyle}">
   <div class="pbx-max-w-7xl pbx-mx-auto">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;">
@@ -963,7 +963,7 @@ export function renderRu2ShopHero(data: Ru2ShopHeroData): string {
       </ol>
     </nav>` : ''
 
-  return `<section data-component-title="Ru1 Shop Hero">
+  return `<section data-component-title="Ru1 Shop Hero" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
 <div style="${bgStyles}">
   <div class="pbx-mx-auto pbx-max-w-7xl" style="text-align:${data.textAlign}">
     ${breadcrumbsHtml}
@@ -1321,7 +1321,7 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
     innerHtml = `${metaBar}${flexRow}`
   }
 
-  return `<section data-component-title="Ru1 Shop Content">
+  return `<section data-component-title="Ru1 Shop Content" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
 <div style="${sectionStyle}">
   <div class="pbx-mx-auto pbx-max-w-7xl">
     ${innerHtml}
@@ -1415,7 +1415,7 @@ export const ru3ShopHeaderFields: FieldConfig[] = [
 ]
 
 export function renderRu3ShopHeader(data: Ru3ShopHeaderData): string {
-  return `<section data-component-title='Ru2 Shop Header'>
+  return `<section data-component-title='Ru2 Shop Header' data-component-props="${encodeURIComponent(JSON.stringify(data))}">
 <div style='background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;border-bottom:1px solid #e5e7eb;'>
   <div style='max-width:80rem;margin:0 auto;'>
     <div style='display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:14px;color:#6b7280;'>
@@ -1488,7 +1488,7 @@ export function renderRu3ShopFilters(data: Ru3ShopFiltersData): string {
     data.showPrice ? 'Price' : null,
   ].filter(Boolean)
 
-  return `<section data-component-title='Ru2 Shop Filters'>
+  return `<section data-component-title='Ru2 Shop Filters' data-component-props="${encodeURIComponent(JSON.stringify(data))}">
 <div style='background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;border-bottom:1px solid ${data.borderColor};'>
   <div style='max-width:80rem;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;'>
     ${filters.map(f => `<button style='display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid ${data.borderColor};border-radius:6px;background:#fff;font-size:14px;color:#374151;cursor:pointer;white-space:nowrap;'>
@@ -1630,7 +1630,7 @@ export function renderRu3ShopProducts(data: Ru3ShopProductsData): string {
       </div>`
     : ''
 
-  return `<section data-component-title="Ru2 Shop Products">
+  return `<section data-component-title="Ru2 Shop Products" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
 ${animStyle}
 <div style="${sectionStyle}">
   <div class="pbx-mx-auto pbx-max-w-7xl">

@@ -50,6 +50,14 @@ import {
   ru4StatsFields,
   ru4StatsSvg,
   renderRu4Stats,
+  ru3TextImageHeroDefaults,
+  ru3TextImageHeroFields,
+  ru3TextImageHeroSvg,
+  renderRu3TextImageHero,
+  ru4OverlayPanelDefaults,
+  ru4OverlayPanelFields,
+  ru4OverlayPanelSvg,
+  renderRu4OverlayPanel,
 } from './components'
 
 export interface LayoutComponentItem {
@@ -86,6 +94,18 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Banner',
       cover_image: ru5ImageCarouselSvg,
       html_code: renderRu5ImageCarousel(ru5ImageCarouselDefaults),
+    },
+    {
+      title: 'Ru3-Text + Image Hero',
+      category: 'Banner',
+      cover_image: ru3TextImageHeroSvg,
+      html_code: renderRu3TextImageHero(ru3TextImageHeroDefaults),
+    },
+    {
+      title: 'Ru4-Overlay Panel',
+      category: 'Banner',
+      cover_image: ru4OverlayPanelSvg,
+      html_code: renderRu4OverlayPanel(ru4OverlayPanelDefaults),
     },
   ],
   Contact: [
@@ -191,6 +211,18 @@ export function useLayouts() {
     defaults: ru5ImageCarouselDefaults,
     fields: ru5ImageCarouselFields,
     render: renderRu5ImageCarousel,
+  })
+
+  blockRegistry.register('Ru3-Text + Image Hero', {
+    defaults: ru3TextImageHeroDefaults,
+    fields: ru3TextImageHeroFields,
+    render: renderRu3TextImageHero,
+  })
+
+  blockRegistry.register('Ru4-Overlay Panel', {
+    defaults: ru4OverlayPanelDefaults,
+    fields: ru4OverlayPanelFields,
+    render: renderRu4OverlayPanel,
   })
 
   blockRegistry.register('Footer-1', {
