@@ -2465,6 +2465,235 @@ export function renderRu3TextImageHero(data: Ru3TextImageHeroData): string {
 </section>`
 }
 
+// ─── Ru6-Split-Hero ──────────────────────────────────────────────────────────
+
+export const ru6SplitHeroSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
+  <rect fill="#ffffff" width="277.5" height="80"/>
+  <rect fill="#394152" x="12" y="18" width="70" height="8" rx="1"/>
+  <rect fill="#394152" x="12" y="30" width="55" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="12" y="42" width="80" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="12" y="48" width="72" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="12" y="54" width="65" height="3" rx="1"/>
+  <rect fill="#394152" x="12" y="63" width="32" height="9" rx="4"/>
+  <rect fill="#e5e7eb" x="140" y="8" width="125" height="64" rx="6"/>
+  <rect fill="#9ca3af" x="152" y="20" width="100" height="40" rx="4"/>
+</svg>`
+
+export interface Ru6SplitHeroData {
+  bgColor: string
+  paddingY: number
+  paddingX: number
+  textSide: string
+  splitRatio: string
+  gap: number
+  eyebrow: string
+  eyebrowColor: string
+  eyebrowFontSize: number
+  title: string
+  titleFontSize: number
+  titleFontWeight: string
+  titleColor: string
+  titleLineHeight: number
+  description: string
+  descriptionFontSize: number
+  descriptionColor: string
+  showCta: boolean
+  ctaLabel: string
+  ctaHref: string
+  ctaBgColor: string
+  ctaTextColor: string
+  ctaBorderRadius: number
+  ctaBorderColor: string
+  ctaStyle: string
+  showSecondaryCta: boolean
+  secondaryCtaLabel: string
+  secondaryCtaHref: string
+  secondaryCtaColor: string
+  imageUrl: string
+  imageBorderRadius: number
+  imageObjectFit: string
+  imageHeight: number
+  cardMode: boolean
+  cardBgColor: string
+  cardPadding: number
+  cardBorderRadius: number
+  cardBorderColor: string
+  cardShowBorder: boolean
+  textAlign: string
+  verticalAlign: string
+}
+
+export const ru6SplitHeroDefaults: Ru6SplitHeroData = {
+  bgColor: '#ffffff',
+  paddingY: 64,
+  paddingX: 32,
+  textSide: 'left',
+  splitRatio: '50/50',
+  gap: 48,
+  eyebrow: '',
+  eyebrowColor: '#6b7280',
+  eyebrowFontSize: 13,
+  title: 'Gear Up\nPower Onward™',
+  titleFontSize: 48,
+  titleFontWeight: '700',
+  titleColor: '#111827',
+  titleLineHeight: 1.15,
+  description: 'You put in the work — we make it easy to suit up right. This is your store. Your choice.',
+  descriptionFontSize: 16,
+  descriptionColor: '#4b5563',
+  showCta: true,
+  ctaLabel: 'Gear Up',
+  ctaHref: '/shop',
+  ctaBgColor: '#dc2626',
+  ctaTextColor: '#ffffff',
+  ctaBorderRadius: 24,
+  ctaBorderColor: '#dc2626',
+  ctaStyle: 'filled',
+  showSecondaryCta: false,
+  secondaryCtaLabel: 'Learn More',
+  secondaryCtaHref: '/about',
+  secondaryCtaColor: '#374151',
+  imageUrl: '',
+  imageBorderRadius: 12,
+  imageObjectFit: 'cover',
+  imageHeight: 480,
+  cardMode: false,
+  cardBgColor: '#f3f4f6',
+  cardPadding: 24,
+  cardBorderRadius: 16,
+  cardBorderColor: '#e5e7eb',
+  cardShowBorder: false,
+  textAlign: 'left',
+  verticalAlign: 'center',
+}
+
+export const ru6SplitHeroFields: FieldConfig[] = [
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'textSide', label: 'Text Side', type: 'select', options: ['left', 'right'] },
+  { key: 'splitRatio', label: 'Split Ratio', type: 'select', options: ['50/50', '55/45', '60/40', '40/60', '45/55'] },
+  { key: 'gap', label: 'Gap (px)', type: 'number', placeholder: '48' },
+  { key: 'verticalAlign', label: 'Vertical Align', type: 'select', options: ['top', 'center', 'bottom'] },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '64' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '32' },
+
+  { key: '_h_section', label: 'Section', type: 'header' },
+  { key: 'bgColor', label: 'Background Colour', type: 'color' },
+
+  { key: '_h_text', label: 'Text', type: 'header' },
+  { key: 'textAlign', label: 'Text Align', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'eyebrow', label: 'Eyebrow Text', type: 'text', placeholder: 'e.g. NEW COLLECTION' },
+  { key: 'eyebrowFontSize', label: 'Eyebrow Size (px)', type: 'number', placeholder: '13' },
+  { key: 'eyebrowColor', label: 'Eyebrow Colour', type: 'color' },
+  { key: 'title', label: 'Title', type: 'textarea', placeholder: 'e.g. Gear Up\nPower Onward' },
+  { key: 'titleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '48' },
+  { key: 'titleFontWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
+  { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  { key: 'titleLineHeight', label: 'Title Line Height', type: 'number', placeholder: '1.15' },
+  { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Supporting description text' },
+  { key: 'descriptionFontSize', label: 'Description Size (px)', type: 'number', placeholder: '16' },
+  { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
+
+  { key: '_h_cta', label: 'CTA Button', type: 'header' },
+  { key: 'showCta', label: 'Show Primary CTA', type: 'toggle' },
+  { key: 'ctaLabel', label: 'Primary CTA Label', type: 'text', placeholder: 'e.g. Gear Up' },
+  { key: 'ctaHref', label: 'Primary CTA URL', type: 'url', placeholder: '/shop' },
+  { key: 'ctaStyle', label: 'Primary CTA Style', type: 'select', options: ['filled', 'outline'] },
+  { key: 'ctaBgColor', label: 'Primary CTA Background', type: 'color' },
+  { key: 'ctaTextColor', label: 'Primary CTA Text', type: 'color' },
+  { key: 'ctaBorderColor', label: 'Primary CTA Border', type: 'color' },
+  { key: 'ctaBorderRadius', label: 'CTA Border Radius (px)', type: 'number', placeholder: '24' },
+  { key: 'showSecondaryCta', label: 'Show Secondary CTA', type: 'toggle' },
+  { key: 'secondaryCtaLabel', label: 'Secondary CTA Label', type: 'text', placeholder: 'e.g. Learn More' },
+  { key: 'secondaryCtaHref', label: 'Secondary CTA URL', type: 'url', placeholder: '/about' },
+  { key: 'secondaryCtaColor', label: 'Secondary CTA Colour', type: 'color' },
+
+  { key: '_h_image', label: 'Image', type: 'header' },
+  { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
+  { key: 'imageHeight', label: 'Image Height (px)', type: 'number', placeholder: '480' },
+  { key: 'imageBorderRadius', label: 'Image Radius (px)', type: 'number', placeholder: '12' },
+  { key: 'imageObjectFit', label: 'Image Fit', type: 'select', options: ['cover', 'contain', 'fill'] },
+
+  { key: '_h_card', label: 'Card Mode', type: 'header' },
+  { key: 'cardMode', label: 'Enable Card Mode', type: 'toggle' },
+  { key: 'cardBgColor', label: 'Card Background', type: 'color' },
+  { key: 'cardPadding', label: 'Card Padding (px)', type: 'number', placeholder: '24' },
+  { key: 'cardBorderRadius', label: 'Card Radius (px)', type: 'number', placeholder: '16' },
+  { key: 'cardShowBorder', label: 'Show Card Border', type: 'toggle' },
+  { key: 'cardBorderColor', label: 'Card Border Colour', type: 'color' },
+]
+
+export function renderRu6SplitHero(data: Ru6SplitHeroData): string {
+  const splitMap: Record<string, [string, string]> = {
+    '50/50': ['1fr', '1fr'],
+    '55/45': ['1.22fr', '1fr'],
+    '60/40': ['1.5fr', '1fr'],
+    '40/60': ['0.67fr', '1fr'],
+    '45/55': ['0.82fr', '1fr'],
+  }
+  const [textFr, imageFr] = splitMap[data.splitRatio ?? '50/50'] ?? ['1fr', '1fr']
+  const gridCols = data.textSide === 'left'
+    ? `${textFr} ${imageFr}`
+    : `${imageFr} ${textFr}`
+
+  const vAlignMap: Record<string, string> = { top: 'flex-start', center: 'center', bottom: 'flex-end' }
+  const vAlign = vAlignMap[data.verticalAlign ?? 'center'] ?? 'center'
+
+  const eyebrowHtml = data.eyebrow
+    ? `<p style="margin:0 0 12px;font-size:${data.eyebrowFontSize}px;font-weight:600;color:${data.eyebrowColor};letter-spacing:0.1em;text-transform:uppercase;">${data.eyebrow}</p>`
+    : ''
+
+  const titleHtml = data.title
+    ? `<h2 style="margin:0 0 16px;font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:${data.titleLineHeight};white-space:pre-line;">${data.title}</h2>`
+    : ''
+
+  const descHtml = data.description
+    ? `<p style="margin:0 0 28px;font-size:${data.descriptionFontSize}px;color:${data.descriptionColor};line-height:1.7;">${data.description}</p>`
+    : ''
+
+  const primaryCtaHtml = data.showCta !== false
+    ? `<a href="${data.ctaHref}" style="display:inline-block;padding:0.75rem 1.75rem;background:${data.ctaStyle === 'outline' ? 'transparent' : data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:${data.ctaBorderRadius}px;font-size:0.9rem;font-weight:600;border:2px solid ${data.ctaBorderColor};letter-spacing:0.04em;">${data.ctaLabel}</a>`
+    : ''
+
+  const secondaryCtaHtml = data.showSecondaryCta
+    ? `<a href="${data.secondaryCtaHref}" style="display:inline-block;padding:0.75rem 1.25rem;color:${data.secondaryCtaColor};text-decoration:none;font-size:0.9rem;font-weight:500;">→ ${data.secondaryCtaLabel}</a>`
+    : ''
+
+  const ctasHtml = (primaryCtaHtml || secondaryCtaHtml)
+    ? `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">${primaryCtaHtml}${secondaryCtaHtml}</div>`
+    : ''
+
+  const textCol = `<div style="display:flex;flex-direction:column;justify-content:${vAlign};text-align:${data.textAlign ?? 'left'};">
+    ${eyebrowHtml}
+    ${titleHtml}
+    ${descHtml}
+    ${ctasHtml}
+  </div>`
+
+  const imgInner = data.imageUrl
+    ? `<img src="${data.imageUrl}" alt="${data.title}" style="width:100%;height:${data.imageHeight}px;object-fit:${data.imageObjectFit};border-radius:${data.cardMode ? '0' : data.imageBorderRadius}px;display:block;" />`
+    : `<div style="width:100%;height:${data.imageHeight}px;background:#e5e7eb;border-radius:${data.cardMode ? '0' : data.imageBorderRadius}px;display:flex;align-items:center;justify-content:center;"><span style="color:#9ca3af;font-size:14px;">Add an image</span></div>`
+
+  const imageCol = data.cardMode
+    ? `<div style="display:flex;align-items:${vAlign};">
+        <div style="width:100%;background:${data.cardBgColor};padding:${data.cardPadding}px;border-radius:${data.cardBorderRadius}px;${data.cardShowBorder ? `border:1px solid ${data.cardBorderColor};` : ''}box-sizing:border-box;">
+          ${imgInner}
+        </div>
+      </div>`
+    : `<div style="display:flex;align-items:${vAlign};">${imgInner}</div>`
+
+  const leftCol = data.textSide === 'left' ? textCol : imageCol
+  const rightCol = data.textSide === 'left' ? imageCol : textCol
+
+  return `<section data-component-title="Ru6-Split-Hero" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;">
+  <div style="max-width:1280px;margin:0 auto;">
+    <div style="display:grid;grid-template-columns:${gridCols};gap:${data.gap}px;align-items:${vAlign};">
+      ${leftCol}
+      ${rightCol}
+    </div>
+  </div>
+</section>`
+}
+
 // ─── Ru4-Overlay Panel ───────────────────────────────────────────────────────
 
 export const ru4OverlayPanelSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
