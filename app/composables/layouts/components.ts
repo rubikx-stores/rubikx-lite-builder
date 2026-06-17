@@ -2021,3 +2021,223 @@ export function renderRu4Stats(data: Ru4StatsData): string {
   </div>
 </section>`
 }
+
+// ─── Ru5-Image-Carousel ──────────────────────────────────────────────────────
+
+export const ru5ImageCarouselSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
+  <rect fill="#1f2937" width="277.5" height="80"/>
+  <rect fill="#374151" x="0" y="0" width="277.5" height="80"/>
+  <rect fill="#4b5563" x="20" y="28" width="80" height="8" rx="1"/>
+  <rect fill="#6b7280" x="20" y="40" width="55" height="4" rx="1"/>
+  <rect fill="#6b7280" x="20" y="47" width="45" height="4" rx="1"/>
+  <rect fill="#9ca3af" x="20" y="58" width="28" height="8" rx="3"/>
+  <circle fill="#ffffff" cx="126" cy="74" r="3"/>
+  <circle fill="#6b7280" cx="136" cy="74" r="2"/>
+  <circle fill="#6b7280" cx="144" cy="74" r="2"/>
+  <rect fill="rgba(255,255,255,0.2)" x="4" y="34" width="12" height="12" rx="6"/>
+  <rect fill="rgba(255,255,255,0.2)" x="261" y="34" width="12" height="12" rx="6"/>
+  <text x="8" y="44" font-size="8" fill="white">‹</text>
+  <text x="264" y="44" font-size="8" fill="white">›</text>
+</svg>`
+
+export interface Ru5CarouselSlide {
+  bgImage: string
+  overlayColor: string
+  overlayOpacity: number
+  title: string
+  subtitle: string
+  description: string
+  showCta: boolean
+  ctaLabel: string
+  ctaHref: string
+  ctaBgColor: string
+  ctaTextColor: string
+}
+
+export interface Ru5ImageCarouselData {
+  height: number
+  autoPlay: boolean
+  autoPlayInterval: number
+  showArrows: boolean
+  arrowBgColor: string
+  arrowColor: string
+  showDots: boolean
+  dotColor: string
+  dotActiveColor: string
+  titleFontSize: number
+  titleFontWeight: string
+  titleColor: string
+  subtitleFontSize: number
+  subtitleColor: string
+  descriptionFontSize: number
+  descriptionColor: string
+  ctaBorderRadius: number
+  textAlign: string
+  textPosition: string
+  slides: Ru5CarouselSlide[]
+}
+
+export const ru5ImageCarouselDefaults: Ru5ImageCarouselData = {
+  height: 560,
+  autoPlay: true,
+  autoPlayInterval: 4,
+  showArrows: true,
+  arrowBgColor: 'rgba(255,255,255,0.2)',
+  arrowColor: '#ffffff',
+  showDots: true,
+  dotColor: 'rgba(255,255,255,0.5)',
+  dotActiveColor: '#ffffff',
+  titleFontSize: 48,
+  titleFontWeight: '700',
+  titleColor: '#ffffff',
+  subtitleFontSize: 14,
+  subtitleColor: 'rgba(255,255,255,0.8)',
+  descriptionFontSize: 16,
+  descriptionColor: 'rgba(255,255,255,0.85)',
+  ctaBorderRadius: 6,
+  textAlign: 'left',
+  textPosition: 'center-left',
+  slides: [
+    {
+      bgImage: '',
+      overlayColor: '#000000',
+      overlayOpacity: 40,
+      title: 'Gear Up, Power Onward',
+      subtitle: 'NEW COLLECTION',
+      description: 'You put in the work — we make it easy to suit up right.',
+      showCta: true,
+      ctaLabel: 'Shop Now',
+      ctaHref: '/shop',
+      ctaBgColor: '#ffffff',
+      ctaTextColor: '#111827',
+    },
+    {
+      bgImage: '',
+      overlayColor: '#000000',
+      overlayOpacity: 40,
+      title: 'Built For Every Moment',
+      subtitle: 'FEATURED GEAR',
+      description: 'From the shop to the field to the weekend.',
+      showCta: true,
+      ctaLabel: 'Explore',
+      ctaHref: '/shop',
+      ctaBgColor: '#ffffff',
+      ctaTextColor: '#111827',
+    },
+    {
+      bgImage: '',
+      overlayColor: '#000000',
+      overlayOpacity: 40,
+      title: 'Your Store. Your Choice.',
+      subtitle: 'EXCLUSIVE DEALS',
+      description: 'Discover pieces that fit your style and your work.',
+      showCta: true,
+      ctaLabel: 'Get Started',
+      ctaHref: '/shop',
+      ctaBgColor: '#ffffff',
+      ctaTextColor: '#111827',
+    },
+  ],
+}
+
+export const ru5ImageCarouselFields: FieldConfig[] = [
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'height', label: 'Slider Height (px)', type: 'number', placeholder: '560' },
+  { key: 'textAlign', label: 'Text Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'textPosition', label: 'Text Position', type: 'select', options: ['center-left', 'center', 'center-right', 'bottom-left', 'bottom-center'] },
+
+  { key: '_h_autoplay', label: 'Autoplay', type: 'header' },
+  { key: 'autoPlay', label: 'Auto Play', type: 'toggle' },
+  { key: 'autoPlayInterval', label: 'Interval (seconds)', type: 'number', placeholder: '4' },
+
+  { key: '_h_arrows', label: 'Arrows', type: 'header' },
+  { key: 'showArrows', label: 'Show Arrows', type: 'toggle' },
+  { key: 'arrowBgColor', label: 'Arrow Background', type: 'color' },
+  { key: 'arrowColor', label: 'Arrow Icon Colour', type: 'color' },
+
+  { key: '_h_dots', label: 'Dots', type: 'header' },
+  { key: 'showDots', label: 'Show Dots', type: 'toggle' },
+  { key: 'dotColor', label: 'Dot Colour', type: 'color' },
+  { key: 'dotActiveColor', label: 'Active Dot Colour', type: 'color' },
+
+  { key: '_h_typography', label: 'Typography', type: 'header' },
+  { key: 'titleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '48' },
+  { key: 'titleFontWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
+  { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  { key: 'subtitleFontSize', label: 'Subtitle Size (px)', type: 'number', placeholder: '14' },
+  { key: 'subtitleColor', label: 'Subtitle Colour', type: 'color' },
+  { key: 'descriptionFontSize', label: 'Description Size (px)', type: 'number', placeholder: '16' },
+  { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
+  { key: 'ctaBorderRadius', label: 'CTA Button Radius (px)', type: 'number', placeholder: '6' },
+
+  {
+    key: 'slides',
+    label: 'Slides',
+    type: 'list',
+    listFields: [
+      { key: 'bgImage', label: 'Background Image', type: 'image', noAspectRatio: true },
+      { key: 'overlayColor', label: 'Overlay Colour', type: 'color' },
+      { key: 'overlayOpacity', label: 'Overlay Opacity (0-100)', type: 'number', placeholder: '40' },
+      { key: 'title', label: 'Title', type: 'text', placeholder: 'e.g. Gear Up, Power Onward' },
+      { key: 'subtitle', label: 'Subtitle', type: 'text', placeholder: 'e.g. NEW COLLECTION' },
+      { key: 'description', label: 'Description', type: 'text', placeholder: 'Short supporting line' },
+      { key: 'showCta', label: 'Show CTA Button', type: 'toggle' },
+      { key: 'ctaLabel', label: 'CTA Label', type: 'text', placeholder: 'e.g. Shop Now' },
+      { key: 'ctaHref', label: 'CTA URL', type: 'url', placeholder: '/shop' },
+      { key: 'ctaBgColor', label: 'CTA Background', type: 'color' },
+      { key: 'ctaTextColor', label: 'CTA Text Colour', type: 'color' },
+    ],
+  },
+]
+
+export function renderRu5ImageCarousel(data: Ru5ImageCarouselData): string {
+  const uid = 'rbx-slider-' + Math.random().toString(36).slice(2, 7)
+
+  const positionMap: Record<string, string> = {
+    'center-left':   'align-items:center;justify-content:flex-start;',
+    'center':        'align-items:center;justify-content:center;',
+    'center-right':  'align-items:center;justify-content:flex-end;',
+    'bottom-left':   'align-items:flex-end;justify-content:flex-start;',
+    'bottom-center': 'align-items:flex-end;justify-content:center;',
+  }
+  const posStyle = positionMap[data.textPosition ?? 'center-left'] ?? positionMap['center-left']
+
+  const slidesHtml = (data.slides ?? []).map((slide, i) => {
+    const overlayOpacity = Math.min(100, Math.max(0, slide.overlayOpacity ?? 40)) / 100
+    const bgStyle = slide.bgImage
+      ? `background-image:url('${slide.bgImage}');background-size:cover;background-position:center;background-repeat:no-repeat;`
+      : `background-color:#1f2937;`
+    const overlayStyle = `position:absolute;inset:0;background:${slide.overlayColor ?? '#000'};opacity:${overlayOpacity};pointer-events:none;`
+    const ctaHtml = slide.showCta !== false
+      ? `<a href="${slide.ctaHref}" style="display:inline-block;margin-top:1.5rem;padding:0.75rem 2rem;background:${slide.ctaBgColor};color:${slide.ctaTextColor};text-decoration:none;border-radius:${data.ctaBorderRadius}px;font-size:1rem;font-weight:600;">${slide.ctaLabel}</a>`
+      : ''
+    return `<div data-slide="${i}" style="position:absolute;inset:0;${bgStyle}opacity:${i === 0 ? '1' : '0'};transition:opacity 0.6s ease;pointer-events:${i === 0 ? 'auto' : 'none'};">
+      <div style="${overlayStyle}"></div>
+      <div style="position:relative;z-index:1;height:100%;display:flex;${posStyle}padding:3rem 5rem;">
+        <div style="max-width:600px;text-align:${data.textAlign ?? 'left'};">
+          ${slide.subtitle ? `<p style="margin:0 0 0.75rem;font-size:${data.subtitleFontSize}px;font-weight:600;color:${data.subtitleColor};letter-spacing:0.12em;text-transform:uppercase;">${slide.subtitle}</p>` : ''}
+          <h2 style="margin:0 0 1rem;font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.15;">${slide.title}</h2>
+          ${slide.description ? `<p style="margin:0;font-size:${data.descriptionFontSize}px;color:${data.descriptionColor};line-height:1.6;">${slide.description}</p>` : ''}
+          ${ctaHtml}
+        </div>
+      </div>
+    </div>`
+  }).join('')
+
+  const arrowsHtml = data.showArrows !== false ? `
+    <button data-prev="true" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);z-index:10;width:44px;height:44px;border-radius:50%;background:${data.arrowBgColor};border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:${data.arrowColor};font-size:22px;backdrop-filter:blur(4px);">&#8249;</button>
+    <button data-next="true" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);z-index:10;width:44px;height:44px;border-radius:50%;background:${data.arrowBgColor};border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:${data.arrowColor};font-size:22px;backdrop-filter:blur(4px);">&#8250;</button>` : ''
+
+  const dotsHtml = data.showDots !== false ? `
+    <div class="${uid}-dots" style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:8px;align-items:center;">
+      ${(data.slides ?? []).map((_, i) => `<button data-dot="${i}" data-active-color="${data.dotActiveColor}" data-inactive-color="${data.dotColor}" style="width:${i === 0 ? '24px' : '8px'};height:8px;border-radius:4px;background:${i === 0 ? data.dotActiveColor : data.dotColor};border:none;cursor:pointer;padding:0;transition:all 0.3s;"></button>`).join('')}
+    </div>` : ''
+
+  return `<section data-component-title="Ru5-Image-Carousel" style="position:relative;overflow:hidden;">
+  <div data-rubikx-component="HeroSlider" data-on-mount="loadSlider" data-autoplay="${data.autoPlay !== false ? 'true' : 'false'}" data-interval="${(data.autoPlayInterval ?? 4) * 1000}" style="position:relative;height:${data.height}px;overflow:hidden;">
+    ${slidesHtml}
+    ${arrowsHtml}
+    ${dotsHtml}
+  </div>
+</section>`
+}

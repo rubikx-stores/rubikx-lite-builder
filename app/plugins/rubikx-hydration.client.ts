@@ -61,8 +61,50 @@ async function loadCategories(el: HTMLElement, companyId = 3) {
   }
 }
 
+function loadSlider(el: HTMLElement) {
+  const slides = Array.from(el.querySelectorAll<HTMLElement>('[data-slide]'))
+  const dots = Array.from(el.querySelectorAll<HTMLElement>('[data-dot]'))
+  const prevBtn = el.querySelector<HTMLElement>('[data-prev]')
+  const nextBtn = el.querySelector<HTMLElement>('[data-next]')
+  const autoPlay = el.dataset.autoplay === 'true'
+  const interval = parseInt(el.dataset.interval ?? '4000')
+
+  if (!slides.length) return
+
+  let cur = 0
+  let timer: ReturnType<typeof setInterval> | null = null
+
+  function goTo(n: number) {
+    slides[cur].style.opacity = '0'
+    slides[cur].style.pointerEvents = 'none'
+    if (dots[cur]) {
+      dots[cur].style.width = '8px'
+      dots[cur].style.background = dots[cur].dataset.inactiveColor ?? 'rgba(255,255,255,0.5)'
+    }
+    cur = (n + slides.length) % slides.length
+    slides[cur].style.opacity = '1'
+    slides[cur].style.pointerEvents = 'auto'
+    if (dots[cur]) {
+      dots[cur].style.width = '24px'
+      dots[cur].style.background = dots[cur].dataset.activeColor ?? '#ffffff'
+    }
+  }
+
+  function startTimer() { if (autoPlay) timer = setInterval(() => goTo(cur + 1), interval) }
+  function stopTimer() { if (timer) clearInterval(timer) }
+
+  if (prevBtn) prevBtn.addEventListener('click', () => { stopTimer(); goTo(cur - 1); startTimer() })
+  if (nextBtn) nextBtn.addEventListener('click', () => { stopTimer(); goTo(cur + 1); startTimer() })
+  dots.forEach((d, i) => d.addEventListener('click', () => { stopTimer(); goTo(i); startTimer() }))
+  el.addEventListener('mouseenter', stopTimer)
+  el.addEventListener('mouseleave', startTimer)
+
+  startTimer()
+}
+
 const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> = {
   loadCategories,
+  loadSlider,
 }
 
 export function hydrateComponents(companyId = 3) {
@@ -90,6 +132,29 @@ export function hydrateComponents(companyId = 3) {
     }
     handler(el, companyId)
   })
+
+  // Watch for dynamically added slider elements
+  if (!(window as any).__rbxSliderObserver) {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType !== 1) return
+          const el = node as HTMLElement
+          // Check if the added node itself is a slider
+          if (el.dataset?.rubikxComponent === 'HeroSlider') {
+            loadSlider(el)
+            return
+          }
+          // Check children of added node
+          el.querySelectorAll?.('[data-rubikx-component="HeroSlider"]').forEach((child) => {
+            loadSlider(child as HTMLElement)
+          })
+        })
+      })
+    })
+    observer.observe(document.body, { childList: true, subtree: true })
+    ;(window as any).__rbxSliderObserver = observer
+  }
 }
 
 export default defineNuxtPlugin(() => {
