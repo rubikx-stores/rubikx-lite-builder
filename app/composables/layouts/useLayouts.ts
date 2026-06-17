@@ -34,6 +34,10 @@ import {
   ru5ImageCarouselFields,
   ru5ImageCarouselSvg,
   renderRu5ImageCarousel,
+  ru6SplitHeroDefaults,
+  ru6SplitHeroFields,
+  ru6SplitHeroSvg,
+  renderRu6SplitHero,
   ru1StatsDefaults,
   ru1StatsFields,
   ru1StatsSvg,
@@ -86,6 +90,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Banner',
       cover_image: ru5ImageCarouselSvg,
       html_code: renderRu5ImageCarousel(ru5ImageCarouselDefaults),
+    },
+    {
+      title: 'Ru6-Split-Hero',
+      category: 'Banner',
+      cover_image: ru6SplitHeroSvg,
+      html_code: renderRu6SplitHero(ru6SplitHeroDefaults),
     },
   ],
   Contact: [
@@ -191,6 +201,12 @@ export function useLayouts() {
     defaults: ru5ImageCarouselDefaults,
     fields: ru5ImageCarouselFields,
     render: renderRu5ImageCarousel,
+  })
+
+  blockRegistry.register('Ru6-Split-Hero', {
+    defaults: ru6SplitHeroDefaults,
+    fields: ru6SplitHeroFields,
+    render: renderRu6SplitHero,
   })
 
   blockRegistry.register('Footer-1', {
