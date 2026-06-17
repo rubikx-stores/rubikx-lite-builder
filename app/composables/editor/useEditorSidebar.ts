@@ -191,6 +191,14 @@ export function useEditorSidebar() {
     if (newStyle) section.setAttribute('style', newStyle)
     else section.removeAttribute('style')
 
+    // Keep data-component-props in sync so saveDomComponentsToLocalStorage()
+    // captures the current field state when the builder flushes to storage.
+    // Without this, getSavedPageHtml() returns stale props and replaceData()
+    // overwrites edited values with the original defaults on reload.
+    const newProps = newSection.getAttribute('data-component-props')
+    if (newProps) section.setAttribute('data-component-props', newProps)
+    else section.removeAttribute('data-component-props')
+
     section.innerHTML = newSection.innerHTML
 
     // Re-apply any element-level style overrides the user set via the element

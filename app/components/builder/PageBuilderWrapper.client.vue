@@ -7,6 +7,7 @@ import { productImageSrc } from '~/composables/useProductImageSrc'
 import { NAVBAR_TITLES, FOOTER_TITLES } from '~/composables/useGlobalSections'
 import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
 import { sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
+import { useBlockRegistry } from '~/composables/editor/useBlockRegistry'
 
 // Register all block configs eagerly on builder mount so the editor opens
 // correctly even on page reload with saved canvas data (before the user opens
@@ -72,6 +73,17 @@ async function confirmSave() {
     const parser = new DOMParser()
     const doc = parser.parseFromString(_pendingHtml, 'text/html')
     const allSections = Array.from(doc.querySelectorAll('section[data-component-title]'))
+
+    // Re-stamp data-component-props from the live registry on every section.
+    // Belt-and-suspenders: even if _applyBlockRender already kept the DOM in sync,
+    // this guarantees the saved HTML always carries the exact current field state.
+    const { getData } = useBlockRegistry()
+    allSections.forEach(sec => {
+      const title = sec.getAttribute('data-component-title')
+      if (!title) return
+      const data = getData(title)
+      if (data) sec.setAttribute('data-component-props', encodeURIComponent(JSON.stringify(data)))
+    })
 
     const navbarSections = allSections.filter(s =>
       NAVBAR_TITLES.includes(s.getAttribute('data-component-title') ?? '')
@@ -233,6 +245,18 @@ onMounted(async () => {
           pageSettings: { classes: parsed.pageSettings?.classes ?? '', style: '' },
         }),
       )
+
+      // Restore block field values from data-component-props embedded in saved HTML.
+      // useBlockRegistry reads localStorage once at registration time (before onMounted),
+      // so we update the live in-memory registry directly via replaceData.
+      const { replaceData } = useBlockRegistry()
+      new DOMParser().parseFromString(html, 'text/html')
+        .querySelectorAll('section[data-component-title][data-component-props]')
+        .forEach(sec => {
+          const title = sec.getAttribute('data-component-title')!
+          const raw = sec.getAttribute('data-component-props')!
+          try { replaceData(title, JSON.parse(decodeURIComponent(raw))) } catch {}
+        })
     } else {
       localStorage.removeItem(storageKey)
     }

@@ -30,6 +30,38 @@ import {
   ru2SplitBannerCollageFields,
   ru2SplitBannerCollageSvg,
   renderRu2SplitBannerCollage,
+  ru5ImageCarouselDefaults,
+  ru5ImageCarouselFields,
+  ru5ImageCarouselSvg,
+  renderRu5ImageCarousel,
+  ru6SplitHeroDefaults,
+  ru6SplitHeroFields,
+  ru6SplitHeroSvg,
+  renderRu6SplitHero,
+  ru1StatsDefaults,
+  ru1StatsFields,
+  ru1StatsSvg,
+  renderRu1Stats,
+  ru2StatsDefaults,
+  ru2StatsFields,
+  ru2StatsSvg,
+  renderRu2Stats,
+  ru3StatsDefaults,
+  ru3StatsFields,
+  ru3StatsSvg,
+  renderRu3Stats,
+  ru4StatsDefaults,
+  ru4StatsFields,
+  ru4StatsSvg,
+  renderRu4Stats,
+  ru3TextImageHeroDefaults,
+  ru3TextImageHeroFields,
+  ru3TextImageHeroSvg,
+  renderRu3TextImageHero,
+  ru4OverlayPanelDefaults,
+  ru4OverlayPanelFields,
+  ru4OverlayPanelSvg,
+  renderRu4OverlayPanel,
 } from './components'
 
 export interface LayoutComponentItem {
@@ -61,6 +93,30 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       cover_image: ru2SplitBannerCollageSvg,
       html_code: renderRu2SplitBannerCollage(ru2SplitBannerCollageDefaults),
     },
+    {
+      title: 'Ru3-Text + Image Hero',
+      category: 'Banner',
+      cover_image: ru3TextImageHeroSvg,
+      html_code: renderRu3TextImageHero(ru3TextImageHeroDefaults),
+    },
+    {
+      title: 'Ru4-Overlay Panel',
+      category: 'Banner',
+      cover_image: ru4OverlayPanelSvg,
+      html_code: renderRu4OverlayPanel(ru4OverlayPanelDefaults),
+    },
+    {
+      title: 'Ru5-Image-Carousel',
+      category: 'Banner',
+      cover_image: ru5ImageCarouselSvg,
+      html_code: renderRu5ImageCarousel(ru5ImageCarouselDefaults),
+    },
+    {
+      title: 'Ru6-Split-Hero',
+      category: 'Banner',
+      cover_image: ru6SplitHeroSvg,
+      html_code: renderRu6SplitHero(ru6SplitHeroDefaults),
+    },
   ],
   Contact: [
     {
@@ -84,6 +140,32 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'FAQs',
       cover_image: ru1FaqSvg,
       html_code: renderRu1Faq(ru1FaqDefaults),
+    },
+  ],
+  Stats: [
+    {
+      title: 'Ru1-Stats',
+      category: 'Stats',
+      cover_image: ru1StatsSvg,
+      html_code: renderRu1Stats(ru1StatsDefaults),
+    },
+    {
+      title: 'Ru2-Stats',
+      category: 'Stats',
+      cover_image: ru2StatsSvg,
+      html_code: renderRu2Stats(ru2StatsDefaults),
+    },
+    {
+      title: 'Ru3-Stats',
+      category: 'Stats',
+      cover_image: ru3StatsSvg,
+      html_code: renderRu3Stats(ru3StatsDefaults),
+    },
+    {
+      title: 'Ru4-Stats',
+      category: 'Stats',
+      cover_image: ru4StatsSvg,
+      html_code: renderRu4Stats(ru4StatsDefaults),
     },
   ],
   Footer: [
@@ -135,10 +217,58 @@ export function useLayouts() {
     render: renderRu2SplitBannerCollage,
   })
 
+  blockRegistry.register('Ru5-Image-Carousel', {
+    defaults: ru5ImageCarouselDefaults,
+    fields: ru5ImageCarouselFields,
+    render: renderRu5ImageCarousel,
+  })
+
+  blockRegistry.register('Ru3-Text + Image Hero', {
+    defaults: ru3TextImageHeroDefaults,
+    fields: ru3TextImageHeroFields,
+    render: renderRu3TextImageHero,
+  })
+
+  blockRegistry.register('Ru4-Overlay Panel', {
+    defaults: ru4OverlayPanelDefaults,
+    fields: ru4OverlayPanelFields,
+    render: renderRu4OverlayPanel,
+  })
+
+  blockRegistry.register('Ru6-Split-Hero', {
+    defaults: ru6SplitHeroDefaults,
+    fields: ru6SplitHeroFields,
+    render: renderRu6SplitHero,
+  })
+
   blockRegistry.register('Footer-1', {
     defaults: footer1Defaults,
     fields: footer1Fields,
     render: renderFooter1,
+  })
+
+  blockRegistry.register('Ru1-Stats', {
+    defaults: ru1StatsDefaults,
+    fields: ru1StatsFields,
+    render: renderRu1Stats,
+  })
+
+  blockRegistry.register('Ru2-Stats', {
+    defaults: ru2StatsDefaults,
+    fields: ru2StatsFields,
+    render: renderRu2Stats,
+  })
+
+  blockRegistry.register('Ru3-Stats', {
+    defaults: ru3StatsDefaults,
+    fields: ru3StatsFields,
+    render: renderRu3Stats,
+  })
+
+  blockRegistry.register('Ru4-Stats', {
+    defaults: ru4StatsDefaults,
+    fields: ru4StatsFields,
+    render: renderRu4Stats,
   })
 
   return { layoutComponentRegistry }
