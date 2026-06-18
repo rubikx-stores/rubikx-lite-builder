@@ -283,27 +283,11 @@ function doApply() {
   const section = getSection()
   if (!section) return
 
-  // Clean all cards first before rebuilding
-  const allCards = section.querySelectorAll(
-    '.flex-1, .pbx-flex-1'
-  )
-  allCards.forEach(card => {
-    card.querySelectorAll('a.shop-btn').forEach(b => b.remove())
-    card.querySelectorAll('.color-swatches').forEach(s => s.remove())
-    card.querySelectorAll('.layout-inline-wrapper').forEach(wrapper => {
-      while (wrapper.firstChild) {
-        wrapper.parentElement?.insertBefore(wrapper.firstChild, wrapper)
-      }
-      wrapper.remove()
-    })
-    const textDiv = card.querySelector(
-      '.break-words, .pbx-break-words'
-    )
-    if (textDiv) {
-      textDiv.style.display = ''
-      textDiv.style.flexDirection = ''
-      textDiv.style.flex = ''
-    }
+  // Nuclear clean: remove all buttons and swatches from every product card slot
+  section.querySelectorAll('img[alt="provider"]').forEach(img => {
+    const card = img.closest('[class*="flex"]') ?? img.parentElement
+    card?.querySelectorAll('a').forEach(b => b.remove())
+    card?.querySelectorAll('[class*="color-swatches"], .color-swatches').forEach(s => s.remove())
   })
 
   const cards = Array.from(section.querySelectorAll('.flex-1, .pbx-flex-1')).filter(el =>
@@ -369,12 +353,6 @@ function doApply() {
         textDiv.style.textAlign = 'left'
       }
 
-      cardDiv.querySelectorAll('a.shop-btn').forEach(b => b.remove())
-
-      // Remove existing swatches
-      const existingSwatches = textDiv?.querySelector('.color-swatches')
-      if (existingSwatches) existingSwatches.remove()
-
       // Add new swatches if product has colors
       if (product.colors?.length) {
         const swatchContainer = document.createElement('div')
@@ -422,9 +400,8 @@ function doApply() {
           'Start customizing by editing this default text directly in the editor.'
         const cardDiv = img.closest('.flex-1, .pbx-flex-1')
           ?? parentDiv
-        cardDiv.querySelector('.color-swatches')?.remove()
-        cardDiv.querySelectorAll('a.shop-btn')
-          .forEach(b => b.remove())
+        cardDiv.querySelectorAll('a').forEach(b => b.remove())
+        cardDiv.querySelectorAll('.color-swatches').forEach(s => s.remove())
         // Remove flex styles from textDiv
         const textDiv = cardDiv.querySelector(
           '.break-words, .pbx-break-words'

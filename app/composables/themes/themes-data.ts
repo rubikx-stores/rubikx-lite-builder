@@ -630,7 +630,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
           <p class="pbx-font-semibold pbx-text-sm">${p.name}</p>
           ${priceRow}
           ${colorsHtml}
-          ${data.showAddToCart !== false ? `<a href="${p.buttonUrl}" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.addToCartRadius ?? 6}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block">${p.buttonLabel}</a>` : ''}
+          ${data.showAddToCart !== false ? `<a href="${p.buttonUrl}" class="shop-btn" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.addToCartRadius ?? 6}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block">${p.buttonLabel}</a>` : ''}
           ${bottomRow}
         </div>
       </div>`
@@ -1239,7 +1239,7 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
     // bottom: arrow at the very end of the card
     const footerRow = data.showAddToCart
       ? `<div style="display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:10px">
-           <a href="${p.buttonUrl}" style="flex:1;background:${data.buttonBgColor};color:${data.buttonTextColor};text-align:center;padding:0.5rem 0.25rem;font-size:0.8125rem;font-weight:500;text-decoration:none;border-radius:${data.addToCartRadius ?? 6}px">${p.buttonLabel}</a>
+           <a href="${p.buttonUrl}" class="shop-btn" style="flex:1;background:${data.buttonBgColor};color:${data.buttonTextColor};text-align:center;padding:0.5rem 0.25rem;font-size:0.8125rem;font-weight:500;text-decoration:none;border-radius:${data.addToCartRadius ?? 6}px">${p.buttonLabel}</a>
            ${arrowBtnPos === 'bottom' ? arrowBtnEl : ''}
          </div>`
       : arrowBtnPos === 'bottom'
@@ -1620,7 +1620,7 @@ export function renderRu3ShopProducts(data: Ru3ShopProductsData): string {
             ${p.oldPrice ? `<s style="color:${data.oldPriceColor}" class="pbx-text-sm">${p.oldPrice}</s>` : ''}
           </div>
           ${(() => { const cs = Array.isArray(p.colors) ? '' : String(p.colors ?? '').trim(); return cs ? `<div style="display:flex;gap:6px;align-items:center;padding:4px 0">${cs.split(',').map((c: string) => c.trim()).filter(Boolean).map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.15);flex-shrink:0"></span>`).join('')}</div>` : '' })()}
-          <a href="${p.buttonUrl}" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.cardBorderRadius}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block">${p.buttonLabel}</a>
+          <a href="${p.buttonUrl}" class="shop-btn" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.cardBorderRadius}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block">${p.buttonLabel}</a>
         </div>
       </div>`).join('')
 
