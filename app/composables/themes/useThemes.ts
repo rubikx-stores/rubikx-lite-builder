@@ -21,7 +21,7 @@ import {
 } from './themes-data'
 import {
   megaMenuHeaderFields, renderMegaMenuHeader,
-  footer1Fields, renderFooter1,
+  ru1FooterFields as layoutFooterFields, renderRu1Footer as renderLayoutFooter,
   ru1StatsFields, renderRu1Stats,
   ru2StatsFields, renderRu2Stats,
   ru3StatsFields, renderRu3Stats,
@@ -127,18 +127,18 @@ export function useThemes() {
   blockRegistry.register('Ru2-Home-Carousel',  { defaults: ru2HomeCarouselDefaults,  fields: ru5ImageCarouselFields,  render: renderRu5ImageCarousel })
   blockRegistry.register('Ru2-Home-Stats',     { defaults: ru2HomeStatsDefaults,     fields: ru1StatsFields,          render: renderRu1Stats })
   blockRegistry.register('Ru2-Home-SplitHero', { defaults: ru2HomeSplitHeroDefaults, fields: ru6SplitHeroFields,      render: renderRu6SplitHero })
-  blockRegistry.register('Ru2-Home-Footer',    { defaults: ru2HomeFooterDefaults,    fields: footer1Fields,           render: renderFooter1 })
+  blockRegistry.register('Ru2-Home-Footer',    { defaults: ru2HomeFooterDefaults,    fields: layoutFooterFields,      render: renderLayoutFooter })
   blockRegistry.register('Ru3-Home-Navbar',    { defaults: ru3HomeNavbarDefaults,    fields: megaMenuHeaderFields,    render: renderMegaMenuHeader })
   blockRegistry.register('Ru3-Home-SplitHero', { defaults: ru3HomeSplitHeroDefaults, fields: ru6SplitHeroFields,      render: renderRu6SplitHero })
   blockRegistry.register('Ru3-Home-Stats',     { defaults: ru3HomeStatsDefaults,     fields: ru2StatsFields,          render: renderRu2Stats })
   blockRegistry.register('Ru3-Home-Editorial', { defaults: ru3HomeEditorialDefaults, fields: ru4StatsFields,          render: renderRu4Stats })
-  blockRegistry.register('Ru3-Home-Footer',    { defaults: ru3HomeFooterDefaults,    fields: footer1Fields,           render: renderFooter1 })
+  blockRegistry.register('Ru3-Home-Footer',    { defaults: ru3HomeFooterDefaults,    fields: layoutFooterFields,      render: renderLayoutFooter })
 
   blockRegistry.register('Ru4 Homepage Navbar',    { defaults: ru4HomeNavbarDefaults,     fields: megaMenuHeaderFields, render: renderMegaMenuHeader })
   blockRegistry.register('Ru4 Homepage SplitHero', { defaults: ru4HomeSplitHeroDefaults,  fields: ru6SplitHeroFields,   render: renderRu6SplitHero })
   blockRegistry.register('Ru4 Homepage Steps',     { defaults: ru4HomeStepsDefaults,      fields: ru3StatsFields,       render: renderRu3Stats })
   blockRegistry.register('Ru4 Homepage About',     { defaults: ru4HomeAboutSplitDefaults, fields: ru6SplitHeroFields,   render: renderRu6SplitHero })
-  blockRegistry.register('Ru4 Homepage Footer',    { defaults: ru4HomeFooterDefaults,     fields: footer1Fields,        render: renderFooter1 })
+  blockRegistry.register('Ru4 Homepage Footer',    { defaults: ru4HomeFooterDefaults,     fields: layoutFooterFields,   render: renderLayoutFooter })
 
   async function applyTheme(themeId: string) {
     const theme = themeRegistry[themeId]

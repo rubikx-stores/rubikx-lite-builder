@@ -1,7 +1,7 @@
 ﻿import type { FieldConfig } from '../editor/useBlockRegistry'
 import {
   megaMenuHeaderDefaults, megaMenuHeaderFields, renderMegaMenuHeader,
-  footer1Defaults, footer1Fields, renderFooter1,
+  ru1FooterDefaults as layoutFooter1Defaults, ru1FooterFields as layoutFooter1Fields, renderRu1Footer as renderLayoutFooter1,
   ru1StatsDefaults, ru1StatsFields, renderRu1Stats,
   ru2StatsDefaults, ru2StatsFields, renderRu2Stats,
   ru3StatsDefaults, ru3StatsFields, renderRu3Stats,
@@ -1772,7 +1772,7 @@ export const ru2HomeSplitHeroDefaults = {
 }
 
 export const ru2HomeFooterDefaults = {
-  ...footer1Defaults,
+  ...layoutFooter1Defaults,
   bgColor: '#0a1118',
   textColor: '#9ca3af',
   copyright: '© 2026 Fieldwork™ — All rights reserved.',
@@ -1784,7 +1784,7 @@ export const ru2HomePageSections: ThemeSection[] = [
   { id: null, title: 'Ru2-Home-Stats',     html_code: renderRu1Stats(ru2HomeStatsDefaults) },
   { id: null, title: 'Ru1 Homepage Featured Products', html_code: renderRu1Products(ru1ProductsDefaults) },
   { id: null, title: 'Ru2-Home-SplitHero', html_code: renderRu6SplitHero(ru2HomeSplitHeroDefaults) },
-  { id: null, title: 'Ru2-Home-Footer',    html_code: renderFooter1(ru2HomeFooterDefaults) },
+  { id: null, title: 'Ru2-Home-Footer',    html_code: renderLayoutFooter1(ru2HomeFooterDefaults) },
 ]
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1930,7 +1930,7 @@ export const ru3HomeEditorialDefaults = {
 }
 
 export const ru3HomeFooterDefaults = {
-  ...footer1Defaults,
+  ...layoutFooter1Defaults,
   bgColor: '#0f2d4a',
   textColor: '#9ca3af',
   copyright: '© 2026 ProStore — All rights reserved.',
@@ -1942,7 +1942,7 @@ export const ru3HomePageSections: ThemeSection[] = [
   { id: null, title: 'Ru3-Home-Stats',     html_code: renderRu2Stats(ru3HomeStatsDefaults) },
   { id: null, title: 'Ru1 Homepage Featured Products', html_code: renderRu1Products(ru1ProductsDefaults) },
   { id: null, title: 'Ru3-Home-Editorial', html_code: renderRu4Stats(ru3HomeEditorialDefaults) },
-  { id: null, title: 'Ru3-Home-Footer',    html_code: renderFooter1(ru3HomeFooterDefaults) },
+  { id: null, title: 'Ru3-Home-Footer',    html_code: renderLayoutFooter1(ru3HomeFooterDefaults) },
 ]
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2079,7 +2079,7 @@ export const ru4HomeAboutSplitDefaults = {
 }
 
 export const ru4HomeFooterDefaults = {
-  ...footer1Defaults,
+  ...layoutFooter1Defaults,
   bgColor: '#2d2618',
   textColor: '#8b7d6b',
   copyright: '© 2026 Outpost — All rights reserved.',
@@ -2091,5 +2091,5 @@ export const ru4HomePageSections: ThemeSection[] = [
   { id: null, title: 'Ru4 Homepage Steps',     html_code: renderRu3Stats(ru4HomeStepsDefaults) },
   { id: null, title: 'Ru1 Homepage Featured Products', html_code: renderRu1Products(ru1ProductsDefaults) },
   { id: null, title: 'Ru4 Homepage About',     html_code: renderRu6SplitHero(ru4HomeAboutSplitDefaults) },
-  { id: null, title: 'Ru4 Homepage Footer',    html_code: renderFooter1(ru4HomeFooterDefaults) },
+  { id: null, title: 'Ru4 Homepage Footer',    html_code: renderLayoutFooter1(ru4HomeFooterDefaults) },
 ]
