@@ -1676,34 +1676,34 @@ export const ru3ShopSections: ThemeSection[] = [
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const ru2HomePageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
-  <rect fill="#0f1923" x="0" y="0" width="280" height="18"/>
-  <rect fill="#f59e0b" x="8" y="6" width="30" height="5"/>
-  <rect fill="#718096" x="180" y="6" width="18" height="5"/>
-  <rect fill="#718096" x="203" y="6" width="18" height="5"/>
-  <rect fill="#718096" x="226" y="6" width="18" height="5"/>
-  <rect fill="#f59e0b" x="250" y="6" width="22" height="5"/>
-  <rect fill="#1c2e3e" x="0" y="18" width="280" height="80"/>
-  <rect fill="#4b5563" x="20" y="28" width="30" height="5" rx="1"/>
-  <rect fill="#f3f4f6" x="20" y="37" width="110" height="12" rx="1"/>
-  <rect fill="#9ca3af" x="20" y="53" width="80" height="5" rx="1"/>
-  <rect fill="#f59e0b" x="20" y="63" width="40" height="10" rx="3"/>
-  <circle fill="#f59e0b" cx="130" cy="92" r="3"/>
+  <rect fill="#1f2937" width="280" height="18"/>
+  <rect fill="#9ca3af" x="8" y="6" width="30" height="5"/>
+  <rect fill="#6b7280" x="180" y="6" width="18" height="5"/>
+  <rect fill="#6b7280" x="203" y="6" width="18" height="5"/>
+  <rect fill="#6b7280" x="226" y="6" width="18" height="5"/>
+  <rect fill="#4b5563" x="250" y="4" width="22" height="10" rx="3"/>
+  <rect fill="#111827" x="0" y="18" width="280" height="80"/>
+  <rect fill="#9ca3af" x="20" y="28" width="30" height="5" rx="1"/>
+  <rect fill="#d1d5db" x="20" y="37" width="110" height="12" rx="1"/>
+  <rect fill="#6b7280" x="20" y="53" width="80" height="5" rx="1"/>
+  <rect fill="#4b5563" x="20" y="63" width="40" height="10" rx="3"/>
+  <circle fill="#9ca3af" cx="130" cy="92" r="3"/>
   <circle fill="#4b5563" cx="140" cy="92" r="2"/>
   <circle fill="#4b5563" cx="148" cy="92" r="2"/>
-  <rect fill="#f8f9fa" x="0" y="98" width="280" height="35"/>
-  <rect fill="#ffffff" x="8" y="104" width="60" height="23" rx="3"/>
-  <rect fill="#ffffff" x="76" y="104" width="60" height="23" rx="3"/>
-  <rect fill="#ffffff" x="144" y="104" width="60" height="23" rx="3"/>
-  <rect fill="#ffffff" x="212" y="104" width="60" height="23" rx="3"/>
-  <rect fill="#0f1923" x="0" y="133" width="280" height="60"/>
-  <rect fill="#1c2e3e" x="8" y="141" width="60" height="44" rx="3"/>
-  <rect fill="#1c2e3e" x="76" y="141" width="60" height="44" rx="3"/>
-  <rect fill="#1c2e3e" x="144" y="141" width="60" height="44" rx="3"/>
-  <rect fill="#1c2e3e" x="212" y="141" width="60" height="44" rx="3"/>
-  <rect fill="#ffffff" x="0" y="193" width="280" height="65"/>
-  <rect fill="#e5e7eb" x="148" y="198" width="124" height="55" rx="3"/>
-  <rect fill="#f3f4f6" x="8" y="205" width="120" height="43" rx="2"/>
-  <rect fill="#0a1118" x="0" y="258" width="280" height="22"/>
+  <rect fill="#374151" x="0" y="98" width="280" height="35"/>
+  <rect fill="#4b5563" x="8" y="104" width="60" height="23" rx="3"/>
+  <rect fill="#4b5563" x="76" y="104" width="60" height="23" rx="3"/>
+  <rect fill="#4b5563" x="144" y="104" width="60" height="23" rx="3"/>
+  <rect fill="#4b5563" x="212" y="104" width="60" height="23" rx="3"/>
+  <rect fill="#1f2937" x="0" y="133" width="280" height="60"/>
+  <rect fill="#374151" x="8" y="141" width="60" height="44" rx="3"/>
+  <rect fill="#374151" x="76" y="141" width="60" height="44" rx="3"/>
+  <rect fill="#374151" x="144" y="141" width="60" height="44" rx="3"/>
+  <rect fill="#374151" x="212" y="141" width="60" height="44" rx="3"/>
+  <rect fill="#111827" x="0" y="193" width="280" height="65"/>
+  <rect fill="#374151" x="148" y="198" width="124" height="55" rx="3"/>
+  <rect fill="#4b5563" x="8" y="205" width="120" height="43" rx="2"/>
+  <rect fill="#0f172a" x="0" y="258" width="280" height="22"/>
 </svg>`
 
 // ── Ru2 HomePage unique component defaults ────────────────────────────────────
@@ -1792,40 +1792,40 @@ export const ru2HomePageSections: ThemeSection[] = [
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const ru3HomePageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
-  <rect fill="#ffffff" x="0" y="0" width="280" height="18"/>
-  <rect fill="#0f2d4a" x="8" y="6" width="30" height="5"/>
-  <rect fill="#374151" x="180" y="6" width="18" height="5"/>
-  <rect fill="#374151" x="203" y="6" width="18" height="5"/>
-  <rect fill="#374151" x="226" y="6" width="18" height="5"/>
-  <rect fill="#0f2d4a" x="250" y="6" width="22" height="5"/>
-  <rect fill="#ffffff" x="0" y="18" width="140" height="85"/>
-  <rect fill="#10b981" x="8" y="24" width="30" height="3" rx="1"/>
-  <rect fill="#0f2d4a" x="8" y="32" width="100" height="12" rx="1"/>
-  <rect fill="#0f2d4a" x="8" y="48" width="80" height="8" rx="1"/>
-  <rect fill="#9ca3af" x="8" y="61" width="110" height="3" rx="1"/>
-  <rect fill="#0f2d4a" x="8" y="76" width="44" height="12" rx="4"/>
-  <rect fill="#e8f5f1" x="148" y="18" width="132" height="85" rx="4"/>
-  <rect fill="#ffffff" x="164" y="30" width="100" height="60" rx="8"/>
-  <rect fill="#f8fafc" x="0" y="103" width="280" height="45"/>
-  <rect fill="#ffffff" x="8" y="109" width="260" height="33" rx="6"/>
-  <rect fill="#0f2d4a" x="20" y="116" width="50" height="6" rx="1"/>
-  <rect fill="#e5e7eb" x="100" y="112" width="1" height="25"/>
-  <rect fill="#0f2d4a" x="110" y="116" width="40" height="6" rx="1"/>
-  <rect fill="#e5e7eb" x="190" y="112" width="1" height="25"/>
-  <rect fill="#0f2d4a" x="200" y="116" width="35" height="6" rx="1"/>
-  <rect fill="#ffffff" x="0" y="148" width="280" height="55"/>
-  <rect fill="#e5e7eb" x="8" y="156" width="60" height="40" rx="4"/>
-  <rect fill="#e5e7eb" x="76" y="156" width="60" height="40" rx="4"/>
-  <rect fill="#e5e7eb" x="144" y="156" width="60" height="40" rx="4"/>
-  <rect fill="#e5e7eb" x="212" y="156" width="60" height="40" rx="4"/>
-  <rect fill="#f0f7f4" x="0" y="203" width="280" height="55"/>
-  <rect fill="#0f2d4a" x="60" y="210" width="160" height="6" rx="1"/>
-  <rect fill="#b2d8cc" x="0" y="220" width="280" height="1"/>
-  <rect fill="#0f2d4a" x="8" y="228" width="12" height="18" rx="1"/>
-  <rect fill="#0f2d4a" x="90" y="230" width="40" height="8" rx="1"/>
-  <rect fill="#0f2d4a" x="160" y="230" width="40" height="8" rx="1"/>
-  <rect fill="#0f2d4a" x="0" y="258" width="280" height="22"/>
-  <rect fill="#10b981" x="8" y="264" width="40" height="4"/>
+  <rect fill="#1f2937" width="280" height="18"/>
+  <rect fill="#9ca3af" x="8" y="6" width="30" height="5"/>
+  <rect fill="#6b7280" x="180" y="6" width="18" height="5"/>
+  <rect fill="#6b7280" x="203" y="6" width="18" height="5"/>
+  <rect fill="#6b7280" x="226" y="6" width="18" height="5"/>
+  <rect fill="#4b5563" x="250" y="4" width="22" height="10" rx="3"/>
+  <rect fill="#111827" x="0" y="18" width="140" height="85"/>
+  <rect fill="#9ca3af" x="8" y="24" width="30" height="3" rx="1"/>
+  <rect fill="#d1d5db" x="8" y="32" width="100" height="12" rx="1"/>
+  <rect fill="#d1d5db" x="8" y="48" width="80" height="8" rx="1"/>
+  <rect fill="#6b7280" x="8" y="61" width="110" height="3" rx="1"/>
+  <rect fill="#4b5563" x="8" y="76" width="44" height="12" rx="4"/>
+  <rect fill="#374151" x="148" y="18" width="132" height="85" rx="4"/>
+  <rect fill="#4b5563" x="164" y="30" width="100" height="60" rx="8"/>
+  <rect fill="#1f2937" x="0" y="103" width="280" height="45"/>
+  <rect fill="#374151" x="8" y="109" width="260" height="33" rx="6"/>
+  <rect fill="#9ca3af" x="20" y="116" width="50" height="6" rx="1"/>
+  <rect fill="#4b5563" x="100" y="112" width="1" height="25"/>
+  <rect fill="#9ca3af" x="110" y="116" width="40" height="6" rx="1"/>
+  <rect fill="#4b5563" x="190" y="112" width="1" height="25"/>
+  <rect fill="#9ca3af" x="200" y="116" width="35" height="6" rx="1"/>
+  <rect fill="#111827" x="0" y="148" width="280" height="55"/>
+  <rect fill="#374151" x="8" y="156" width="60" height="40" rx="4"/>
+  <rect fill="#374151" x="76" y="156" width="60" height="40" rx="4"/>
+  <rect fill="#374151" x="144" y="156" width="60" height="40" rx="4"/>
+  <rect fill="#374151" x="212" y="156" width="60" height="40" rx="4"/>
+  <rect fill="#1f2937" x="0" y="203" width="280" height="55"/>
+  <rect fill="#9ca3af" x="60" y="210" width="160" height="6" rx="1"/>
+  <rect fill="#4b5563" x="0" y="220" width="280" height="1"/>
+  <rect fill="#374151" x="8" y="228" width="12" height="18" rx="1"/>
+  <rect fill="#9ca3af" x="90" y="230" width="40" height="8" rx="1"/>
+  <rect fill="#9ca3af" x="160" y="230" width="40" height="8" rx="1"/>
+  <rect fill="#0f172a" x="0" y="258" width="280" height="22"/>
+  <rect fill="#9ca3af" x="8" y="264" width="40" height="4"/>
 </svg>`
 
 // ── Ru3 HomePage unique component defaults ────────────────────────────────────
@@ -1950,42 +1950,42 @@ export const ru3HomePageSections: ThemeSection[] = [
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const ru4HomePageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
-  <rect fill="#faf9f7" x="0" y="0" width="280" height="18"/>
-  <rect fill="#1a1a1a" x="8" y="6" width="30" height="5"/>
-  <rect fill="#4a4440" x="160" y="6" width="18" height="5"/>
-  <rect fill="#4a4440" x="183" y="6" width="18" height="5"/>
-  <rect fill="#4a4440" x="206" y="6" width="18" height="5"/>
-  <rect fill="#e85d26" x="240" y="4" width="32" height="10" rx="3"/>
-  <rect fill="#f5f0e8" x="0" y="18" width="140" height="85"/>
-  <rect fill="#e85d26" x="8" y="24" width="35" height="3" rx="1"/>
-  <rect fill="#1a1a1a" x="8" y="32" width="110" height="12" rx="1"/>
-  <rect fill="#1a1a1a" x="8" y="48" width="85" height="8" rx="1"/>
-  <rect fill="#6b5c52" x="8" y="61" width="115" height="3" rx="1"/>
-  <rect fill="#6b5c52" x="8" y="67" width="100" height="3" rx="1"/>
-  <rect fill="#e85d26" x="8" y="76" width="44" height="12" rx="4"/>
-  <rect fill="#e8ddd0" x="148" y="18" width="132" height="85" rx="8"/>
-  <rect fill="#ffffff" x="0" y="103" width="280" height="40"/>
-  <rect fill="#fef0e8" x="20" y="112" width="32" height="20" rx="16"/>
-  <rect fill="#1a1a1a" x="60" y="115" width="50" height="5" rx="1"/>
-  <rect fill="#6b5c52" x="60" y="123" width="65" height="3" rx="1"/>
-  <rect fill="#fef0e8" x="110" y="112" width="32" height="20" rx="16"/>
-  <rect fill="#1a1a1a" x="150" y="115" width="50" height="5" rx="1"/>
-  <rect fill="#6b5c52" x="150" y="123" width="65" height="3" rx="1"/>
-  <rect fill="#fef0e8" x="200" y="112" width="32" height="20" rx="16"/>
-  <rect fill="#1a1a1a" x="240" y="115" width="32" height="5" rx="1"/>
-  <rect fill="#6b5c52" x="240" y="123" width="28" height="3" rx="1"/>
-  <rect fill="#faf9f7" x="0" y="143" width="280" height="55"/>
-  <rect fill="#ffffff" x="8" y="151" width="60" height="40" rx="6"/>
-  <rect fill="#ffffff" x="76" y="151" width="60" height="40" rx="6"/>
-  <rect fill="#ffffff" x="144" y="151" width="60" height="40" rx="6"/>
-  <rect fill="#ffffff" x="212" y="151" width="60" height="40" rx="6"/>
-  <rect fill="#f5f0e8" x="0" y="198" width="140" height="65"/>
-  <rect fill="#e8ddd0" x="140" y="198" width="140" height="65"/>
-  <rect fill="#2d2618" x="0" y="263" width="280" height="17"/>
-  <rect fill="#e85d26" x="8" y="268" width="35" height="4"/>
-  <rect fill="#8b7d6b" x="100" y="268" width="25" height="4"/>
-  <rect fill="#8b7d6b" x="160" y="268" width="25" height="4"/>
-  <rect fill="#8b7d6b" x="220" y="268" width="25" height="4"/>
+  <rect fill="#1f2937" width="280" height="18"/>
+  <rect fill="#9ca3af" x="8" y="6" width="30" height="5"/>
+  <rect fill="#6b7280" x="160" y="6" width="18" height="5"/>
+  <rect fill="#6b7280" x="183" y="6" width="18" height="5"/>
+  <rect fill="#6b7280" x="206" y="6" width="18" height="5"/>
+  <rect fill="#4b5563" x="240" y="4" width="32" height="10" rx="3"/>
+  <rect fill="#111827" x="0" y="18" width="140" height="85"/>
+  <rect fill="#9ca3af" x="8" y="24" width="35" height="3" rx="1"/>
+  <rect fill="#d1d5db" x="8" y="32" width="110" height="12" rx="1"/>
+  <rect fill="#d1d5db" x="8" y="48" width="85" height="8" rx="1"/>
+  <rect fill="#6b7280" x="8" y="61" width="115" height="3" rx="1"/>
+  <rect fill="#6b7280" x="8" y="67" width="100" height="3" rx="1"/>
+  <rect fill="#4b5563" x="8" y="76" width="44" height="12" rx="4"/>
+  <rect fill="#374151" x="148" y="18" width="132" height="85" rx="8"/>
+  <rect fill="#1f2937" x="0" y="103" width="280" height="40"/>
+  <rect fill="#4b5563" x="20" y="112" width="32" height="20" rx="16"/>
+  <rect fill="#9ca3af" x="60" y="115" width="50" height="5" rx="1"/>
+  <rect fill="#6b7280" x="60" y="123" width="65" height="3" rx="1"/>
+  <rect fill="#4b5563" x="110" y="112" width="32" height="20" rx="16"/>
+  <rect fill="#9ca3af" x="150" y="115" width="50" height="5" rx="1"/>
+  <rect fill="#6b7280" x="150" y="123" width="65" height="3" rx="1"/>
+  <rect fill="#4b5563" x="200" y="112" width="32" height="20" rx="16"/>
+  <rect fill="#9ca3af" x="240" y="115" width="32" height="5" rx="1"/>
+  <rect fill="#6b7280" x="240" y="123" width="28" height="3" rx="1"/>
+  <rect fill="#111827" x="0" y="143" width="280" height="55"/>
+  <rect fill="#374151" x="8" y="151" width="60" height="40" rx="6"/>
+  <rect fill="#374151" x="76" y="151" width="60" height="40" rx="6"/>
+  <rect fill="#374151" x="144" y="151" width="60" height="40" rx="6"/>
+  <rect fill="#374151" x="212" y="151" width="60" height="40" rx="6"/>
+  <rect fill="#1f2937" x="0" y="198" width="140" height="65"/>
+  <rect fill="#374151" x="140" y="198" width="140" height="65"/>
+  <rect fill="#0f172a" x="0" y="263" width="280" height="17"/>
+  <rect fill="#9ca3af" x="8" y="268" width="35" height="4"/>
+  <rect fill="#6b7280" x="100" y="268" width="25" height="4"/>
+  <rect fill="#6b7280" x="160" y="268" width="25" height="4"/>
+  <rect fill="#6b7280" x="220" y="268" width="25" height="4"/>
 </svg>`
 
 export const ru4HomeNavbarDefaults = {

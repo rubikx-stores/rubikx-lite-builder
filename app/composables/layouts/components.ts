@@ -640,24 +640,25 @@ export function renderRu2Footer(data: Ru2FooterData): string {
 // ─── Ru1-About ───────────────────────────────────────────────────────────────
 
 export const ru1AboutSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
-  <rect fill="#394152" x="89" y="6" width="100" height="6"/>
-  <rect fill="#394152" x="55" y="17" width="168" height="3"/>
-  <rect fill="#394152" x="65" y="22" width="148" height="3"/>
-  <rect fill="#394152" x="106" y="30" width="66" height="7"/>
-  <rect fill="#394152" x="0" y="43" width="277.5" height="38" opacity="0.4"/>
-  <rect fill="#f3f4f6" x="30" y="70" width="218" height="28" rx="3"/>
-  <rect fill="#394152" x="43" y="75" width="6" height="6"/>
-  <rect fill="#394152" x="38" y="84" width="16" height="3"/>
-  <rect fill="#394152" x="40" y="89" width="12" height="2"/>
-  <rect fill="#394152" x="104" y="75" width="6" height="6"/>
-  <rect fill="#394152" x="99" y="84" width="16" height="3"/>
-  <rect fill="#394152" x="101" y="89" width="12" height="2"/>
-  <rect fill="#394152" x="165" y="75" width="6" height="6"/>
-  <rect fill="#394152" x="160" y="84" width="16" height="3"/>
-  <rect fill="#394152" x="162" y="89" width="12" height="2"/>
-  <rect fill="#394152" x="226" y="75" width="6" height="6"/>
-  <rect fill="#394152" x="221" y="84" width="16" height="3"/>
-  <rect fill="#394152" x="223" y="89" width="12" height="2"/>
+  <rect fill="#1f2937" width="277.5" height="105"/>
+  <rect fill="#9ca3af" x="89" y="6" width="100" height="6" rx="1"/>
+  <rect fill="#6b7280" x="55" y="17" width="168" height="3" rx="1"/>
+  <rect fill="#6b7280" x="65" y="22" width="148" height="3" rx="1"/>
+  <rect fill="#4b5563" x="106" y="30" width="66" height="7" rx="3"/>
+  <rect fill="#374151" x="0" y="43" width="277.5" height="22"/>
+  <rect fill="#374151" x="30" y="70" width="218" height="28" rx="3"/>
+  <rect fill="#4b5563" x="43" y="75" width="6" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="38" y="84" width="16" height="3" rx="1"/>
+  <rect fill="#6b7280" x="40" y="89" width="12" height="2" rx="1"/>
+  <rect fill="#4b5563" x="104" y="75" width="6" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="99" y="84" width="16" height="3" rx="1"/>
+  <rect fill="#6b7280" x="101" y="89" width="12" height="2" rx="1"/>
+  <rect fill="#4b5563" x="165" y="75" width="6" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="160" y="84" width="16" height="3" rx="1"/>
+  <rect fill="#6b7280" x="162" y="89" width="12" height="2" rx="1"/>
+  <rect fill="#4b5563" x="226" y="75" width="6" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="221" y="84" width="16" height="3" rx="1"/>
+  <rect fill="#6b7280" x="223" y="89" width="12" height="2" rx="1"/>
 </svg>`
 
 export interface Ru1AboutData {
@@ -1212,23 +1213,23 @@ export const ru2SplitBannerCollageFields: FieldConfig[] = [
 // ─── Ru1-Stats ───────────────────────────────────────────────────────────────
 
 export const ru1StatsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 60">
-  <rect fill="#f9fafb" width="277.5" height="60"/>
-  <rect fill="#e5e7eb" x="8"   y="10" width="55" height="40" rx="4"/>
-  <rect fill="#e5e7eb" x="73"  y="10" width="55" height="40" rx="4"/>
-  <rect fill="#e5e7eb" x="138" y="10" width="55" height="40" rx="4"/>
-  <rect fill="#e5e7eb" x="203" y="10" width="55" height="40" rx="4"/>
-  <rect fill="#9ca3af" x="20"  y="18" width="16" height="3" rx="1"/>
-  <rect fill="#394152" x="20"  y="25" width="28" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="20"  y="35" width="22" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="85"  y="18" width="16" height="3" rx="1"/>
-  <rect fill="#394152" x="85"  y="25" width="28" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="85"  y="35" width="22" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="150" y="18" width="16" height="3" rx="1"/>
-  <rect fill="#394152" x="150" y="25" width="28" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="150" y="35" width="22" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="215" y="18" width="16" height="3" rx="1"/>
-  <rect fill="#394152" x="215" y="25" width="28" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="215" y="35" width="22" height="3" rx="1"/>
+  <rect fill="#1f2937" width="277.5" height="60"/>
+  <rect fill="#374151" x="8"   y="10" width="55" height="40" rx="4"/>
+  <rect fill="#374151" x="73"  y="10" width="55" height="40" rx="4"/>
+  <rect fill="#374151" x="138" y="10" width="55" height="40" rx="4"/>
+  <rect fill="#374151" x="203" y="10" width="55" height="40" rx="4"/>
+  <rect fill="#6b7280" x="20"  y="18" width="16" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="20"  y="25" width="28" height="6" rx="1"/>
+  <rect fill="#6b7280" x="20"  y="35" width="22" height="3" rx="1"/>
+  <rect fill="#6b7280" x="85"  y="18" width="16" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="85"  y="25" width="28" height="6" rx="1"/>
+  <rect fill="#6b7280" x="85"  y="35" width="22" height="3" rx="1"/>
+  <rect fill="#6b7280" x="150" y="18" width="16" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="150" y="25" width="28" height="6" rx="1"/>
+  <rect fill="#6b7280" x="150" y="35" width="22" height="3" rx="1"/>
+  <rect fill="#6b7280" x="215" y="18" width="16" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="215" y="25" width="28" height="6" rx="1"/>
+  <rect fill="#6b7280" x="215" y="35" width="22" height="3" rx="1"/>
 </svg>`
 
 export interface Ru1StatItem {
@@ -1512,20 +1513,20 @@ export function renderRu2SplitBannerCollage(data: Ru2SplitBannerCollageData): st
 // ─── Ru2-Stats ───────────────────────────────────────────────────────────────
 
 export const ru2StatsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 70">
-  <rect fill="#f3f4f6" width="277.5" height="70"/>
-  <rect fill="#ffffff" x="8" y="8" width="261.5" height="54" rx="6"/>
-  <rect fill="#394152" x="18" y="18" width="55" height="7" rx="1"/>
-  <rect fill="#9ca3af" x="18" y="28" width="80" height="3" rx="1"/>
-  <rect fill="#394152" x="190" y="16" width="35" height="8" rx="4"/>
-  <rect fill="#394152" x="230" y="16" width="35" height="8" rx="12"/>
+  <rect fill="#1f2937" width="277.5" height="70"/>
+  <rect fill="#374151" x="8" y="8" width="261.5" height="54" rx="6"/>
+  <rect fill="#9ca3af" x="18" y="18" width="55" height="7" rx="1"/>
+  <rect fill="#6b7280" x="18" y="28" width="80" height="3" rx="1"/>
+  <rect fill="#4b5563" x="190" y="16" width="35" height="8" rx="4"/>
+  <rect fill="#6b7280" x="230" y="16" width="35" height="8" rx="12"/>
   <rect fill="#9ca3af" x="18" y="44" width="20" height="5" rx="1"/>
   <rect fill="#9ca3af" x="85" y="44" width="20" height="5" rx="1"/>
   <rect fill="#9ca3af" x="152" y="44" width="20" height="5" rx="1"/>
   <rect fill="#9ca3af" x="219" y="44" width="20" height="5" rx="1"/>
-  <rect fill="#394152" x="18" y="52" width="40" height="3" rx="1"/>
-  <rect fill="#394152" x="85" y="52" width="40" height="3" rx="1"/>
-  <rect fill="#394152" x="152" y="52" width="40" height="3" rx="1"/>
-  <rect fill="#394152" x="219" y="52" width="40" height="3" rx="1"/>
+  <rect fill="#6b7280" x="18" y="52" width="40" height="3" rx="1"/>
+  <rect fill="#6b7280" x="85" y="52" width="40" height="3" rx="1"/>
+  <rect fill="#6b7280" x="152" y="52" width="40" height="3" rx="1"/>
+  <rect fill="#6b7280" x="219" y="52" width="40" height="3" rx="1"/>
 </svg>`
 
 export interface Ru2StatItem {
@@ -1741,25 +1742,25 @@ export function renderRu2Stats(data: Ru2StatsData): string {
 // ─── Ru3-Stats ───────────────────────────────────────────────────────────────
 
 export const ru3StatsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 60">
-  <rect fill="#f9fafb" width="277.5" height="60"/>
-  <rect fill="#ffffff" x="8" y="8" width="261.5" height="44" rx="6"/>
-  <circle fill="#e9d5ff" cx="38" cy="30" r="10"/>
-  <rect fill="#7c3aed" x="35" y="26" width="6" height="8" rx="1"/>
-  <rect fill="#394152" x="54" y="24" width="30" height="4" rx="1"/>
-  <rect fill="#9ca3af" x="54" y="31" width="40" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="54" y="37" width="35" height="3" rx="1"/>
-  <rect fill="#d1d5db" x="108" y="28" width="6" height="6" rx="1" transform="rotate(45 111 31)"/>
-  <circle fill="#e9d5ff" cx="131" cy="30" r="10"/>
-  <rect fill="#7c3aed" x="128" y="26" width="6" height="8" rx="1"/>
-  <rect fill="#394152" x="147" y="24" width="30" height="4" rx="1"/>
-  <rect fill="#9ca3af" x="147" y="31" width="40" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="147" y="37" width="35" height="3" rx="1"/>
-  <rect fill="#d1d5db" x="201" y="28" width="6" height="6" rx="1" transform="rotate(45 204 31)"/>
-  <circle fill="#e9d5ff" cx="224" cy="30" r="10"/>
-  <rect fill="#7c3aed" x="221" y="26" width="6" height="8" rx="1"/>
-  <rect fill="#394152" x="240" y="24" width="22" height="4" rx="1"/>
-  <rect fill="#9ca3af" x="240" y="31" width="28" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="240" y="37" width="24" height="3" rx="1"/>
+  <rect fill="#1f2937" width="277.5" height="60"/>
+  <rect fill="#374151" x="8" y="8" width="261.5" height="44" rx="6"/>
+  <circle fill="#4b5563" cx="38" cy="30" r="10"/>
+  <rect fill="#9ca3af" x="35" y="26" width="6" height="8" rx="1"/>
+  <rect fill="#9ca3af" x="54" y="24" width="30" height="4" rx="1"/>
+  <rect fill="#6b7280" x="54" y="31" width="40" height="3" rx="1"/>
+  <rect fill="#6b7280" x="54" y="37" width="35" height="3" rx="1"/>
+  <rect fill="#4b5563" x="108" y="28" width="6" height="6" rx="1" transform="rotate(45 111 31)"/>
+  <circle fill="#4b5563" cx="131" cy="30" r="10"/>
+  <rect fill="#9ca3af" x="128" y="26" width="6" height="8" rx="1"/>
+  <rect fill="#9ca3af" x="147" y="24" width="30" height="4" rx="1"/>
+  <rect fill="#6b7280" x="147" y="31" width="40" height="3" rx="1"/>
+  <rect fill="#6b7280" x="147" y="37" width="35" height="3" rx="1"/>
+  <rect fill="#4b5563" x="201" y="28" width="6" height="6" rx="1" transform="rotate(45 204 31)"/>
+  <circle fill="#4b5563" cx="224" cy="30" r="10"/>
+  <rect fill="#9ca3af" x="221" y="26" width="6" height="8" rx="1"/>
+  <rect fill="#9ca3af" x="240" y="24" width="22" height="4" rx="1"/>
+  <rect fill="#6b7280" x="240" y="31" width="28" height="3" rx="1"/>
+  <rect fill="#6b7280" x="240" y="37" width="24" height="3" rx="1"/>
 </svg>`
 
 export interface Ru3StepItem {
@@ -1928,21 +1929,21 @@ export function renderRu3Stats(data: Ru3StatsData): string {
 // ─── Ru4-Stats ───────────────────────────────────────────────────────────────
 
 export const ru4StatsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#e8e4dc" width="277.5" height="80"/>
-  <rect fill="#394152" x="60" y="8" width="157" height="8" rx="1"/>
-  <rect fill="#6b6b5a" x="80" y="20" width="117" height="4" rx="1"/>
-  <rect fill="#394152" x="8" y="36" width="20" height="18" rx="1"/>
-  <rect fill="#6b6b5a" x="8" y="57" width="55" height="3" rx="1"/>
-  <rect fill="#6b6b5a" x="8" y="63" width="50" height="3" rx="1"/>
-  <rect fill="#6b6b5a" x="8" y="69" width="45" height="3" rx="1"/>
-  <rect fill="#394152" x="100" y="36" width="35" height="10" rx="1"/>
-  <rect fill="#6b6b5a" x="100" y="50" width="28" height="3" rx="1"/>
-  <rect fill="#394152" x="160" y="36" width="35" height="10" rx="1"/>
-  <rect fill="#6b6b5a" x="160" y="50" width="28" height="3" rx="1"/>
-  <rect fill="#394152" x="100" y="60" width="35" height="10" rx="1"/>
-  <rect fill="#6b6b5a" x="100" y="73" width="28" height="3" rx="1"/>
-  <rect fill="#394152" x="160" y="60" width="35" height="10" rx="1"/>
-  <rect fill="#6b6b5a" x="160" y="73" width="28" height="3" rx="1"/>
+  <rect fill="#1f2937" width="277.5" height="80"/>
+  <rect fill="#9ca3af" x="60" y="8" width="157" height="8" rx="1"/>
+  <rect fill="#6b7280" x="80" y="20" width="117" height="4" rx="1"/>
+  <rect fill="#4b5563" x="8" y="36" width="20" height="18" rx="1"/>
+  <rect fill="#6b7280" x="8" y="57" width="55" height="3" rx="1"/>
+  <rect fill="#6b7280" x="8" y="63" width="50" height="3" rx="1"/>
+  <rect fill="#6b7280" x="8" y="69" width="45" height="3" rx="1"/>
+  <rect fill="#374151" x="100" y="36" width="35" height="10" rx="1"/>
+  <rect fill="#6b7280" x="100" y="50" width="28" height="3" rx="1"/>
+  <rect fill="#374151" x="160" y="36" width="35" height="10" rx="1"/>
+  <rect fill="#6b7280" x="160" y="50" width="28" height="3" rx="1"/>
+  <rect fill="#374151" x="100" y="60" width="35" height="10" rx="1"/>
+  <rect fill="#6b7280" x="100" y="73" width="28" height="3" rx="1"/>
+  <rect fill="#374151" x="160" y="60" width="35" height="10" rx="1"/>
+  <rect fill="#6b7280" x="160" y="73" width="28" height="3" rx="1"/>
 </svg>`
 
 export interface Ru4StatItem {
@@ -2551,15 +2552,15 @@ export function renderRu3TextImageHero(data: Ru3TextImageHeroData): string {
 // ─── Ru6-Split-Hero ──────────────────────────────────────────────────────────
 
 export const ru6SplitHeroSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#ffffff" width="277.5" height="80"/>
-  <rect fill="#394152" x="12" y="18" width="70" height="8" rx="1"/>
-  <rect fill="#394152" x="12" y="30" width="55" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="12" y="42" width="80" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="12" y="48" width="72" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="12" y="54" width="65" height="3" rx="1"/>
-  <rect fill="#394152" x="12" y="63" width="32" height="9" rx="4"/>
-  <rect fill="#e5e7eb" x="140" y="8" width="125" height="64" rx="6"/>
-  <rect fill="#9ca3af" x="152" y="20" width="100" height="40" rx="4"/>
+  <rect fill="#1f2937" width="277.5" height="80"/>
+  <rect fill="#9ca3af" x="12" y="18" width="70" height="8" rx="1"/>
+  <rect fill="#9ca3af" x="12" y="30" width="55" height="6" rx="1"/>
+  <rect fill="#6b7280" x="12" y="42" width="80" height="3" rx="1"/>
+  <rect fill="#6b7280" x="12" y="48" width="72" height="3" rx="1"/>
+  <rect fill="#6b7280" x="12" y="54" width="65" height="3" rx="1"/>
+  <rect fill="#4b5563" x="12" y="63" width="32" height="9" rx="4"/>
+  <rect fill="#374151" x="140" y="8" width="125" height="64" rx="6"/>
+  <rect fill="#4b5563" x="152" y="20" width="100" height="40" rx="4"/>
 </svg>`
 
 export interface Ru6SplitHeroData {
