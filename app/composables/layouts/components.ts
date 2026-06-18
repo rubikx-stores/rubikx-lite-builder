@@ -265,7 +265,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     ? `<script>(function(){function wireTiles(sec){sec.querySelectorAll('.pbx-ptile').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var panel=sec.querySelector('.pbx-pd');if(!panel)return;var imgEl=a.querySelector('img');var imgSrc=imgEl?imgEl.src:'';var name=(a.querySelector('.pbx-ptile-name')||{}).textContent||'';var price=(a.querySelector('.pbx-ptile-price')||{}).textContent||'';var imgCol=imgSrc?'<img src="'+imgSrc+'" style="width:100%;height:100%;object-fit:cover;display:block;" />':'<div style="width:100%;height:100%;background:#f3f4f6;"></div>';panel.innerHTML='<div style="display:grid;grid-template-columns:40% 60%;height:380px;position:relative;">'+  '<div style="overflow:hidden;">'+imgCol+'</div>'+  '<div style="padding:40px 48px;display:flex;flex-direction:column;justify-content:center;background:#fff;">'+    '<div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;">Featured Product</div>'+    '<div style="font-size:26px;font-weight:700;color:#111827;line-height:1.25;margin-bottom:12px;">'+name+'</div>'+    '<div style="font-size:22px;font-weight:600;color:#374151;margin-bottom:28px;">'+price+'</div>'+    '<div><a href="'+a.href+'" style="display:inline-block;padding:12px 28px;background:#111827;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:500;letter-spacing:.02em;">View Product →</a></div>'+  '</div>'+  '<button onclick="this.closest(\\'.pbx-pd\\').style.display=\\'none\\'" style="position:absolute;top:12px;right:16px;background:rgba(255,255,255,.9);border:1px solid #e5e7eb;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;color:#6b7280;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>'+  '</div>';panel.style.display='block';panel.scrollIntoView({behavior:'smooth',block:'nearest'});});})}function init(){var ts=document.querySelectorAll('.pbx-mega-item[data-mega-json]');if(!ts.length)return;var allIds=[];ts.forEach(function(t){try{JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"')).forEach(function(g){(g.ids||[]).forEach(function(id){if(allIds.indexOf(id)<0)allIds.push(id);});});}catch(e){}});ts.forEach(function(t){var sec=t.closest('section');if(sec)wireTiles(sec);});if(!allIds.length)return;fetch('/api/products?ids='+allIds.join(',')).then(function(r){return r.json();}).then(function(prods){var map={};prods.forEach(function(p){map[p.id]=p;});ts.forEach(function(t){var groups;try{groups=JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"'));}catch(e){return;}var drop=t.querySelector('.pbx-mega-drop');if(!drop)return;var html=groups.map(function(g){var items=(g.ids||[]).map(function(id){var p=map[id];if(!p)return'';var img=p.image?'<img src="data:image/png;base64,'+p.image+'" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;"/>':'<div style="width:44px;height:44px;background:#f3f4f6;border-radius:6px;flex-shrink:0;"></div>';var price=p.price!=null?'<span class="pbx-ptile-price" style="font-size:11px;color:#6b7280;">$'+Number(p.price).toFixed(2)+'</span>':'';return'<a href="/shop/'+p.id+'" class="pbx-ptile" style="display:flex;align-items:center;gap:10px;padding:7px 14px;text-decoration:none;cursor:pointer;" onmouseover="this.style.background=\\'#f9fafb\\'" onmouseout="this.style.background=\\'\\''">'+img+'<div style="min-width:0;"><div class="pbx-ptile-name" style="font-size:13px;font-weight:500;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">'+p.name+'</div>'+price+'</div></a>';}).join('');if(!items.trim())return'';return'<div><a href="'+(g.href||'#')+'" style="display:block;padding:8px 14px 4px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;">'+g.label+'</a>'+items+'</div>';}).filter(Boolean).join('<div style="height:1px;background:#f3f4f6;margin:4px 0;"></div>');drop.innerHTML=html;var sec=t.closest('section');if(sec)wireTiles(sec);});}).catch(function(){});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();<\/script>`
     : ''
 
-  return `<section data-component-title="Mega-menu-Header" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${data.sticky ? ' style="position:sticky;top:0;z-index:9999"' : ''}>
+  return `<section data-component-title="Ru2-Mega-Menu-Header" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${data.sticky ? ' style="position:sticky;top:0;z-index:9999"' : ''}>
 <style>
 .pbx-mega-item:hover .pbx-mega-drop{display:block !important;}
 .pbx-pd{display:none;width:100%;border-top:1px solid #e5e7eb;overflow:hidden;}
@@ -457,25 +457,28 @@ export function renderRu1Form(data: Ru1FormData): string {
   return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;background:#fff;min-height:4rem;"></section>`
 }
 
-// ─── Footer-1 ─────────────────────────────────────────────────────────────────
+// ─── Ru1-Footer ───────────────────────────────────────────────────────────────
 
-export const footer1Svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 177.28 70'>
-  <rect width='177.28' height='70' fill='#1a1a1a'/>
-  <rect x='8' y='12' width='40' height='4' rx='1' fill='#444'/>
-  <rect x='8' y='20' width='30' height='3' rx='1' fill='#333'/>
-  <rect x='8' y='26' width='35' height='3' rx='1' fill='#333'/>
-  <rect x='8' y='32' width='28' height='3' rx='1' fill='#333'/>
-  <rect x='68' y='12' width='40' height='4' rx='1' fill='#444'/>
-  <rect x='68' y='20' width='50' height='3' rx='1' fill='#333'/>
-  <rect x='68' y='26' width='45' height='3' rx='1' fill='#333'/>
-  <rect x='128' y='12' width='40' height='4' rx='1' fill='#444'/>
-  <rect x='128' y='20' width='35' height='3' rx='1' fill='#333'/>
-  <rect x='128' y='26' width='30' height='3' rx='1' fill='#333'/>
-  <rect x='0' y='55' width='177.28' height='1' fill='#333'/>
-  <rect x='50' y='62' width='77' height='3' rx='1' fill='#444'/>
+export const ru1FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
+  <rect fill="#1f2937" x="0" y="0" width="277.5" height="100"/>
+  <rect fill="#9ca3af" x="10" y="10" width="38" height="5" rx="1"/>
+  <rect fill="#6b7280" x="10" y="20" width="30" height="3" rx="1"/>
+  <rect fill="#6b7280" x="10" y="26" width="36" height="3" rx="1"/>
+  <rect fill="#6b7280" x="10" y="32" width="28" height="3" rx="1"/>
+  <rect fill="#6b7280" x="10" y="38" width="33" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="100" y="10" width="38" height="5" rx="1"/>
+  <rect fill="#6b7280" x="100" y="20" width="55" height="3" rx="1"/>
+  <rect fill="#6b7280" x="100" y="26" width="48" height="3" rx="1"/>
+  <rect fill="#6b7280" x="100" y="32" width="52" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="195" y="10" width="38" height="5" rx="1"/>
+  <rect fill="#6b7280" x="195" y="20" width="42" height="3" rx="1"/>
+  <rect fill="#6b7280" x="195" y="26" width="35" height="3" rx="1"/>
+  <rect fill="#6b7280" x="195" y="32" width="38" height="3" rx="1"/>
+  <rect fill="#374151" x="10" y="70" width="257.5" height="1"/>
+  <rect fill="#4b5563" x="89" y="80" width="100" height="3" rx="1"/>
 </svg>`
 
-export interface Footer1Data {
+export interface Ru1FooterData {
   usefulLinks: { label: string; url: string }[]
   aboutText: string
   contactEmail: string
@@ -487,7 +490,7 @@ export interface Footer1Data {
   paddingX: number
 }
 
-export const footer1Defaults: Footer1Data = {
+export const ru1FooterDefaults: Ru1FooterData = {
   usefulLinks: [
     { label: 'Home',       url: '/'        },
     { label: 'Shop',       url: '/shop'    },
@@ -498,13 +501,13 @@ export const footer1Defaults: Footer1Data = {
   contactEmail: 'support@yourdomain.com',
   contactPhone: '+1 000-000-0000',
   copyright: '© Your Store. All rights reserved.',
-  bgColor: '#1a1a1a',
-  textColor: '#ffffff',
+  bgColor: '#ffffff',
+  textColor: '#000000',
   paddingY: 48,
   paddingX: 16,
 }
 
-export const footer1Fields: FieldConfig[] = [
+export const ru1FooterFields: FieldConfig[] = [
   {
     key: 'usefulLinks', label: 'Useful Links', type: 'list',
     listFields: [
@@ -522,8 +525,8 @@ export const footer1Fields: FieldConfig[] = [
   { key: 'paddingX',     label: 'Horizontal Padding', type: 'number' },
 ]
 
-export function renderFooter1(data: Footer1Data): string {
-  return `<section data-component-title="Footer-1" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
+export function renderRu1Footer(data: Ru1FooterData): string {
+  return `<section data-component-title="Ru1-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
 <footer style="background-color:${data.bgColor};color:${data.textColor};padding:${data.paddingY}px ${data.paddingX}px;">
   <div style="max-width:1280px;margin:0 auto;">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;padding-bottom:40px;">
@@ -551,6 +554,86 @@ export function renderFooter1(data: Footer1Data): string {
   </div>
 </footer>
 
+</section>`
+}
+
+// ─── Ru2-Footer ───────────────────────────────────────────────────────────────
+
+export const ru2FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 48">
+  <rect fill="#1f2937" x="0" y="0" width="277.5" height="48"/>
+  <rect fill="#9ca3af" x="12" y="16" width="90" height="4" rx="1"/>
+  <rect fill="#6b7280" x="12" y="24" width="65" height="3" rx="1"/>
+  <circle cx="222" cy="24" r="7" fill="#374151"/>
+  <circle cx="238" cy="24" r="7" fill="#374151"/>
+  <circle cx="254" cy="24" r="7" fill="#374151"/>
+</svg>`
+
+export interface Ru2FooterData {
+  copyright: string
+  socials: { href: string }[]
+  iconPosition: string
+  bgColor: string
+  textColor: string
+  paddingY: number
+  paddingX: number
+}
+
+export const ru2FooterDefaults: Ru2FooterData = {
+  copyright: '© 2026 Your Company, Inc. All rights reserved.',
+  socials: [],
+  iconPosition: 'right',
+  bgColor: '#ffffff',
+  textColor: '#000000',
+  paddingY: 20,
+  paddingX: 32,
+}
+
+export const ru2FooterFields: FieldConfig[] = [
+  { key: 'copyright', label: 'Copyright Text', type: 'text', placeholder: '© 2026 Your Company, Inc.' },
+  {
+    key: 'socials', label: 'Social Links', type: 'list',
+    listFields: [
+      { key: 'href', label: 'URL', type: 'url', placeholder: 'https://instagram.com/...' },
+    ],
+  },
+  { key: 'iconPosition', label: 'Icon Position', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'bgColor',   label: 'Background Color', type: 'color' },
+  { key: 'textColor', label: 'Text Color',        type: 'color' },
+  { key: 'paddingY',  label: 'Vertical Padding',  type: 'number', placeholder: '20' },
+  { key: 'paddingX',  label: 'Horizontal Padding', type: 'number', placeholder: '32' },
+]
+
+export function renderRu2Footer(data: Ru2FooterData): string {
+  const icons = (data.socials ?? []).map(s => socialIconHtml(s.href, 20)).filter(Boolean)
+  const iconsHtml = icons.length
+    ? `<div style="display:flex;gap:10px;align-items:center;flex-shrink:0;">${icons.join('')}</div>`
+    : ''
+
+  const pos = data.iconPosition ?? 'right'
+  let innerHtml: string
+  if (pos === 'center') {
+    innerHtml = `<div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;">
+      ${iconsHtml}
+      <p style="margin:0;font-size:13px;opacity:0.6;">${data.copyright}</p>
+    </div>`
+  } else if (pos === 'left') {
+    innerHtml = `<div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:16px;">
+      ${iconsHtml}
+      <p style="margin:0;font-size:13px;opacity:0.6;">${data.copyright}</p>
+    </div>`
+  } else {
+    innerHtml = `<div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:16px;">
+      <p style="margin:0;font-size:13px;opacity:0.6;">${data.copyright}</p>
+      ${iconsHtml}
+    </div>`
+  }
+
+  return `<section data-component-title="Ru2-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
+<footer style="background-color:${data.bgColor};color:${data.textColor};padding:${data.paddingY ?? 20}px ${data.paddingX ?? 32}px;box-sizing:border-box;">
+  <div style="max-width:1280px;margin:0 auto;">
+    ${innerHtml}
+  </div>
+</footer>
 </section>`
 }
 
@@ -2709,6 +2792,7 @@ export const ru4OverlayPanelSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewB
 
 export interface Ru4OverlayPanelData {
   bgImage: string
+  bgImageAspectRatio: string
   bgColor: string
   bgPosition: string
   bgSize: string
@@ -2746,7 +2830,8 @@ export interface Ru4OverlayPanelData {
 
 export const ru4OverlayPanelDefaults: Ru4OverlayPanelData = {
   bgImage: '',
-  bgColor: '#94a3b8',
+  bgImageAspectRatio: 'Auto',
+  bgColor: '#f7f7f7',
   bgPosition: 'center',
   bgSize: 'cover',
   overlayColor: '#000000',
@@ -2755,7 +2840,7 @@ export const ru4OverlayPanelDefaults: Ru4OverlayPanelData = {
   sectionPaddingX: 48,
   panelPosition: 'left',
   panelWidth: '45%',
-  panelBgColor: '#ffffff',
+  panelBgColor: '#f7f7f7',
   panelBgOpacity: 100,
   panelBorderRadius: 8,
   panelShadow: 'lg',
@@ -2763,7 +2848,7 @@ export const ru4OverlayPanelDefaults: Ru4OverlayPanelData = {
   panelPaddingX: 40,
   clipCorner: 'bottom-right',
   clipSize: 48,
-  heading: 'Congratulations on your legendary achievement!',
+  heading: 'Celebrate Every Achievement',
   headingColor: '#111827',
   headingSize: 32,
   headingWeight: 'Bold',
@@ -2784,6 +2869,7 @@ export const ru4OverlayPanelDefaults: Ru4OverlayPanelData = {
 export const ru4OverlayPanelFields: FieldConfig[] = [
   { key: '_h_bg', label: 'Background', type: 'header' },
   { key: 'bgImage', label: 'Background Image', type: 'image' },
+  { key: 'bgImageAspectRatio', label: 'Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
   { key: 'bgColor', label: 'Fallback Color', type: 'color' },
   { key: 'bgPosition', label: 'Image Position', type: 'select', options: ['center', 'top', 'bottom', 'left', 'right', 'top center', 'bottom center'] },
   { key: 'bgSize', label: 'Image Size', type: 'select', options: ['cover', 'contain'] },
@@ -2841,6 +2927,16 @@ export function renderRu4OverlayPanel(data: Ru4OverlayPanelData): string {
     ? `box-shadow:inset 0 0 0 9999px ${hexToRgba(data.overlayColor ?? '#000000', overlayOpacity)};`
     : ''
 
+  const ratio = data.bgImageAspectRatio ?? 'Auto'
+  const aspectRatioMap: Record<string, string> = {
+    'Wide (16:9)':      'aspect-ratio:16/9;',
+    'Standard (4:3)':   'aspect-ratio:4/3;',
+    'Square (1:1)':     'aspect-ratio:1/1;',
+    'Tall (3:4)':       'aspect-ratio:3/4;',
+    'Cinematic (21:9)': 'aspect-ratio:21/9;',
+  }
+  const aspectStyle = ratio !== 'Auto' ? (aspectRatioMap[ratio] ?? '') : ''
+
   const heightMap: Record<string, string> = {
     '400px': 'min-height:400px;',
     '500px': 'min-height:500px;',
@@ -2895,7 +2991,7 @@ export function renderRu4OverlayPanel(data: Ru4OverlayPanelData): string {
     : data.panelBgColor
   const panelStyle = `background:${panelBg};${borderRadiusStyle}${shadowStyle}${clipStyle}padding:${data.panelPaddingY ?? 48}px ${data.panelPaddingX ?? 40}px;box-sizing:border-box;`
 
-  return `<section data-component-title="Ru4-Overlay Panel" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${overlayStyle}${heightStyle}position:relative;display:flex;align-items:center;overflow:hidden;">
+  return `<section data-component-title="Ru4-Overlay Panel" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${overlayStyle}${aspectStyle}${heightStyle}position:relative;display:flex;align-items:center;overflow:hidden;">
   <style>@media(max-width:767px){.ru4-op-panel{width:100%!important;clip-path:none!important;}}</style>
   <div style="width:100%;padding:40px ${data.sectionPaddingX ?? 48}px;box-sizing:border-box;display:flex;justify-content:${justifyContent};">
     <div class="ru4-op-panel" style="width:${data.panelWidth ?? '45%'};max-width:100%;${panelStyle}">

@@ -1,5 +1,17 @@
 ﻿import type { FieldConfig } from '../editor/useBlockRegistry'
 
+export const ru1NavbarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 40">
+  <rect fill="#1f2937" x="0" y="0" width="277.5" height="40"/>
+  <rect fill="#9ca3af" x="8" y="7" width="36" height="7" rx="1"/>
+  <rect fill="#374151" x="100" y="6" width="77" height="9" rx="4"/>
+  <rect fill="#4b5563" x="200" y="7" width="22" height="7" rx="2"/>
+  <rect fill="#4b5563" x="228" y="7" width="22" height="7" rx="2"/>
+  <rect fill="#6b7280" x="8" y="24" width="25" height="4" rx="1"/>
+  <rect fill="#6b7280" x="42" y="24" width="22" height="4" rx="1"/>
+  <rect fill="#6b7280" x="72" y="24" width="28" height="4" rx="1"/>
+  <rect fill="#6b7280" x="108" y="24" width="32" height="4" rx="1"/>
+</svg>`
+
 export interface ThemeSection {
   id: null
   title: string
@@ -266,7 +278,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 
   const sectionStyle = data.sticky ? 'position:sticky;top:0;z-index:9999' : ''
 
-  return `<section data-component-title="Ru1 Homepage Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
+  return `<section data-component-title="Ru1-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 <nav style="${navStyle}">
   <div class="pbx-max-w-7xl pbx-mx-auto" style="display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
     ${zone(cols.left,   'flex-start')}
@@ -779,7 +791,7 @@ export function renderRu1Footer(data: Ru1FooterData): string {
 // ─── Theme sections (initial HTML derived from render(defaults)) ─────────────
 
 export const ru1HomepageSections: ThemeSection[] = [
-  { id: null, title: 'Ru1 Homepage Navbar',            html_code: renderRu1Navbar(ru1NavbarDefaults) },
+  { id: null, title: 'Ru1-Navbar',                      html_code: renderRu1Navbar(ru1NavbarDefaults) },
   { id: null, title: 'Ru1 Homepage Hero',              html_code: renderRu1Hero(ru1HeroDefaults) },
   { id: null, title: 'Ru1 Homepage Featured Products', html_code: renderRu1Products(ru1ProductsDefaults) },
   { id: null, title: 'Ru1 Homepage Footer',            html_code: renderRu1Footer(ru1FooterDefaults) },

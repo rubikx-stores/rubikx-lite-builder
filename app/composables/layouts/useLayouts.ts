@@ -1,4 +1,5 @@
 import { useBlockRegistry } from '../editor/useBlockRegistry'
+import { ru1NavbarSvg, ru1NavbarDefaults, ru1NavbarFields, renderRu1Navbar } from '../themes/themes-data'
 // All layout component data (interfaces, defaults, fields, render functions)
 // lives in components.ts — add new components there, then register them below.
 import {
@@ -14,10 +15,10 @@ import {
   ru1FormFields,
   ru1FormSvg,
   renderRu1Form,
-  footer1Defaults,
-  footer1Fields,
-  footer1Svg,
-  renderFooter1,
+  ru1FooterDefaults,
+  ru1FooterFields,
+  ru1FooterSvg,
+  renderRu1Footer,
   ru1AboutDefaults,
   ru1AboutFields,
   ru1AboutSvg,
@@ -62,6 +63,10 @@ import {
   ru4OverlayPanelFields,
   ru4OverlayPanelSvg,
   renderRu4OverlayPanel,
+  ru2FooterDefaults,
+  ru2FooterFields,
+  ru2FooterSvg,
+  renderRu2Footer,
 } from './components'
 
 export interface LayoutComponentItem {
@@ -74,7 +79,13 @@ export interface LayoutComponentItem {
 export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
   Headers: [
     {
-      title: 'Mega-menu-Header',
+      title: 'Ru1-Navbar',
+      category: 'Headers',
+      cover_image: ru1NavbarSvg,
+      html_code: renderRu1Navbar(ru1NavbarDefaults),
+    },
+    {
+      title: 'Ru2-Mega-Menu-Header',
       category: 'Headers',
       cover_image: megaMenuHeaderSvg,
       html_code: renderMegaMenuHeader(megaMenuHeaderDefaults),
@@ -170,10 +181,16 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
   ],
   Footer: [
     {
-      title: 'Footer-1',
+      title: 'Ru1-Footer',
       category: 'Footer',
-      cover_image: footer1Svg,
-      html_code: renderFooter1(footer1Defaults),
+      cover_image: ru1FooterSvg,
+      html_code: renderRu1Footer(ru1FooterDefaults),
+    },
+    {
+      title: 'Ru2-Footer',
+      category: 'Footer',
+      cover_image: ru2FooterSvg,
+      html_code: renderRu2Footer(ru2FooterDefaults),
     },
   ],
 }
@@ -181,7 +198,7 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
 export function useLayouts() {
   const blockRegistry = useBlockRegistry()
 
-  blockRegistry.register('Mega-menu-Header', {
+  blockRegistry.register('Ru2-Mega-Menu-Header', {
     defaults: megaMenuHeaderDefaults,
     fields: megaMenuHeaderFields,
     render: renderMegaMenuHeader,
@@ -241,10 +258,16 @@ export function useLayouts() {
     render: renderRu6SplitHero,
   })
 
-  blockRegistry.register('Footer-1', {
-    defaults: footer1Defaults,
-    fields: footer1Fields,
-    render: renderFooter1,
+  blockRegistry.register('Ru1-Footer', {
+    defaults: ru1FooterDefaults,
+    fields: ru1FooterFields,
+    render: renderRu1Footer,
+  })
+
+  blockRegistry.register('Ru2-Footer', {
+    defaults: ru2FooterDefaults,
+    fields: ru2FooterFields,
+    render: renderRu2Footer,
   })
 
   blockRegistry.register('Ru1-Stats', {
