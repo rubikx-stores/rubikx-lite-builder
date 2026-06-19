@@ -207,6 +207,8 @@ async function createNewPage() {
         value: ' ',
         version: 1,
         state: 'draft',
+        companyId: selectedWebsiteId.value ?? 1,
+        company_id: selectedWebsiteId.value ?? 1,
         updatedBy: user.value?.name ?? 'editor',
         updatedOn: new Date().toISOString(),
       }
