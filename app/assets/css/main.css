@@ -18,6 +18,18 @@ body {
   color: var(--color-primary-text);
 }
 
+/* ── Custom utility classes (green brand color) ───────────────────────────── */
+
+.bg-myPrimaryLinkColor {
+  background-color: var(--color-primary-link) !important;
+}
+.hover\:bg-myPrimaryLinkColor:hover {
+  background-color: var(--color-primary-link) !important;
+}
+.hover\:border-myPrimaryLinkColor:hover {
+  border-color: var(--color-primary-link) !important;
+}
+
 /* ── Builder canvas cursors ───────────────────────────────────────────────── */
 
 /* Replace the library's default + / crosshair cursor with a pointer finger */
