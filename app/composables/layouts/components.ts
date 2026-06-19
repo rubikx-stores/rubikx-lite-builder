@@ -457,6 +457,233 @@ export function renderRu1Form(data: Ru1FormData): string {
   return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;background:#fff;min-height:4rem;"></section>`
 }
 
+// ─── Ru2-Form ─────────────────────────────────────────────────────────────────
+
+export const ru2FormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
+  <rect fill="#111827" x="0" y="0" width="110" height="105"/>
+  <rect fill="#6366f1" x="12" y="14" width="30" height="3" rx="1"/>
+  <rect fill="#f9fafb" x="12" y="22" width="75" height="6" rx="1"/>
+  <rect fill="#6b7280" x="12" y="32" width="85" height="2.5" rx="1"/>
+  <rect fill="#6b7280" x="12" y="37" width="78" height="2.5" rx="1"/>
+  <rect fill="#1f2937" x="12" y="50" width="32" height="32" rx="6"/>
+  <rect fill="#6366f1" x="18" y="56" width="20" height="2" rx="1"/>
+  <rect fill="#9ca3af" x="18" y="61" width="16" height="2" rx="1"/>
+  <rect fill="#1f2937" x="50" y="50" width="32" height="32" rx="6"/>
+  <rect fill="#6366f1" x="56" y="56" width="20" height="2" rx="1"/>
+  <rect fill="#9ca3af" x="56" y="61" width="16" height="2" rx="1"/>
+  <rect fill="#1f2937" x="12" y="88" width="18" height="8" rx="4"/>
+  <rect fill="#1f2937" x="34" y="88" width="18" height="8" rx="4"/>
+  <rect fill="#ffffff" x="110" y="0" width="167.5" height="105"/>
+  <rect fill="#e5e7eb" x="122" y="14" width="70" height="7" rx="2"/>
+  <rect fill="#e5e7eb" x="152" y="14" width="70" height="7" rx="2"/>
+  <rect fill="#e5e7eb" x="122" y="28" width="143" height="7" rx="2"/>
+  <rect fill="#e5e7eb" x="122" y="42" width="143" height="7" rx="2"/>
+  <rect fill="#e5e7eb" x="122" y="56" width="143" height="18" rx="2"/>
+  <rect fill="#6366f1" x="196" y="82" width="69" height="10" rx="4"/>
+</svg>`
+
+export interface Ru2FormInfoItem {
+  icon: string
+  label: string
+  value: string
+}
+
+export interface Ru2FormData {
+  panelBgColor: string
+  panelTextColor: string
+  accentColor: string
+  eyebrow: string
+  title: string
+  description: string
+  infoItems: Ru2FormInfoItem[]
+  showSocials: boolean
+  socials: Array<{ href: string }>
+  showInfo: boolean
+  showForm: boolean
+  singleBlockAlign: string
+  formBgColor: string
+  formTitle: string
+  formSubtitle: string
+  showSubjectField: boolean
+  subjectOptions: string
+  submitLabel: string
+  submitBgColor: string
+  submitTextColor: string
+  submitAlign: string
+  inputBorderColor: string
+  labelColor: string
+  paddingY: number
+  paddingX: number
+}
+
+export const ru2FormDefaults: Ru2FormData = {
+  panelBgColor: '#111827',
+  panelTextColor: '#ffffff',
+  accentColor: '#6366f1',
+  eyebrow: 'Get in Touch',
+  title: "Let's Start a Conversation",
+  description: "Have a question about your order, need help with your store, or want to explore a custom solution? We're here for you.",
+  infoItems: [
+    { icon: '📧', label: 'Email', value: 'support@yourstore.com' },
+    { icon: '📞', label: 'Phone', value: '+1 (800) 000-0000' },
+    { icon: '🕐', label: 'Hours', value: 'Mon–Fri, 9am–6pm EST' },
+  ],
+  showSocials: false,
+  socials: [],
+  showInfo: true,
+  showForm: true,
+  singleBlockAlign: 'center',
+  formBgColor: '#ffffff',
+  formTitle: 'Send us a message',
+  formSubtitle: "We'll get back to you within 24 hours.",
+  showSubjectField: true,
+  subjectOptions: 'Order Inquiry,Product Question,Returns & Exchanges,Custom Branding,Other',
+  submitLabel: 'Send Message →',
+  submitBgColor: '#6366f1',
+  submitTextColor: '#ffffff',
+  submitAlign: 'right',
+  inputBorderColor: '#e5e7eb',
+  labelColor: '#374151',
+  paddingY: 64,
+  paddingX: 48,
+}
+
+export const ru2FormFields: FieldConfig[] = [
+  { key: '_h_panel', label: 'Info Panel', type: 'header' },
+  { key: 'panelBgColor', label: 'Panel Background', type: 'color' },
+  { key: 'panelTextColor', label: 'Panel Text Colour', type: 'color' },
+  { key: 'accentColor', label: 'Accent Colour', type: 'color' },
+  { key: 'eyebrow', label: 'Eyebrow Text', type: 'text', placeholder: 'e.g. Get in Touch' },
+  { key: 'title', label: 'Title', type: 'text', placeholder: "e.g. Let's Start a Conversation" },
+  { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Short intro paragraph' },
+  {
+    key: 'infoItems', label: 'Info Items', type: 'list',
+    listFields: [
+      { key: 'icon', label: 'Icon (emoji)', type: 'text', placeholder: 'e.g. 📧' },
+      { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Email' },
+      { key: 'value', label: 'Value', type: 'text', placeholder: 'e.g. support@yourstore.com' },
+    ],
+  },
+  { key: 'showSocials', label: 'Show Social Links', type: 'toggle' },
+  {
+    key: 'socials', label: 'Social Links', type: 'list',
+    listFields: [
+      { key: 'href', label: 'URL', type: 'url', placeholder: 'Paste your social media URL' },
+    ],
+  },
+
+  { key: '_h_form', label: 'Form', type: 'header' },
+  { key: 'formBgColor', label: 'Form Background', type: 'color' },
+  { key: 'formTitle', label: 'Form Title', type: 'text', placeholder: 'e.g. Send us a message' },
+  { key: 'formSubtitle', label: 'Form Subtitle', type: 'text', placeholder: "e.g. We'll get back to you within 24 hours." },
+  { key: 'showSubjectField', label: 'Show Subject Dropdown', type: 'toggle' },
+  { key: 'subjectOptions', label: 'Subject Options (comma separated)', type: 'textarea', placeholder: 'Order Inquiry,Product Question,Other' },
+  { key: 'submitLabel', label: 'Submit Button Text', type: 'text', placeholder: 'Send Message' },
+  { key: 'submitBgColor', label: 'Submit Button Background', type: 'color' },
+  { key: 'submitTextColor', label: 'Submit Button Text Colour', type: 'color' },
+  { key: 'submitAlign', label: 'Submit Button Align', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
+  { key: 'labelColor', label: 'Label Colour', type: 'color' },
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '64' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '48' },
+  { key: '_h_blocks', label: 'Blocks', type: 'header' },
+  { key: 'showInfo', label: 'Show Info Panel', type: 'toggle' },
+  { key: 'showForm', label: 'Show Form', type: 'toggle' },
+  { key: 'singleBlockAlign', label: 'Single Block Alignment', type: 'select', options: ['left', 'center', 'right'] },
+]
+
+export function renderRu2Form(data: Ru2FormData): string {
+  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:8px;background:#fff;padding:10px 14px;font-size:14px;color:#111827;border:1.5px solid ${data.inputBorderColor};outline:none;`
+  const alignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
+  const btnJustify = alignMap[data.submitAlign ?? 'right'] ?? 'flex-end'
+
+  const socialIcons = (data.socials ?? []).map(s => socialIconHtml(s.href)).filter(Boolean)
+  const socialRow = data.showSocials && socialIcons.length
+    ? `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:2rem;">${socialIcons.join('')}</div>`
+    : ''
+
+  const infoItemsHtml = (data.infoItems ?? []).map(item => `
+    <div style="display:flex;align-items:flex-start;gap:14px;">
+      <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${item.icon}</div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:${data.accentColor};text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px;">${item.label}</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.8);font-weight:500;">${item.value}</div>
+      </div>
+    </div>`).join('')
+
+  const infoPanel = `<div style="background:${data.panelBgColor};padding:${data.paddingY}px ${data.paddingX}px;display:flex;flex-direction:column;justify-content:space-between;">
+    <div>
+      <div style="font-size:11px;font-weight:700;color:${data.accentColor};letter-spacing:0.18em;text-transform:uppercase;margin-bottom:16px;">${data.eyebrow}</div>
+      <h2 style="font-size:32px;font-weight:800;color:${data.panelTextColor};line-height:1.15;margin:0 0 16px;letter-spacing:-0.5px;">${data.title}</h2>
+      <p style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.8;margin:0 0 40px;">${data.description}</p>
+      <div style="display:flex;flex-direction:column;gap:20px;">${infoItemsHtml}</div>
+    </div>
+    ${socialRow}
+  </div>`
+
+  const subjectFieldHtml = data.showSubjectField
+    ? `<div style="margin-bottom:16px;">
+        <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">Subject</label>
+        <select style="${inputStyle}appearance:none;cursor:pointer;">
+          ${(data.subjectOptions ?? '').split(',').map(o => `<option>${o.trim()}</option>`).join('')}
+        </select>
+      </div>`
+    : ''
+
+  const formPanel = `<div style="background:${data.formBgColor};padding:${data.paddingY}px ${data.paddingX}px;">
+    <div style="margin-bottom:28px;">
+      <h3 style="font-size:22px;font-weight:700;color:#111827;margin:0 0 6px;">${data.formTitle}</h3>
+      <p style="font-size:14px;color:#9ca3af;margin:0;">${data.formSubtitle}</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">First Name</label>
+        <input type="text" placeholder="John" style="${inputStyle}"/>
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">Last Name</label>
+        <input type="text" placeholder="Smith" style="${inputStyle}"/>
+      </div>
+    </div>
+    <div style="margin-bottom:16px;">
+      <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">Email Address</label>
+      <input type="email" placeholder="john@company.com" style="${inputStyle}"/>
+    </div>
+    ${subjectFieldHtml}
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">Message</label>
+      <textarea rows="4" placeholder="Tell us how we can help..." style="${inputStyle}resize:vertical;height:120px;"></textarea>
+    </div>
+    <div style="display:flex;justify-content:${btnJustify};">
+      <button type="submit" style="background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.02em;">${data.submitLabel}</button>
+    </div>
+  </div>`
+
+  const showInfo = data.showInfo !== false
+  const showForm = data.showForm !== false
+
+  if (showInfo && showForm) {
+    return `<section data-component-title="Ru2-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="overflow:hidden;">
+  <div style="display:grid;grid-template-columns:1fr 1.4fr;">
+    ${infoPanel}
+    ${formPanel}
+  </div>
+</section>`
+  }
+
+  const singleCol = showInfo ? infoPanel : formPanel
+  const singleAlignMap: Record<string, string> = { left: '0 auto 0 0', center: '0 auto', right: '0 0 0 auto' }
+  const margin = singleAlignMap[data.singleBlockAlign ?? 'center'] ?? '0 auto'
+
+  return `<section data-component-title="Ru2-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${showInfo ? data.panelBgColor : data.formBgColor};">
+  <div style="max-width:80rem;margin:${margin};">
+    ${singleCol}
+  </div>
+</section>`
+}
+
 // ─── Ru1-Footer ───────────────────────────────────────────────────────────────
 
 export const ru1FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
