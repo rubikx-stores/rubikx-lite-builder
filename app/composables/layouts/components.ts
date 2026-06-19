@@ -1041,6 +1041,280 @@ export function renderRu1About(data: Ru1AboutData): string {
 </section>`
 }
 
+// ─── Ru2-About ───────────────────────────────────────────────────────────────
+
+export const ru2AboutSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
+  <rect fill="#1f2937" x="0" y="0" width="130" height="105"/>
+  <rect fill="#6366f1" x="10" y="12" width="35" height="3" rx="1"/>
+  <rect fill="#f9fafb" x="10" y="20" width="100" height="8" rx="1"/>
+  <rect fill="#6b7280" x="10" y="33" width="110" height="2.5" rx="1"/>
+  <rect fill="#6b7280" x="10" y="38" width="100" height="2.5" rx="1"/>
+  <rect fill="#6b7280" x="10" y="43" width="90" height="2.5" rx="1"/>
+  <rect fill="#374151" x="10" y="56" width="48" height="24" rx="4"/>
+  <rect fill="#374151" x="66" y="56" width="48" height="24" rx="4"/>
+  <rect fill="#f9fafb" x="14" y="60" width="20" height="4" rx="1"/>
+  <rect fill="#6b7280" x="14" y="67" width="28" height="2.5" rx="1"/>
+  <rect fill="#f9fafb" x="70" y="60" width="20" height="4" rx="1"/>
+  <rect fill="#6b7280" x="70" y="67" width="28" height="2.5" rx="1"/>
+  <rect fill="#4f46e5" x="10" y="88" width="50" height="10" rx="4"/>
+  <rect fill="#e5e7eb" x="130" y="0" width="147.5" height="105"/>
+</svg>`
+
+export interface Ru2AboutTeamMember {
+  imageUrl: string
+  name: string
+  role: string
+}
+
+export interface Ru2AboutValueItem {
+  icon: string
+  imageUrl: string
+  title: string
+  description: string
+}
+
+export interface Ru2AboutStatItem {
+  value: string
+  label: string
+}
+
+export interface Ru2AboutData {
+  bgColor: string
+  eyebrow: string
+  eyebrowColor: string
+  title: string
+  titleColor: string
+  titleFontSize: number
+  titleFontWeight: string
+  description: string
+  descriptionColor: string
+  stats: Ru2AboutStatItem[]
+  statValueColor: string
+  statLabelColor: string
+  statCardBgColor: string
+  showCta: boolean
+  ctaLabel: string
+  ctaHref: string
+  ctaBgColor: string
+  ctaTextColor: string
+  imageSrc: string
+  imageTag: string
+  imageTagBgColor: string
+  imageTagTextColor: string
+  showHero: boolean
+  showValues: boolean
+  valuesBgColor: string
+  valueTitleColor: string
+  valueDescColor: string
+  values: Ru2AboutValueItem[]
+  showTeam: boolean
+  teamBgColor: string
+  teamEyebrow: string
+  teamEyebrowColor: string
+  teamTitle: string
+  teamTitleColor: string
+  teamMembers: Ru2AboutTeamMember[]
+  paddingY: number
+  paddingX: number
+}
+
+export const ru2AboutDefaults: Ru2AboutData = {
+  bgColor: '#ffffff',
+  eyebrow: 'Our Story',
+  eyebrowColor: '#6366f1',
+  title: 'Built by a Team That Gets It',
+  titleColor: '#111827',
+  titleFontSize: 40,
+  titleFontWeight: '900',
+  description: 'We started with one simple belief — branded gear should be easy to get, look great, and arrive fast. Today we power hundreds of company stores across the country.',
+  descriptionColor: '#6b7280',
+  stats: [
+    { value: '500+', label: 'Products Available' },
+    { value: '12K+', label: 'Teams Served' },
+    { value: '48h', label: 'Avg Delivery' },
+    { value: '98%', label: 'Satisfaction Rate' },
+  ],
+  statValueColor: '#111827',
+  statLabelColor: '#9ca3af',
+  statCardBgColor: '#f9fafb',
+  showCta: true,
+  ctaLabel: 'Learn More About Us',
+  ctaHref: '/about',
+  ctaBgColor: '#111827',
+  ctaTextColor: '#ffffff',
+  imageSrc: '',
+  imageTag: 'Since 2018',
+  imageTagBgColor: '#f59e0b',
+  imageTagTextColor: '#000000',
+  showHero: true,
+  showValues: true,
+  valuesBgColor: '#111827',
+  valueTitleColor: '#ffffff',
+  valueDescColor: '#6b7280',
+  values: [
+    { icon: '⚡', imageUrl: '', title: 'Speed First', description: 'We built our entire operation around getting gear to your team as fast as possible — without compromising quality.' },
+    { icon: '🎯', imageUrl: '', title: 'Brand Precision', description: 'Every logo, color, and stitch is reviewed before it ships. Your brand deserves to look exactly right.' },
+    { icon: '🤝', imageUrl: '', title: 'Team First', description: 'We work alongside HR and operations teams to make the onboarding experience seamless for everyone.' },
+  ],
+  showTeam: true,
+  teamBgColor: '#f9fafb',
+  teamEyebrow: 'The People Behind It',
+  teamEyebrowColor: '#6366f1',
+  teamTitle: 'Meet the Team',
+  teamTitleColor: '#111827',
+  teamMembers: [
+    { imageUrl: '', name: 'Alex Johnson', role: 'Founder & CEO' },
+    { imageUrl: '', name: 'Sarah Kim', role: 'Head of Design' },
+    { imageUrl: '', name: 'Marcus Lee', role: 'Operations Lead' },
+    { imageUrl: '', name: 'Priya Patel', role: 'Customer Success' },
+  ],
+  paddingY: 64,
+  paddingX: 48,
+}
+
+export const ru2AboutFields: FieldConfig[] = [
+  { key: '_h_visibility', label: 'Sections', type: 'header' },
+  { key: 'showHero', label: 'Show Hero', type: 'toggle' },
+  { key: 'showValues', label: 'Show Values Strip', type: 'toggle' },
+  { key: 'showTeam', label: 'Show Team Section', type: 'toggle' },
+
+  { key: '_h_section', label: 'Section', type: 'header' },
+  { key: 'bgColor', label: 'Background Colour', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '64' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '48' },
+
+  { key: '_h_hero', label: 'Hero', type: 'header' },
+  { key: 'eyebrow', label: 'Eyebrow Text', type: 'text', placeholder: 'e.g. Our Story' },
+  { key: 'eyebrowColor', label: 'Eyebrow Colour', type: 'color' },
+  { key: 'title', label: 'Title', type: 'text', placeholder: 'e.g. Built by a Team That Gets It' },
+  { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  { key: 'titleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '40' },
+  { key: 'titleFontWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
+  { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Short intro paragraph' },
+  { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
+  { key: 'imageSrc', label: 'Image', type: 'image' },
+  { key: 'imageTag', label: 'Image Tag Text', type: 'text', placeholder: 'e.g. Since 2018' },
+  { key: 'imageTagBgColor', label: 'Image Tag Background', type: 'color' },
+  { key: 'imageTagTextColor', label: 'Image Tag Text Colour', type: 'color' },
+
+  { key: '_h_stats', label: 'Stats', type: 'header' },
+  { key: 'statCardBgColor', label: 'Stat Card Background', type: 'color' },
+  { key: 'statValueColor', label: 'Stat Value Colour', type: 'color' },
+  { key: 'statLabelColor', label: 'Stat Label Colour', type: 'color' },
+  {
+    key: 'stats', label: 'Stats', type: 'list',
+    listFields: [
+      { key: 'value', label: 'Value', type: 'text', placeholder: 'e.g. 500+' },
+      { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Products Available' },
+    ],
+  },
+
+  { key: '_h_cta', label: 'CTA Button', type: 'header' },
+  { key: 'showCta', label: 'Show CTA Button', type: 'toggle' },
+  { key: 'ctaLabel', label: 'Button Label', type: 'text', placeholder: 'e.g. Learn More' },
+  { key: 'ctaHref', label: 'Button URL', type: 'url', placeholder: '/about' },
+  { key: 'ctaBgColor', label: 'Button Background', type: 'color' },
+  { key: 'ctaTextColor', label: 'Button Text Colour', type: 'color' },
+
+  { key: '_h_values', label: 'Values Strip', type: 'header' },
+  { key: 'valuesBgColor', label: 'Values Background', type: 'color' },
+  { key: 'valueTitleColor', label: 'Value Title Colour', type: 'color' },
+  { key: 'valueDescColor', label: 'Value Description Colour', type: 'color' },
+  {
+    key: 'values', label: 'Values', type: 'list',
+    listFields: [
+      { key: 'icon', label: 'Icon (emoji)', type: 'text', placeholder: 'e.g. ⚡' },
+      { key: 'imageUrl', label: 'Icon Image URL (overrides emoji)', type: 'image' },
+      { key: 'title', label: 'Title', type: 'text', placeholder: 'e.g. Speed First' },
+      { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Short description' },
+    ],
+  },
+
+  { key: '_h_team', label: 'Team Section', type: 'header' },
+  { key: 'teamBgColor', label: 'Team Background', type: 'color' },
+  { key: 'teamEyebrow', label: 'Team Eyebrow', type: 'text', placeholder: 'e.g. The People Behind It' },
+  { key: 'teamEyebrowColor', label: 'Team Eyebrow Colour', type: 'color' },
+  { key: 'teamTitle', label: 'Team Title', type: 'text', placeholder: 'e.g. Meet the Team' },
+  { key: 'teamTitleColor', label: 'Team Title Colour', type: 'color' },
+  {
+    key: 'teamMembers', label: 'Team Members', type: 'list',
+    listFields: [
+      { key: 'imageUrl', label: 'Photo URL', type: 'image' },
+      { key: 'name', label: 'Name', type: 'text', placeholder: 'e.g. Alex Johnson' },
+      { key: 'role', label: 'Role', type: 'text', placeholder: 'e.g. Founder & CEO' },
+    ],
+  },
+]
+
+export function renderRu2About(data: Ru2AboutData): string {
+  const statsHtml = (data.stats ?? []).map(stat => `
+    <div style="padding:20px;background:${data.statCardBgColor};border-radius:12px;border:1px solid #e5e7eb;">
+      <div style="font-size:32px;font-weight:900;color:${data.statValueColor};letter-spacing:-1px;margin-bottom:4px;">${stat.value}</div>
+      <div style="font-size:12px;color:${data.statLabelColor};font-weight:500;">${stat.label}</div>
+    </div>`).join('')
+
+  const valuesHtml = (data.values ?? []).map(v => {
+    const iconHtml = v.imageUrl
+      ? `<img src="${v.imageUrl}" alt="${v.title}" style="width:40px;height:40px;object-fit:contain;margin-bottom:12px;display:block;"/>`
+      : `<div style="font-size:28px;margin-bottom:12px;">${v.icon}</div>`
+    return `
+    <div>
+      ${iconHtml}
+      <div style="font-size:16px;font-weight:700;color:${data.valueTitleColor};margin-bottom:8px;">${v.title}</div>
+      <div style="font-size:13px;color:${data.valueDescColor};line-height:1.7;">${v.description}</div>
+    </div>`
+  }).join('')
+
+  const teamHtml = (data.teamMembers ?? []).map(m => {
+    const imgHtml = m.imageUrl
+      ? `<img src="${m.imageUrl}" alt="${m.name}" style="width:100%;height:100%;object-fit:cover;display:block;"/>`
+      : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:48px;background:#e5e7eb;">👤</div>`
+    return `<div style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;">
+      <div style="height:180px;overflow:hidden;">${imgHtml}</div>
+      <div style="padding:16px;">
+        <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:3px;">${m.name}</div>
+        <div style="font-size:12px;color:${data.teamEyebrowColor};font-weight:600;">${m.role}</div>
+      </div>
+    </div>`
+  }).join('')
+
+  const imageHtml = data.imageSrc
+    ? `<img src="${data.imageSrc}" alt="${data.title}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:0;"/>`
+    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:13px;background:#e5e7eb;">Add an image</div>`
+
+  const heroSection = `<div style="display:grid;grid-template-columns:1fr 1fr;min-height:480px;">
+    <div style="position:relative;overflow:hidden;">
+      ${imageHtml}
+      ${data.imageTag ? `<div style="position:absolute;bottom:24px;left:24px;background:${data.imageTagBgColor};color:${data.imageTagTextColor};font-size:11px;font-weight:700;padding:4px 12px;border-radius:4px;letter-spacing:0.1em;text-transform:uppercase;">${data.imageTag}</div>` : ''}
+    </div>
+    <div style="padding:${data.paddingY}px ${data.paddingX}px;display:flex;flex-direction:column;justify-content:center;background:${data.bgColor};">
+      <div style="font-size:11px;font-weight:700;color:${data.eyebrowColor};letter-spacing:0.18em;text-transform:uppercase;margin-bottom:16px;">${data.eyebrow}</div>
+      <h2 style="font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.1;letter-spacing:-1px;margin:0 0 20px;">${data.title}</h2>
+      <p style="font-size:15px;color:${data.descriptionColor};line-height:1.8;margin:0 0 32px;">${data.description}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;">${statsHtml}</div>
+      ${data.showCta !== false ? `<div><a href="${data.ctaHref}" style="display:inline-block;background:${data.ctaBgColor};color:${data.ctaTextColor};padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;">${data.ctaLabel}</a></div>` : ''}
+    </div>
+  </div>`
+
+  const valuesSection = data.showValues !== false ? `<div style="background:${data.valuesBgColor};padding:${data.paddingY}px ${data.paddingX}px;display:grid;grid-template-columns:repeat(${Math.min(data.values?.length ?? 3, 4)},1fr);gap:32px;">${valuesHtml}</div>` : ''
+
+  const teamSection = data.showTeam !== false ? `<div style="background:${data.teamBgColor};padding:${data.paddingY}px ${data.paddingX}px;">
+    <div style="text-align:center;margin-bottom:40px;">
+      <div style="font-size:11px;font-weight:700;color:${data.teamEyebrowColor};letter-spacing:0.18em;text-transform:uppercase;margin-bottom:12px;">${data.teamEyebrow}</div>
+      <div style="font-size:32px;font-weight:800;color:${data.teamTitleColor};letter-spacing:-0.5px;">${data.teamTitle}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(${Math.min(data.teamMembers?.length ?? 4, 4)},1fr);gap:20px;">${teamHtml}</div>
+  </div>` : ''
+
+  const heroHtml = data.showHero !== false ? heroSection : ''
+
+  return `<section data-component-title="Ru2-About" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="overflow:hidden;">
+  ${heroHtml}
+  ${valuesSection}
+  ${teamSection}
+</section>`
+}
+
 // ─── Ru1-FAQ ─────────────────────────────────────────────────────────────────
 
 export const ru1FaqSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 120">
