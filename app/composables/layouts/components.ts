@@ -460,26 +460,26 @@ export function renderRu1Form(data: Ru1FormData): string {
 // ─── Ru2-Form ─────────────────────────────────────────────────────────────────
 
 export const ru2FormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
-  <rect fill="#111827" x="0" y="0" width="110" height="105"/>
-  <rect fill="#6366f1" x="12" y="14" width="30" height="3" rx="1"/>
-  <rect fill="#f9fafb" x="12" y="22" width="75" height="6" rx="1"/>
+  <rect fill="#1f2937" width="277.5" height="105"/>
+  <rect fill="#374151" x="0" y="0" width="110" height="105"/>
+  <rect fill="#9ca3af" x="12" y="14" width="30" height="3" rx="1"/>
+  <rect fill="#d1d5db" x="12" y="22" width="75" height="6" rx="1"/>
   <rect fill="#6b7280" x="12" y="32" width="85" height="2.5" rx="1"/>
   <rect fill="#6b7280" x="12" y="37" width="78" height="2.5" rx="1"/>
-  <rect fill="#1f2937" x="12" y="50" width="32" height="32" rx="6"/>
-  <rect fill="#6366f1" x="18" y="56" width="20" height="2" rx="1"/>
-  <rect fill="#9ca3af" x="18" y="61" width="16" height="2" rx="1"/>
-  <rect fill="#1f2937" x="50" y="50" width="32" height="32" rx="6"/>
-  <rect fill="#6366f1" x="56" y="56" width="20" height="2" rx="1"/>
-  <rect fill="#9ca3af" x="56" y="61" width="16" height="2" rx="1"/>
-  <rect fill="#1f2937" x="12" y="88" width="18" height="8" rx="4"/>
-  <rect fill="#1f2937" x="34" y="88" width="18" height="8" rx="4"/>
-  <rect fill="#ffffff" x="110" y="0" width="167.5" height="105"/>
-  <rect fill="#e5e7eb" x="122" y="14" width="70" height="7" rx="2"/>
-  <rect fill="#e5e7eb" x="152" y="14" width="70" height="7" rx="2"/>
-  <rect fill="#e5e7eb" x="122" y="28" width="143" height="7" rx="2"/>
-  <rect fill="#e5e7eb" x="122" y="42" width="143" height="7" rx="2"/>
-  <rect fill="#e5e7eb" x="122" y="56" width="143" height="18" rx="2"/>
-  <rect fill="#6366f1" x="196" y="82" width="69" height="10" rx="4"/>
+  <rect fill="#4b5563" x="12" y="50" width="32" height="32" rx="6"/>
+  <rect fill="#9ca3af" x="18" y="56" width="20" height="2" rx="1"/>
+  <rect fill="#6b7280" x="18" y="61" width="16" height="2" rx="1"/>
+  <rect fill="#4b5563" x="50" y="50" width="32" height="32" rx="6"/>
+  <rect fill="#9ca3af" x="56" y="56" width="20" height="2" rx="1"/>
+  <rect fill="#6b7280" x="56" y="61" width="16" height="2" rx="1"/>
+  <rect fill="#4b5563" x="12" y="88" width="18" height="8" rx="4"/>
+  <rect fill="#4b5563" x="34" y="88" width="18" height="8" rx="4"/>
+  <rect fill="#374151" x="122" y="14" width="70" height="7" rx="2"/>
+  <rect fill="#374151" x="152" y="14" width="70" height="7" rx="2"/>
+  <rect fill="#374151" x="122" y="28" width="143" height="7" rx="2"/>
+  <rect fill="#374151" x="122" y="42" width="143" height="7" rx="2"/>
+  <rect fill="#374151" x="122" y="56" width="143" height="18" rx="2"/>
+  <rect fill="#4b5563" x="196" y="82" width="69" height="10" rx="4"/>
 </svg>`
 
 export interface Ru2FormInfoItem {
@@ -1044,20 +1044,21 @@ export function renderRu1About(data: Ru1AboutData): string {
 // ─── Ru2-About ───────────────────────────────────────────────────────────────
 
 export const ru2AboutSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
-  <rect fill="#1f2937" x="0" y="0" width="130" height="105"/>
-  <rect fill="#6366f1" x="10" y="12" width="35" height="3" rx="1"/>
-  <rect fill="#f9fafb" x="10" y="20" width="100" height="8" rx="1"/>
+  <rect fill="#1f2937" width="277.5" height="105"/>
+  <rect fill="#374151" x="0" y="0" width="130" height="105"/>
+  <rect fill="#9ca3af" x="10" y="12" width="35" height="3" rx="1"/>
+  <rect fill="#d1d5db" x="10" y="20" width="100" height="8" rx="1"/>
   <rect fill="#6b7280" x="10" y="33" width="110" height="2.5" rx="1"/>
   <rect fill="#6b7280" x="10" y="38" width="100" height="2.5" rx="1"/>
   <rect fill="#6b7280" x="10" y="43" width="90" height="2.5" rx="1"/>
-  <rect fill="#374151" x="10" y="56" width="48" height="24" rx="4"/>
-  <rect fill="#374151" x="66" y="56" width="48" height="24" rx="4"/>
-  <rect fill="#f9fafb" x="14" y="60" width="20" height="4" rx="1"/>
+  <rect fill="#4b5563" x="10" y="56" width="48" height="24" rx="4"/>
+  <rect fill="#4b5563" x="66" y="56" width="48" height="24" rx="4"/>
+  <rect fill="#9ca3af" x="14" y="60" width="20" height="4" rx="1"/>
   <rect fill="#6b7280" x="14" y="67" width="28" height="2.5" rx="1"/>
-  <rect fill="#f9fafb" x="70" y="60" width="20" height="4" rx="1"/>
+  <rect fill="#9ca3af" x="70" y="60" width="20" height="4" rx="1"/>
   <rect fill="#6b7280" x="70" y="67" width="28" height="2.5" rx="1"/>
-  <rect fill="#4f46e5" x="10" y="88" width="50" height="10" rx="4"/>
-  <rect fill="#e5e7eb" x="130" y="0" width="147.5" height="105"/>
+  <rect fill="#4b5563" x="10" y="88" width="50" height="10" rx="4"/>
+  <rect fill="#4b5563" x="138" y="8" width="130" height="89" rx="6"/>
 </svg>`
 
 export interface Ru2AboutTeamMember {

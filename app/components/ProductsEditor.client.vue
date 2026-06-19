@@ -358,13 +358,21 @@ function doApply() {
         const swatchContainer = document.createElement('div')
         swatchContainer.className = 'color-swatches'
         const isCentered = cardDiv?.classList.contains('text-center') || textDiv?.classList.contains('text-center') || textDiv?.style?.textAlign === 'center' || cardLayout.value === 'centered'
-        swatchContainer.style.cssText = `display:flex; gap:4px; padding:4px 0; justify-content:${isCentered ? 'center' : 'flex-start'};`
-        product.colors.forEach(color => {
+        swatchContainer.style.cssText = `display:flex; flex-wrap:wrap; gap:4px; padding:4px 0; justify-content:${isCentered ? 'center' : 'flex-start'};`
+        const MAX_SWATCHES = 12
+        product.colors.slice(0, MAX_SWATCHES).forEach(color => {
           const dot = document.createElement('span')
           dot.title = color.name
           dot.style.cssText = `display:inline-block; width:12px; height:12px; border-radius:50%; background-color:${color.htmlColor}; border:1px solid rgba(0,0,0,0.15); flex-shrink:0;`
           swatchContainer.appendChild(dot)
         })
+        const extra = product.colors.length - MAX_SWATCHES
+        if (extra > 0) {
+          const more = document.createElement('span')
+          more.style.cssText = `font-size:10px; color:#6b7280; line-height:12px; flex-shrink:0;`
+          more.textContent = `+${extra}`
+          swatchContainer.appendChild(more)
+        }
         const existingBtn = textDiv?.querySelector('a.shop-btn')
         if (existingBtn) {
           textDiv.insertBefore(swatchContainer, existingBtn)
@@ -379,7 +387,7 @@ function doApply() {
         btn.setAttribute('data-product-id', String(product.id ?? ''))
         btn.className = 'shop-btn'
         const isCentered = textDiv?.classList.contains('text-center')
-        btn.style.cssText = `display:inline-block; background-color:${btnBg.value}; color:${btnColor.value}; padding:8px 16px; text-decoration:none; font-size:14px; cursor:pointer; border:none; width:100%; text-align:center; box-sizing:border-box; ${isCentered ? 'margin:8px auto 0;' : 'margin-top:auto;'}`
+        btn.style.cssText = `display:inline-block; background-color:${btnBg.value}; color:${btnColor.value}; padding:8px 16px; text-decoration:none; font-size:14px; cursor:pointer; border:none; width:100%; text-align:center; box-sizing:border-box; margin-top:auto;`
         btn.textContent = btnText.value
         textDiv.appendChild(btn)
       }

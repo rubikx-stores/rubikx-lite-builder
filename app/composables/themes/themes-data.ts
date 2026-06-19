@@ -603,8 +603,11 @@ export function renderRu1Products(data: Ru1ProductsData): string {
 
   const cards = visibleProducts.map(p => {
     const cs = Array.isArray(p.colors) ? '' : String(p.colors ?? '').trim()
-    const colorsHtml = cs
-      ? `<div style="display:flex;gap:6px;align-items:center;padding:4px 0">${cs.split(',').map((c: string) => c.trim()).filter(Boolean).map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.15);flex-shrink:0"></span>`).join('')}</div>`
+    const allColors = cs ? cs.split(',').map((c: string) => c.trim()).filter(Boolean) : []
+    const shownColors = allColors.slice(0, 5)
+    const extraColors = allColors.length - 5
+    const colorsHtml = allColors.length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:4px 0">${shownColors.map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.15);flex-shrink:0"></span>`).join('')}${extraColors > 0 ? `<span style="font-size:10px;color:#6b7280;line-height:14px;flex-shrink:0">+${extraColors}</span>` : ''}</div>`
       : ''
 
     const vpLabel = data.viewProductLabel || 'View Product'
@@ -1218,8 +1221,11 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
 
   const renderCard = (p: Product) => {
     const cs = Array.isArray(p.colors) ? '' : String(p.colors ?? '').trim()
-    const colorsHtml = cs
-      ? `<div style="display:flex;gap:5px;align-items:center;margin-top:6px">${cs.split(',').map((c: string) => c.trim()).filter(Boolean).map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.12);flex-shrink:0"></span>`).join('')}</div>`
+    const allColors2 = cs ? cs.split(',').map((c: string) => c.trim()).filter(Boolean) : []
+    const shownColors2 = allColors2.slice(0, 13)
+    const extraColors2 = allColors2.length - 13
+    const colorsHtml = allColors2.length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:6px">${shownColors2.map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.12);flex-shrink:0"></span>`).join('')}${extraColors2 > 0 ? `<span style="font-size:10px;color:#6b7280;line-height:14px;flex-shrink:0">+${extraColors2}</span>` : ''}</div>`
       : ''
     const arrowBtnPos = data.showArrowBtn !== false ? (data.arrowBtnPosition ?? 'center') : 'hidden'
     const arrowBtnEl = `<a href="${p.buttonUrl}" style="width:32px;height:32px;border-radius:50%;background:${data.arrowBtnBg ?? '#1e293b'};display:flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0;pointer-events:auto"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="${data.arrowBtnColor ?? '#ffffff'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`
@@ -1260,12 +1266,12 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
 
     // bottom: arrow at the very end of the card
     const footerRow = data.showAddToCart
-      ? `<div style="display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:10px">
+      ? `<div style="display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:8px">
            <a href="${p.buttonUrl}" class="shop-btn" style="flex:1;background:${data.buttonBgColor};color:${data.buttonTextColor};text-align:center;padding:0.5rem 0.25rem;font-size:0.8125rem;font-weight:500;text-decoration:none;border-radius:${data.addToCartRadius ?? 6}px">${p.buttonLabel}</a>
            ${arrowBtnPos === 'bottom' ? arrowBtnEl : ''}
          </div>`
       : arrowBtnPos === 'bottom'
-        ? `<div style="display:flex;justify-content:flex-end;margin-top:auto;padding-top:10px">${arrowBtnEl}</div>`
+        ? `<div style="display:flex;justify-content:flex-end;margin-top:auto;padding-top:8px">${arrowBtnEl}</div>`
         : ''
 
     return `
@@ -1641,7 +1647,7 @@ export function renderRu3ShopProducts(data: Ru3ShopProductsData): string {
             <p class="text-sm">${p.price}</p>
             ${p.oldPrice ? `<s style="color:${data.oldPriceColor}" class="text-sm">${p.oldPrice}</s>` : ''}
           </div>
-          ${(() => { const cs = Array.isArray(p.colors) ? '' : String(p.colors ?? '').trim(); return cs ? `<div style="display:flex;gap:6px;align-items:center;padding:4px 0">${cs.split(',').map((c: string) => c.trim()).filter(Boolean).map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.15);flex-shrink:0"></span>`).join('')}</div>` : '' })()}
+          ${(() => { const cs = Array.isArray(p.colors) ? '' : String(p.colors ?? '').trim(); const all = cs ? cs.split(',').map((c: string) => c.trim()).filter(Boolean) : []; const shown = all.slice(0, 13); const extra = all.length - 13; return all.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:4px 0">${shown.map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.15);flex-shrink:0"></span>`).join('')}${extra > 0 ? `<span style="font-size:10px;color:#6b7280;line-height:14px;flex-shrink:0">+${extra}</span>` : ''}</div>` : '' })()}
           <a href="${p.buttonUrl}" class="shop-btn" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.cardBorderRadius}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block">${p.buttonLabel}</a>
         </div>
       </div>`).join('')
