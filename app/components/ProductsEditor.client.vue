@@ -290,7 +290,7 @@ function doApply() {
     card?.querySelectorAll('[class*="color-swatches"], .color-swatches').forEach(s => s.remove())
   })
 
-  const cards = Array.from(section.querySelectorAll('.flex-1, .pbx-flex-1')).filter(el =>
+  const cards = Array.from(section.querySelectorAll('.flex-1, .flex-1')).filter(el =>
     el.querySelector('img[alt="provider"]')
   )
   cards.forEach(card => {
@@ -329,8 +329,8 @@ function doApply() {
       // textContainer is the div that holds the <p> tags — button goes here too
       const textContainer = ps[0]?.parentElement ?? parentDiv
       // Nuke all existing buttons from the whole card before recreating
-      const cardDiv = img.closest('.flex-1, .pbx-flex-1') ?? parentDiv
-      const textDiv = cardDiv.querySelector('.break-words, .pbx-break-words') ?? textContainer
+      const cardDiv = img.closest('.flex-1, .flex-1') ?? parentDiv
+      const textDiv = cardDiv.querySelector('.break-words, .break-words') ?? textContainer
       textDiv.style.display = 'flex'
       textDiv.style.flexDirection = 'column'
       textDiv.style.flex = '1'
@@ -398,13 +398,13 @@ function doApply() {
         if (ps[0]) ps[0].textContent = 'Layouts and visual.'
         if (ps[1]) ps[1].textContent =
           'Start customizing by editing this default text directly in the editor.'
-        const cardDiv = img.closest('.flex-1, .pbx-flex-1')
+        const cardDiv = img.closest('.flex-1, .flex-1')
           ?? parentDiv
         cardDiv.querySelectorAll('a').forEach(b => b.remove())
         cardDiv.querySelectorAll('.color-swatches').forEach(s => s.remove())
         // Remove flex styles from textDiv
         const textDiv = cardDiv.querySelector(
-          '.break-words, .pbx-break-words'
+          '.break-words, .break-words'
         ) ?? parentDiv
         textDiv.style.display = ''
         textDiv.style.flexDirection = ''
@@ -464,7 +464,7 @@ function applyBackgroundLive() {
 function applyCardStylesLive() {
   const section = getSection()
   if (!section) return
-  const cards = Array.from(section.querySelectorAll('.flex-1, .pbx-flex-1')).filter(el =>
+  const cards = Array.from(section.querySelectorAll('.flex-1, .flex-1')).filter(el =>
     el.querySelector('img[alt="provider"]')
   )
   if (!cards.length) return

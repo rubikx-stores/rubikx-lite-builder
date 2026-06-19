@@ -309,7 +309,7 @@ async function _ensureInjected() {
     if (!panel) { await _frame(); continue }
 
     const scrollArea = (
-      panel.querySelector('.pbx-overflow-y-scroll') ??
+      panel.querySelector('.overflow-y-scroll') ??
       panel.querySelector('[class*="overflow-y"]') ??
       panel.firstElementChild
     ) as HTMLElement | null

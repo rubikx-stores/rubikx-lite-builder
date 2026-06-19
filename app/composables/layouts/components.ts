@@ -255,7 +255,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     `<div style="display:flex;align-items:center;gap:0.75rem;justify-content:${justify};">${items.join('')}</div>`
 
   const lowerRow = isLowerLinks && linksEl
-    ? `<div class="pbx-max-w-7xl pbx-mx-auto" style="display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding-top:0.5rem;">${linksEl}</div>`
+    ? `<div class="max-w-7xl mx-auto" style="display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding-top:0.5rem;">${linksEl}</div>`
     : ''
 
   const hasMegaMenu = data.navLinks.some(l => l.megaMenu && l.megaMenu.length > 0)
@@ -271,7 +271,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
 .pbx-pd{display:none;width:100%;border-top:1px solid #e5e7eb;overflow:hidden;}
 </style>
 <nav style="${navStyle}">
-  <div class="pbx-max-w-7xl pbx-mx-auto" style="display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
+  <div class="max-w-7xl mx-auto" style="display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
     ${zone(cols.left,   'flex-start')}
     ${zone(cols.center, 'center')}
     ${zone(cols.right,  'flex-end')}
