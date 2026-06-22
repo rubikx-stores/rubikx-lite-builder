@@ -70,6 +70,17 @@ export default defineEventHandler(async (event) => {
     hour12: true,
   })
 
+  console.log('[CMS POST]', JSON.stringify({
+    url,
+    key: body.key,
+    companyId: body.companyId,
+    version: body.version,
+    state: body.state,
+    updatedBy,
+    valueLength: body.value?.length,
+    valuePreview: body.value?.slice(0, 200),
+  }, null, 2))
+
   const response = await fetch(url, {
     method: 'POST',
     headers,

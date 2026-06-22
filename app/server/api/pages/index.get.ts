@@ -63,6 +63,8 @@ export default defineEventHandler(async (event) => {
     value: string
   }> = json?.data?.MyQuery?.RubikxCms ?? []
 
+  console.log('[CMS GET] companyId:', companyId, 'records:', items.length, items.map(i => ({ key: i.key, version: i.version, state: i.state, valueLength: i.value?.length })))
+
   if (items.length === 0) {
     return [
       {
