@@ -78,8 +78,10 @@ async function publishPage(page: Page) {
       body: {
         key: page.id,
         value: vData.value,
-        version: String(vData.version),
+        version: vData.version,
         state: 'published',
+        companyId: selectedWebsiteId.value ?? 1,
+        company_id: selectedWebsiteId.value ?? 1,
         updatedBy: user.value?.name ?? 'editor',
         updatedOn: new Date().toISOString(),
       },
@@ -207,6 +209,8 @@ async function createNewPage() {
         value: ' ',
         version: 1,
         state: 'draft',
+        companyId: selectedWebsiteId.value ?? 1,
+        company_id: selectedWebsiteId.value ?? 1,
         updatedBy: user.value?.name ?? 'editor',
         updatedOn: new Date().toISOString(),
       }

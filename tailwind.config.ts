@@ -4,7 +4,6 @@ import typography from '@tailwindcss/typography'
 
 /** @type {import('tailwindcss').Config} */
 export default {
-  prefix: 'pbx-',
   content: [
     './css/style.css',
     './src/**/*.{vue,js,ts,jsx,tsx,json,html}',
