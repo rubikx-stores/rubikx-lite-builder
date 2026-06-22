@@ -255,7 +255,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     `<div style="display:flex;align-items:center;gap:0.75rem;justify-content:${justify};">${items.join('')}</div>`
 
   const lowerRow = isLowerLinks && linksEl
-    ? `<div class="max-w-7xl mx-auto" style="display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding-top:0.5rem;">${linksEl}</div>`
+    ? `<div class="pbx-max-w-7xl pbx-mx-auto" style="display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding-top:0.5rem;">${linksEl}</div>`
     : ''
 
   const hasMegaMenu = data.navLinks.some(l => l.megaMenu && l.megaMenu.length > 0)
@@ -265,13 +265,13 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     ? `<script>(function(){function wireTiles(sec){sec.querySelectorAll('.pbx-ptile').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var panel=sec.querySelector('.pbx-pd');if(!panel)return;var imgEl=a.querySelector('img');var imgSrc=imgEl?imgEl.src:'';var name=(a.querySelector('.pbx-ptile-name')||{}).textContent||'';var price=(a.querySelector('.pbx-ptile-price')||{}).textContent||'';var imgCol=imgSrc?'<img src="'+imgSrc+'" style="width:100%;height:100%;object-fit:cover;display:block;" />':'<div style="width:100%;height:100%;background:#f3f4f6;"></div>';panel.innerHTML='<div style="display:grid;grid-template-columns:40% 60%;height:380px;position:relative;">'+  '<div style="overflow:hidden;">'+imgCol+'</div>'+  '<div style="padding:40px 48px;display:flex;flex-direction:column;justify-content:center;background:#fff;">'+    '<div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;">Featured Product</div>'+    '<div style="font-size:26px;font-weight:700;color:#111827;line-height:1.25;margin-bottom:12px;">'+name+'</div>'+    '<div style="font-size:22px;font-weight:600;color:#374151;margin-bottom:28px;">'+price+'</div>'+    '<div><a href="'+a.href+'" style="display:inline-block;padding:12px 28px;background:#111827;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:500;letter-spacing:.02em;">View Product →</a></div>'+  '</div>'+  '<button onclick="this.closest(\\'.pbx-pd\\').style.display=\\'none\\'" style="position:absolute;top:12px;right:16px;background:rgba(255,255,255,.9);border:1px solid #e5e7eb;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;color:#6b7280;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>'+  '</div>';panel.style.display='block';panel.scrollIntoView({behavior:'smooth',block:'nearest'});});})}function init(){var ts=document.querySelectorAll('.pbx-mega-item[data-mega-json]');if(!ts.length)return;var allIds=[];ts.forEach(function(t){try{JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"')).forEach(function(g){(g.ids||[]).forEach(function(id){if(allIds.indexOf(id)<0)allIds.push(id);});});}catch(e){}});ts.forEach(function(t){var sec=t.closest('section');if(sec)wireTiles(sec);});if(!allIds.length)return;fetch('/api/products?ids='+allIds.join(',')).then(function(r){return r.json();}).then(function(prods){var map={};prods.forEach(function(p){map[p.id]=p;});ts.forEach(function(t){var groups;try{groups=JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"'));}catch(e){return;}var drop=t.querySelector('.pbx-mega-drop');if(!drop)return;var html=groups.map(function(g){var items=(g.ids||[]).map(function(id){var p=map[id];if(!p)return'';var img=p.image?'<img src="data:image/png;base64,'+p.image+'" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;"/>':'<div style="width:44px;height:44px;background:#f3f4f6;border-radius:6px;flex-shrink:0;"></div>';var price=p.price!=null?'<span class="pbx-ptile-price" style="font-size:11px;color:#6b7280;">$'+Number(p.price).toFixed(2)+'</span>':'';return'<a href="/shop/'+p.id+'" class="pbx-ptile" style="display:flex;align-items:center;gap:10px;padding:7px 14px;text-decoration:none;cursor:pointer;" onmouseover="this.style.background=\\'#f9fafb\\'" onmouseout="this.style.background=\\'\\''">'+img+'<div style="min-width:0;"><div class="pbx-ptile-name" style="font-size:13px;font-weight:500;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">'+p.name+'</div>'+price+'</div></a>';}).join('');if(!items.trim())return'';return'<div><a href="'+(g.href||'#')+'" style="display:block;padding:8px 14px 4px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;">'+g.label+'</a>'+items+'</div>';}).filter(Boolean).join('<div style="height:1px;background:#f3f4f6;margin:4px 0;"></div>');drop.innerHTML=html;var sec=t.closest('section');if(sec)wireTiles(sec);});}).catch(function(){});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();<\/script>`
     : ''
 
-  return `<section data-component-title="Ru2-Mega-Menu-Header" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${data.sticky ? ' style="position:sticky;top:0;z-index:9999"' : ''}>
+  return `<section data-component-title="Mega-menu-Header" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${data.sticky ? ' style="position:sticky;top:0;z-index:9999"' : ''}>
 <style>
 .pbx-mega-item:hover .pbx-mega-drop{display:block !important;}
 .pbx-pd{display:none;width:100%;border-top:1px solid #e5e7eb;overflow:hidden;}
 </style>
 <nav style="${navStyle}">
-  <div class="max-w-7xl mx-auto" style="display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
+  <div class="pbx-max-w-7xl pbx-mx-auto" style="display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
     ${zone(cols.left,   'flex-start')}
     ${zone(cols.center, 'center')}
     ${zone(cols.right,  'flex-end')}
@@ -457,255 +457,25 @@ export function renderRu1Form(data: Ru1FormData): string {
   return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;background:#fff;min-height:4rem;"></section>`
 }
 
-// ─── Ru2-Form ─────────────────────────────────────────────────────────────────
+// ─── Footer-1 ─────────────────────────────────────────────────────────────────
 
-export const ru2FormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
-  <rect fill="#1f2937" width="277.5" height="105"/>
-  <rect fill="#374151" x="0" y="0" width="110" height="105"/>
-  <rect fill="#9ca3af" x="12" y="14" width="30" height="3" rx="1"/>
-  <rect fill="#d1d5db" x="12" y="22" width="75" height="6" rx="1"/>
-  <rect fill="#6b7280" x="12" y="32" width="85" height="2.5" rx="1"/>
-  <rect fill="#6b7280" x="12" y="37" width="78" height="2.5" rx="1"/>
-  <rect fill="#4b5563" x="12" y="50" width="32" height="32" rx="6"/>
-  <rect fill="#9ca3af" x="18" y="56" width="20" height="2" rx="1"/>
-  <rect fill="#6b7280" x="18" y="61" width="16" height="2" rx="1"/>
-  <rect fill="#4b5563" x="50" y="50" width="32" height="32" rx="6"/>
-  <rect fill="#9ca3af" x="56" y="56" width="20" height="2" rx="1"/>
-  <rect fill="#6b7280" x="56" y="61" width="16" height="2" rx="1"/>
-  <rect fill="#4b5563" x="12" y="88" width="18" height="8" rx="4"/>
-  <rect fill="#4b5563" x="34" y="88" width="18" height="8" rx="4"/>
-  <rect fill="#374151" x="122" y="14" width="70" height="7" rx="2"/>
-  <rect fill="#374151" x="152" y="14" width="70" height="7" rx="2"/>
-  <rect fill="#374151" x="122" y="28" width="143" height="7" rx="2"/>
-  <rect fill="#374151" x="122" y="42" width="143" height="7" rx="2"/>
-  <rect fill="#374151" x="122" y="56" width="143" height="18" rx="2"/>
-  <rect fill="#4b5563" x="196" y="82" width="69" height="10" rx="4"/>
+export const footer1Svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 177.28 70'>
+  <rect width='177.28' height='70' fill='#1a1a1a'/>
+  <rect x='8' y='12' width='40' height='4' rx='1' fill='#444'/>
+  <rect x='8' y='20' width='30' height='3' rx='1' fill='#333'/>
+  <rect x='8' y='26' width='35' height='3' rx='1' fill='#333'/>
+  <rect x='8' y='32' width='28' height='3' rx='1' fill='#333'/>
+  <rect x='68' y='12' width='40' height='4' rx='1' fill='#444'/>
+  <rect x='68' y='20' width='50' height='3' rx='1' fill='#333'/>
+  <rect x='68' y='26' width='45' height='3' rx='1' fill='#333'/>
+  <rect x='128' y='12' width='40' height='4' rx='1' fill='#444'/>
+  <rect x='128' y='20' width='35' height='3' rx='1' fill='#333'/>
+  <rect x='128' y='26' width='30' height='3' rx='1' fill='#333'/>
+  <rect x='0' y='55' width='177.28' height='1' fill='#333'/>
+  <rect x='50' y='62' width='77' height='3' rx='1' fill='#444'/>
 </svg>`
 
-export interface Ru2FormInfoItem {
-  icon: string
-  label: string
-  value: string
-}
-
-export interface Ru2FormData {
-  panelBgColor: string
-  panelTextColor: string
-  accentColor: string
-  eyebrow: string
-  title: string
-  description: string
-  infoItems: Ru2FormInfoItem[]
-  showSocials: boolean
-  socials: Array<{ href: string }>
-  showInfo: boolean
-  showForm: boolean
-  singleBlockAlign: string
-  formBgColor: string
-  formTitle: string
-  formSubtitle: string
-  showSubjectField: boolean
-  subjectOptions: string
-  submitLabel: string
-  submitBgColor: string
-  submitTextColor: string
-  submitAlign: string
-  inputBorderColor: string
-  labelColor: string
-  paddingY: number
-  paddingX: number
-}
-
-export const ru2FormDefaults: Ru2FormData = {
-  panelBgColor: '#111827',
-  panelTextColor: '#ffffff',
-  accentColor: '#6366f1',
-  eyebrow: 'Get in Touch',
-  title: "Let's Start a Conversation",
-  description: "Have a question about your order, need help with your store, or want to explore a custom solution? We're here for you.",
-  infoItems: [
-    { icon: '📧', label: 'Email', value: 'support@yourstore.com' },
-    { icon: '📞', label: 'Phone', value: '+1 (800) 000-0000' },
-    { icon: '🕐', label: 'Hours', value: 'Mon–Fri, 9am–6pm EST' },
-  ],
-  showSocials: false,
-  socials: [],
-  showInfo: true,
-  showForm: true,
-  singleBlockAlign: 'center',
-  formBgColor: '#ffffff',
-  formTitle: 'Send us a message',
-  formSubtitle: "We'll get back to you within 24 hours.",
-  showSubjectField: true,
-  subjectOptions: 'Order Inquiry,Product Question,Returns & Exchanges,Custom Branding,Other',
-  submitLabel: 'Send Message →',
-  submitBgColor: '#6366f1',
-  submitTextColor: '#ffffff',
-  submitAlign: 'right',
-  inputBorderColor: '#e5e7eb',
-  labelColor: '#374151',
-  paddingY: 64,
-  paddingX: 48,
-}
-
-export const ru2FormFields: FieldConfig[] = [
-  { key: '_h_panel', label: 'Info Panel', type: 'header' },
-  { key: 'panelBgColor', label: 'Panel Background', type: 'color' },
-  { key: 'panelTextColor', label: 'Panel Text Colour', type: 'color' },
-  { key: 'accentColor', label: 'Accent Colour', type: 'color' },
-  { key: 'eyebrow', label: 'Eyebrow Text', type: 'text', placeholder: 'e.g. Get in Touch' },
-  { key: 'title', label: 'Title', type: 'text', placeholder: "e.g. Let's Start a Conversation" },
-  { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Short intro paragraph' },
-  {
-    key: 'infoItems', label: 'Info Items', type: 'list',
-    listFields: [
-      { key: 'icon', label: 'Icon (emoji)', type: 'text', placeholder: 'e.g. 📧' },
-      { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Email' },
-      { key: 'value', label: 'Value', type: 'text', placeholder: 'e.g. support@yourstore.com' },
-    ],
-  },
-  { key: 'showSocials', label: 'Show Social Links', type: 'toggle' },
-  {
-    key: 'socials', label: 'Social Links', type: 'list',
-    listFields: [
-      { key: 'href', label: 'URL', type: 'url', placeholder: 'Paste your social media URL' },
-    ],
-  },
-
-  { key: '_h_form', label: 'Form', type: 'header' },
-  { key: 'formBgColor', label: 'Form Background', type: 'color' },
-  { key: 'formTitle', label: 'Form Title', type: 'text', placeholder: 'e.g. Send us a message' },
-  { key: 'formSubtitle', label: 'Form Subtitle', type: 'text', placeholder: "e.g. We'll get back to you within 24 hours." },
-  { key: 'showSubjectField', label: 'Show Subject Dropdown', type: 'toggle' },
-  { key: 'subjectOptions', label: 'Subject Options (comma separated)', type: 'textarea', placeholder: 'Order Inquiry,Product Question,Other' },
-  { key: 'submitLabel', label: 'Submit Button Text', type: 'text', placeholder: 'Send Message' },
-  { key: 'submitBgColor', label: 'Submit Button Background', type: 'color' },
-  { key: 'submitTextColor', label: 'Submit Button Text Colour', type: 'color' },
-  { key: 'submitAlign', label: 'Submit Button Align', type: 'select', options: ['left', 'center', 'right'] },
-  { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
-  { key: 'labelColor', label: 'Label Colour', type: 'color' },
-
-  { key: '_h_layout', label: 'Layout', type: 'header' },
-  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '64' },
-  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '48' },
-  { key: '_h_blocks', label: 'Blocks', type: 'header' },
-  { key: 'showInfo', label: 'Show Info Panel', type: 'toggle' },
-  { key: 'showForm', label: 'Show Form', type: 'toggle' },
-  { key: 'singleBlockAlign', label: 'Single Block Alignment', type: 'select', options: ['left', 'center', 'right'] },
-]
-
-export function renderRu2Form(data: Ru2FormData): string {
-  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:8px;background:#fff;padding:10px 14px;font-size:14px;color:#111827;border:1.5px solid ${data.inputBorderColor};outline:none;`
-  const alignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
-  const btnJustify = alignMap[data.submitAlign ?? 'right'] ?? 'flex-end'
-
-  const socialIcons = (data.socials ?? []).map(s => socialIconHtml(s.href)).filter(Boolean)
-  const socialRow = data.showSocials && socialIcons.length
-    ? `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:2rem;">${socialIcons.join('')}</div>`
-    : ''
-
-  const infoItemsHtml = (data.infoItems ?? []).map(item => `
-    <div style="display:flex;align-items:flex-start;gap:14px;">
-      <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${item.icon}</div>
-      <div>
-        <div style="font-size:11px;font-weight:600;color:${data.accentColor};text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px;">${item.label}</div>
-        <div style="font-size:14px;color:rgba(255,255,255,0.8);font-weight:500;">${item.value}</div>
-      </div>
-    </div>`).join('')
-
-  const infoPanel = `<div style="background:${data.panelBgColor};padding:${data.paddingY}px ${data.paddingX}px;display:flex;flex-direction:column;justify-content:space-between;">
-    <div>
-      <div style="font-size:11px;font-weight:700;color:${data.accentColor};letter-spacing:0.18em;text-transform:uppercase;margin-bottom:16px;">${data.eyebrow}</div>
-      <h2 style="font-size:32px;font-weight:800;color:${data.panelTextColor};line-height:1.15;margin:0 0 16px;letter-spacing:-0.5px;">${data.title}</h2>
-      <p style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.8;margin:0 0 40px;">${data.description}</p>
-      <div style="display:flex;flex-direction:column;gap:20px;">${infoItemsHtml}</div>
-    </div>
-    ${socialRow}
-  </div>`
-
-  const subjectFieldHtml = data.showSubjectField
-    ? `<div style="margin-bottom:16px;">
-        <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">Subject</label>
-        <select style="${inputStyle}appearance:none;cursor:pointer;">
-          ${(data.subjectOptions ?? '').split(',').map(o => `<option>${o.trim()}</option>`).join('')}
-        </select>
-      </div>`
-    : ''
-
-  const formPanel = `<div style="background:${data.formBgColor};padding:${data.paddingY}px ${data.paddingX}px;">
-    <div style="margin-bottom:28px;">
-      <h3 style="font-size:22px;font-weight:700;color:#111827;margin:0 0 6px;">${data.formTitle}</h3>
-      <p style="font-size:14px;color:#9ca3af;margin:0;">${data.formSubtitle}</p>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-      <div>
-        <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">First Name</label>
-        <input type="text" placeholder="John" style="${inputStyle}"/>
-      </div>
-      <div>
-        <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">Last Name</label>
-        <input type="text" placeholder="Smith" style="${inputStyle}"/>
-      </div>
-    </div>
-    <div style="margin-bottom:16px;">
-      <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">Email Address</label>
-      <input type="email" placeholder="john@company.com" style="${inputStyle}"/>
-    </div>
-    ${subjectFieldHtml}
-    <div style="margin-bottom:20px;">
-      <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">Message</label>
-      <textarea rows="4" placeholder="Tell us how we can help..." style="${inputStyle}resize:vertical;height:120px;"></textarea>
-    </div>
-    <div style="display:flex;justify-content:${btnJustify};">
-      <button type="submit" style="background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.02em;">${data.submitLabel}</button>
-    </div>
-  </div>`
-
-  const showInfo = data.showInfo !== false
-  const showForm = data.showForm !== false
-
-  if (showInfo && showForm) {
-    return `<section data-component-title="Ru2-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="overflow:hidden;">
-  <div style="display:grid;grid-template-columns:1fr 1.4fr;">
-    ${infoPanel}
-    ${formPanel}
-  </div>
-</section>`
-  }
-
-  const singleCol = showInfo ? infoPanel : formPanel
-  const singleAlignMap: Record<string, string> = { left: '0 auto 0 0', center: '0 auto', right: '0 0 0 auto' }
-  const margin = singleAlignMap[data.singleBlockAlign ?? 'center'] ?? '0 auto'
-
-  return `<section data-component-title="Ru2-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${showInfo ? data.panelBgColor : data.formBgColor};">
-  <div style="max-width:80rem;margin:${margin};">
-    ${singleCol}
-  </div>
-</section>`
-}
-
-// ─── Ru1-Footer ───────────────────────────────────────────────────────────────
-
-export const ru1FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
-  <rect fill="#1f2937" x="0" y="0" width="277.5" height="100"/>
-  <rect fill="#9ca3af" x="10" y="10" width="38" height="5" rx="1"/>
-  <rect fill="#6b7280" x="10" y="20" width="30" height="3" rx="1"/>
-  <rect fill="#6b7280" x="10" y="26" width="36" height="3" rx="1"/>
-  <rect fill="#6b7280" x="10" y="32" width="28" height="3" rx="1"/>
-  <rect fill="#6b7280" x="10" y="38" width="33" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="100" y="10" width="38" height="5" rx="1"/>
-  <rect fill="#6b7280" x="100" y="20" width="55" height="3" rx="1"/>
-  <rect fill="#6b7280" x="100" y="26" width="48" height="3" rx="1"/>
-  <rect fill="#6b7280" x="100" y="32" width="52" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="195" y="10" width="38" height="5" rx="1"/>
-  <rect fill="#6b7280" x="195" y="20" width="42" height="3" rx="1"/>
-  <rect fill="#6b7280" x="195" y="26" width="35" height="3" rx="1"/>
-  <rect fill="#6b7280" x="195" y="32" width="38" height="3" rx="1"/>
-  <rect fill="#374151" x="10" y="70" width="257.5" height="1"/>
-  <rect fill="#4b5563" x="89" y="80" width="100" height="3" rx="1"/>
-</svg>`
-
-export interface Ru1FooterData {
+export interface Footer1Data {
   usefulLinks: { label: string; url: string }[]
   aboutText: string
   contactEmail: string
@@ -717,7 +487,7 @@ export interface Ru1FooterData {
   paddingX: number
 }
 
-export const ru1FooterDefaults: Ru1FooterData = {
+export const footer1Defaults: Footer1Data = {
   usefulLinks: [
     { label: 'Home',       url: '/'        },
     { label: 'Shop',       url: '/shop'    },
@@ -728,13 +498,13 @@ export const ru1FooterDefaults: Ru1FooterData = {
   contactEmail: 'support@yourdomain.com',
   contactPhone: '+1 000-000-0000',
   copyright: '© Your Store. All rights reserved.',
-  bgColor: '#ffffff',
-  textColor: '#000000',
+  bgColor: '#1a1a1a',
+  textColor: '#ffffff',
   paddingY: 48,
   paddingX: 16,
 }
 
-export const ru1FooterFields: FieldConfig[] = [
+export const footer1Fields: FieldConfig[] = [
   {
     key: 'usefulLinks', label: 'Useful Links', type: 'list',
     listFields: [
@@ -752,8 +522,8 @@ export const ru1FooterFields: FieldConfig[] = [
   { key: 'paddingX',     label: 'Horizontal Padding', type: 'number' },
 ]
 
-export function renderRu1Footer(data: Ru1FooterData): string {
-  return `<section data-component-title="Ru1-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
+export function renderFooter1(data: Footer1Data): string {
+  return `<section data-component-title="Footer-1" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
 <footer style="background-color:${data.bgColor};color:${data.textColor};padding:${data.paddingY}px ${data.paddingX}px;">
   <div style="max-width:1280px;margin:0 auto;">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;padding-bottom:40px;">
@@ -784,108 +554,27 @@ export function renderRu1Footer(data: Ru1FooterData): string {
 </section>`
 }
 
-// ─── Ru2-Footer ───────────────────────────────────────────────────────────────
-
-export const ru2FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 48">
-  <rect fill="#1f2937" x="0" y="0" width="277.5" height="48"/>
-  <rect fill="#9ca3af" x="12" y="16" width="90" height="4" rx="1"/>
-  <rect fill="#6b7280" x="12" y="24" width="65" height="3" rx="1"/>
-  <circle cx="222" cy="24" r="7" fill="#374151"/>
-  <circle cx="238" cy="24" r="7" fill="#374151"/>
-  <circle cx="254" cy="24" r="7" fill="#374151"/>
-</svg>`
-
-export interface Ru2FooterData {
-  copyright: string
-  socials: { href: string }[]
-  iconPosition: string
-  bgColor: string
-  textColor: string
-  paddingY: number
-  paddingX: number
-}
-
-export const ru2FooterDefaults: Ru2FooterData = {
-  copyright: '© 2026 Your Company, Inc. All rights reserved.',
-  socials: [],
-  iconPosition: 'right',
-  bgColor: '#ffffff',
-  textColor: '#000000',
-  paddingY: 20,
-  paddingX: 32,
-}
-
-export const ru2FooterFields: FieldConfig[] = [
-  { key: 'copyright', label: 'Copyright Text', type: 'text', placeholder: '© 2026 Your Company, Inc.' },
-  {
-    key: 'socials', label: 'Social Links', type: 'list',
-    listFields: [
-      { key: 'href', label: 'URL', type: 'url', placeholder: 'https://instagram.com/...' },
-    ],
-  },
-  { key: 'iconPosition', label: 'Icon Position', type: 'select', options: ['left', 'center', 'right'] },
-  { key: 'bgColor',   label: 'Background Color', type: 'color' },
-  { key: 'textColor', label: 'Text Color',        type: 'color' },
-  { key: 'paddingY',  label: 'Vertical Padding',  type: 'number', placeholder: '20' },
-  { key: 'paddingX',  label: 'Horizontal Padding', type: 'number', placeholder: '32' },
-]
-
-export function renderRu2Footer(data: Ru2FooterData): string {
-  const icons = (data.socials ?? []).map(s => socialIconHtml(s.href, 20)).filter(Boolean)
-  const iconsHtml = icons.length
-    ? `<div style="display:flex;gap:10px;align-items:center;flex-shrink:0;">${icons.join('')}</div>`
-    : ''
-
-  const pos = data.iconPosition ?? 'right'
-  let innerHtml: string
-  if (pos === 'center') {
-    innerHtml = `<div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;">
-      ${iconsHtml}
-      <p style="margin:0;font-size:13px;opacity:0.6;">${data.copyright}</p>
-    </div>`
-  } else if (pos === 'left') {
-    innerHtml = `<div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:16px;">
-      ${iconsHtml}
-      <p style="margin:0;font-size:13px;opacity:0.6;">${data.copyright}</p>
-    </div>`
-  } else {
-    innerHtml = `<div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:16px;">
-      <p style="margin:0;font-size:13px;opacity:0.6;">${data.copyright}</p>
-      ${iconsHtml}
-    </div>`
-  }
-
-  return `<section data-component-title="Ru2-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
-<footer style="background-color:${data.bgColor};color:${data.textColor};padding:${data.paddingY ?? 20}px ${data.paddingX ?? 32}px;box-sizing:border-box;">
-  <div style="max-width:1280px;margin:0 auto;">
-    ${innerHtml}
-  </div>
-</footer>
-</section>`
-}
-
 // ─── Ru1-About ───────────────────────────────────────────────────────────────
 
 export const ru1AboutSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
-  <rect fill="#1f2937" width="277.5" height="105"/>
-  <rect fill="#9ca3af" x="89" y="6" width="100" height="6" rx="1"/>
-  <rect fill="#6b7280" x="55" y="17" width="168" height="3" rx="1"/>
-  <rect fill="#6b7280" x="65" y="22" width="148" height="3" rx="1"/>
-  <rect fill="#4b5563" x="106" y="30" width="66" height="7" rx="3"/>
-  <rect fill="#374151" x="0" y="43" width="277.5" height="22"/>
-  <rect fill="#374151" x="30" y="70" width="218" height="28" rx="3"/>
-  <rect fill="#4b5563" x="43" y="75" width="6" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="38" y="84" width="16" height="3" rx="1"/>
-  <rect fill="#6b7280" x="40" y="89" width="12" height="2" rx="1"/>
-  <rect fill="#4b5563" x="104" y="75" width="6" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="99" y="84" width="16" height="3" rx="1"/>
-  <rect fill="#6b7280" x="101" y="89" width="12" height="2" rx="1"/>
-  <rect fill="#4b5563" x="165" y="75" width="6" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="160" y="84" width="16" height="3" rx="1"/>
-  <rect fill="#6b7280" x="162" y="89" width="12" height="2" rx="1"/>
-  <rect fill="#4b5563" x="226" y="75" width="6" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="221" y="84" width="16" height="3" rx="1"/>
-  <rect fill="#6b7280" x="223" y="89" width="12" height="2" rx="1"/>
+  <rect fill="#394152" x="89" y="6" width="100" height="6"/>
+  <rect fill="#394152" x="55" y="17" width="168" height="3"/>
+  <rect fill="#394152" x="65" y="22" width="148" height="3"/>
+  <rect fill="#394152" x="106" y="30" width="66" height="7"/>
+  <rect fill="#394152" x="0" y="43" width="277.5" height="38" opacity="0.4"/>
+  <rect fill="#f3f4f6" x="30" y="70" width="218" height="28" rx="3"/>
+  <rect fill="#394152" x="43" y="75" width="6" height="6"/>
+  <rect fill="#394152" x="38" y="84" width="16" height="3"/>
+  <rect fill="#394152" x="40" y="89" width="12" height="2"/>
+  <rect fill="#394152" x="104" y="75" width="6" height="6"/>
+  <rect fill="#394152" x="99" y="84" width="16" height="3"/>
+  <rect fill="#394152" x="101" y="89" width="12" height="2"/>
+  <rect fill="#394152" x="165" y="75" width="6" height="6"/>
+  <rect fill="#394152" x="160" y="84" width="16" height="3"/>
+  <rect fill="#394152" x="162" y="89" width="12" height="2"/>
+  <rect fill="#394152" x="226" y="75" width="6" height="6"/>
+  <rect fill="#394152" x="221" y="84" width="16" height="3"/>
+  <rect fill="#394152" x="223" y="89" width="12" height="2"/>
 </svg>`
 
 export interface Ru1AboutData {
@@ -1038,281 +727,6 @@ export function renderRu1About(data: Ru1AboutData): string {
       </div>
     </div>
   </div>
-</section>`
-}
-
-// ─── Ru2-About ───────────────────────────────────────────────────────────────
-
-export const ru2AboutSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
-  <rect fill="#1f2937" width="277.5" height="105"/>
-  <rect fill="#374151" x="0" y="0" width="130" height="105"/>
-  <rect fill="#9ca3af" x="10" y="12" width="35" height="3" rx="1"/>
-  <rect fill="#d1d5db" x="10" y="20" width="100" height="8" rx="1"/>
-  <rect fill="#6b7280" x="10" y="33" width="110" height="2.5" rx="1"/>
-  <rect fill="#6b7280" x="10" y="38" width="100" height="2.5" rx="1"/>
-  <rect fill="#6b7280" x="10" y="43" width="90" height="2.5" rx="1"/>
-  <rect fill="#4b5563" x="10" y="56" width="48" height="24" rx="4"/>
-  <rect fill="#4b5563" x="66" y="56" width="48" height="24" rx="4"/>
-  <rect fill="#9ca3af" x="14" y="60" width="20" height="4" rx="1"/>
-  <rect fill="#6b7280" x="14" y="67" width="28" height="2.5" rx="1"/>
-  <rect fill="#9ca3af" x="70" y="60" width="20" height="4" rx="1"/>
-  <rect fill="#6b7280" x="70" y="67" width="28" height="2.5" rx="1"/>
-  <rect fill="#4b5563" x="10" y="88" width="50" height="10" rx="4"/>
-  <rect fill="#4b5563" x="138" y="8" width="130" height="89" rx="6"/>
-</svg>`
-
-export interface Ru2AboutTeamMember {
-  imageUrl: string
-  name: string
-  role: string
-}
-
-export interface Ru2AboutValueItem {
-  icon: string
-  imageUrl: string
-  title: string
-  description: string
-}
-
-export interface Ru2AboutStatItem {
-  value: string
-  label: string
-}
-
-export interface Ru2AboutData {
-  bgColor: string
-  eyebrow: string
-  eyebrowColor: string
-  title: string
-  titleColor: string
-  titleFontSize: number
-  titleFontWeight: string
-  description: string
-  descriptionColor: string
-  stats: Ru2AboutStatItem[]
-  statValueColor: string
-  statLabelColor: string
-  statCardBgColor: string
-  showCta: boolean
-  ctaLabel: string
-  ctaHref: string
-  ctaBgColor: string
-  ctaTextColor: string
-  imageSrc: string
-  imageTag: string
-  imageTagBgColor: string
-  imageTagTextColor: string
-  showHero: boolean
-  showValues: boolean
-  valuesBgColor: string
-  valueTitleColor: string
-  valueDescColor: string
-  values: Ru2AboutValueItem[]
-  showTeam: boolean
-  teamBgColor: string
-  teamEyebrow: string
-  teamEyebrowColor: string
-  teamTitle: string
-  teamTitleColor: string
-  teamMembers: Ru2AboutTeamMember[]
-  paddingY: number
-  paddingX: number
-}
-
-export const ru2AboutDefaults: Ru2AboutData = {
-  bgColor: '#ffffff',
-  eyebrow: 'Our Story',
-  eyebrowColor: '#6366f1',
-  title: 'Built by a Team That Gets It',
-  titleColor: '#111827',
-  titleFontSize: 40,
-  titleFontWeight: '900',
-  description: 'We started with one simple belief — branded gear should be easy to get, look great, and arrive fast. Today we power hundreds of company stores across the country.',
-  descriptionColor: '#6b7280',
-  stats: [
-    { value: '500+', label: 'Products Available' },
-    { value: '12K+', label: 'Teams Served' },
-    { value: '48h', label: 'Avg Delivery' },
-    { value: '98%', label: 'Satisfaction Rate' },
-  ],
-  statValueColor: '#111827',
-  statLabelColor: '#9ca3af',
-  statCardBgColor: '#f9fafb',
-  showCta: true,
-  ctaLabel: 'Learn More About Us',
-  ctaHref: '/about',
-  ctaBgColor: '#111827',
-  ctaTextColor: '#ffffff',
-  imageSrc: '',
-  imageTag: 'Since 2018',
-  imageTagBgColor: '#f59e0b',
-  imageTagTextColor: '#000000',
-  showHero: true,
-  showValues: true,
-  valuesBgColor: '#111827',
-  valueTitleColor: '#ffffff',
-  valueDescColor: '#6b7280',
-  values: [
-    { icon: '⚡', imageUrl: '', title: 'Speed First', description: 'We built our entire operation around getting gear to your team as fast as possible — without compromising quality.' },
-    { icon: '🎯', imageUrl: '', title: 'Brand Precision', description: 'Every logo, color, and stitch is reviewed before it ships. Your brand deserves to look exactly right.' },
-    { icon: '🤝', imageUrl: '', title: 'Team First', description: 'We work alongside HR and operations teams to make the onboarding experience seamless for everyone.' },
-  ],
-  showTeam: true,
-  teamBgColor: '#f9fafb',
-  teamEyebrow: 'The People Behind It',
-  teamEyebrowColor: '#6366f1',
-  teamTitle: 'Meet the Team',
-  teamTitleColor: '#111827',
-  teamMembers: [
-    { imageUrl: '', name: 'Alex Johnson', role: 'Founder & CEO' },
-    { imageUrl: '', name: 'Sarah Kim', role: 'Head of Design' },
-    { imageUrl: '', name: 'Marcus Lee', role: 'Operations Lead' },
-    { imageUrl: '', name: 'Priya Patel', role: 'Customer Success' },
-  ],
-  paddingY: 64,
-  paddingX: 48,
-}
-
-export const ru2AboutFields: FieldConfig[] = [
-  { key: '_h_visibility', label: 'Sections', type: 'header' },
-  { key: 'showHero', label: 'Show Hero', type: 'toggle' },
-  { key: 'showValues', label: 'Show Values Strip', type: 'toggle' },
-  { key: 'showTeam', label: 'Show Team Section', type: 'toggle' },
-
-  { key: '_h_section', label: 'Section', type: 'header' },
-  { key: 'bgColor', label: 'Background Colour', type: 'color' },
-  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '64' },
-  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '48' },
-
-  { key: '_h_hero', label: 'Hero', type: 'header' },
-  { key: 'eyebrow', label: 'Eyebrow Text', type: 'text', placeholder: 'e.g. Our Story' },
-  { key: 'eyebrowColor', label: 'Eyebrow Colour', type: 'color' },
-  { key: 'title', label: 'Title', type: 'text', placeholder: 'e.g. Built by a Team That Gets It' },
-  { key: 'titleColor', label: 'Title Colour', type: 'color' },
-  { key: 'titleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '40' },
-  { key: 'titleFontWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
-  { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Short intro paragraph' },
-  { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
-  { key: 'imageSrc', label: 'Image', type: 'image' },
-  { key: 'imageTag', label: 'Image Tag Text', type: 'text', placeholder: 'e.g. Since 2018' },
-  { key: 'imageTagBgColor', label: 'Image Tag Background', type: 'color' },
-  { key: 'imageTagTextColor', label: 'Image Tag Text Colour', type: 'color' },
-
-  { key: '_h_stats', label: 'Stats', type: 'header' },
-  { key: 'statCardBgColor', label: 'Stat Card Background', type: 'color' },
-  { key: 'statValueColor', label: 'Stat Value Colour', type: 'color' },
-  { key: 'statLabelColor', label: 'Stat Label Colour', type: 'color' },
-  {
-    key: 'stats', label: 'Stats', type: 'list',
-    listFields: [
-      { key: 'value', label: 'Value', type: 'text', placeholder: 'e.g. 500+' },
-      { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Products Available' },
-    ],
-  },
-
-  { key: '_h_cta', label: 'CTA Button', type: 'header' },
-  { key: 'showCta', label: 'Show CTA Button', type: 'toggle' },
-  { key: 'ctaLabel', label: 'Button Label', type: 'text', placeholder: 'e.g. Learn More' },
-  { key: 'ctaHref', label: 'Button URL', type: 'url', placeholder: '/about' },
-  { key: 'ctaBgColor', label: 'Button Background', type: 'color' },
-  { key: 'ctaTextColor', label: 'Button Text Colour', type: 'color' },
-
-  { key: '_h_values', label: 'Values Strip', type: 'header' },
-  { key: 'valuesBgColor', label: 'Values Background', type: 'color' },
-  { key: 'valueTitleColor', label: 'Value Title Colour', type: 'color' },
-  { key: 'valueDescColor', label: 'Value Description Colour', type: 'color' },
-  {
-    key: 'values', label: 'Values', type: 'list',
-    listFields: [
-      { key: 'icon', label: 'Icon (emoji)', type: 'text', placeholder: 'e.g. ⚡' },
-      { key: 'imageUrl', label: 'Icon Image URL (overrides emoji)', type: 'image' },
-      { key: 'title', label: 'Title', type: 'text', placeholder: 'e.g. Speed First' },
-      { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Short description' },
-    ],
-  },
-
-  { key: '_h_team', label: 'Team Section', type: 'header' },
-  { key: 'teamBgColor', label: 'Team Background', type: 'color' },
-  { key: 'teamEyebrow', label: 'Team Eyebrow', type: 'text', placeholder: 'e.g. The People Behind It' },
-  { key: 'teamEyebrowColor', label: 'Team Eyebrow Colour', type: 'color' },
-  { key: 'teamTitle', label: 'Team Title', type: 'text', placeholder: 'e.g. Meet the Team' },
-  { key: 'teamTitleColor', label: 'Team Title Colour', type: 'color' },
-  {
-    key: 'teamMembers', label: 'Team Members', type: 'list',
-    listFields: [
-      { key: 'imageUrl', label: 'Photo URL', type: 'image' },
-      { key: 'name', label: 'Name', type: 'text', placeholder: 'e.g. Alex Johnson' },
-      { key: 'role', label: 'Role', type: 'text', placeholder: 'e.g. Founder & CEO' },
-    ],
-  },
-]
-
-export function renderRu2About(data: Ru2AboutData): string {
-  const statsHtml = (data.stats ?? []).map(stat => `
-    <div style="padding:20px;background:${data.statCardBgColor};border-radius:12px;border:1px solid #e5e7eb;">
-      <div style="font-size:32px;font-weight:900;color:${data.statValueColor};letter-spacing:-1px;margin-bottom:4px;">${stat.value}</div>
-      <div style="font-size:12px;color:${data.statLabelColor};font-weight:500;">${stat.label}</div>
-    </div>`).join('')
-
-  const valuesHtml = (data.values ?? []).map(v => {
-    const iconHtml = v.imageUrl
-      ? `<img src="${v.imageUrl}" alt="${v.title}" style="width:40px;height:40px;object-fit:contain;margin-bottom:12px;display:block;"/>`
-      : `<div style="font-size:28px;margin-bottom:12px;">${v.icon}</div>`
-    return `
-    <div>
-      ${iconHtml}
-      <div style="font-size:16px;font-weight:700;color:${data.valueTitleColor};margin-bottom:8px;">${v.title}</div>
-      <div style="font-size:13px;color:${data.valueDescColor};line-height:1.7;">${v.description}</div>
-    </div>`
-  }).join('')
-
-  const teamHtml = (data.teamMembers ?? []).map(m => {
-    const imgHtml = m.imageUrl
-      ? `<img src="${m.imageUrl}" alt="${m.name}" style="width:100%;height:100%;object-fit:cover;display:block;"/>`
-      : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:48px;background:#e5e7eb;">👤</div>`
-    return `<div style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;">
-      <div style="height:180px;overflow:hidden;">${imgHtml}</div>
-      <div style="padding:16px;">
-        <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:3px;">${m.name}</div>
-        <div style="font-size:12px;color:${data.teamEyebrowColor};font-weight:600;">${m.role}</div>
-      </div>
-    </div>`
-  }).join('')
-
-  const imageHtml = data.imageSrc
-    ? `<img src="${data.imageSrc}" alt="${data.title}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:0;"/>`
-    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:13px;background:#e5e7eb;">Add an image</div>`
-
-  const heroSection = `<div style="display:grid;grid-template-columns:1fr 1fr;min-height:480px;">
-    <div style="position:relative;overflow:hidden;">
-      ${imageHtml}
-      ${data.imageTag ? `<div style="position:absolute;bottom:24px;left:24px;background:${data.imageTagBgColor};color:${data.imageTagTextColor};font-size:11px;font-weight:700;padding:4px 12px;border-radius:4px;letter-spacing:0.1em;text-transform:uppercase;">${data.imageTag}</div>` : ''}
-    </div>
-    <div style="padding:${data.paddingY}px ${data.paddingX}px;display:flex;flex-direction:column;justify-content:center;background:${data.bgColor};">
-      <div style="font-size:11px;font-weight:700;color:${data.eyebrowColor};letter-spacing:0.18em;text-transform:uppercase;margin-bottom:16px;">${data.eyebrow}</div>
-      <h2 style="font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.1;letter-spacing:-1px;margin:0 0 20px;">${data.title}</h2>
-      <p style="font-size:15px;color:${data.descriptionColor};line-height:1.8;margin:0 0 32px;">${data.description}</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;">${statsHtml}</div>
-      ${data.showCta !== false ? `<div><a href="${data.ctaHref}" style="display:inline-block;background:${data.ctaBgColor};color:${data.ctaTextColor};padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;">${data.ctaLabel}</a></div>` : ''}
-    </div>
-  </div>`
-
-  const valuesSection = data.showValues !== false ? `<div style="background:${data.valuesBgColor};padding:${data.paddingY}px ${data.paddingX}px;display:grid;grid-template-columns:repeat(${Math.min(data.values?.length ?? 3, 4)},1fr);gap:32px;">${valuesHtml}</div>` : ''
-
-  const teamSection = data.showTeam !== false ? `<div style="background:${data.teamBgColor};padding:${data.paddingY}px ${data.paddingX}px;">
-    <div style="text-align:center;margin-bottom:40px;">
-      <div style="font-size:11px;font-weight:700;color:${data.teamEyebrowColor};letter-spacing:0.18em;text-transform:uppercase;margin-bottom:12px;">${data.teamEyebrow}</div>
-      <div style="font-size:32px;font-weight:800;color:${data.teamTitleColor};letter-spacing:-0.5px;">${data.teamTitle}</div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(${Math.min(data.teamMembers?.length ?? 4, 4)},1fr);gap:20px;">${teamHtml}</div>
-  </div>` : ''
-
-  const heroHtml = data.showHero !== false ? heroSection : ''
-
-  return `<section data-component-title="Ru2-About" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="overflow:hidden;">
-  ${heroHtml}
-  ${valuesSection}
-  ${teamSection}
 </section>`
 }
 
@@ -1715,23 +1129,23 @@ export const ru2SplitBannerCollageFields: FieldConfig[] = [
 // ─── Ru1-Stats ───────────────────────────────────────────────────────────────
 
 export const ru1StatsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 60">
-  <rect fill="#1f2937" width="277.5" height="60"/>
-  <rect fill="#374151" x="8"   y="10" width="55" height="40" rx="4"/>
-  <rect fill="#374151" x="73"  y="10" width="55" height="40" rx="4"/>
-  <rect fill="#374151" x="138" y="10" width="55" height="40" rx="4"/>
-  <rect fill="#374151" x="203" y="10" width="55" height="40" rx="4"/>
-  <rect fill="#6b7280" x="20"  y="18" width="16" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="20"  y="25" width="28" height="6" rx="1"/>
-  <rect fill="#6b7280" x="20"  y="35" width="22" height="3" rx="1"/>
-  <rect fill="#6b7280" x="85"  y="18" width="16" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="85"  y="25" width="28" height="6" rx="1"/>
-  <rect fill="#6b7280" x="85"  y="35" width="22" height="3" rx="1"/>
-  <rect fill="#6b7280" x="150" y="18" width="16" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="150" y="25" width="28" height="6" rx="1"/>
-  <rect fill="#6b7280" x="150" y="35" width="22" height="3" rx="1"/>
-  <rect fill="#6b7280" x="215" y="18" width="16" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="215" y="25" width="28" height="6" rx="1"/>
-  <rect fill="#6b7280" x="215" y="35" width="22" height="3" rx="1"/>
+  <rect fill="#f9fafb" width="277.5" height="60"/>
+  <rect fill="#e5e7eb" x="8"   y="10" width="55" height="40" rx="4"/>
+  <rect fill="#e5e7eb" x="73"  y="10" width="55" height="40" rx="4"/>
+  <rect fill="#e5e7eb" x="138" y="10" width="55" height="40" rx="4"/>
+  <rect fill="#e5e7eb" x="203" y="10" width="55" height="40" rx="4"/>
+  <rect fill="#9ca3af" x="20"  y="18" width="16" height="3" rx="1"/>
+  <rect fill="#394152" x="20"  y="25" width="28" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="20"  y="35" width="22" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="85"  y="18" width="16" height="3" rx="1"/>
+  <rect fill="#394152" x="85"  y="25" width="28" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="85"  y="35" width="22" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="150" y="18" width="16" height="3" rx="1"/>
+  <rect fill="#394152" x="150" y="25" width="28" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="150" y="35" width="22" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="215" y="18" width="16" height="3" rx="1"/>
+  <rect fill="#394152" x="215" y="25" width="28" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="215" y="35" width="22" height="3" rx="1"/>
 </svg>`
 
 export interface Ru1StatItem {
@@ -2015,20 +1429,20 @@ export function renderRu2SplitBannerCollage(data: Ru2SplitBannerCollageData): st
 // ─── Ru2-Stats ───────────────────────────────────────────────────────────────
 
 export const ru2StatsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 70">
-  <rect fill="#1f2937" width="277.5" height="70"/>
-  <rect fill="#374151" x="8" y="8" width="261.5" height="54" rx="6"/>
-  <rect fill="#9ca3af" x="18" y="18" width="55" height="7" rx="1"/>
-  <rect fill="#6b7280" x="18" y="28" width="80" height="3" rx="1"/>
-  <rect fill="#4b5563" x="190" y="16" width="35" height="8" rx="4"/>
-  <rect fill="#6b7280" x="230" y="16" width="35" height="8" rx="12"/>
+  <rect fill="#f3f4f6" width="277.5" height="70"/>
+  <rect fill="#ffffff" x="8" y="8" width="261.5" height="54" rx="6"/>
+  <rect fill="#394152" x="18" y="18" width="55" height="7" rx="1"/>
+  <rect fill="#9ca3af" x="18" y="28" width="80" height="3" rx="1"/>
+  <rect fill="#394152" x="190" y="16" width="35" height="8" rx="4"/>
+  <rect fill="#394152" x="230" y="16" width="35" height="8" rx="12"/>
   <rect fill="#9ca3af" x="18" y="44" width="20" height="5" rx="1"/>
   <rect fill="#9ca3af" x="85" y="44" width="20" height="5" rx="1"/>
   <rect fill="#9ca3af" x="152" y="44" width="20" height="5" rx="1"/>
   <rect fill="#9ca3af" x="219" y="44" width="20" height="5" rx="1"/>
-  <rect fill="#6b7280" x="18" y="52" width="40" height="3" rx="1"/>
-  <rect fill="#6b7280" x="85" y="52" width="40" height="3" rx="1"/>
-  <rect fill="#6b7280" x="152" y="52" width="40" height="3" rx="1"/>
-  <rect fill="#6b7280" x="219" y="52" width="40" height="3" rx="1"/>
+  <rect fill="#394152" x="18" y="52" width="40" height="3" rx="1"/>
+  <rect fill="#394152" x="85" y="52" width="40" height="3" rx="1"/>
+  <rect fill="#394152" x="152" y="52" width="40" height="3" rx="1"/>
+  <rect fill="#394152" x="219" y="52" width="40" height="3" rx="1"/>
 </svg>`
 
 export interface Ru2StatItem {
@@ -2244,25 +1658,25 @@ export function renderRu2Stats(data: Ru2StatsData): string {
 // ─── Ru3-Stats ───────────────────────────────────────────────────────────────
 
 export const ru3StatsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 60">
-  <rect fill="#1f2937" width="277.5" height="60"/>
-  <rect fill="#374151" x="8" y="8" width="261.5" height="44" rx="6"/>
-  <circle fill="#4b5563" cx="38" cy="30" r="10"/>
-  <rect fill="#9ca3af" x="35" y="26" width="6" height="8" rx="1"/>
-  <rect fill="#9ca3af" x="54" y="24" width="30" height="4" rx="1"/>
-  <rect fill="#6b7280" x="54" y="31" width="40" height="3" rx="1"/>
-  <rect fill="#6b7280" x="54" y="37" width="35" height="3" rx="1"/>
-  <rect fill="#4b5563" x="108" y="28" width="6" height="6" rx="1" transform="rotate(45 111 31)"/>
-  <circle fill="#4b5563" cx="131" cy="30" r="10"/>
-  <rect fill="#9ca3af" x="128" y="26" width="6" height="8" rx="1"/>
-  <rect fill="#9ca3af" x="147" y="24" width="30" height="4" rx="1"/>
-  <rect fill="#6b7280" x="147" y="31" width="40" height="3" rx="1"/>
-  <rect fill="#6b7280" x="147" y="37" width="35" height="3" rx="1"/>
-  <rect fill="#4b5563" x="201" y="28" width="6" height="6" rx="1" transform="rotate(45 204 31)"/>
-  <circle fill="#4b5563" cx="224" cy="30" r="10"/>
-  <rect fill="#9ca3af" x="221" y="26" width="6" height="8" rx="1"/>
-  <rect fill="#9ca3af" x="240" y="24" width="22" height="4" rx="1"/>
-  <rect fill="#6b7280" x="240" y="31" width="28" height="3" rx="1"/>
-  <rect fill="#6b7280" x="240" y="37" width="24" height="3" rx="1"/>
+  <rect fill="#f9fafb" width="277.5" height="60"/>
+  <rect fill="#ffffff" x="8" y="8" width="261.5" height="44" rx="6"/>
+  <circle fill="#e9d5ff" cx="38" cy="30" r="10"/>
+  <rect fill="#7c3aed" x="35" y="26" width="6" height="8" rx="1"/>
+  <rect fill="#394152" x="54" y="24" width="30" height="4" rx="1"/>
+  <rect fill="#9ca3af" x="54" y="31" width="40" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="54" y="37" width="35" height="3" rx="1"/>
+  <rect fill="#d1d5db" x="108" y="28" width="6" height="6" rx="1" transform="rotate(45 111 31)"/>
+  <circle fill="#e9d5ff" cx="131" cy="30" r="10"/>
+  <rect fill="#7c3aed" x="128" y="26" width="6" height="8" rx="1"/>
+  <rect fill="#394152" x="147" y="24" width="30" height="4" rx="1"/>
+  <rect fill="#9ca3af" x="147" y="31" width="40" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="147" y="37" width="35" height="3" rx="1"/>
+  <rect fill="#d1d5db" x="201" y="28" width="6" height="6" rx="1" transform="rotate(45 204 31)"/>
+  <circle fill="#e9d5ff" cx="224" cy="30" r="10"/>
+  <rect fill="#7c3aed" x="221" y="26" width="6" height="8" rx="1"/>
+  <rect fill="#394152" x="240" y="24" width="22" height="4" rx="1"/>
+  <rect fill="#9ca3af" x="240" y="31" width="28" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="240" y="37" width="24" height="3" rx="1"/>
 </svg>`
 
 export interface Ru3StepItem {
@@ -2431,21 +1845,21 @@ export function renderRu3Stats(data: Ru3StatsData): string {
 // ─── Ru4-Stats ───────────────────────────────────────────────────────────────
 
 export const ru4StatsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#1f2937" width="277.5" height="80"/>
-  <rect fill="#9ca3af" x="60" y="8" width="157" height="8" rx="1"/>
-  <rect fill="#6b7280" x="80" y="20" width="117" height="4" rx="1"/>
-  <rect fill="#4b5563" x="8" y="36" width="20" height="18" rx="1"/>
-  <rect fill="#6b7280" x="8" y="57" width="55" height="3" rx="1"/>
-  <rect fill="#6b7280" x="8" y="63" width="50" height="3" rx="1"/>
-  <rect fill="#6b7280" x="8" y="69" width="45" height="3" rx="1"/>
-  <rect fill="#374151" x="100" y="36" width="35" height="10" rx="1"/>
-  <rect fill="#6b7280" x="100" y="50" width="28" height="3" rx="1"/>
-  <rect fill="#374151" x="160" y="36" width="35" height="10" rx="1"/>
-  <rect fill="#6b7280" x="160" y="50" width="28" height="3" rx="1"/>
-  <rect fill="#374151" x="100" y="60" width="35" height="10" rx="1"/>
-  <rect fill="#6b7280" x="100" y="73" width="28" height="3" rx="1"/>
-  <rect fill="#374151" x="160" y="60" width="35" height="10" rx="1"/>
-  <rect fill="#6b7280" x="160" y="73" width="28" height="3" rx="1"/>
+  <rect fill="#e8e4dc" width="277.5" height="80"/>
+  <rect fill="#394152" x="60" y="8" width="157" height="8" rx="1"/>
+  <rect fill="#6b6b5a" x="80" y="20" width="117" height="4" rx="1"/>
+  <rect fill="#394152" x="8" y="36" width="20" height="18" rx="1"/>
+  <rect fill="#6b6b5a" x="8" y="57" width="55" height="3" rx="1"/>
+  <rect fill="#6b6b5a" x="8" y="63" width="50" height="3" rx="1"/>
+  <rect fill="#6b6b5a" x="8" y="69" width="45" height="3" rx="1"/>
+  <rect fill="#394152" x="100" y="36" width="35" height="10" rx="1"/>
+  <rect fill="#6b6b5a" x="100" y="50" width="28" height="3" rx="1"/>
+  <rect fill="#394152" x="160" y="36" width="35" height="10" rx="1"/>
+  <rect fill="#6b6b5a" x="160" y="50" width="28" height="3" rx="1"/>
+  <rect fill="#394152" x="100" y="60" width="35" height="10" rx="1"/>
+  <rect fill="#6b6b5a" x="100" y="73" width="28" height="3" rx="1"/>
+  <rect fill="#394152" x="160" y="60" width="35" height="10" rx="1"/>
+  <rect fill="#6b6b5a" x="160" y="73" width="28" height="3" rx="1"/>
 </svg>`
 
 export interface Ru4StatItem {
@@ -3054,15 +2468,15 @@ export function renderRu3TextImageHero(data: Ru3TextImageHeroData): string {
 // ─── Ru6-Split-Hero ──────────────────────────────────────────────────────────
 
 export const ru6SplitHeroSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#1f2937" width="277.5" height="80"/>
-  <rect fill="#9ca3af" x="12" y="18" width="70" height="8" rx="1"/>
-  <rect fill="#9ca3af" x="12" y="30" width="55" height="6" rx="1"/>
-  <rect fill="#6b7280" x="12" y="42" width="80" height="3" rx="1"/>
-  <rect fill="#6b7280" x="12" y="48" width="72" height="3" rx="1"/>
-  <rect fill="#6b7280" x="12" y="54" width="65" height="3" rx="1"/>
-  <rect fill="#4b5563" x="12" y="63" width="32" height="9" rx="4"/>
-  <rect fill="#374151" x="140" y="8" width="125" height="64" rx="6"/>
-  <rect fill="#4b5563" x="152" y="20" width="100" height="40" rx="4"/>
+  <rect fill="#ffffff" width="277.5" height="80"/>
+  <rect fill="#394152" x="12" y="18" width="70" height="8" rx="1"/>
+  <rect fill="#394152" x="12" y="30" width="55" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="12" y="42" width="80" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="12" y="48" width="72" height="3" rx="1"/>
+  <rect fill="#9ca3af" x="12" y="54" width="65" height="3" rx="1"/>
+  <rect fill="#394152" x="12" y="63" width="32" height="9" rx="4"/>
+  <rect fill="#e5e7eb" x="140" y="8" width="125" height="64" rx="6"/>
+  <rect fill="#9ca3af" x="152" y="20" width="100" height="40" rx="4"/>
 </svg>`
 
 export interface Ru6SplitHeroData {
@@ -3295,7 +2709,6 @@ export const ru4OverlayPanelSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewB
 
 export interface Ru4OverlayPanelData {
   bgImage: string
-  bgImageAspectRatio: string
   bgColor: string
   bgPosition: string
   bgSize: string
@@ -3333,8 +2746,7 @@ export interface Ru4OverlayPanelData {
 
 export const ru4OverlayPanelDefaults: Ru4OverlayPanelData = {
   bgImage: '',
-  bgImageAspectRatio: 'Auto',
-  bgColor: '#f7f7f7',
+  bgColor: '#94a3b8',
   bgPosition: 'center',
   bgSize: 'cover',
   overlayColor: '#000000',
@@ -3343,7 +2755,7 @@ export const ru4OverlayPanelDefaults: Ru4OverlayPanelData = {
   sectionPaddingX: 48,
   panelPosition: 'left',
   panelWidth: '45%',
-  panelBgColor: '#f7f7f7',
+  panelBgColor: '#ffffff',
   panelBgOpacity: 100,
   panelBorderRadius: 8,
   panelShadow: 'lg',
@@ -3351,7 +2763,7 @@ export const ru4OverlayPanelDefaults: Ru4OverlayPanelData = {
   panelPaddingX: 40,
   clipCorner: 'bottom-right',
   clipSize: 48,
-  heading: 'Celebrate Every Achievement',
+  heading: 'Congratulations on your legendary achievement!',
   headingColor: '#111827',
   headingSize: 32,
   headingWeight: 'Bold',
@@ -3372,7 +2784,6 @@ export const ru4OverlayPanelDefaults: Ru4OverlayPanelData = {
 export const ru4OverlayPanelFields: FieldConfig[] = [
   { key: '_h_bg', label: 'Background', type: 'header' },
   { key: 'bgImage', label: 'Background Image', type: 'image' },
-  { key: 'bgImageAspectRatio', label: 'Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
   { key: 'bgColor', label: 'Fallback Color', type: 'color' },
   { key: 'bgPosition', label: 'Image Position', type: 'select', options: ['center', 'top', 'bottom', 'left', 'right', 'top center', 'bottom center'] },
   { key: 'bgSize', label: 'Image Size', type: 'select', options: ['cover', 'contain'] },
@@ -3430,16 +2841,6 @@ export function renderRu4OverlayPanel(data: Ru4OverlayPanelData): string {
     ? `box-shadow:inset 0 0 0 9999px ${hexToRgba(data.overlayColor ?? '#000000', overlayOpacity)};`
     : ''
 
-  const ratio = data.bgImageAspectRatio ?? 'Auto'
-  const aspectRatioMap: Record<string, string> = {
-    'Wide (16:9)':      'aspect-ratio:16/9;',
-    'Standard (4:3)':   'aspect-ratio:4/3;',
-    'Square (1:1)':     'aspect-ratio:1/1;',
-    'Tall (3:4)':       'aspect-ratio:3/4;',
-    'Cinematic (21:9)': 'aspect-ratio:21/9;',
-  }
-  const aspectStyle = ratio !== 'Auto' ? (aspectRatioMap[ratio] ?? '') : ''
-
   const heightMap: Record<string, string> = {
     '400px': 'min-height:400px;',
     '500px': 'min-height:500px;',
@@ -3494,7 +2895,7 @@ export function renderRu4OverlayPanel(data: Ru4OverlayPanelData): string {
     : data.panelBgColor
   const panelStyle = `background:${panelBg};${borderRadiusStyle}${shadowStyle}${clipStyle}padding:${data.panelPaddingY ?? 48}px ${data.panelPaddingX ?? 40}px;box-sizing:border-box;`
 
-  return `<section data-component-title="Ru4-Overlay Panel" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${overlayStyle}${aspectStyle}${heightStyle}position:relative;display:flex;align-items:center;overflow:hidden;">
+  return `<section data-component-title="Ru4-Overlay Panel" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${overlayStyle}${heightStyle}position:relative;display:flex;align-items:center;overflow:hidden;">
   <style>@media(max-width:767px){.ru4-op-panel{width:100%!important;clip-path:none!important;}}</style>
   <div style="width:100%;padding:40px ${data.sectionPaddingX ?? 48}px;box-sizing:border-box;display:flex;justify-content:${justifyContent};">
     <div class="ru4-op-panel" style="width:${data.panelWidth ?? '45%'};max-width:100%;${panelStyle}">

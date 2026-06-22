@@ -97,30 +97,28 @@ async function confirmSave() {
 
     const toHtml = (secs: Element[]) => secs.map(s => s.outerHTML).join('\n')
     const version = String(selectedVersion.value)
-    const commonBody = { updatedBy: 'editor', updatedOn: new Date().toISOString(), version, ...(props.companyId ? { companyId: props.companyId } : {}) }
-    const globalBody = { ...commonBody, state: 'published' as const }
-    const pageBody   = { ...commonBody, state: 'draft' as const }
+    const baseBody = { updatedBy: 'editor', updatedOn: new Date().toISOString(), state: 'draft' as const, version, ...(props.companyId ? { companyId: props.companyId } : {}) }
 
     const saves: Promise<any>[] = []
 
     if (navbarSections.length > 0) {
       saves.push($fetch<any>('/api/proxy/odoo/cms', {
         method: 'POST',
-        body: { ...globalBody, key: 'global-header', value: toHtml(navbarSections) },
+        body: { ...baseBody, key: 'global-header', value: toHtml(navbarSections) },
       }))
     }
 
     if (contentSections.length > 0) {
       saves.push($fetch<any>('/api/proxy/odoo/cms', {
         method: 'POST',
-        body: { ...pageBody, key: props.pageId, value: toHtml(contentSections) },
+        body: { ...baseBody, key: props.pageId, value: toHtml(contentSections) },
       }))
     }
 
     if (footerSections.length > 0) {
       saves.push($fetch<any>('/api/proxy/odoo/cms', {
         method: 'POST',
-        body: { ...globalBody, key: 'global-footer', value: toHtml(footerSections) },
+        body: { ...baseBody, key: 'global-footer', value: toHtml(footerSections) },
       }))
     }
 

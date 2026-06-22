@@ -1,5 +1,4 @@
 import { useBlockRegistry } from '../editor/useBlockRegistry'
-import { ru1NavbarSvg, ru1NavbarDefaults, ru1NavbarFields, renderRu1Navbar } from '../themes/themes-data'
 // All layout component data (interfaces, defaults, fields, render functions)
 // lives in components.ts — add new components there, then register them below.
 import {
@@ -15,22 +14,14 @@ import {
   ru1FormFields,
   ru1FormSvg,
   renderRu1Form,
-  ru2FormDefaults,
-  ru2FormFields,
-  ru2FormSvg,
-  renderRu2Form,
-  ru1FooterDefaults,
-  ru1FooterFields,
-  ru1FooterSvg,
-  renderRu1Footer,
+  footer1Defaults,
+  footer1Fields,
+  footer1Svg,
+  renderFooter1,
   ru1AboutDefaults,
   ru1AboutFields,
   ru1AboutSvg,
   renderRu1About,
-  ru2AboutDefaults,
-  ru2AboutFields,
-  ru2AboutSvg,
-  renderRu2About,
   ru1FaqDefaults,
   ru1FaqFields,
   ru1FaqSvg,
@@ -71,10 +62,6 @@ import {
   ru4OverlayPanelFields,
   ru4OverlayPanelSvg,
   renderRu4OverlayPanel,
-  ru2FooterDefaults,
-  ru2FooterFields,
-  ru2FooterSvg,
-  renderRu2Footer,
 } from './components'
 
 export interface LayoutComponentItem {
@@ -87,13 +74,7 @@ export interface LayoutComponentItem {
 export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
   Headers: [
     {
-      title: 'Ru1-Navbar',
-      category: 'Headers',
-      cover_image: ru1NavbarSvg,
-      html_code: renderRu1Navbar(ru1NavbarDefaults),
-    },
-    {
-      title: 'Ru2-Mega-Menu-Header',
+      title: 'Mega-menu-Header',
       category: 'Headers',
       cover_image: megaMenuHeaderSvg,
       html_code: renderMegaMenuHeader(megaMenuHeaderDefaults),
@@ -144,12 +125,6 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       cover_image: ru1FormSvg,
       html_code: renderRu1Form(ru1FormDefaults),
     },
-    {
-      title: 'Ru2-Form',
-      category: 'Contact',
-      cover_image: ru2FormSvg,
-      html_code: renderRu2Form(ru2FormDefaults),
-    },
   ],
   'About Us': [
     {
@@ -157,12 +132,6 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'About Us',
       cover_image: ru1AboutSvg,
       html_code: renderRu1About(ru1AboutDefaults),
-    },
-    {
-      title: 'Ru2-About',
-      category: 'About Us',
-      cover_image: ru2AboutSvg,
-      html_code: renderRu2About(ru2AboutDefaults),
     },
   ],
   FAQs: [
@@ -201,16 +170,10 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
   ],
   Footer: [
     {
-      title: 'Ru1-Footer',
+      title: 'Footer-1',
       category: 'Footer',
-      cover_image: ru1FooterSvg,
-      html_code: renderRu1Footer(ru1FooterDefaults),
-    },
-    {
-      title: 'Ru2-Footer',
-      category: 'Footer',
-      cover_image: ru2FooterSvg,
-      html_code: renderRu2Footer(ru2FooterDefaults),
+      cover_image: footer1Svg,
+      html_code: renderFooter1(footer1Defaults),
     },
   ],
 }
@@ -218,7 +181,7 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
 export function useLayouts() {
   const blockRegistry = useBlockRegistry()
 
-  blockRegistry.register('Ru2-Mega-Menu-Header', {
+  blockRegistry.register('Mega-menu-Header', {
     defaults: megaMenuHeaderDefaults,
     fields: megaMenuHeaderFields,
     render: renderMegaMenuHeader,
@@ -236,22 +199,10 @@ export function useLayouts() {
     render: renderRu1Form,
   })
 
-  blockRegistry.register('Ru2-Form', {
-    defaults: ru2FormDefaults,
-    fields: ru2FormFields,
-    render: renderRu2Form,
-  })
-
   blockRegistry.register('Ru1-About', {
     defaults: ru1AboutDefaults,
     fields: ru1AboutFields,
     render: renderRu1About,
-  })
-
-  blockRegistry.register('Ru2-About', {
-    defaults: ru2AboutDefaults,
-    fields: ru2AboutFields,
-    render: renderRu2About,
   })
 
   blockRegistry.register('Ru1-FAQ', {
@@ -290,16 +241,10 @@ export function useLayouts() {
     render: renderRu6SplitHero,
   })
 
-  blockRegistry.register('Ru1-Footer', {
-    defaults: ru1FooterDefaults,
-    fields: ru1FooterFields,
-    render: renderRu1Footer,
-  })
-
-  blockRegistry.register('Ru2-Footer', {
-    defaults: ru2FooterDefaults,
-    fields: ru2FooterFields,
-    render: renderRu2Footer,
+  blockRegistry.register('Footer-1', {
+    defaults: footer1Defaults,
+    fields: footer1Fields,
+    render: renderFooter1,
   })
 
   blockRegistry.register('Ru1-Stats', {

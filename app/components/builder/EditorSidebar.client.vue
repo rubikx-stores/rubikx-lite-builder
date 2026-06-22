@@ -187,7 +187,7 @@ const colOrderLabelMap: Record<string, string> = {
 }
 
 
-// ── Mega menu editor (Ru2-Mega-Menu-Header only) ──────────────────────────────────
+// ── Mega menu editor (Mega-menu-Header only) ──────────────────────────────────
 interface MegaProduct { id: number; name: string; price: number; image: string }
 interface EditingGroup { label: string; href: string; products: MegaProduct[] }
 
@@ -309,7 +309,7 @@ async function _ensureInjected() {
     if (!panel) { await _frame(); continue }
 
     const scrollArea = (
-      panel.querySelector('.overflow-y-scroll') ??
+      panel.querySelector('.pbx-overflow-y-scroll') ??
       panel.querySelector('[class*="overflow-y"]') ??
       panel.firstElementChild
     ) as HTMLElement | null
@@ -635,8 +635,8 @@ onUnmounted(() => {
                     </div>
                   </template>
 
-                  <!-- Mega Menu configurator: only for Ru2-Mega-Menu-Header navLinks -->
-                  <template v-if="selectedBlockTitle === 'Ru2-Mega-Menu-Header' && field.key === 'navLinks'">
+                  <!-- Mega Menu configurator: only for Mega-menu-Header navLinks -->
+                  <template v-if="selectedBlockTitle === 'Mega-menu-Header' && field.key === 'navLinks'">
                     <div class="mt-1.5 pt-1.5 border-t border-gray-100">
                       <div class="flex items-center justify-between mb-1">
                         <span class="text-xs text-gray-400">Mega Menu</span>

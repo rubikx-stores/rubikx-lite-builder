@@ -283,14 +283,30 @@ function doApply() {
   const section = getSection()
   if (!section) return
 
-  // Nuclear clean: remove all buttons and swatches from every product card slot
-  section.querySelectorAll('img[alt="provider"]').forEach(img => {
-    const card = img.closest('[class*="flex"]') ?? img.parentElement
-    card?.querySelectorAll('a').forEach(b => b.remove())
-    card?.querySelectorAll('[class*="color-swatches"], .color-swatches').forEach(s => s.remove())
+  // Clean all cards first before rebuilding
+  const allCards = section.querySelectorAll(
+    '.flex-1, .pbx-flex-1'
+  )
+  allCards.forEach(card => {
+    card.querySelectorAll('a.shop-btn').forEach(b => b.remove())
+    card.querySelectorAll('.color-swatches').forEach(s => s.remove())
+    card.querySelectorAll('.layout-inline-wrapper').forEach(wrapper => {
+      while (wrapper.firstChild) {
+        wrapper.parentElement?.insertBefore(wrapper.firstChild, wrapper)
+      }
+      wrapper.remove()
+    })
+    const textDiv = card.querySelector(
+      '.break-words, .pbx-break-words'
+    )
+    if (textDiv) {
+      textDiv.style.display = ''
+      textDiv.style.flexDirection = ''
+      textDiv.style.flex = ''
+    }
   })
 
-  const cards = Array.from(section.querySelectorAll('.flex-1, .flex-1')).filter(el =>
+  const cards = Array.from(section.querySelectorAll('.flex-1, .pbx-flex-1')).filter(el =>
     el.querySelector('img[alt="provider"]')
   )
   cards.forEach(card => {
@@ -329,8 +345,8 @@ function doApply() {
       // textContainer is the div that holds the <p> tags — button goes here too
       const textContainer = ps[0]?.parentElement ?? parentDiv
       // Nuke all existing buttons from the whole card before recreating
-      const cardDiv = img.closest('.flex-1, .flex-1') ?? parentDiv
-      const textDiv = cardDiv.querySelector('.break-words, .break-words') ?? textContainer
+      const cardDiv = img.closest('.flex-1, .pbx-flex-1') ?? parentDiv
+      const textDiv = cardDiv.querySelector('.break-words, .pbx-break-words') ?? textContainer
       textDiv.style.display = 'flex'
       textDiv.style.flexDirection = 'column'
       textDiv.style.flex = '1'
@@ -353,26 +369,24 @@ function doApply() {
         textDiv.style.textAlign = 'left'
       }
 
+      cardDiv.querySelectorAll('a.shop-btn').forEach(b => b.remove())
+
+      // Remove existing swatches
+      const existingSwatches = textDiv?.querySelector('.color-swatches')
+      if (existingSwatches) existingSwatches.remove()
+
       // Add new swatches if product has colors
       if (product.colors?.length) {
         const swatchContainer = document.createElement('div')
         swatchContainer.className = 'color-swatches'
         const isCentered = cardDiv?.classList.contains('text-center') || textDiv?.classList.contains('text-center') || textDiv?.style?.textAlign === 'center' || cardLayout.value === 'centered'
-        swatchContainer.style.cssText = `display:flex; flex-wrap:wrap; gap:4px; padding:4px 0; justify-content:${isCentered ? 'center' : 'flex-start'};`
-        const MAX_SWATCHES = 12
-        product.colors.slice(0, MAX_SWATCHES).forEach(color => {
+        swatchContainer.style.cssText = `display:flex; gap:4px; padding:4px 0; justify-content:${isCentered ? 'center' : 'flex-start'};`
+        product.colors.forEach(color => {
           const dot = document.createElement('span')
           dot.title = color.name
           dot.style.cssText = `display:inline-block; width:12px; height:12px; border-radius:50%; background-color:${color.htmlColor}; border:1px solid rgba(0,0,0,0.15); flex-shrink:0;`
           swatchContainer.appendChild(dot)
         })
-        const extra = product.colors.length - MAX_SWATCHES
-        if (extra > 0) {
-          const more = document.createElement('span')
-          more.style.cssText = `font-size:10px; color:#6b7280; line-height:12px; flex-shrink:0;`
-          more.textContent = `+${extra}`
-          swatchContainer.appendChild(more)
-        }
         const existingBtn = textDiv?.querySelector('a.shop-btn')
         if (existingBtn) {
           textDiv.insertBefore(swatchContainer, existingBtn)
@@ -387,7 +401,7 @@ function doApply() {
         btn.setAttribute('data-product-id', String(product.id ?? ''))
         btn.className = 'shop-btn'
         const isCentered = textDiv?.classList.contains('text-center')
-        btn.style.cssText = `display:inline-block; background-color:${btnBg.value}; color:${btnColor.value}; padding:8px 16px; text-decoration:none; font-size:14px; cursor:pointer; border:none; width:100%; text-align:center; box-sizing:border-box; margin-top:auto;`
+        btn.style.cssText = `display:inline-block; background-color:${btnBg.value}; color:${btnColor.value}; padding:8px 16px; text-decoration:none; font-size:14px; cursor:pointer; border:none; width:100%; text-align:center; box-sizing:border-box; ${isCentered ? 'margin:8px auto 0;' : 'margin-top:auto;'}`
         btn.textContent = btnText.value
         textDiv.appendChild(btn)
       }
@@ -406,13 +420,14 @@ function doApply() {
         if (ps[0]) ps[0].textContent = 'Layouts and visual.'
         if (ps[1]) ps[1].textContent =
           'Start customizing by editing this default text directly in the editor.'
-        const cardDiv = img.closest('.flex-1, .flex-1')
+        const cardDiv = img.closest('.flex-1, .pbx-flex-1')
           ?? parentDiv
-        cardDiv.querySelectorAll('a').forEach(b => b.remove())
-        cardDiv.querySelectorAll('.color-swatches').forEach(s => s.remove())
+        cardDiv.querySelector('.color-swatches')?.remove()
+        cardDiv.querySelectorAll('a.shop-btn')
+          .forEach(b => b.remove())
         // Remove flex styles from textDiv
         const textDiv = cardDiv.querySelector(
-          '.break-words, .break-words'
+          '.break-words, .pbx-break-words'
         ) ?? parentDiv
         textDiv.style.display = ''
         textDiv.style.flexDirection = ''
@@ -472,7 +487,7 @@ function applyBackgroundLive() {
 function applyCardStylesLive() {
   const section = getSection()
   if (!section) return
-  const cards = Array.from(section.querySelectorAll('.flex-1, .flex-1')).filter(el =>
+  const cards = Array.from(section.querySelectorAll('.flex-1, .pbx-flex-1')).filter(el =>
     el.querySelector('img[alt="provider"]')
   )
   if (!cards.length) return
