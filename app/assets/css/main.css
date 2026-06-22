@@ -18,6 +18,18 @@ body {
   color: var(--color-primary-text);
 }
 
+/* ── Custom utility classes (green brand color) ───────────────────────────── */
+
+.bg-myPrimaryLinkColor {
+  background-color: var(--color-primary-link) !important;
+}
+.hover\:bg-myPrimaryLinkColor:hover {
+  background-color: var(--color-primary-link) !important;
+}
+.hover\:border-myPrimaryLinkColor:hover {
+  border-color: var(--color-primary-link) !important;
+}
+
 /* ── Builder canvas cursors ───────────────────────────────────────────────── */
 
 /* Replace the library's default + / crosshair cursor with a pointer finger */
@@ -41,18 +53,13 @@ body {
   cursor: text !important;
 }
 
-/* ── Builder scroll fix ───────────────────────────────────────────────────── */
-
-/* The library hardcodes height:100vh on #page-builder-wrapper and pbx-h-[90vh]/
-   pbx-min-h-[90vh] on its canvas child, causing excess scroll past content.
-   Override both to let the content drive the scroll height naturally. */
 #page-builder-wrapper {
   height: 100% !important;
   min-height: 0 !important;
 }
 
-#page-builder-wrapper .pbx-h-\[90vh\],
-#page-builder-wrapper .pbx-min-h-\[90vh\] {
+#page-builder-wrapper .h-\[90vh\],
+#page-builder-wrapper .min-h-\[90vh\] {
   height: auto !important;
   min-height: 0 !important;
 }
