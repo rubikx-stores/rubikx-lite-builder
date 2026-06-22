@@ -283,14 +283,14 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     `<div style="display:flex;align-items:center;gap:0.75rem;justify-content:${justify};">${items.join('')}</div>`
 
   const lowerRow = isLowerLinks && linksEl
-    ? `<div class="mx-auto" style="display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding-top:0.5rem;">${linksEl}</div>`
+    ? `<div style="margin:0 auto;display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding-top:0.5rem;">${linksEl}</div>`
     : ''
 
   const sectionStyle = data.sticky ? 'position:sticky;top:0;z-index:9999' : ''
 
   return `<section data-component-title="Ru1-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 <nav style="${navStyle}">
-  <div class="mx-auto" style="display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
+  <div style="margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
     ${zone(cols.left,   'flex-start')}
     ${zone(cols.center, 'center')}
     ${zone(cols.right,  'flex-end')}
@@ -465,6 +465,15 @@ const _colClass: Record<string, string> = {
   '6': 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6',
 }
 
+function _gridCss(sel: string, cols: number): string {
+  const m = Math.min(cols, 2)
+  const t = Math.min(cols, 3)
+  let css = `${sel}{display:grid;gap:1rem;grid-template-columns:repeat(${m},1fr)}`
+  if (t > m) css += `@media(min-width:640px){${sel}{grid-template-columns:repeat(${t},1fr)}}`
+  if (cols > t) css += `@media(min-width:1024px){${sel}{grid-template-columns:repeat(${cols},1fr)}}`
+  return css
+}
+
 export const ru1ProductsDefaults: Ru1ProductsData = {
   sectionTitle: 'Featured Products',
   titleAlign: 'left',
@@ -580,7 +589,9 @@ export function renderRu1Products(data: Ru1ProductsData): string {
   const arrowBtnPos = data.showArrowBtn !== false ? (data.arrowBtnPosition ?? 'center') : 'hidden'
   const needsOverlay = data.showViewProduct !== false || arrowBtnPos === 'top'
 
+  const gridId = 'fpg' + Math.random().toString(36).slice(2, 8)
   const styleRules: string[] = []
+  styleRules.push(_gridCss(`#${gridId}`, Number(data.columns) || 4))
   if (needsOverlay) styleRules.push(`[data-fp-card]:hover [data-fp-overlay]{opacity:1!important}`)
   if (data.hoverBorderColor) {
     styleRules.push(`[data-fp-card]:hover{border-color:${data.hoverBorderColor}!important}`)
@@ -589,7 +600,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
     styleRules.push(`[data-fp-card]{transition:transform ${dur}ms ease,box-shadow ${dur}ms ease}`)
     styleRules.push(`[data-fp-card]:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}`)
   }
-  const animStyle = styleRules.length ? `<style>${styleRules.join('')}</style>` : ''
+  const animStyle = `<style>${styleRules.join('')}</style>`
 
   const sectionBg = data.bgColor ? `background:${data.bgColor}` : ''
   const innerStyle = `padding:${data.paddingY}px ${data.paddingX}px`
@@ -631,14 +642,14 @@ export function renderRu1Products(data: Ru1ProductsData): string {
     const priceRow = arrowBtnPos === 'center'
       ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:0.375rem">
           <div style="display:flex;align-items:center;gap:0.5rem">
-            <p class="text-sm">${p.price}</p>
-            ${p.oldPrice ? `<s style="color:${data.oldPriceColor}" class="text-sm">${p.oldPrice}</s>` : ''}
+            <p style="font-size:0.875rem">${p.price}</p>
+            ${p.oldPrice ? `<s style="color:${data.oldPriceColor};font-size:0.875rem">${p.oldPrice}</s>` : ''}
           </div>
           ${arrowBtnEl}
         </div>`
-      : `<div class="flex items-center gap-2">
-          <p class="text-sm">${p.price}</p>
-          ${p.oldPrice ? `<s style="color:${data.oldPriceColor}" class="text-sm">${p.oldPrice}</s>` : ''}
+      : `<div style="display:flex;align-items:center;gap:0.5rem">
+          <p style="font-size:0.875rem">${p.price}</p>
+          ${p.oldPrice ? `<s style="color:${data.oldPriceColor};font-size:0.875rem">${p.oldPrice}</s>` : ''}
         </div>`
 
     const bottomRow = arrowBtnPos === 'bottom'
@@ -646,13 +657,13 @@ export function renderRu1Products(data: Ru1ProductsData): string {
       : ''
 
     return `
-      <div data-fp-card="1" style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="flex flex-col border border-gray-200">
+      <div data-fp-card="1" style="border-radius:${data.cardBorderRadius}px;overflow:hidden;display:flex;flex-direction:column;border:1px solid #e5e7eb">
         <div style="position:relative;overflow:hidden">
-          <img class="w-full h-auto block" src="${p.imageUrl}" alt="${p.name}" />
+          <img style="width:100%;height:auto;display:block" src="${p.imageUrl}" alt="${p.name}" />
           ${overlayHtml}
         </div>
-        <div class="flex flex-col gap-1 p-3 flex-1">
-          <p class="font-semibold text-sm">${p.name}</p>
+        <div style="display:flex;flex-direction:column;gap:0.25rem;padding:0.75rem;flex:1">
+          <p style="font-weight:600;font-size:0.875rem">${p.name}</p>
           ${priceRow}
           ${colorsHtml}
           ${data.showAddToCart !== false ? `<a href="${p.buttonUrl}" class="shop-btn" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.addToCartRadius ?? 6}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block">${p.buttonLabel}</a>` : ''}
@@ -664,11 +675,11 @@ export function renderRu1Products(data: Ru1ProductsData): string {
   return `<section data-component-title="Ru1 Homepage Featured Products" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionBg ? ` style="${sectionBg}"` : ''}>
 ${animStyle}
 <div style="${innerStyle}">
-  <div class="mx-auto max-w-7xl">
-    <div class="mb-8">
+  <div style="max-width:80rem;margin:0 auto">
+    <div style="margin-bottom:2rem">
       <h1 data-field-key="sectionTitle" style="margin:0;font-size:2rem;font-weight:600;text-align:${data.titleAlign};color:${data.titleColor}">${data.sectionTitle}</h1>
     </div>
-    <div class="grid gap-4 ${colCls}">
+    <div id="${gridId}">
       ${cards}
     </div>
   </div>
@@ -789,7 +800,7 @@ export function renderRu1Footer(data: Ru1FooterData): string {
 
   return `<section data-component-title="Ru1 Homepage Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
 <footer style="${footerStyle}">
-  <div class="max-w-7xl mx-auto">
+  <div style="max-width:80rem;margin:0 auto">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;">
       ${orderedCols}
     </div>
@@ -990,7 +1001,7 @@ export function renderRu2ShopHero(data: Ru2ShopHeroData): string {
 
   return `<section data-component-title="Ru1 Shop Hero" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
 <div style="${bgStyles}">
-  <div class="mx-auto max-w-7xl" style="text-align:${data.textAlign}">
+  <div style="max-width:80rem;margin:0 auto;text-align:${data.textAlign}">
     ${breadcrumbsHtml}
     <h1 data-field-key="pageTitle" style="font-size:1.75rem;font-weight:700;color:${data.textColor};margin:0.5rem 0 0;line-height:1.2">${data.pageTitle}</h1>
   </div>
@@ -1185,6 +1196,7 @@ export const ru2ShopContentFields: FieldConfig[] = [
 
 export function renderRu2ShopContent(data: Ru2ShopContentData): string {
   const colCls = _shopColClass[String(data.columns)] ?? _shopColClass['4']
+  const gridId = 'spg' + Math.random().toString(36).slice(2, 8)
 
   const _hoverOn = (effect: string, amount: number): string => {
     switch (effect) {
@@ -1275,9 +1287,9 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
         : ''
 
     return `
-      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden;background:#fff;border:1.5px solid #e5e7eb;transition:${cardTransition};position:relative" class="flex flex-col" onmouseenter="${enterHandler}" onmouseleave="${leaveHandler}">
+      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden;background:#fff;border:1.5px solid #e5e7eb;transition:${cardTransition};position:relative;display:flex;flex-direction:column" onmouseenter="${enterHandler}" onmouseleave="${leaveHandler}">
         <div style="position:relative;overflow:hidden">
-          <img class="w-full block" src="${p.imageUrl}" alt="${p.name}" style="aspect-ratio:1/1;object-fit:contain;display:block;background:#f9fafb" />
+          <img src="${p.imageUrl}" alt="${p.name}" style="width:100%;aspect-ratio:1/1;object-fit:contain;display:block;background:#f9fafb" />
           ${overlayHtml}
         </div>
         <div style="padding:0.875rem;flex:1;display:flex;flex-direction:column">
@@ -1291,7 +1303,7 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
 
   const pageGrids = Array.from({ length: pages }, (_: any, i: number) => {
     const pageCards = data.products.slice(i * perPage, (i + 1) * perPage).map(renderCard).join('')
-    return `<div data-sp="${i + 1}" style="display:${i === 0 ? '' : 'none'}"><div class="grid gap-4 ${colCls}">${pageCards}</div></div>`
+    return `<div data-sp="${i + 1}" style="display:${i === 0 ? '' : 'none'}"><div data-sg="${gridId}">${pageCards}</div></div>`
   }).join('')
 
   const visibleDropdowns = (data.filterDropdowns ?? []).filter((f: FilterDropdown) => f.visible !== false)
@@ -1350,8 +1362,9 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
   }
 
   return `<section data-component-title="Ru1 Shop Content" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
+<style>${_gridCss(`[data-sg="${gridId}"]`, Number(data.columns) || 4)}</style>
 <div style="${sectionStyle}">
-  <div class="mx-auto max-w-7xl">
+  <div style="max-width:80rem;margin:0 auto">
     ${innerHtml}
   </div>
 </div>
@@ -1622,9 +1635,8 @@ export function renderRu3ShopProducts(data: Ru3ShopProductsData): string {
       default:           return `transform:translateY(-${amount}px)`
     }
   }
-  const animStyle = data.cardAnimation
-    ? `<style>[data-ru3-card]{transition:transform ${data.animationDuration}ms ease,box-shadow ${data.animationDuration}ms ease}[data-ru3-card]:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}</style>`
-    : ''
+  const gridId = 'r3g' + Math.random().toString(36).slice(2, 8)
+  const animStyle = `<style>${_gridCss(`#${gridId}`, Number(data.columns) || 4)}${data.cardAnimation ? `[data-ru3-card]{transition:transform ${data.animationDuration}ms ease,box-shadow ${data.animationDuration}ms ease}[data-ru3-card]:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}` : ''}</style>`
   const cardAttr = data.cardAnimation ? ' data-ru3-card="1"' : ''
 
   const sectionStyle = [
@@ -1639,13 +1651,13 @@ export function renderRu3ShopProducts(data: Ru3ShopProductsData): string {
     ...Array(Math.max(0, maxVisible - data.products.length)).fill(placeholder),
   ]
   const cards = visibleProducts.map(p => `
-      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden" class="flex flex-col border border-gray-200"${cardAttr}>
-        <img class="w-full h-auto block" src="${p.imageUrl || placeholderSvg}" alt="${p.name}" />
-        <div class="flex flex-col gap-1 p-3 flex-1">
-          <p class="font-semibold text-sm">${p.name}</p>
-          <div class="flex items-center gap-2">
-            <p class="text-sm">${p.price}</p>
-            ${p.oldPrice ? `<s style="color:${data.oldPriceColor}" class="text-sm">${p.oldPrice}</s>` : ''}
+      <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden;display:flex;flex-direction:column;border:1px solid #e5e7eb"${cardAttr}>
+        <img style="width:100%;height:auto;display:block" src="${p.imageUrl || placeholderSvg}" alt="${p.name}" />
+        <div style="display:flex;flex-direction:column;gap:0.25rem;padding:0.75rem;flex:1">
+          <p style="font-weight:600;font-size:0.875rem">${p.name}</p>
+          <div style="display:flex;align-items:center;gap:0.5rem">
+            <p style="font-size:0.875rem">${p.price}</p>
+            ${p.oldPrice ? `<s style="color:${data.oldPriceColor};font-size:0.875rem">${p.oldPrice}</s>` : ''}
           </div>
           ${(() => { const cs = Array.isArray(p.colors) ? '' : String(p.colors ?? '').trim(); const all = cs ? cs.split(',').map((c: string) => c.trim()).filter(Boolean) : []; const shown = all.slice(0, 13); const extra = all.length - 13; return all.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:4px 0">${shown.map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.15);flex-shrink:0"></span>`).join('')}${extra > 0 ? `<span style="font-size:10px;color:#6b7280;line-height:14px;flex-shrink:0">+${extra}</span>` : ''}</div>` : '' })()}
           <a href="${p.buttonUrl}" class="shop-btn" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.cardBorderRadius}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block">${p.buttonLabel}</a>
@@ -1661,8 +1673,8 @@ export function renderRu3ShopProducts(data: Ru3ShopProductsData): string {
   return `<section data-component-title="Ru2 Shop Products" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
 ${animStyle}
 <div style="${sectionStyle}">
-  <div class="mx-auto max-w-7xl">
-    <div class="grid gap-4 ${colCls}">
+  <div style="max-width:80rem;margin:0 auto">
+    <div id="${gridId}">
       ${cards}
     </div>
     ${loadMoreBtn}
