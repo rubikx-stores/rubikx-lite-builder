@@ -1441,16 +1441,16 @@ export interface BannerData {
 }
 
 export const bannerDefaults: BannerData = {
-  title: 'Welcome to Our Store',
-  subtitle: 'Discover our latest collection and find something you love.',
-  bgColor: '#1f2937',
+  title: '',
+  subtitle: '',
+  bgColor: '#f7f7f7',
   bgImage: '',
   bgImageAspectRatio: 'Auto',
   overlayColor: '#000000',
-  overlayOpacity: 40,
+  overlayOpacity: 0,
   textColor: '#ffffff',
   textAlign: 'center',
-  showCta: true,
+  showCta: false,
   ctaLabel: 'Shop Now',
   ctaHref: '/shop',
   ctaBgColor: '#ffffff',
