@@ -29,6 +29,9 @@ body {
 .hover\:border-myPrimaryLinkColor:hover {
   border-color: var(--color-primary-link) !important;
 }
+.myPrimaryGap {
+  gap: 1rem;
+}
 
 /* ── Builder canvas cursors ───────────────────────────────────────────────── */
 
@@ -56,10 +59,17 @@ body {
 #page-builder-wrapper {
   height: 100% !important;
   min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-anchor: none;
 }
 
 #page-builder-wrapper .h-\[90vh\],
 #page-builder-wrapper .min-h-\[90vh\] {
   height: auto !important;
   min-height: 0 !important;
+}
+
+/* Always show mobile preview button in editor toolbar */
+#pagebuilder-navbar .lg\:flex.hidden {
+  display: flex !important;
 }
