@@ -78,9 +78,35 @@ watch(component, async (newComp) => {
   }
   if (newComp?.id && newComp.id !== _lastResetForId.value) {
     _lastResetForId.value = newComp.id
-    // Theme blocks manage selection via selectedBlockTitle watcher + onMounted.
-    // Skipping the reset here prevents updateBlockField re-renders from wiping selection.
-    if (isThemeBlock.value) return
+    if (isThemeBlock.value) {
+      // Don't reset state — but restore the selection if it was cleared
+      // (e.g. user navigated to a non-theme block which reset selected.value).
+      // Guard: only restore when empty AND products are loaded; if products
+      // haven't loaded yet, onMounted handles it after the fetch completes.
+      if (selected.value.length === 0 && products.value.length > 0) {
+        await nextTick()
+        const section = getSection()
+        const storedIds = section?.getAttribute('data-selected-products')
+        if (storedIds) {
+          try {
+            const ids = JSON.parse(storedIds)
+            const restored = products.value.filter(p => ids.includes(p.id))
+            if (restored.length) { selected.value = restored; applied.value = true }
+          } catch { /* ignore */ }
+        }
+        // Fallback after reload: data-selected-products is lost in the
+        // parsePageBuilderHTML → startBuilder cycle, so match by name.
+        if (!selected.value.length && props.blockData?.products?.length) {
+          const matched = props.blockData.products
+            .flatMap(tp => {
+              const found = products.value.find(op => op.name === tp.name)
+              return found ? [found] : []
+            })
+          if (matched.length) { selected.value = matched; applied.value = true }
+        }
+      }
+      return
+    }
     selected.value = []
     search.value = ''
     btnText.value = 'Shop Now'

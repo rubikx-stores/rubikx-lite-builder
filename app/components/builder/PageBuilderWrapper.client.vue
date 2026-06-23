@@ -194,13 +194,18 @@ function handleProductTileClick(e: MouseEvent) {
   }
 
   panel.style.display = 'block'
-  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+}
+
+function blockBuilderAnchors(e: MouseEvent) {
+  const a = (e.target as Element).closest('#pagebuilder a')
+  if (a) e.preventDefault()
 }
 
 onUnmounted(() => {
   _destroyed = true
   _saveBtn?.removeEventListener('click', handleSaveClick)
   document.removeEventListener('click', handleProductTileClick, true)
+  document.removeEventListener('click', blockBuilderAnchors, true)
 })
 
 onMounted(async () => {
@@ -309,6 +314,7 @@ onMounted(async () => {
 
   // Capture-phase so we intercept before the builder's own click handler
   document.addEventListener('click', handleProductTileClick, true)
+  document.addEventListener('click', blockBuilderAnchors, true)
 })
 </script>
 
