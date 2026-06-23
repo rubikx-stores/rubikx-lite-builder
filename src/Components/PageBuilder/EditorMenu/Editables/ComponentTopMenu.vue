@@ -79,16 +79,16 @@ const closeSEO = function () {
 
 <template>
   <div>
-    <div class="pbx-flex pbx-flex-col pbx-items-center pbx-justify-center pbx-myPrimaryGap">
+    <div class="flex flex-col items-center justify-center pbx-myPrimaryGap">
       <!-- SEO Start -->
-      <div class="pbx-flex pbx-gap-2 pbx-items-center pbx-justify-center pbx-relative">
+      <div class="flex gap-2 items-center justify-center relative">
         <div
           @click="handleSEO"
-          pbx-bg-myPrimaryLinkColor
-          class="pbx-select-none pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-rounded-full pbx-flex pbx-items-center pbx-border-none pbx-justify-center pbx-bg-gray-50 pbx-aspect-square hover:pbx-bg-myPrimaryLinkColor focus-visible:pbx-ring-0 pbx-text-black hover:pbx-text-white"
-          :class="{ 'pbx-bg-myPrimaryLinkColor pbx-text-white': showSEO }"
+          bg-myPrimaryLinkColor
+          class="select-none h-10 w-10 cursor-pointer rounded-full flex items-center border-none justify-center bg-gray-50 aspect-square hover:bg-myPrimaryLinkColor focus-visible:ring-0 text-black hover:text-white"
+          :class="{ 'bg-myPrimaryLinkColor text-white': showSEO }"
         >
-          <div class="pbx-font-semibold pbx-text-sm">SEO</div>
+          <div class="font-semibold text-sm">SEO</div>
         </div>
 
         <!-- Overlay SEO start -->
@@ -99,17 +99,17 @@ const closeSEO = function () {
           position="left"
         >
           <!-- score indicator start -->
-          <div class="pbx-overflow-y-auto">
+          <div class="overflow-y-auto">
             <div>
               <!-- score indicator start -->
-              <div class="pbx-flex pbx-items-center pbx-justify-center pbx-gap-2">
+              <div class="flex items-center justify-center gap-2">
                 <div
-                  class="pbx-lg:pbx-text-base pbx-text-sm pbx-font-semibold pbx-text-center pbx-min-h-14 pbx-flex pbx-justify-center pbx-items-center"
+                  class="lg:text-base text-sm font-semibold text-center min-h-14 flex justify-center items-center"
                 >
                   <template v-if="seoResult">
                     <!-- Outer ring -->
                     <div
-                      class="pbx-relative pbx-my-4 pbx-rounded-full pbx-flex pbx-items-center pbx-justify-center pbx-w-36 pbx-h-36"
+                      class="relative my-4 rounded-full flex items-center justify-center w-36 h-36"
                       :style="{
                         background: `conic-gradient(${
                           seoResult.score < 50 ? '#ef4444' : '#50C878'
@@ -118,13 +118,13 @@ const closeSEO = function () {
                     >
                       <!-- Inner circle -->
                       <div
-                        class="pbx-bg-gray-100 pbx-rounded-full pbx-w-32 pbx-h-32 pbx-flex pbx-items-center pbx-justify-center"
+                        class="bg-gray-100 rounded-full w-32 h-32 flex items-center justify-center"
                       >
-                        <div class="pbx-text-center">
-                          <span class="pbx-lg:pbx-text-7xl pbx-text-5xl">
+                        <div class="text-center">
+                          <span class="lg:text-7xl text-5xl">
                             {{ seoResult.score }}
                           </span>
-                          <span class="pbx-text-xl">%</span>
+                          <span class="text-xl">%</span>
                         </div>
                       </div>
                     </div>
@@ -136,24 +136,24 @@ const closeSEO = function () {
               <!-- Checks start -->
               <div
                 v-if="seoResult && seoResult.checks && seoResult.checks.length"
-                class="pbx-w-full"
+                class="w-full"
               >
-                <h3 class="pbx-text-xl pbx-font-semibold pbx-mb-4 pbx-text-center">
+                <h3 class="text-xl font-semibold mb-4 text-center">
                   {{ translate('SEO Check Results') }}
                 </h3>
 
-                <ul class="pbx-space-y-4">
+                <ul class="space-y-4">
                   <li
                     v-for="(check, index) in seoResult.checks"
                     :key="index"
-                    class="pbx-flex pbx-items-start pbx-gap-4 pbx-p-4 pbx-bg-white pbx-rounded-lg pbx-border-solid pbx-border-2"
-                    :class="check.passed ? 'pbx-border-emerald-500' : 'pbx-border-red-600'"
+                    class="flex items-start gap-4 p-4 bg-white rounded-lg border-solid border-2"
+                    :class="check.passed ? 'border-emerald-500' : 'border-red-600'"
                   >
                     <!-- Status indicator -->
-                    <div class="pbx-flex-shrink-0 pbx-mt-1">
+                    <div class="flex-shrink-0 mt-1">
                       <template v-if="check.passed">
                         <div
-                          class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-rounded-full pbx-flex pbx-items-center pbx-border-none pbx-justify-center pbx-bg-myPrimaryLinkColor pbx-aspect-square hover:pbx-bg-myPrimaryLinkColor focus-visible:pbx-ring-0 pbx-text-white hover:pbx-text-white"
+                          class="h-10 w-10 cursor-pointer rounded-full flex items-center border-none justify-center bg-myPrimaryLinkColor aspect-square hover:bg-myPrimaryLinkColor focus-visible:ring-0 text-white hover:text-white"
                         >
                           <span class="material-symbols-outlined"> check </span>
                         </div>
@@ -161,7 +161,7 @@ const closeSEO = function () {
 
                       <template v-if="!check.passed">
                         <div
-                          class="pbx-select-none pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-rounded-full pbx-flex pbx-items-center pbx-border-none pbx-justify-center pbx-bg-myPrimaryErrorColor pbx-aspect-square hover:pbx-bg-myPrimaryErrorColor hover:pbx-text-white pbx-text-white"
+                          class="select-none h-10 w-10 cursor-pointer rounded-full flex items-center border-none justify-center bg-myPrimaryErrorColor aspect-square hover:bg-myPrimaryErrorColor hover:text-white text-white"
                         >
                           <span class="material-symbols-outlined"> check_indeterminate_small </span>
                         </div>
@@ -169,14 +169,14 @@ const closeSEO = function () {
                     </div>
 
                     <!-- Check details -->
-                    <div class="pbx-flex-1">
+                    <div class="flex-1">
                       <p
-                        class="pbx-text-lg pbx-font-medium"
-                        :class="check.passed ? 'pbx-text-green-700' : 'pbx-text-red-700'"
+                        class="text-lg font-medium"
+                        :class="check.passed ? 'text-green-700' : 'text-red-700'"
                       >
                         {{ check.check }}
                       </p>
-                      <p class="pbx-text-sm pbx-text-gray-600">
+                      <p class="text-sm text-gray-600">
                         {{ check.details }}
                       </p>
                     </div>
@@ -184,7 +184,7 @@ const closeSEO = function () {
                 </ul>
               </div>
 
-              <div v-else class="pbx-text-gray-500 pbx-text-center">No SEO checks available.</div>
+              <div v-else class="text-gray-500 text-center">No SEO checks available.</div>
               <!-- Checks end -->
             </div>
           </div>
@@ -195,19 +195,19 @@ const closeSEO = function () {
       </div>
       <!-- SEO End -->
 
-      <div class="pbx-flex pbx-gap-2 pbx-items-center pbx-justify-center">
+      <div class="flex gap-2 items-center justify-center">
         <div
           @click="handleDeleteComponentsFromDOM"
-          class="pbx-select-none pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-rounded-full pbx-flex pbx-items-center pbx-border-none pbx-justify-center pbx-bg-gray-50 pbx-aspect-square hover:pbx-bg-myPrimaryErrorColor hover:pbx-text-white pbx-text-myPrimaryErrorColor"
+          class="select-none h-10 w-10 cursor-pointer rounded-full flex items-center border-none justify-center bg-gray-50 aspect-square hover:bg-myPrimaryErrorColor hover:text-white text-myPrimaryErrorColor"
         >
           <span class="material-symbols-outlined"> delete_forever </span>
         </div>
       </div>
 
-      <div class="pbx-w-full pbx-border-t pbx-border-solid pbx-border-gray-200"></div>
+      <div class="w-full border-t border-solid border-gray-200"></div>
 
       <!-- settings start -->
-      <div class="pbx-flex pbx-gap-2 pbx-items-center pbx-justify-center">
+      <div class="flex gap-2 items-center justify-center">
         <div
           @click="
             async () => {
@@ -215,7 +215,7 @@ const closeSEO = function () {
               openMainSettings()
             }
           "
-          class="pbx-select-none pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-rounded-full pbx-flex pbx-items-center pbx-border-none pbx-justify-center pbx-bg-gray-50 pbx-aspect-square hover:pbx-bg-myPrimaryLinkColor focus-visible:pbx-ring-0 pbx-text-black hover:pbx-text-white"
+          class="select-none h-10 w-10 cursor-pointer rounded-full flex items-center border-none justify-center bg-gray-50 aspect-square hover:bg-myPrimaryLinkColor focus-visible:ring-0 text-black hover:text-white"
         >
           <svg
             fill="currentColor"

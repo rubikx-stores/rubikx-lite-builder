@@ -12,11 +12,11 @@ const getPageBuilderConfig = computed(() => {
 
 <template>
   <div>
-    <div class="pbx-flex pbx-items-center pbx-justify-center pbx-ml-2">
-      <div class="pbx-mr-2">
+    <div class="flex items-center justify-center ml-2">
+      <div class="mr-2">
         <!-- User No image Start-->
         <div
-          class="pbx-flex pbx-items-center pbx-myPrimaryTag pbx-whitespace-nowrap pbx-py-0 pbx-gap-2"
+          class="flex items-center pbx-myPrimaryTag whitespace-nowrap py-0 gap-2"
           v-if="
             getPageBuilderConfig &&
             getPageBuilderConfig.userForPageBuilder &&
@@ -27,7 +27,7 @@ const getPageBuilderConfig = computed(() => {
           "
         >
           <div
-            class="pbx-text-white pbx-rounded-full pbx-bg-myPrimaryBrandColor pbx-flex pbx-justify-center pbx-items-center pbx-text-xs pbx-d pbx-min-d pbx-max-d lg:pbx-w-8 lg:pbx-h-8 lg:pbx-min-w-8 lg:pbx-max-w-8 pbx-w-8 pbx-h-8 pbx-min-w-8 pbx-max-w-8 pbx-font-normal"
+            class="text-white rounded-full bg-myPrimaryBrandColor flex justify-center items-center text-xs d min-d max-d lg:w-8 lg:h-8 lg:min-w-8 lg:max-w-8 w-8 h-8 min-w-8 max-w-8 font-normal"
           >
             {{
               typeof getPageBuilderConfig.userForPageBuilder.name === 'string' &&
@@ -40,7 +40,7 @@ const getPageBuilderConfig = computed(() => {
 
         <!-- User With image Start-->
         <div
-          class="pbx-flex pbx-items-center lg:pbx-myPrimaryTag pbx-whitespace-nowrap pbx-py-0 pbx-gap-4 pbx-w-max pbx-h-12 pbx-ml-2"
+          class="flex items-center lg:pbx-myPrimaryTag whitespace-nowrap py-0 gap-4 w-max h-12 ml-2"
           v-if="
             getPageBuilderConfig &&
             getPageBuilderConfig.userForPageBuilder &&
@@ -51,12 +51,12 @@ const getPageBuilderConfig = computed(() => {
           "
         >
           <div
-            class="pbx-text-white pbx-flex-shrink-0 pbx-d pbx-w-10 pbx-h-10 pbx-rounded-full pbx-flex pbx-justify-center pbx-items-center pbx-text-xs pbx-rounded-l-full"
+            class="text-white flex-shrink-0 d w-10 h-10 rounded-full flex justify-center items-center text-xs rounded-l-full"
           >
             <img
               alt="Avatar"
               :src="`${getPageBuilderConfig.userForPageBuilder.image}`"
-              class="pbx-block pbx-inset-0 pbx-object-top pbx-d pbx-min-d pbx-max-d lg:pbx-w-8 lg:pbx-h-8 lg:pbx-min-w-8 lg:pbx-max-w-8 pbx-w-8 pbx-h-8 pbx-min-w-8 pbx-max-w-8 pbx-object-cover pbx-rounded-full"
+              class="block inset-0 object-top d min-d max-d lg:w-8 lg:h-8 lg:min-w-8 lg:max-w-8 w-8 h-8 min-w-8 max-w-8 object-cover rounded-full"
             />
           </div>
         </div>

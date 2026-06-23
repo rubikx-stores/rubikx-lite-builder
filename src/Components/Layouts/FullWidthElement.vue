@@ -21,7 +21,7 @@ defineProps({
           <slot name="title" />
         </h2>
         <template v-if="descriptionArea === true">
-          <p class="pbx-myPrimaryParagraph pbx-font-normal">
+          <p class="pbx-myPrimaryParagraph font-normal">
             <slot name="description" />
           </p>
         </template>

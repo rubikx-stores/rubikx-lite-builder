@@ -9,12 +9,12 @@ const pageBuilderService = getPageBuilder()
 <template>
   <div>
     <template v-if="pageBuilderService.isSelectedElementValidText()">
-      <div class="pbx-flex pbx-flex-col pbx-border-solid pbx-border pbx-border-gray-400">
+      <div class="flex flex-col border-solid border border-gray-400">
         <div
           @click="pageBuilderService.toggleTipTapModal(true)"
-          class="pbx-flex pbx-flex-row pbx-justify-between pbx-items-center pbx-pl-3 pbx-pr-3 pbx-py-5 pbx-cursor-pointer pbx-duration-200 hover:pbx-bg-myPrimaryLightGrayColor pbx-bg-white"
+          class="flex flex-row justify-between items-center pl-3 pr-3 py-5 cursor-pointer duration-200 hover:bg-myPrimaryLightGrayColor bg-white"
         >
-          <p class="pbx-myPrimaryParagraph pbx-font-medium pbx-my-0 pbx-py-0">
+          <p class="pbx-myPrimaryParagraph font-medium my-0 py-0">
             {{ translate('Text') }}
           </p>
           <span class="material-symbols-outlined"> chevron_right </span>

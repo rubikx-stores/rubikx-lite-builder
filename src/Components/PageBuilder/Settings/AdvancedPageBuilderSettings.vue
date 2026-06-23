@@ -180,7 +180,7 @@ const generateHTML = function (filename, HTML) {
             ${css}
         </head>
         <body>
-            <div id="pagebuilder" class="pbx-font-sans pbx-text-black">
+            <div id="pagebuilder" class="font-sans text-black">
                 ${HTML}
             </div>
         </body>
@@ -237,16 +237,16 @@ function selectTab(tab) {
     <div>
       <!-- tabbar start -->
       <div
-        class="pbx-mb-4 pbx-flex pbx-justify-start pbx-items-center pbx-gap-2 pbx-border-0 pbx-border-solid pbx-border-b pbx-border-gray-200 pbx-pb-4 pbx-overflow-x-auto"
+        class="mb-4 flex justify-start items-center gap-2 border-0 border-solid border-b border-gray-200 pb-4 overflow-x-auto"
       >
-        <div class="pbx-flex pbx-justify-center pbx-items-center pbx-gap-2">
+        <div class="flex justify-center items-center gap-2">
           <button
             @click="selectTab('globalPageStyles')"
             :class="[
-              'pbx-mySecondaryButton pbx-text-xs pbx-px-4',
+              'pbx-mySecondaryButton text-xs px-4',
               selectedTab === 'globalPageStyles'
-                ? 'pbx-bg-myPrimaryLinkColor pbx-text-white hover:pbx-text-white  hover:pbx-bg-myPrimaryLinkColor'
-                : 'hover:pbx-text-black',
+                ? 'bg-myPrimaryLinkColor text-white hover:text-white  hover:bg-myPrimaryLinkColor'
+                : 'hover:text-black',
             ]"
           >
             <span>
@@ -279,10 +279,10 @@ function selectTab(tab) {
           <button
             @click="selectTab('download')"
             :class="[
-              'pbx-mySecondaryButton pbx-text-xs pbx-px-4',
+              'pbx-mySecondaryButton text-xs px-4',
               selectedTab === 'download'
-                ? 'pbx-bg-myPrimaryLinkColor pbx-text-white hover:pbx-text-white  hover:pbx-bg-myPrimaryLinkColor'
-                : 'hover:pbx-text-black',
+                ? 'bg-myPrimaryLinkColor text-white hover:text-white  hover:bg-myPrimaryLinkColor'
+                : 'hover:text-black',
             ]"
           >
             <span class="material-symbols-outlined"> download_2 </span>
@@ -295,10 +295,10 @@ function selectTab(tab) {
           <button
             @click="selectTab('viewHTMLConfig')"
             :class="[
-              'pbx-mySecondaryButton pbx-text-xs pbx-px-4',
+              'pbx-mySecondaryButton text-xs px-4',
               selectedTab === 'viewHTMLConfig'
-                ? 'pbx-bg-myPrimaryLinkColor pbx-text-white hover:pbx-text-white  hover:pbx-bg-myPrimaryLinkColor'
-                : 'hover:pbx-text-black',
+                ? 'bg-myPrimaryLinkColor text-white hover:text-white  hover:bg-myPrimaryLinkColor'
+                : 'hover:text-black',
             ]"
           >
             <span class="material-symbols-outlined"> deployed_code </span>
@@ -312,12 +312,12 @@ function selectTab(tab) {
 
       <!-- loading spinner start -->
       <div v-if="isLoading">
-        <div class="pbx-flex pbx-items-top pbx-justify-center pbx-mt-4 pbx-min-h-screen">
+        <div class="flex items-top justify-center mt-4 min-h-screen">
           <div
-            class="pbx-inline-block pbx-h-8 pbx-w-8 pbx-animate-spin pbx-rounded-full pbx-border-4 pbx-border-solid pbx-border-current pbx-border-r-transparent pbx-align-[-0.125em] motion-reduce:pbx-animate-[spin_1.5s_linear_infinite]"
+            class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
           >
             <span
-              class="!pbx-absolute !pbx-m-px !pbx-h-px !pbx-w-px !pbx-overflow-hidden !pbx-whitespace-nowrap !pbx-border-0 !pbx-p-0 !pbx-[clip:rect(0,0,0,0)]"
+              class="!absolute !m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
               >Loading...</span
             >
           </div>
@@ -326,16 +326,16 @@ function selectTab(tab) {
       <!-- loading spinner end -->
       <!-- globalPageStyles start -->
       <div v-if="!isLoading">
-        <div v-if="selectedTab === 'download'" class="pbx-min-h-screen">
+        <div v-if="selectedTab === 'download'" class="min-h-screen">
           <div v-if="Array.isArray(getComponents) && getComponents.length >= 1">
-            <p class="pbx-myPrimaryParagraph pbx-mt-6 pbx-mb-10">
+            <p class="pbx-myPrimaryParagraph mt-6 mb-10">
               {{
                 translate(
                   'Export the entire page as a standalone HTML file. This includes all sections, content, and applied styles, making it ready for use or integration elsewhere.',
                 )
               }}
             </p>
-            <div class="pbx-my-2 pbx-py-2">
+            <div class="my-2 py-2">
               <button @click="handleDownloadHTML" type="button" class="pbx-myPrimaryButton">
                 <span class="material-symbols-outlined"> download_2 </span>
                 <span>
@@ -345,9 +345,9 @@ function selectTab(tab) {
             </div>
           </div>
         </div>
-        <div v-if="selectedTab === 'globalPageStyles'" class="pbx-min-h-screen">
+        <div v-if="selectedTab === 'globalPageStyles'" class="min-h-screen">
           <div>
-            <p class="pbx-myPrimaryParagraph pbx-mt-6 pbx-mb-10">
+            <p class="pbx-myPrimaryParagraph mt-6 mb-10">
               {{
                 translate(
                   'Apply styles that affect the entire page. These settings include global font family, text color, background color, and other universal styles that apply to all sections.',
@@ -355,66 +355,66 @@ function selectTab(tab) {
               }}
             </p>
             <div
-              class="pbx-grid lg:pbx-grid-cols-2 pbx-grid-cols-1 lg:pbx-gap-4 pbx-gap-4 pbx-py-4 pbx-mb-12"
+              class="grid lg:grid-cols-2 grid-cols-1 lg:gap-4 gap-4 py-4 mb-12"
             >
               <article
-                class="pbx-my-1 pbx-bg-gray-100 pbx-px-4 pbx-pt-2 pbx-pb-8 pbx-rounded-2xl lg:pbx-col-span-2"
+                class="my-1 bg-gray-100 px-4 pt-2 pb-8 rounded-2xl lg:col-span-2"
               >
-                <p class="pbx-myPrimaryParagraph pbx-italic pbx-pb-2 lg:pbx-mt-6 pbx-mt-8">
+                <p class="pbx-myPrimaryParagraph italic pb-2 lg:mt-6 mt-8">
                   Typography
                 </p>
                 <Typography></Typography>
               </article>
-              <article class="pbx-my-1 pbx-bg-gray-100 pbx-px-4 pbx-pt-2 pbx-pb-8 pbx-rounded-2xl">
-                <p class="pbx-myPrimaryParagraph pbx-italic pbx-pb-2 lg:pbx-mt-6 pbx-mt-8">
+              <article class="my-1 bg-gray-100 px-4 pt-2 pb-8 rounded-2xl">
+                <p class="pbx-myPrimaryParagraph italic pb-2 lg:mt-6 mt-8">
                   Text color
                 </p>
                 <TextColorEditor :globalPageLayout="true"></TextColorEditor>
               </article>
-              <article class="pbx-my-1 pbx-bg-gray-100 pbx-px-4 pbx-pt-2 pbx-pb-8 pbx-rounded-2xl">
-                <p class="pbx-myPrimaryParagraph pbx-italic pbx-pb-2 lg:pbx-mt-6 pbx-mt-8">
+              <article class="my-1 bg-gray-100 px-4 pt-2 pb-8 rounded-2xl">
+                <p class="pbx-myPrimaryParagraph italic pb-2 lg:mt-6 mt-8">
                   Background color
                 </p>
                 <BackgroundColorEditor :globalPageLayout="true"></BackgroundColorEditor>
               </article>
-              <article class="pbx-my-1 pbx-bg-gray-100 pbx-px-4 pbx-pt-2 pbx-pb-8 pbx-rounded-2xl">
-                <p class="pbx-myPrimaryParagraph pbx-italic pbx-pb-2 lg:pbx-mt-6 pbx-mt-8">
+              <article class="my-1 bg-gray-100 px-4 pt-2 pb-8 rounded-2xl">
+                <p class="pbx-myPrimaryParagraph italic pb-2 lg:mt-6 mt-8">
                   Padding
                 </p>
                 <Padding> </Padding>
               </article>
-              <article class="pbx-my-1 pbx-bg-gray-100 pbx-px-4 pbx-pt-2 pbx-pb-8 pbx-rounded-2xl">
-                <p class="pbx-myPrimaryParagraph pbx-italic pbx-pb-2 lg:pbx-mt-6 pbx-mt-8">
+              <article class="my-1 bg-gray-100 px-4 pt-2 pb-8 rounded-2xl">
+                <p class="pbx-myPrimaryParagraph italic pb-2 lg:mt-6 mt-8">
                   Margin
                 </p>
                 <Margin> </Margin>
               </article>
-              <article class="pbx-my-1 pbx-bg-gray-100 pbx-px-4 pbx-pt-2 pbx-pb-8 pbx-rounded-2xl">
-                <p class="pbx-myPrimaryParagraph pbx-italic pbx-pb-2 lg:pbx-mt-6 pbx-mt-8">
+              <article class="my-1 bg-gray-100 px-4 pt-2 pb-8 rounded-2xl">
+                <p class="pbx-myPrimaryParagraph italic pb-2 lg:mt-6 mt-8">
                   Border radius
                 </p>
                 <BorderRadius></BorderRadius>
               </article>
-              <article class="pbx-my-1 pbx-bg-gray-100 pbx-px-4 pbx-pt-2 pbx-pb-8 pbx-rounded-2xl">
-                <p class="pbx-myPrimaryParagraph pbx-italic pbx-pb-2 lg:pbx-mt-6 pbx-mt-8">
+              <article class="my-1 bg-gray-100 px-4 pt-2 pb-8 rounded-2xl">
+                <p class="pbx-myPrimaryParagraph italic pb-2 lg:mt-6 mt-8">
                   Border style
                 </p>
                 <Borders></Borders>
               </article>
-              <article class="pbx-my-1 pbx-bg-gray-100 pbx-px-4 pbx-pt-2 pbx-pb-8 pbx-rounded-2xl">
-                <p class="pbx-myPrimaryParagraph pbx-italic pbx-pb-2 lg:pbx-mt-6 pbx-mt-8">CSS</p>
+              <article class="my-1 bg-gray-100 px-4 pt-2 pb-8 rounded-2xl">
+                <p class="pbx-myPrimaryParagraph italic pb-2 lg:mt-6 mt-8">CSS</p>
                 <ClassEditor></ClassEditor>
               </article>
-              <article class="pbx-my-1 pbx-bg-gray-100 pbx-px-4 pbx-pt-2 pbx-pb-8 pbx-rounded-2xl">
-                <p class="pbx-myPrimaryParagraph pbx-italic pbx-pb-2 lg:pbx-mt-6 pbx-mt-8">
+              <article class="my-1 bg-gray-100 px-4 pt-2 pb-8 rounded-2xl">
+                <p class="pbx-myPrimaryParagraph italic pb-2 lg:mt-6 mt-8">
                   Inline style
                 </p>
                 <StyleEditor></StyleEditor>
               </article>
               <article
-                class="pbx-my-1 pbx-bg-gray-100 pbx-px-4 pbx-pt-2 pbx-pb-8 pbx-rounded-2xl lg:pbx-col-span-2"
+                class="my-1 bg-gray-100 px-4 pt-2 pb-8 rounded-2xl lg:col-span-2"
               >
-                <p class="pbx-myPrimaryParagraph pbx-italic pbx-pb-2 lg:pbx-mt-6 pbx-mt-8">
+                <p class="pbx-myPrimaryParagraph italic pb-2 lg:mt-6 mt-8">
                   HTML editor
                 </p>
                 <HTMLEditor></HTMLEditor>
@@ -424,8 +424,8 @@ function selectTab(tab) {
         </div>
         <!-- globalPageStyles end -->
         <!-- viewHTMLConfig start -->
-        <div v-if="selectedTab === 'viewHTMLConfig'" class="pbx-min-h-screen">
-          <p class="pbx-myPrimaryParagraph pbx-mt-6 pbx-mb-10">
+        <div v-if="selectedTab === 'viewHTMLConfig'" class="min-h-screen">
+          <p class="pbx-myPrimaryParagraph mt-6 mb-10">
             {{
               translate(
                 'Overview of Selected Element, Component, and Components. This section provides real-time updates based on your HTML selection.',
@@ -434,39 +434,39 @@ function selectTab(tab) {
           </p>
 
           <div
-            class="pbx-w-full pbx-inset-x-0 pbx-h-[90vh] pbx-bg-white pbx-overflow-x-scroll lg:pbx-pt-2 pbx-pt-2"
+            class="w-full inset-x-0 h-[90vh] bg-white overflow-x-scroll lg:pt-2 pt-2"
           >
             <div
-              class="pbx-flex pbx-items-left pbx-flex-col pbx-myPrimaryGap pbx-border-myPrimaryMediumGrayColor"
+              class="flex items-left flex-col pbx-myPrimaryGap border-myPrimaryMediumGrayColor"
             >
               <!-- Types - start -->
               <div>
-                <h4 class="pbx-myPrimaryParagraph pbx-text-xs pbx-pb-2">
+                <h4 class="pbx-myPrimaryParagraph text-xs pb-2">
                   {{ translate('Types') }}
                 </h4>
-                <div class="pbx-text-gray-100 pbx-overflow-hidden pbx-bg-gray-900">
-                  <div class="pbx-flex pbx-bg-gray-900 pbx-ring-1 ring-white/5">
+                <div class="text-gray-100 overflow-hidden bg-gray-900">
+                  <div class="flex bg-gray-900 ring-1 ring-white/5">
                     <div
-                      class="pbx-mb-px pbx-flex pbx-text-xs pbx-font-medium pbx-text-myPrimaryMediumGrayColor"
+                      class="mb-px flex text-xs font-medium text-myPrimaryMediumGrayColor"
                     >
-                      <div class="pbx-px-4 pbx-py-4 pbx-text-gray-100">
+                      <div class="px-4 py-4 text-gray-100">
                         {{ translate('Types') }}
                       </div>
                     </div>
                   </div>
-                  <div class="pbx-px-4 pbx-pb-8 pbx-pt-4 pbx-text-gray-100 pbx-text-xs">
-                    <p class="pbx-text-xs pbx-pb-2">
+                  <div class="px-4 pb-8 pt-4 text-gray-100 text-xs">
+                    <p class="text-xs pb-2">
                       <span>{{ translate('Element type:') }} </span>
                       <span>
                         {{ typeof getElement }}
                       </span>
                     </p>
 
-                    <p class="pbx-text-xs pbx-pb-2">
+                    <p class="text-xs pb-2">
                       <span>{{ translate('Component type:') }} </span>
                       {{ typeof getComponent }}
                     </p>
-                    <p class="pbx-text-xs pbx-pb-2">
+                    <p class="text-xs pb-2">
                       <span>{{ translate('Components:') }} </span>
                       <span>
                         {{
@@ -482,32 +482,32 @@ function selectTab(tab) {
               <!-- Types - end -->
               <!-- Code Block Component - start-->
               <div>
-                <h4 class="pbx-myPrimaryParagraph pbx-text-xs pbx-pb-2">
+                <h4 class="pbx-myPrimaryParagraph text-xs pb-2">
                   {{ translate('Content') }}
                 </h4>
-                <div class="pbx-overflow-hidden pbx-bg-gray-900">
-                  <div class="pbx-flex pbx-bg-gray-900 pbx-ring-1 ring-white/5">
+                <div class="overflow-hidden bg-gray-900">
+                  <div class="flex bg-gray-900 ring-1 ring-white/5">
                     <div
-                      class="pbx-mb-px pbx-flex pbx-text-xs pbx-font-medium pbx-text-myPrimaryMediumGrayColor"
+                      class="mb-px flex text-xs font-medium text-myPrimaryMediumGrayColor"
                     >
                       <div
                         @click="updateCurrentTab('element')"
-                        class="pbx-px-4 pbx-py-4 pbx-cursor-pointer"
-                        :class="[current === 'element' ? 'pbx-text-gray-100' : '']"
+                        class="px-4 py-4 cursor-pointer"
+                        :class="[current === 'element' ? 'text-gray-100' : '']"
                       >
                         {{ translate('Element') }}
                       </div>
                       <div
                         @click="updateCurrentTab('component')"
-                        class="pbx-px-4 pbx-py-4 pbx-cursor-pointer"
-                        :class="[current === 'component' ? 'pbx-text-gray-100' : '']"
+                        class="px-4 py-4 cursor-pointer"
+                        :class="[current === 'component' ? 'text-gray-100' : '']"
                       >
                         {{ translate('Component') }}
                       </div>
                       <div
                         @click="updateCurrentTab('components')"
-                        class="pbx-px-4 pbx-py-4 pbx-cursor-pointer"
-                        :class="[current === 'components' ? 'pbx-text-gray-100' : '']"
+                        class="px-4 py-4 cursor-pointer"
+                        :class="[current === 'components' ? 'text-gray-100' : '']"
                       >
                         {{ translate('Components added') }}
                         {{ Array.isArray(getComponents) && getComponents.length }}
@@ -515,11 +515,11 @@ function selectTab(tab) {
                     </div>
                   </div>
                   <div
-                    class="pbx-px-4 pbx-pb-8 pbx-pt-4 pbx-text-gray-100 pbx-text-xs pbx-break-all"
+                    class="px-4 pb-8 pt-4 text-gray-100 text-xs break-all"
                   >
                     <div v-if="current === 'element'">
                       <div v-if="!getComponent">
-                        <p class="pbx-pb-2 pbx-text-xs">
+                        <p class="pb-2 text-xs">
                           {{
                             getComponent === null
                               ? translate('No Element selected')
@@ -529,26 +529,26 @@ function selectTab(tab) {
                       </div>
                       <div
                         v-if="getElement"
-                        class="pbx-overflow-hidden pbx-border-solid pbx-border pbx-border-gray-100 pbx-mb-6"
+                        class="overflow-hidden border-solid border border-gray-100 mb-6"
                       >
                         <div
-                          class="pbx-border-0 pbx-bg-gray-900 pbx-pt-4 pbx-1 pbx-border-solid pbx-border-b pbx-border-gray-200"
+                          class="border-0 bg-gray-900 pt-4 1 border-solid border-b border-gray-200"
                         >
-                          <div class="pbx-overflow-x-auto">
-                            <table class="pbx-min-w-full">
-                              <thead class="pbx-bg-gray-900">
+                          <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                              <thead class="bg-gray-900">
                                 <tr>
                                   <th
-                                    class="pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal"
+                                    class="px-6 py-3 text-left text-xs text-gray-100 font-normal"
                                   >
                                     {{ translate('Selected HTML:') }}
                                   </th>
                                 </tr>
                               </thead>
-                              <tbody class="pbx-bg-gray-900 pbx-divide-y pbx-divide-gray-200">
+                              <tbody class="bg-gray-900 divide-y divide-gray-200">
                                 <tr>
                                   <td
-                                    class="pbx-border-0 pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal pbx-border-solid pbx-border-b"
+                                    class="border-0 px-6 py-3 text-left text-xs text-gray-100 font-normal border-solid border-b"
                                   >
                                     {{ getElement?.outerHTML }}
                                   </td>
@@ -556,21 +556,21 @@ function selectTab(tab) {
                               </tbody>
                             </table>
                           </div>
-                          <div class="pbx-overflow-x-auto">
-                            <table class="pbx-min-w-full">
-                              <thead class="pbx-bg-gray-900">
+                          <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                              <thead class="bg-gray-900">
                                 <tr>
                                   <th
-                                    class="pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal"
+                                    class="px-6 py-3 text-left text-xs text-gray-100 font-normal"
                                   >
                                     {{ translate('Element src:') }}
                                   </th>
                                 </tr>
                               </thead>
-                              <tbody class="pbx-bg-gray-900 pbx-divide-y pbx-divide-gray-200">
+                              <tbody class="bg-gray-900 divide-y divide-gray-200">
                                 <tr>
                                   <td
-                                    class="pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal pbx-whitespace-pre-line"
+                                    class="px-6 py-3 text-left text-xs text-gray-100 font-normal whitespace-pre-line"
                                   >
                                     {{ getElement?.src ? getElement?.src : typeof getElement?.src }}
                                   </td>
@@ -579,21 +579,21 @@ function selectTab(tab) {
                             </table>
                           </div>
                         </div>
-                        <div class="pbx-overflow-x-auto">
-                          <table class="pbx-min-w-full">
-                            <thead class="pbx-bg-gray-900">
+                        <div class="overflow-x-auto">
+                          <table class="min-w-full">
+                            <thead class="bg-gray-900">
                               <tr>
                                 <th
-                                  class="pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal"
+                                  class="px-6 py-3 text-left text-xs text-gray-100 font-normal"
                                 >
                                   {{ translate('Element classes:') }}
                                 </th>
                               </tr>
                             </thead>
-                            <tbody class="pbx-bg-gray-900 pbx-divide-y pbx-divide-gray-200">
+                            <tbody class="bg-gray-900 divide-y divide-gray-200">
                               <tr>
                                 <td
-                                  class="pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal"
+                                  class="px-6 py-3 text-left text-xs text-gray-100 font-normal"
                                 >
                                   {{
                                     getElement?.classList
@@ -610,7 +610,7 @@ function selectTab(tab) {
 
                     <div v-if="current === 'component'">
                       <div v-if="!getComponent">
-                        <p class="pbx-pb-2 pbx-text-xs">
+                        <p class="pb-2 text-xs">
                           {{
                             getComponent === null
                               ? translate('No Component selected')
@@ -620,26 +620,26 @@ function selectTab(tab) {
                       </div>
                       <div
                         v-if="getComponent"
-                        class="pbx-overflow-hidden pbx-border-solid pbx-border pbx-border-gray-100 pbx-mb-6"
+                        class="overflow-hidden border-solid border border-gray-100 mb-6"
                       >
                         <div
-                          class="pbx-border-0 pbx-bg-gray-900 pbx-pt-4 pbx-1 pbx-border-solid pbx-border-b pbx-border-gray-200"
+                          class="border-0 bg-gray-900 pt-4 1 border-solid border-b border-gray-200"
                         >
-                          <div class="pbx-overflow-x-auto">
-                            <table class="pbx-min-w-full">
-                              <thead class="pbx-bg-gray-900">
+                          <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                              <thead class="bg-gray-900">
                                 <tr>
                                   <th
-                                    class="pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal"
+                                    class="px-6 py-3 text-left text-xs text-gray-100 font-normal"
                                   >
                                     {{ translate('ID:') }}
                                   </th>
                                 </tr>
                               </thead>
-                              <tbody class="pbx-bg-gray-900 pbx-divide-y pbx-divide-gray-200">
+                              <tbody class="bg-gray-900 divide-y divide-gray-200">
                                 <tr>
                                   <td
-                                    class="pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal"
+                                    class="px-6 py-3 text-left text-xs text-gray-100 font-normal"
                                   >
                                     {{ getComponent?.id }}
                                   </td>
@@ -647,21 +647,21 @@ function selectTab(tab) {
                               </tbody>
                             </table>
                           </div>
-                          <div class="pbx-overflow-x-auto">
-                            <table class="pbx-min-w-full">
-                              <thead class="pbx-bg-gray-900">
+                          <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                              <thead class="bg-gray-900">
                                 <tr>
                                   <th
-                                    class="pbx-border-0 pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal pbx-border-solid pbx-border-t pbx-border-gray-200"
+                                    class="border-0 px-6 py-3 text-left text-xs text-gray-100 font-normal border-solid border-t border-gray-200"
                                   >
                                     {{ translate('Title:') }}
                                   </th>
                                 </tr>
                               </thead>
-                              <tbody class="pbx-bg-gray-900 pbx-divide-y pbx-divide-gray-200">
+                              <tbody class="bg-gray-900 divide-y divide-gray-200">
                                 <tr>
                                   <td
-                                    class="pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal pbx-whitespace-pre-line"
+                                    class="px-6 py-3 text-left text-xs text-gray-100 font-normal whitespace-pre-line"
                                   >
                                     {{ getComponent?.title }}
                                   </td>
@@ -670,26 +670,26 @@ function selectTab(tab) {
                             </table>
                           </div>
                         </div>
-                        <div class="pbx-overflow-x-auto">
-                          <table class="pbx-min-w-full">
-                            <thead class="pbx-bg-gray-900">
+                        <div class="overflow-x-auto">
+                          <table class="min-w-full">
+                            <thead class="bg-gray-900">
                               <tr>
                                 <th
-                                  class="pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal"
+                                  class="px-6 py-3 text-left text-xs text-gray-100 font-normal"
                                 >
                                   {{ translate('HTML Code:') }}
                                 </th>
                               </tr>
                             </thead>
-                            <tbody class="pbx-bg-gray-900 pbx-divide-y pbx-divide-gray-200">
+                            <tbody class="bg-gray-900 divide-y divide-gray-200">
                               <tr>
                                 <td
-                                  class="pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal"
+                                  class="px-6 py-3 text-left text-xs text-gray-100 font-normal"
                                 >
                                   <pre
-                                    class="pbx-text-xs pbx-text-gray-100 pbx-whitespace-pre-wrap pbx-font-sans pbx-flex pbx-items-start pbx-justify-left"
+                                    class="text-xs text-gray-100 whitespace-pre-wrap font-sans flex items-start justify-left"
                                   >
-                              <code class="pbx-font-sans pbx-bg-gray-800 pbx-p-4 pbx-rounded-md pbx-block pbx-w-full" v-html="prettifyHtml(getComponent?.html_code)"></code>
+                              <code class="font-sans bg-gray-800 p-4 rounded-md block w-full" v-html="prettifyHtml(getComponent?.html_code)"></code>
                             </pre>
                                 </td>
                               </tr>
@@ -700,7 +700,7 @@ function selectTab(tab) {
                     </div>
                     <div v-if="current === 'components'">
                       <div v-if="Array.isArray(getComponents) && getComponents.length === 0">
-                        <p class="pbx-pb-2 pbx-text-xs">
+                        <p class="pb-2 text-xs">
                           {{ translate('No Components added yet') }}
                         </p>
                       </div>
@@ -709,27 +709,27 @@ function selectTab(tab) {
                         <div
                           v-for="component in getComponents"
                           :key="component.id"
-                          class="pbx-overflow-hidden pbx-border-solid pbx-border pbx-border-gray-100 pbx-mb-6"
+                          class="overflow-hidden border-solid border border-gray-100 mb-6"
                         >
                           <!-- Id and Title above the table, styled to look connected -->
                           <div
-                            class="pbx-border-0 pbx-bg-gray-900 pbx-pt-4 pbx-1 pbx-border-solid pbx-border-b pbx-border-gray-200"
+                            class="border-0 bg-gray-900 pt-4 1 border-solid border-b border-gray-200"
                           >
-                            <div class="pbx-overflow-x-auto">
-                              <table class="pbx-min-w-full">
-                                <thead class="pbx-bg-gray-900">
+                            <div class="overflow-x-auto">
+                              <table class="min-w-full">
+                                <thead class="bg-gray-900">
                                   <tr>
                                     <th
-                                      class="pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal"
+                                      class="px-6 py-3 text-left text-xs text-gray-100 font-normal"
                                     >
                                       {{ translate('ID:') }}
                                     </th>
                                   </tr>
                                 </thead>
-                                <tbody class="pbx-bg-gray-900 pbx-divide-y pbx-divide-gray-200">
+                                <tbody class="bg-gray-900 divide-y divide-gray-200">
                                   <tr>
                                     <td
-                                      class="pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal"
+                                      class="px-6 py-3 text-left text-xs text-gray-100 font-normal"
                                     >
                                       {{ component.id }}
                                     </td>
@@ -737,21 +737,21 @@ function selectTab(tab) {
                                 </tbody>
                               </table>
                             </div>
-                            <div class="pbx-overflow-x-auto">
-                              <table class="pbx-min-w-full">
-                                <thead class="pbx-bg-gray-900">
+                            <div class="overflow-x-auto">
+                              <table class="min-w-full">
+                                <thead class="bg-gray-900">
                                   <tr>
                                     <th
-                                      class="pbx-border-0 pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal pbx-border-solid pbx-border-t pbx-border-gray-200"
+                                      class="border-0 px-6 py-3 text-left text-xs text-gray-100 font-normal border-solid border-t border-gray-200"
                                     >
                                       {{ translate('Title:') }}
                                     </th>
                                   </tr>
                                 </thead>
-                                <tbody class="pbx-bg-gray-900 pbx-divide-y pbx-divide-gray-200">
+                                <tbody class="bg-gray-900 divide-y divide-gray-200">
                                   <tr>
                                     <td
-                                      class="pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal pbx-whitespace-pre-line"
+                                      class="px-6 py-3 text-left text-xs text-gray-100 font-normal whitespace-pre-line"
                                     >
                                       {{ component.title }}
                                     </td>
@@ -760,26 +760,26 @@ function selectTab(tab) {
                               </table>
                             </div>
                           </div>
-                          <div class="pbx-overflow-x-auto">
-                            <table class="pbx-min-w-full">
-                              <thead class="pbx-bg-gray-900">
+                          <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                              <thead class="bg-gray-900">
                                 <tr>
                                   <th
-                                    class="pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal"
+                                    class="px-6 py-3 text-left text-xs text-gray-100 font-normal"
                                   >
                                     {{ translate('HTML Code:') }}
                                   </th>
                                 </tr>
                               </thead>
-                              <tbody class="pbx-bg-gray-900 pbx-divide-y pbx-divide-gray-200">
+                              <tbody class="bg-gray-900 divide-y divide-gray-200">
                                 <tr>
                                   <td
-                                    class="pbx-px-6 pbx-py-3 pbx-text-left pbx-text-xs pbx-text-gray-100 pbx-font-normal"
+                                    class="px-6 py-3 text-left text-xs text-gray-100 font-normal"
                                   >
                                     <pre
-                                      class="pbx-text-xs pbx-text-gray-100 pbx-whitespace-pre-wrap pbx-font-sans pbx-flex pbx-items-start pbx-justify-left"
+                                      class="text-xs text-gray-100 whitespace-pre-wrap font-sans flex items-start justify-left"
                                     >
-                              <code class="pbx-font-sans pbx-w-full" v-html="prettifyHtml(component.html_code)"></code>
+                              <code class="font-sans w-full" v-html="prettifyHtml(component.html_code)"></code>
                             </pre>
                                   </td>
                                 </tr>

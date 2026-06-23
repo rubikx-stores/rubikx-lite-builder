@@ -84,62 +84,62 @@ const closeHTMLSettings = async function () {
 </script>
 
 <template>
-  <div class="pbx-flex pbx-h-full pbx-flex-col">
+  <div class="flex h-full flex-col">
     <div
-      class="pbx-flex pbx-flex-row pbx-justify-between pbx-pt-7 pbx-pr-4 pbx-pl-4 pbx-items-center pbx-mb-3"
+      class="flex flex-row justify-between pt-7 pr-4 pl-4 items-center mb-3"
     >
       <button
         type="button"
         @click="$emit('closeEditor')"
-        class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-rounded-full pbx-flex pbx-items-center pbx-border-none pbx-justify-center pbx-bg-gray-50 pbx-aspect-square hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white focus-visible:pbx-ring-0 pbx-text-black hover:pbx-text-white"
+        class="h-10 w-10 cursor-pointer rounded-full flex items-center border-none justify-center bg-gray-50 aspect-square hover:bg-myPrimaryLinkColor hover:text-white focus-visible:ring-0 text-black hover:text-white"
       >
         <span class="material-symbols-outlined"> close </span>
       </button>
-      <p class="pbx-font-medium pbx-text-sm">
+      <p class="font-medium text-sm">
         {{ translate('Editing') }}
-        <span class="pbx-lowercase">&lt;{{ elementTag }}&gt;</span>
+        <span class="lowercase">&lt;{{ elementTag }}&gt;</span>
       </p>
     </div>
 
     <div
       ref="scrollContainer"
       @scroll="onScroll"
-      class="pbx-pl-3 pbx-pr-3 pbx-mb-4 pbx-overflow-y-scroll"
+      class="pl-3 pr-3 mb-4 overflow-y-scroll"
     >
       <div v-show="getElement && pageBuilderService.isEditableElement(getElement)">
-        <article class="pbx-mb-1">
+        <article class="mb-1">
           <ImageEditor> </ImageEditor>
         </article>
-        <article class="pbx-my-1">
+        <article class="my-1">
           <OpacityEditor> </OpacityEditor>
         </article>
-        <article class="pbx-my-1">
+        <article class="my-1">
           <Padding> </Padding>
         </article>
-        <article class="pbx-my-1">
+        <article class="my-1">
           <Margin> </Margin>
         </article>
-        <article class="pbx-my-1">
+        <article class="my-1">
           <BorderRadius></BorderRadius>
         </article>
-        <article class="pbx-my-1">
+        <article class="my-1">
           <Borders></Borders>
         </article>
-        <article class="pbx-my-1">
+        <article class="my-1">
           <ClassEditor></ClassEditor>
         </article>
-        <article class="pbx-my-1">
+        <article class="my-1">
           <StyleEditor></StyleEditor>
         </article>
-        <div class="pbx-w-full pbx-border-t pbx-border-solid pbx-border-gray-200 pbx-my-6"></div>
+        <div class="w-full border-t border-solid border-gray-200 my-6"></div>
       </div>
 
       <button
         @click="openHTMLSettings"
         type="button"
-        class="pbx-my-1 pbx-border pbx-border-gray-900 pbx-flex pbx-flex-row pbx-justify-between pbx-items-center pbx-pl-3 pbx-pr-3 pbx-py-5 pbx-cursor-pointer pbx-duration-200 pbx-bg-black pbx-text-white hover:pbx-bg-myPrimaryLightGrayColor hover:pbx-text-black pbx-select-none pbx-w-full"
+        class="my-1 border border-gray-900 flex flex-row justify-between items-center pl-3 pr-3 py-5 cursor-pointer duration-200 bg-black text-white hover:bg-myPrimaryLightGrayColor hover:text-black select-none w-full"
       >
-        <p class="pbx-font-medium pbx-my-0 pbx-py-0">
+        <p class="font-medium my-0 py-0">
           {{ translate('Global Page Styles') }}
         </p>
       </button>

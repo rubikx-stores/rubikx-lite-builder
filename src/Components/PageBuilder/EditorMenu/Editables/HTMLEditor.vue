@@ -14,7 +14,7 @@ const handleShowHTMLEditor = async () => {
   <EditorAccordion>
     <template #title>{{ translate('HTML Editor') }}</template>
     <template #content>
-      <div class="pbx-my-2 pbx-py-2">
+      <div class="my-2 py-2">
         <label for="vertical-margin" class="pbx-myPrimaryInputLabel">{{
           translate('Gain full control over components by editing the raw HTML.')
         }}</label>

@@ -60,7 +60,7 @@ const handleAddStyle = async () => {
   <EditorAccordion>
     <template #title>{{ translate('Inline Styles') }}</template>
     <template #content>
-      <p class="pbx-myPrimaryInputLabel pbx-my-4">
+      <p class="pbx-myPrimaryInputLabel my-4">
         {{
           translate(
             'These are the inline styles applied by the builder. Add your own styles and press Enter to apply them to the selected element.',
@@ -68,11 +68,11 @@ const handleAddStyle = async () => {
         }}
       </p>
 
-      <div class="pbx-flex pbx-flex-row pbx-flex-wrap pbx-gap-2 pbx-mt-2 pbx-mb-4">
+      <div class="flex flex-row flex-wrap gap-2 mt-2 mb-4">
         <div
           v-for="(value, key) in currentStyles"
           :key="key"
-          class="pbx-myPrimaryTag pbx-cursor-pointer hover:pbx-bg-myPrimaryErrorColor hover:pbx-text-white pbx-text-xs pbx-py-2 pbx-font-medium"
+          class="pbx-myPrimaryTag cursor-pointer hover:bg-myPrimaryErrorColor hover:text-white text-xs py-2 font-medium"
           @click="
             async () => {
               pageBuilderService.handleRemoveStyle(key)
@@ -80,18 +80,18 @@ const handleAddStyle = async () => {
             }
           "
         >
-          <div class="pbx-flex pbx-items-center pbx-gap-1">
-            <span class="pbx-mr-1"> {{ key }}: {{ value }}; </span>
+          <div class="flex items-center gap-1">
+            <span class="mr-1"> {{ key }}: {{ value }}; </span>
           </div>
         </div>
       </div>
 
       <hr />
-      <div class="pbx-my-2 pbx-py-2">
+      <div class="my-2 py-2">
         <label for="custom-style-property" class="pbx-myPrimaryInputLabel">
           {{ translate('Add your own style.') }}
         </label>
-        <div class="pbx-flex pbx-gap-2 pbx-flex-col pbx-item-center">
+        <div class="flex gap-2 flex-col item-center">
           <input
             id="custom-style-property"
             v-model="inputProperty"

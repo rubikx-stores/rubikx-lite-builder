@@ -217,15 +217,15 @@ onMounted(() => {
             ><span>{{ translate('Enter URL') }}</span></label
           ><input
             v-model="urlEnteret"
-            class="pbx-myPrimaryInput pbx-mt-1 pbx-w-full"
+            class="pbx-myPrimaryInput mt-1 w-full"
             type="url"
             placeholder="url"
           />
           <div
             v-if="urlError"
-            class="pbx-min-h-[2.5rem] pbx-flex pbx-items-center pbx-justify-start"
+            class="min-h-[2.5rem] flex items-center justify-start"
           >
-            <p class="pbx-myPrimaryInputError pbx-mt-2 pbx-mb-0 pbx-py-0 pbx-self-start">
+            <p class="pbx-myPrimaryInputError mt-2 mb-0 py-0 self-start">
               {{ urlError }}
             </p>
           </div>
@@ -233,17 +233,17 @@ onMounted(() => {
       </main>
     </DynamicModalBuilder>
 
-    <div class="pbx-blockease-linear pbx-duration-200 pbx-block pbx-ease-linear">
+    <div class="blockease-linear duration-200 block ease-linear">
       <div v-if="pageBuilderService.isSelectedElementValidText() && editor">
-        <div class="pbx-rounded-lg pbx-px-2">
+        <div class="rounded-lg px-2">
           <div
-            class="pbx-flex pbx-flex-wrap pbx-items-center pbx-gap-2 pbx-border-solid pbx-px-4 pbx-border pbx-border-gray-200 pbx-mb-4 pbx-py-2"
+            class="flex flex-wrap items-center gap-2 border-solid px-4 border border-gray-200 mb-4 py-2"
           >
             <!-- Save -->
 
             <div
               @click="pageBuilderService.toggleTipTapModal(false)"
-              class="pbx-myPrimaryButton pbx-mr-4 pbx-min-h-2"
+              class="pbx-myPrimaryButton mr-4 min-h-2"
             >
               <span class="material-symbols-outlined"> save </span>
               <span>{{ translate('Save') }}</span>
@@ -253,9 +253,9 @@ onMounted(() => {
 
             <div
               @click="editor.chain().focus().toggleBold().run()"
-              class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+              class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
               :class="{
-                'pbx-bg-myPrimaryLinkColor pbx-text-white hover:pbx-text-white hover:pbx-bg-myPrimaryLinkColor':
+                'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
                   editor.isActive('bold'),
               }"
             >
@@ -266,9 +266,9 @@ onMounted(() => {
 
             <div
               @click="handleURL"
-              class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+              class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
               :class="{
-                'pbx-bg-myPrimaryLinkColor pbx-text-white hover:pbx-text-white hover:pbx-bg-myPrimaryLinkColor':
+                'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
                   editor.isActive('link'),
               }"
             >
@@ -279,75 +279,75 @@ onMounted(() => {
 
             <div
               @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-              class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+              class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
               :class="{
-                'pbx-bg-myPrimaryLinkColor pbx-text-white hover:pbx-text-white hover:pbx-bg-myPrimaryLinkColor':
+                'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
                   editor.isActive('heading', {
                     level: 2,
                   }),
               }"
             >
-              <div class="pbx-font-semibold pbx-text-sm">H2</div>
+              <div class="font-semibold text-sm">H2</div>
             </div>
 
             <!-- H3 -->
 
             <div
               @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
-              class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+              class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
               :class="{
-                'pbx-bg-myPrimaryLinkColor pbx-text-white hover:pbx-text-white hover:pbx-bg-myPrimaryLinkColor':
+                'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
                   editor.isActive('heading', {
                     level: 3,
                   }),
               }"
             >
-              <div class="pbx-font-semibold pbx-text-sm">H3</div>
+              <div class="font-semibold text-sm">H3</div>
             </div>
 
             <!-- H4 -->
 
             <div
               @click="editor.chain().focus().toggleHeading({ level: 4 }).run()"
-              class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+              class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
               :class="{
-                'pbx-bg-myPrimaryLinkColor pbx-text-white hover:pbx-text-white hover:pbx-bg-myPrimaryLinkColor':
+                'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
                   editor.isActive('heading', {
                     level: 4,
                   }),
               }"
             >
-              <div class="pbx-font-semibold pbx-text-sm">H4</div>
+              <div class="font-semibold text-sm">H4</div>
             </div>
 
             <!-- H5 -->
 
             <div
               @click="editor.chain().focus().toggleHeading({ level: 5 }).run()"
-              class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+              class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
               :class="{
-                'pbx-bg-myPrimaryLinkColor pbx-text-white hover:pbx-text-white hover:pbx-bg-myPrimaryLinkColor':
+                'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
                   editor.isActive('heading', {
                     level: 5,
                   }),
               }"
             >
-              <div class="pbx-font-semibold pbx-text-sm">H5</div>
+              <div class="font-semibold text-sm">H5</div>
             </div>
 
             <!-- H6 -->
 
             <div
               @click="editor.chain().focus().toggleHeading({ level: 6 }).run()"
-              class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+              class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
               :class="{
-                'pbx-bg-myPrimaryLinkColor pbx-text-white hover:pbx-text-white hover:pbx-bg-myPrimaryLinkColor':
+                'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
                   editor.isActive('heading', {
                     level: 6,
                   }),
               }"
             >
-              <div class="pbx-font-semibold pbx-text-sm">H6</div>
+              <div class="font-semibold text-sm">H6</div>
             </div>
 
             <!-- Left Align -->
@@ -358,9 +358,9 @@ onMounted(() => {
                   ? editor.chain().focus().unsetTextAlign().run()
                   : editor.chain().focus().setTextAlign('left').run()
               "
-              class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+              class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
               :class="{
-                'pbx-bg-myPrimaryLinkColor pbx-text-white hover:pbx-text-white hover:pbx-bg-myPrimaryLinkColor':
+                'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
                   editor.isActive({ textAlign: 'left' }),
               }"
             >
@@ -375,9 +375,9 @@ onMounted(() => {
                   ? editor.chain().focus().unsetTextAlign().run()
                   : editor.chain().focus().setTextAlign('center').run()
               "
-              class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+              class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
               :class="{
-                'pbx-bg-myPrimaryLinkColor pbx-text-white hover:pbx-text-white hover:pbx-bg-myPrimaryLinkColor':
+                'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
                   editor.isActive({ textAlign: 'center' }),
               }"
             >
@@ -392,9 +392,9 @@ onMounted(() => {
                   ? editor.chain().focus().unsetTextAlign().run()
                   : editor.chain().focus().setTextAlign('right').run()
               "
-              class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+              class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
               :class="{
-                'pbx-bg-myPrimaryLinkColor pbx-text-white hover:pbx-text-white hover:pbx-bg-myPrimaryLinkColor':
+                'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
                   editor.isActive({ textAlign: 'right' }),
               }"
             >
@@ -403,9 +403,9 @@ onMounted(() => {
 
             <div
               @click="editor.chain().focus().toggleBulletList().run()"
-              class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+              class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
               :class="{
-                'pbx-bg-myPrimaryLinkColor pbx-text-white hover:pbx-text-white hover:pbx-bg-myPrimaryLinkColor':
+                'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
                   editor.isActive('bulletList'),
               }"
             >
@@ -416,7 +416,7 @@ onMounted(() => {
 
             <div
               @click="toggleShowTypography"
-              class="pbx-h-10 pbx-flex-end pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center hover:pbx-bg-gray-100 pbx-bg-gray-100 pbx-text-myPrimaryDarkGrayColor pbx-font-medium pbx-min-w-52 pbx-relative pbx-rounded-xl pbx-select-none"
+              class="h-10 flex-end cursor-pointer flex items-center justify-center hover:bg-gray-100 bg-gray-100 text-myPrimaryDarkGrayColor font-medium min-w-52 relative rounded-xl select-none"
             >
               <span>
                 {{ translate('Font Appearance') }}
@@ -425,7 +425,7 @@ onMounted(() => {
                 <div
                   v-if="showTypography"
                   @click.stop
-                  class="pbx-absolute pbx-top-10 pbx-transform pbx-select-none pbx-bg-white pbx-rounded-2xl pbx-py-2 pbx-px-2 pbx-border-solid pbx-border pbx-border-gray-200 pbx-inset-x-auto pbx-z-40 pbx-w-52"
+                  class="absolute top-10 transform select-none bg-white rounded-2xl py-2 px-2 border-solid border border-gray-200 inset-x-auto z-40 w-52"
                 >
                   <TypographyForTipTap></TypographyForTipTap>
                 </div>
@@ -438,7 +438,7 @@ onMounted(() => {
             v-if="editor"
             id="page-builder-editor"
             :editor="editor"
-            class="pbx-p-2 pbx-prounded-lg lg:pbx-min-h-[20rem] lg:pbx-max-h-[30rem] md:pbx-min-h-[20rem] md:pbx-max-h-[20rem] pbx-min-h-[20rem] pbx-max-h-[20rem] pbx-overflow-y-auto"
+            class="p-2 prounded-lg lg:min-h-[20rem] lg:max-h-[30rem] md:min-h-[20rem] md:max-h-[20rem] min-h-[20rem] max-h-[20rem] overflow-y-auto"
           ></EditorContent>
         </div>
       </div>

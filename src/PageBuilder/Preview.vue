@@ -45,7 +45,7 @@ const iframeContent = computed(() => {
   ${stylesheetContent.value}
 </head>
 <body>
-  <div id="pagebuilder" class="pbx-font-sans pbx-text-black">${htmlPage.value}</div>
+  <div id="pagebuilder" class="font-sans text-black">${htmlPage.value}</div>
 </body>
 </html>`
 })
@@ -61,7 +61,7 @@ watchEffect(() => {
   <template v-if="!mobile">
     <div>
       <div
-        class="pbx-text-black pbx-w-full pbx-inset-x-0 pbx-h-[90vh] pbx-bg-white pbx-overflow-x-scroll lg:pbx-pt-2 pbx-pt-2"
+        class="text-black w-full inset-x-0 h-[90vh] bg-white overflow-x-scroll lg:pt-2 pt-2"
       >
         <div id="pagebuilder">
           <div class="" v-html="htmlPage"></div>
@@ -73,7 +73,7 @@ watchEffect(() => {
     <div>
       <iframe
         ref="iframeRef"
-        class="pbx-mx-auto pbx-w-full pbx-bg-white pbx-shadow-lg pbx-h-[80vh] pbx-border-0"
+        class="mx-auto w-full bg-white shadow-lg h-[80vh] border-0"
         :srcdoc="iframeContent"
         sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-presentation"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"

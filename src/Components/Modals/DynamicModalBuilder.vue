@@ -90,11 +90,11 @@ const thirdButtonBuilder = function () {
     <slot name="content" />
 
     <div
-      class="pbx-min-h-32 pbx-h-max pbx-font-sans pbx-w-full pbx-relative pbx-inline-block pbx-align-bottom pbx-text-left pbx-overflow-hidden pbx-transform pbx-transition-all sm:pbx-align-middle"
+      class="min-h-32 h-max font-sans w-full relative inline-block align-bottom text-left overflow-hidden transform transition-all sm:align-middle"
     >
-      <div :class="{ 'pbx-pr-4 pbx-pb-4': !simpleModal }">
+      <div :class="{ 'pr-4 pb-4': !simpleModal }">
         <template v-if="simpleModal !== true">
-          <div v-html="description" class="pbx-myPrimaryParagraph pbx-mb-6"></div>
+          <div v-html="description" class="pbx-myPrimaryParagraph mb-6"></div>
         </template>
 
         <slot name="header"></slot>
@@ -104,20 +104,20 @@ const thirdButtonBuilder = function () {
     </div>
 
     <div
-      class="pbx-border-0 pbx-border-solid pbx-border-t pbx-border-gray-200 pbx-mt-4 pbx-flex pbx-items-center pbx-justify-end"
+      class="border-0 border-solid border-t border-gray-200 mt-4 flex items-center justify-end"
     >
       <div
         v-if="simpleModal !== true && !isLoading"
-        class="pbx-py-4 pbx-flex sm:pbx-justify-end pbx-justify-center"
+        class="py-4 flex sm:justify-end justify-center"
       >
         <slot name="footer" />
         <div
           :class="{
-            'sm:pbx-grid-cols-1': gridColumnAmount === 1,
-            'sm:pbx-grid-cols-2': gridColumnAmount === 2,
-            'sm:pbx-grid-cols-3': gridColumnAmount === 3,
+            'sm:grid-cols-1': gridColumnAmount === 1,
+            'sm:grid-cols-2': gridColumnAmount === 2,
+            'sm:grid-cols-3': gridColumnAmount === 3,
           }"
-          class="sm:pbx-grid-cols-2 sm:pbx-items-end sm:pbx-justify-end pbx-flex pbx-flex-row pbx-myPrimaryGap pbx-w-full"
+          class="sm:grid-cols-2 sm:items-end sm:justify-end flex flex-row pbx-myPrimaryGap w-full"
         >
           <button
             v-if="firstButtonText"
@@ -131,7 +131,7 @@ const thirdButtonBuilder = function () {
 
           <button
             v-if="secondButtonText"
-            class="pbx-myPrimaryButton pbx-bg-yellow-300 hover:pbx-bg-yellow-400 pbx-text-myPrimaryDarkGrayColor hover:pbx-text-myPrimaryDarkGrayColor focus:pbx-ring-yellow-400 pbx-w-full"
+            class="pbx-myPrimaryButton bg-yellow-300 hover:bg-yellow-400 text-myPrimaryDarkGrayColor hover:text-myPrimaryDarkGrayColor focus:ring-yellow-400 w-full"
             type="button"
             @click="secondButtonBuilder"
           >
@@ -140,11 +140,11 @@ const thirdButtonBuilder = function () {
 
           <button
             v-if="thirdButtonText"
-            class="pbx-myPrimaryButton pbx-bg-myPrimaryLinkColor focus-visible:pbx-ring-myPrimaryLinkColor focus:pbx-ring-myPrimaryLinkColor hover:pbx-bg-myPrimaryLinkColor pbx-w-full"
+            class="pbx-myPrimaryButton bg-myPrimaryLinkColor focus-visible:ring-myPrimaryLinkColor focus:ring-myPrimaryLinkColor hover:bg-myPrimaryLinkColor w-full"
             :class="[
               type === 'danger' || type === 'delete'
-                ? 'pbx-bg-red-600 focus-visible:pbx-ring-red-600 focus:pbx-ring-red-600 hover:pbx-bg-red-600'
-                : 'pbx-bg-myPrimaryLinkColor focus-visible:pbx-ring-myPrimaryLinkColor focus:pbx-ring-myPrimaryLinkColor hover:pbx-bg-myPrimaryLinkColor',
+                ? 'bg-red-600 focus-visible:ring-red-600 focus:ring-red-600 hover:bg-red-600'
+                : 'bg-myPrimaryLinkColor focus-visible:ring-myPrimaryLinkColor focus:ring-myPrimaryLinkColor hover:bg-myPrimaryLinkColor',
             ]"
             type="button"
             @click="thirdButtonBuilder"
@@ -155,12 +155,12 @@ const thirdButtonBuilder = function () {
       </div>
 
       <template v-if="isLoading">
-        <div class="pbx-flex pbx-items-center pbx-my-2 pbx-py-4 pbx-px-2 pbx-justify-end">
+        <div class="flex items-center my-2 py-4 px-2 justify-end">
           <div
-            class="pbx-inline-block pbx-h-8 pbx-w-8 pbx-animate-spin pbx-rounded-full pbx-border-4 pbx-border-solid pbx-border-current pbx-border-r-transparent pbx-align-[-0.125em] motion-reduce:pbx-animate-[spin_1.5s_linear_infinite]"
+            class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
           >
             <span
-              class="!pbx-absolute !pbx-m-px !pbx-h-px !pbx-w-px !pbx-overflow-hidden !pbx-whitespace-nowrap !pbx-border-0 !pbx-p-0 !pbx-[clip:rect(0,0,0,0)]"
+              class="!absolute !m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
               >Loading...</span
             >
           </div>

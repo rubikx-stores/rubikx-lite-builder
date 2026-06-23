@@ -1,13 +1,13 @@
 <template>
   <div
-    class="pbx-flex pbx-flex-col pbx-border-solid pbx-border pbx-border-gray-400"
+    class="flex flex-col border-solid border border-gray-400"
     :class="{ '': expanded }"
   >
     <div
-      class="pbx-flex pbx-flex-row pbx-justify-between pbx-items-center pbx-pl-3 pbx-pr-3 pbx-py-5 pbx-cursor-pointer pbx-duration-200 pbx-bg-white hover:pbx-bg-myPrimaryLightGrayColor pbx-select-none"
+      class="flex flex-row justify-between items-center pl-3 pr-3 py-5 cursor-pointer duration-200 bg-white hover:bg-myPrimaryLightGrayColor select-none"
       @click="expanded = !expanded"
     >
-      <p class="pbx-myPrimaryParagraph pbx-font-medium pbx-my-0 pbx-py-0">
+      <p class="pbx-myPrimaryParagraph font-medium my-0 py-0">
         <slot name="title" />
       </p>
 
@@ -21,10 +21,10 @@
     <div
       :class="[
         expanded
-          ? 'pbx-block pbx-bg-indigo-50 pbx-border-0 pbx-border-solid pbx-border-t pbx-border-red-50'
-          : 'pbx-hidden',
+          ? 'block bg-indigo-50 border-0 border-solid border-t border-red-50'
+          : 'hidden',
       ]"
-      class="pbx-px-4 pbx-ease-linear pbx-duration-75 pbx-pb-8"
+      class="px-4 ease-linear duration-75 pb-8"
     >
       <slot name="content" />
     </div>

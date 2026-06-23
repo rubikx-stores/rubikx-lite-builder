@@ -552,7 +552,7 @@ onMounted(async () => {
 
 <template>
   <div
-    class="lg:pbx-min-w-full lg:pbx-max-w-full lg:pbx-w-full pbx-mx-auto pbx-flex pbx-flex-col pbx-font-sans pbx-text-black pbx-border-solid pbx-border pbx-border-gray-400 pbx-inset-x-0 pbx-z-10 pbx-bg-white pbx-overflow-x-auto pbx-h-full"
+    class="lg:min-w-full lg:max-w-full lg:w-full mx-auto flex flex-col font-sans text-black border-solid border border-gray-400 inset-x-0 z-10 bg-white overflow-x-auto h-full"
   >
     <GlobalLoader
       v-if="(getIsLoadingGlobal && !openAppNotStartedModal) || isLoadingLang"
@@ -652,7 +652,7 @@ onMounted(async () => {
 
     <div
       id="pagebuilder-navbar"
-      class="lg:pbx-min-w-full lg:pbx-max-w-full lg:pbx-w-full pbx-min-w-[64rem] pbx-max-w-[64rem] pbx-w-[64rem] pbx-flex-1 pbx-bg-myPrimaryLightGrayColor pbx-flex pbx-items-center pbx-justify-between pbx-border-0 pbx-border-solid pbx-border-b pbx-border-gray-200 pbx-mb-2 pbx-font-sans pbx-min-h-20"
+      class="lg:min-w-full lg:max-w-full lg:w-full min-w-[64rem] max-w-[64rem] w-[64rem] flex-1 bg-myPrimaryLightGrayColor flex items-center justify-between border-0 border-solid border-b border-gray-200 mb-2 font-sans min-h-20"
     >
       <template
         v-if="
@@ -668,9 +668,9 @@ onMounted(async () => {
               await pageBuilderService.clearHtmlSelection()
             }
           "
-          class="pbx-flex pbx-justify-start pbx-py-2 lg:pbx-ml-4 pbx-ml-2"
+          class="flex justify-start py-2 lg:ml-4 ml-2"
         >
-          <img class="pbx-h-6" :src="getPageBuilderConfig.pageBuilderLogo.src" alt="Logo" />
+          <img class="h-6" :src="getPageBuilderConfig.pageBuilderLogo.src" alt="Logo" />
         </div>
       </template>
       <!-- Logo # end -->
@@ -683,12 +683,12 @@ onMounted(async () => {
             await pageBuilderService.clearHtmlSelection()
           }
         "
-        class="pbx-flex-1 pbx-flex pbx-justify-center pbx-items-center pbx-py-2 pbx-w-full"
+        class="flex-1 flex justify-center items-center py-2 w-full"
       >
-        <div class="pbx-flex pbx-items-center pbx-justify-center">
+        <div class="flex items-center justify-center">
           <!-- Save Start -->
           <button
-            class="pbx-mySecondaryButton pbx-h-6 pbx-flex pbx-gap-2 pbx-mr-2"
+            class="pbx-mySecondaryButton h-6 flex gap-2 mr-2"
             @click.stop="
               async () => {
                 await pageBuilderService.clearHtmlSelection()
@@ -700,20 +700,20 @@ onMounted(async () => {
           >
             <div
               v-if="!getIsSaving"
-              class="pbx-h-10 pbx-w-4 pbx-cursor-pointer pbx-rounded-full pbx-flex pbx-items-center pbx-justify-center"
+              class="h-10 w-4 cursor-pointer rounded-full flex items-center justify-center"
             >
               <span class="material-symbols-outlined">save</span>
             </div>
             <div
               v-if="getIsSaving"
-              class="pbx-h-10 pbx-w-4 pbx-cursor-pointer pbx-rounded-full pbx-flex pbx-items-center pbx-justify-center"
+              class="h-10 w-4 cursor-pointer rounded-full flex items-center justify-center"
             >
-              <span class="pbx-relative pbx-flex pbx-size-3">
+              <span class="relative flex size-3">
                 <span
-                  class="pbx-absolute pbx-inline-flex pbx-h-full pbx-w-full pbx-animate-ping pbx-rounded-full pbx-bg-gray-400 pbx-opacity-75"
+                  class="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-400 opacity-75"
                 ></span>
                 <span
-                  class="pbx-relative pbx-inline-flex pbx-size-3 pbx-rounded-full pbx-bg-green-200"
+                  class="relative inline-flex size-3 rounded-full bg-green-200"
                 ></span>
               </span>
             </div>
@@ -730,7 +730,7 @@ onMounted(async () => {
             "
           >
             <button
-              class="pbx-mySecondaryButton pbx-h-6 pbx-flex pbx-gap-2 lg:pbx-mr-2 pbx-mr-2"
+              class="pbx-mySecondaryButton h-6 flex gap-2 lg:mr-2 mr-2"
               @click.stop="
                 async () => {
                   await pageBuilderService.clearHtmlSelection()
@@ -742,27 +742,27 @@ onMounted(async () => {
             >
               <div
                 v-if="!getIsRestoring"
-                class="pbx-h-10 pbx-w-4 pbx-cursor-pointer pbx-rounded-full pbx-flex pbx-items-center pbx-justify-center"
+                class="h-10 w-4 cursor-pointer rounded-full flex items-center justify-center"
               >
                 <span class="material-symbols-outlined"> settings_backup_restore </span>
               </div>
               <div
                 v-if="getIsRestoring"
-                class="pbx-h-10 pbx-w-4 pbx-cursor-pointer pbx-rounded-full pbx-flex pbx-items-center pbx-justify-center"
+                class="h-10 w-4 cursor-pointer rounded-full flex items-center justify-center"
               >
-                <span class="pbx-relative pbx-flex pbx-size-3">
+                <span class="relative flex size-3">
                   <span
-                    class="pbx-absolute pbx-inline-flex pbx-h-full pbx-w-full pbx-animate-ping pbx-rounded-full pbx-bg-gray-400 pbx-opacity-75"
+                    class="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-400 opacity-75"
                   ></span>
                   <span
-                    class="pbx-relative pbx-inline-flex pbx-size-3 pbx-rounded-full pbx-bg-green-200"
+                    class="relative inline-flex size-3 rounded-full bg-green-200"
                   ></span>
                 </span>
               </div>
-              <div class="lg:pbx-block pbx-hidden">
+              <div class="lg:block hidden">
                 <span> {{ translate('Reset Page') }} </span>
               </div>
-              <div class="lg:pbx-hidden pbx-block">
+              <div class="lg:hidden block">
                 <span> {{ translate('Reset') }} </span>
               </div>
             </button>
@@ -777,7 +777,7 @@ onMounted(async () => {
             await pageBuilderService.clearHtmlSelection()
           }
         "
-        class="pbx-flex-1 pbx-flex pbx-justify-center pbx-items-center pbx-py-2 pbx-w-full"
+        class="flex-1 flex justify-center items-center py-2 w-full"
       >
         <div
           @click.self="
@@ -785,10 +785,10 @@ onMounted(async () => {
               await pageBuilderService.clearHtmlSelection()
             }
           "
-          class="pbx-flex pbx-items-center pbx-justify-center"
+          class="flex items-center justify-center"
         >
           <div
-            class="pbx-mr-2"
+            class="mr-2"
             @click="
               () => {
                 pageBuilderStateStore.setComponentArrayAddMethod('unshift')
@@ -796,18 +796,18 @@ onMounted(async () => {
               }
             "
           >
-            <div class="pbx-flex pbx-items-center pbx-justify-center pbx-gap-2 pbx-border-gray-200">
+            <div class="flex items-center justify-center gap-2 border-gray-200">
               <span
-                class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-rounded-full pbx-flex pbx-items-center pbx-border-none pbx-justify-center pbx-bg-gray-50 pbx-aspect-square hover:pbx-bg-myPrimaryLinkColor focus-visible:pbx-ring-0 pbx-text-black hover:pbx-text-white"
+                class="h-10 w-10 cursor-pointer rounded-full flex items-center border-none justify-center bg-gray-50 aspect-square hover:bg-myPrimaryLinkColor focus-visible:ring-0 text-black hover:text-white"
               >
                 <span class="pbx-myMediumIcon material-symbols-outlined"> add </span>
               </span>
-              <span class="pbx-cursor-pointer lg:pbx-block lg:pbx-pr-4 pbx-hidden">
+              <span class="cursor-pointer lg:block lg:pr-4 hidden">
                 {{ translate('Add') }}
               </span>
             </div>
           </div>
-          <div class="pbx-flex pbx-items-center pbx-justify-center pbx-mr-2">
+          <div class="flex items-center justify-center mr-2">
             <div
               @click="
                 async () => {
@@ -818,9 +818,9 @@ onMounted(async () => {
                 }
               "
             >
-              <div class="pbx-flex pbx-items-center pbx-justify-center pbx-gap-2">
+              <div class="flex items-center justify-center gap-2">
                 <span
-                  class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-rounded-full pbx-flex pbx-items-center pbx-border-none pbx-justify-center pbx-bg-gray-50 pbx-aspect-square hover:pbx-bg-myPrimaryLinkColor focus-visible:pbx-ring-0 pbx-text-black hover:pbx-text-white"
+                  class="h-10 w-10 cursor-pointer rounded-full flex items-center border-none justify-center bg-gray-50 aspect-square hover:bg-myPrimaryLinkColor focus-visible:ring-0 text-black hover:text-white"
                 >
                   <span>
                     <svg
@@ -842,7 +842,7 @@ onMounted(async () => {
               </div>
             </div>
           </div>
-          <div class="lg:pbx-flex pbx-hidden pbx-items-center pbx-justify-center">
+          <div class="lg:flex hidden items-center justify-center">
             <div
               @click="
                 async () => {
@@ -853,9 +853,9 @@ onMounted(async () => {
                 }
               "
             >
-              <div class="pbx-flex pbx-items-center pbx-justify-center pbx-gap-2">
+              <div class="flex items-center justify-center gap-2">
                 <span
-                  class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-rounded-full pbx-flex pbx-items-center pbx-border-none pbx-justify-center pbx-bg-gray-50 pbx-aspect-square hover:pbx-bg-myPrimaryLinkColor focus-visible:pbx-ring-0 pbx-text-black hover:pbx-text-white"
+                  class="h-10 w-10 cursor-pointer rounded-full flex items-center border-none justify-center bg-gray-50 aspect-square hover:bg-myPrimaryLinkColor focus-visible:ring-0 text-black hover:text-white"
                 >
                   <svg
                     fill="currentColor"
@@ -877,7 +877,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div class="pbx-flex-1 pbx-flex gap-2 pbx-items-center pbx-justify-end">
+      <div class="flex-1 flex gap-2 items-center justify-end">
         <!-- Options # Start -->
         <div
           @click.self="
@@ -885,8 +885,8 @@ onMounted(async () => {
               await pageBuilderService.clearHtmlSelection()
             }
           "
-          class="pbx-flex pbx-items-center pbx-py-2 pbx-w-full"
-          :class="[showCloseButton ? 'pbx-justify-between' : 'pbx-justify-end']"
+          class="flex items-center py-2 w-full"
+          :class="[showCloseButton ? 'justify-between' : 'justify-end']"
         >
           <ToolbarOption></ToolbarOption>
         </div>
@@ -894,7 +894,7 @@ onMounted(async () => {
 
         <!-- Publish buttons start -->
         <template v-if="showPublishButton">
-          <div class="pbx-flex-1 pbx-ml-2">
+          <div class="flex-1 ml-2">
             <button
               class="pbx-myPrimaryButton"
               @click="
@@ -926,11 +926,11 @@ onMounted(async () => {
             "
           >
             <div
-              class="pbx-flex-1 pbx-flex pbx-justify-end pbx-items-center pbx-ml-2 lg:pbx-mr-4 pbx-mr-2"
+              class="flex-1 flex justify-end items-center ml-2 lg:mr-4 mr-2"
             >
               <select
-                id="pbx-lang"
-                class="pbx-myPrimarySelect pbx-min-w-20"
+                id="lang"
+                class="pbx-myPrimarySelect min-w-20"
                 v-model="languageSelction"
               >
                 <template
@@ -969,9 +969,9 @@ onMounted(async () => {
           </template>
         </template>
         <template v-if="showCloseButton">
-          <div class="pbx-flex-1 pbx-ml-2 pbx-mr-2">
+          <div class="flex-1 ml-2 mr-2">
             <button
-              class="pbx-h-10 pbx-w-10 pbx-flex-end pbx-cursor-pointer pbx-rounded-full pbx-flex pbx-items-center pbx-border-none pbx-justify-center pbx-bg-gray-50 pbx-aspect-square hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white hover:pbx-fill-white focus-visible:pbx-ring-0"
+              class="h-10 w-10 flex-end cursor-pointer rounded-full flex items-center border-none justify-center bg-gray-50 aspect-square hover:bg-myPrimaryLinkColor hover:text-white hover:fill-white focus-visible:ring-0"
               @click="
                 async () => {
                   closePageBuilder()
@@ -990,7 +990,7 @@ onMounted(async () => {
     <!-- Page Builder Main Start -->
     <div
       id="pagebuilder-main"
-      class="lg:pbx-min-w-full lg:pbx-max-w-full lg:pbx-w-full pbx-min-w-[64rem] pbx-max-w-[64rem] pbx-w-[64rem] pbx-flex-1 pbx-relative pbx-h-full pbx-flex pbx-pb-2 pbx-gap-2"
+      class="lg:min-w-full lg:max-w-full lg:w-full min-w-[64rem] max-w-[64rem] w-[64rem] flex-1 relative h-full flex pb-2 gap-2"
     >
       <!-- Left Menu Start -->
       <div
@@ -1000,9 +1000,9 @@ onMounted(async () => {
           }
         "
         id="pagebuilder-left-menu"
-        class="pbx-w-16 pbx-pt-7 pbx-pb-2 pbx-bg-myPrimaryLightGrayColor pbx-rounded-r-2xl pbx-shadow-sm"
+        class="w-16 pt-7 pb-2 bg-myPrimaryLightGrayColor rounded-r-2xl shadow-sm"
       >
-        <div class="pbx-mx-2 pbx-flex pbx-flex-col pbx-myPrimaryGap pbx-items-stretch">
+        <div class="mx-2 flex flex-col pbx-myPrimaryGap items-stretch">
           <div
             @click.self="
               async () => {
@@ -1019,12 +1019,12 @@ onMounted(async () => {
       <main
         ref="pbxBuilderWrapper"
         id="page-builder-wrapper"
-        class="pbx-transition-all pbx-duration-300 pbx-font-sans pbx-p-1 pbx-flex pbx-flex-col pbx-grow pbx-rounded-tr-2xl pbx-rounded-tl-2xl pbx-border-solid pbx-border pbx-border-gray-200 pbx-items-stretch pbx-text-black pbx-h-[100vh] pbx-overflow-y-scroll pbx-relative pbx-pt-16"
-        :class="[getMenuRight ? 'pbx-w-full' : 'pbx-w-full']"
+        class="transition-all duration-300 font-sans p-1 flex flex-col grow rounded-tr-2xl rounded-tl-2xl border-solid border border-gray-200 items-stretch text-black h-[100vh] overflow-y-scroll relative pt-16"
+        :class="[getMenuRight ? 'w-full' : 'w-full']"
       >
         <div
           id="pbxEditToolbar"
-          class="pbx-z-30 pbx-flex pbx-gap-2 pbx-justify-center pbx-items-center pbx-rounded-sm pbx-px-2 pbx-h-0 pbx-min-w-52 pbx-relative"
+          class="z-30 flex gap-2 justify-center items-center rounded-sm px-2 h-0 min-w-52 relative"
         >
           <template v-if="getElement">
             <EditGetElement></EditGetElement>
@@ -1032,20 +1032,20 @@ onMounted(async () => {
         </div>
         <!-- Element Popover toolbar end -->
 
-        <div id="pagebuilder" class="pbx-text-black pbx-font-sans">
+        <div id="pagebuilder" class="text-black font-sans">
           <!-- Insert button when empty of componenets -->
           <div
             v-if="Array.isArray(getComponents) && getComponents.length === 0"
             id="nolocalstorage"
           >
-            <div class="pbx-flex pbx-justify-center pbx-w-full pbx-absolute pbx-items-center">
+            <div class="flex justify-center w-full absolute items-center">
               <div
                 @click="handleInsertButtonClick(0)"
-                class="pbx-py-4 pbx-px-4 pbx-my-4 pbx-rounded-full pbx-bg-gray-100 pbx-text-gray-600 pbx-flex pbx-items-center pbx-justify-center hover:pbx-text-white hover:pbx-bg-gray-900 pbx-cursor-pointer"
+                class="py-4 px-4 my-4 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center hover:text-white hover:bg-gray-900 cursor-pointer"
               >
-                <div class="pbx-flex pbx-items-center pbx-gap-2">
+                <div class="flex items-center gap-2">
                   <span
-                    class="pbx-font-medium pbx-break-words lg:pbx-text-lg md:pbx-text-lg pbx-text-base pbx-font-sans"
+                    class="font-medium break-words lg:text-lg md:text-lg text-base font-sans"
                   >
                     {{ translate('Add new Components') }}
                   </span>
@@ -1056,16 +1056,16 @@ onMounted(async () => {
           <!-- Insert button at the top -->
           <div v-if="Array.isArray(getComponents) && getComponents.length != 0" id="nolocalstorage">
             <div
-              class="pbx-flex pbx-justify-end pbx-w-full pbx-h-0 pbx-items-center pbx-border pbx-border-transparent hover:pbx-border hover:pbx-border-gray-200 pbx-rounded-r-full pbx-z-10"
+              class="flex justify-end w-full h-0 items-center border border-transparent hover:border hover:border-gray-200 rounded-r-full z-10"
             >
               <div
                 @click="handleInsertButtonClick(0)"
                 id="addsection"
-                class="pbx-h-10 pbx-rounded-l-full pbx-bg-gray-100 pbx-text-gray-600 pbx-z-50 pbx-pl-2 pbx-pr-2 pbx-flex pbx-items-center pbx-justify-center hover:pbx-text-white hover:pbx-bg-gray-900 pbx-cursor-pointer"
+                class="h-10 rounded-l-full bg-gray-100 text-gray-600 z-50 pl-2 pr-2 flex items-center justify-center hover:text-white hover:bg-gray-900 cursor-pointer"
               >
-                <div class="pbx-flex pbx-items-center pbx-gap-1">
+                <div class="flex items-center gap-1">
                   <span class="material-symbols-outlined"> add </span>
-                  <span class="lg:pbx-block pbx-hidden"> {{ translate('Add') }}</span>
+                  <span class="lg:block hidden"> {{ translate('Add') }}</span>
                 </div>
               </div>
             </div>
@@ -1082,16 +1082,16 @@ onMounted(async () => {
               id="nolocalstorage"
             >
               <div
-                class="pbx-flex pbx-justify-end pbx-w-full pbx-h-0 pbx-items-center pbx-border pbx-border-transparent hover:pbx-border hover:pbx-border-gray-200 pbx-rounded-r-full pbx-z-10"
+                class="flex justify-end w-full h-0 items-center border border-transparent hover:border hover:border-gray-200 rounded-r-full z-10"
               >
                 <div
                   @click="handleInsertButtonClick(idx + 1)"
                   id="addsection"
-                  class="pbx-h-10 pbx-rounded-l-full pbx-bg-gray-100 pbx-text-gray-600 pbx-z-50 pbx-pl-2 pbx-pr-2 pbx-flex pbx-items-center pbx-justify-center hover:pbx-text-white hover:pbx-bg-gray-900 pbx-cursor-pointer"
+                  class="h-10 rounded-l-full bg-gray-100 text-gray-600 z-50 pl-2 pr-2 flex items-center justify-center hover:text-white hover:bg-gray-900 cursor-pointer"
                 >
-                  <div class="pbx-flex pbx-items-center pbx-gap-1">
+                  <div class="flex items-center gap-1">
                     <span class="material-symbols-outlined"> add </span>
-                    <span class="lg:pbx-block pbx-hidden"> {{ translate('Add') }}</span>
+                    <span class="lg:block hidden"> {{ translate('Add') }}</span>
                   </div>
                 </div>
               </div>
@@ -1105,11 +1105,11 @@ onMounted(async () => {
           v-if="getMenuRight"
           aria-label="menu"
           id="pagebuilder-right-menu"
-          class="pbx-z-20 pbx-flex-shrink-0 pbx-overflow-hidden pbx-border-0 pbx-border-solid pbx-border-l-0 pbx-border-l-gray-600 pbx-rounded-l-2xl pbx-h-[100vh] pbx-pl-2"
+          class="z-20 flex-shrink-0 overflow-hidden border-0 border-solid border-l-0 border-l-gray-600 rounded-l-2xl h-[100vh] pl-2"
           :class="[
             getMenuRight
-              ? 'pbx-w-80 pbx-bg-myPrimaryLightGrayColor pbx-items-stretch'
-              : 'bpx-w-0 pbx-mr-0',
+              ? 'w-80 bg-myPrimaryLightGrayColor items-stretch'
+              : 'bpx-w-0 mr-0',
           ]"
         >
           <RightSidebarEditor @closeEditor="pageBuilderStateStore.setMenuRight(false)">
@@ -1122,7 +1122,7 @@ onMounted(async () => {
               await pageBuilderService.clearHtmlSelection()
             }
           "
-          class="pbx-w-18 pbx-bg-myPrimaryLightGrayColor pbx-pt-5 pbx-z-20 pbx-flex-shrink-0 pbx-overflow-hidden pbx-border-0 pbx-border-solid pbx-border-l-0 pbx-border-l-gray-600 pbx-rounded-l-2xl pbx-h-[100vh] pbx-pl-2 pbx-pr-2"
+          class="w-18 bg-myPrimaryLightGrayColor pt-5 z-20 flex-shrink-0 overflow-hidden border-0 border-solid border-l-0 border-l-gray-600 rounded-l-2xl h-[100vh] pl-2 pr-2"
         >
           <div
             @click.self="
@@ -1130,13 +1130,13 @@ onMounted(async () => {
                 await pageBuilderService.clearHtmlSelection()
               }
             "
-            class="pbx-flex pbx-flex-col pbx-items-center pbx-justify-center pbx-gap-2"
+            class="flex flex-col items-center justify-center gap-2"
           >
             <button
               v-if="!getMenuRight"
               @click="pageBuilderStateStore.setMenuRight(true)"
               type="button"
-              class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-rounded-full pbx-flex pbx-items-center pbx-border-none pbx-justify-center pbx-bg-gray-50 pbx-aspect-square hover:pbx-bg-myPrimaryLinkColor focus-visible:pbx-ring-0 pbx-text-black hover:pbx-text-white"
+              class="h-10 w-10 cursor-pointer rounded-full flex items-center border-none justify-center bg-gray-50 aspect-square hover:bg-myPrimaryLinkColor focus-visible:ring-0 text-black hover:text-white"
             >
               <span>
                 <svg
@@ -1178,20 +1178,20 @@ onMounted(async () => {
       <textarea
         id="html-editor"
         v-model="editableHtml"
-        class="pbx-h-full pbx-font-sans pbx-bg-gray-900 pbx-text-white pbx-w-full"
+        class="h-full font-sans bg-gray-900 text-white w-full"
         style="overflow: auto; min-height: 400px"
       ></textarea>
-      <div class="pbx-flex pbx-justify-end pbx-min-h-6">
+      <div class="flex justify-end min-h-6">
         <p v-if="errSaveComponents" class="pbx-myPrimaryParagraphError">
           Error: {{ errSaveComponents }}
         </p>
       </div>
       <div
-        class="pbx-border-0 pbx-border-solid pbx-border-t pbx-border-gray-200 pbx-flex pbx-items-center pbx-justify-end"
+        class="border-0 border-solid border-t border-gray-200 flex items-center justify-end"
       >
-        <div class="pbx-py-4 pbx-flex sm:pbx-justify-end pbx-justify-center">
+        <div class="py-4 flex sm:justify-end justify-center">
           <div
-            class="sm:pbx-grid-cols-2 sm:pbx-items-end sm:pbx-justify-end pbx-flex pbx-flex-row pbx-myPrimaryGap pbx-w-full"
+            class="sm:grid-cols-2 sm:items-end sm:justify-end flex flex-row pbx-myPrimaryGap w-full"
           >
             <template v-if="!isLoading">
               <button @click="handleCloseHTMLEditor" type="button" class="pbx-mySecondaryButton">
@@ -1202,12 +1202,12 @@ onMounted(async () => {
               </button>
             </template>
             <template v-if="isLoading">
-              <div class="pbx-flex pbx-items-center pbx-my-2 pbx-justify-end">
+              <div class="flex items-center my-2 justify-end">
                 <div
-                  class="pbx-inline-block pbx-h-8 pbx-w-8 pbx-animate-spin pbx-rounded-full pbx-border-4 pbx-border-solid pbx-border-current pbx-border-r-transparent pbx-align-[-0.125em] motion-reduce:pbx-animate-[spin_1.5s_linear_infinite]"
+                  class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
                 >
                   <span
-                    class="!pbx-absolute !pbx-m-px !pbx-h-px !pbx-w-px !pbx-overflow-hidden !pbx-whitespace-nowrap !pbx-border-0 !pbx-p-0 !pbx-[clip:rect(0,0,0,0)]"
+                    class="!absolute !m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
                     >Loading...</span
                   >
                 </div>
@@ -1222,20 +1222,20 @@ onMounted(async () => {
       <textarea
         id="html-editor"
         v-model="editableComponents"
-        class="pbx-h-full pbx-font-sans pbx-bg-gray-900 pbx-text-white pbx-w-full"
+        class="h-full font-sans bg-gray-900 text-white w-full"
         style="overflow: auto; min-height: 400px"
       ></textarea>
-      <div class="pbx-flex pbx-justify-end pbx-min-h-6">
+      <div class="flex justify-end min-h-6">
         <p v-if="errSaveComponents" class="pbx-myPrimaryParagraphError">
           Error: {{ errSaveComponents }}
         </p>
       </div>
       <div
-        class="pbx-border-0 pbx-border-solid pbx-border-t pbx-border-gray-200 pbx-flex pbx-items-center pbx-justify-end"
+        class="border-0 border-solid border-t border-gray-200 flex items-center justify-end"
       >
-        <div class="pbx-py-4 pbx-flex sm:pbx-justify-end pbx-justify-center">
+        <div class="py-4 flex sm:justify-end justify-center">
           <div
-            class="sm:pbx-grid-cols-2 sm:pbx-items-end sm:pbx-justify-end pbx-flex pbx-flex-row pbx-myPrimaryGap pbx-w-full"
+            class="sm:grid-cols-2 sm:items-end sm:justify-end flex flex-row pbx-myPrimaryGap w-full"
           >
             <template v-if="!isLoading">
               <button @click="handleCloseHTMLEditor" type="button" class="pbx-mySecondaryButton">
@@ -1250,12 +1250,12 @@ onMounted(async () => {
               </button>
             </template>
             <template v-if="isLoading">
-              <div class="pbx-flex pbx-items-center pbx-my-2 pbx-justify-end">
+              <div class="flex items-center my-2 justify-end">
                 <div
-                  class="pbx-inline-block pbx-h-8 pbx-w-8 pbx-animate-spin pbx-rounded-full pbx-border-4 pbx-border-solid pbx-border-current pbx-border-r-transparent pbx-align-[-0.125em] motion-reduce:pbx-animate-[spin_1.5s_linear_infinite]"
+                  class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
                 >
                   <span
-                    class="!pbx-absolute !pbx-m-px !pbx-h-px !pbx-w-px !pbx-overflow-hidden !pbx-whitespace-nowrap !pbx-border-0 !pbx-p-0 !pbx-[clip:rect(0,0,0,0)]"
+                    class="!absolute !m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
                     >Loading...</span
                   >
                 </div>
