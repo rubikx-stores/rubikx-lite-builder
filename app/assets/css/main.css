@@ -68,3 +68,8 @@ body {
   height: auto !important;
   min-height: 0 !important;
 }
+
+/* Always show mobile preview button in editor toolbar */
+#pagebuilder-navbar .lg\:flex.hidden {
+  display: flex !important;
+}

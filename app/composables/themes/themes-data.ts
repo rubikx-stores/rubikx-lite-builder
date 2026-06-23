@@ -589,7 +589,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
   const arrowBtnPos = data.showArrowBtn !== false ? (data.arrowBtnPosition ?? 'center') : 'hidden'
   const needsOverlay = data.showViewProduct !== false || arrowBtnPos === 'top'
 
-  const gridId = 'fpg' + Math.random().toString(36).slice(2, 8)
+  const gridId = 'fpg-ru1fp'
   const styleRules: string[] = []
   styleRules.push(_gridCss(`#${gridId}`, Number(data.columns) || 4))
   if (needsOverlay) styleRules.push(`[data-fp-card]:hover [data-fp-overlay]{opacity:1!important}`)
@@ -1196,7 +1196,7 @@ export const ru2ShopContentFields: FieldConfig[] = [
 
 export function renderRu2ShopContent(data: Ru2ShopContentData): string {
   const colCls = _shopColClass[String(data.columns)] ?? _shopColClass['4']
-  const gridId = 'spg' + Math.random().toString(36).slice(2, 8)
+  const gridId = 'spg-ru1sp'
 
   const _hoverOn = (effect: string, amount: number): string => {
     switch (effect) {
@@ -1635,7 +1635,7 @@ export function renderRu3ShopProducts(data: Ru3ShopProductsData): string {
       default:           return `transform:translateY(-${amount}px)`
     }
   }
-  const gridId = 'r3g' + Math.random().toString(36).slice(2, 8)
+  const gridId = 'r3g-ru1r3'
   const animStyle = `<style>${_gridCss(`#${gridId}`, Number(data.columns) || 4)}${data.cardAnimation ? `[data-ru3-card]{transition:transform ${data.animationDuration}ms ease,box-shadow ${data.animationDuration}ms ease}[data-ru3-card]:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}` : ''}</style>`
   const cardAttr = data.cardAnimation ? ' data-ru3-card="1"' : ''
 
