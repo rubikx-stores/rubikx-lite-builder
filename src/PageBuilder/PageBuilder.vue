@@ -842,7 +842,7 @@ onMounted(async () => {
               </div>
             </div>
           </div>
-          <div class="lg:flex hidden items-center justify-center">
+          <div class="flex items-center justify-center">
             <div
               @click="
                 async () => {
