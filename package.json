@@ -65,6 +65,7 @@
     "dev": "vite",
     "build": "npm run type-check && vite build",
     "build:lib": "vue-tsc --declaration --emitDeclarationOnly --outDir dist && vite build --mode lib",
+    "postbuild:lib": "cd app && pnpm install --no-frozen-lockfile",
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
