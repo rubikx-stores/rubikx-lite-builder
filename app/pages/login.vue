@@ -96,8 +96,7 @@ async function handleSubmit() {
           <button
             type='submit'
             :disabled='loading'
-            style='width:100%;padding:13px;background:#111;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;letter-spacing:-0.2px;margin-top:4px;transition:opacity 0.15s;'
-            :style="loading ? 'opacity:0.6;cursor:not-allowed;' : 'opacity:1;'"
+            class="w-full p-[13px] bg-[#111] text-white border-0 rounded-[10px] text-[15px] font-semibold cursor-pointer font-[inherit] tracking-[-0.2px] mt-1 transition-opacity duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {{ loading ? 'Signing in...' : 'Continue →' }}
           </button>

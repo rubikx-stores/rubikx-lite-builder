@@ -95,11 +95,13 @@ watch(component, async (newComp) => {
           } catch { /* ignore */ }
         }
         // Fallback after reload: data-selected-products is lost in the
-        // parsePageBuilderHTML → startBuilder cycle, so match by name.
+        // parsePageBuilderHTML → startBuilder cycle, so match by id then name.
         if (!selected.value.length && props.blockData?.products?.length) {
           const matched = props.blockData.products
             .flatMap(tp => {
-              const found = products.value.find(op => op.name === tp.name)
+              const found = tp.id != null
+                ? products.value.find(op => op.id === tp.id)
+                : products.value.find(op => op.name === tp.name)
               return found ? [found] : []
             })
           if (matched.length) { selected.value = matched; applied.value = true }
@@ -142,10 +144,11 @@ watch(component, async (newComp) => {
 // For theme blocks: collapse the applied banner when switching to a different block
 watch(() => props.selectedBlockTitle, (newTitle, oldTitle) => {
   if (newTitle !== oldTitle) {
-    applied.value = false
+    // Guard: don't reset on transient empty state caused by section re-renders
+    if (newTitle) applied.value = false
     search.value = ''
-    // Only wipe selection when navigating away from a theme block entirely
-    if (oldTitle && THEME_REGISTRY_BLOCKS.includes(oldTitle) && !THEME_REGISTRY_BLOCKS.includes(newTitle ?? '')) {
+    // Only wipe selection when truly navigating to a real non-theme block
+    if (oldTitle && newTitle && THEME_REGISTRY_BLOCKS.includes(oldTitle) && !THEME_REGISTRY_BLOCKS.includes(newTitle)) {
       selected.value = []
     }
   }
@@ -211,10 +214,12 @@ onMounted(async () => {
     }
   }
 
-  // Fallback for theme blocks: match by name from blockData.products when no IDs stored
+  // Fallback for theme blocks: match by id then name from blockData.products when no IDs stored
   if (!selected.value.length && isThemeBlock.value && props.blockData?.products?.length) {
     const matched = props.blockData.products
-      .map(tp => products.value.find(op => op.name === tp.name))
+      .map(tp => tp.id != null
+        ? products.value.find(op => op.id === tp.id)
+        : products.value.find(op => op.name === tp.name))
       .filter(Boolean)
     if (matched.length) selected.value = matched
   }
@@ -259,6 +264,7 @@ async function doApplyThemeBlock(confirm = false) {
   }
 
   const mapped = selected.value.map(p => ({
+    id: p.id,
     imageUrl: productImageSrc(p.image),
     name: p.name,
     price: p.price != null ? (typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : String(p.price)) : '',
@@ -570,7 +576,7 @@ watch(perPage, (newPerPage) => {
 
     <!-- ── Applied state (theme blocks after confirm) ───────────────────────── -->
     <div v-if="isThemeBlock && applied" class="px-2 py-5 text-center">
-      <div class="w-10 h-10 rounded-full bg-green-50 border border-green-200 flex items-center justify-content mx-auto mb-2" style="display:flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;border-radius:9999px;background:#f0fdf4;border:1px solid #bbf7d0;margin:0 auto 0.5rem">
+      <div class="w-10 h-10 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mx-auto mb-2">
         <span class="text-green-600 text-base">✓</span>
       </div>
       <p class="text-sm font-medium text-gray-800 mb-0.5">{{ selected.length }} product{{ selected.length !== 1 ? 's' : '' }} applied</p>

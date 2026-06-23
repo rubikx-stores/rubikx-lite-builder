@@ -554,13 +554,12 @@ onUnmounted(() => {
                     <div class="flex items-center gap-1.5">
                       <template v-if="item.href">
                         <span
-                          class="flex items-center justify-center w-6 h-6 rounded-full shrink-0 overflow-hidden"
-                          style="background:#fff;border:1.5px solid #e5e7eb;">
-                          <img :src="faviconUrl(item.href)" width="16" height="16" style="object-fit:contain;" :alt="getDomain(item.href)" />
+                          class="flex items-center justify-center w-6 h-6 rounded-full shrink-0 overflow-hidden bg-white border-[1.5px] border-gray-200">
+                          <img :src="faviconUrl(item.href)" width="16" height="16" class="object-contain" :alt="getDomain(item.href)" />
                         </span>
                       </template>
                       <span v-else class="flex items-center justify-center w-6 h-6 rounded-full border border-dashed border-gray-300 text-gray-300 text-xs">+</span>
-                      <span class="text-xs font-medium" :style="item.href ? 'color:#374151;' : 'color:#9ca3af;'">
+                      <span class="text-xs font-medium" :class="item.href ? 'text-gray-700' : 'text-gray-400'">
                         {{ item.href ? (getDomain(item.href) || 'Link') : 'Paste URL below' }}
                       </span>
                     </div>
