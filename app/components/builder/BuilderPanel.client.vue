@@ -171,11 +171,11 @@ async function handleApplyTheme(themeId: string) {
         <button
           v-for="tab in ['Components', 'Themes']"
           :key="tab"
-          class="pbx-mySecondaryButton text-xs px-4"
+          class="inline-flex min-h-[3rem] cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-full border border-transparent py-3 font-medium shadow-sm text-xs px-4"
           :class="[
             selectedTab === tab
               ? 'bg-myPrimaryLinkColor text-white hover:bg-myPrimaryLinkColor hover:text-white'
-              : 'hover:bg-myPrimaryLinkColor hover:text-white',
+              : 'bg-[#dee6f0] text-gray-900 hover:bg-myPrimaryLinkColor hover:text-white',
           ]"
           @click="selectedTab = tab as 'Components' | 'Themes'"
         >
@@ -191,7 +191,7 @@ async function handleApplyTheme(themeId: string) {
       <!-- ── Themes Tab ── -->
       <template v-if="selectedTab === 'Themes'">
         <div class="mb-8">
-          <h3 class="pbx-myQuaternaryHeader mb-4">Themes</h3>
+          <h3 class="break-words text-base font-medium text-gray-900 md:text-lg lg:text-xl mb-4">Themes</h3>
 
           <!-- Category filter — General always first -->
           <div
@@ -200,11 +200,11 @@ async function handleApplyTheme(themeId: string) {
             <button
               v-for="cat in themeCategories"
               :key="cat"
-              class="pbx-mySecondaryButton text-xs px-4"
+              class="inline-flex min-h-[3rem] cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-full border border-transparent py-3 font-medium shadow-sm text-xs px-4"
               :class="[
                 selectedThemeCategory === cat
                   ? 'bg-myPrimaryLinkColor text-white hover:bg-myPrimaryLinkColor hover:text-white'
-                  : 'hover:bg-myPrimaryLinkColor hover:text-white',
+                  : 'bg-[#dee6f0] text-gray-900 hover:bg-myPrimaryLinkColor hover:text-white',
               ]"
               @click="selectedThemeCategory = cat"
             >
@@ -227,13 +227,13 @@ async function handleApplyTheme(themeId: string) {
                     class="overflow-hidden whitespace-pre-line flex-1 h-auto border-0 border-solid border-b border-gray-200 py-2 px-2"
                   >
                     <div
-                      class="w-64 h-96 object-cover cursor-pointer bg-white mx-auto flex items-center justify-center pbx-theme-cover"
+                      class="w-64 h-96 object-cover cursor-pointer bg-white mx-auto flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-top"
                       v-html="theme.meta.cover_image"
                     />
                   </div>
                   <div class="p-3">
-                    <h4 class="pbx-myPrimaryParagraph text-sm font-normal">{{ theme.meta.name }}</h4>
-                    <div class="pbx-myPrimaryParagraph text-xs font-normal pt-2">{{ theme.meta.description }}</div>
+                    <h4 class="text-sm font-normal text-gray-900 lg:text-base">{{ theme.meta.name }}</h4>
+                    <div class="text-xs font-normal text-gray-900 pt-2">{{ theme.meta.description }}</div>
                   </div>
                 </div>
               </template>
@@ -250,13 +250,13 @@ async function handleApplyTheme(themeId: string) {
                     class="overflow-hidden whitespace-pre-line flex-1 h-auto border-0 border-solid border-b border-gray-200 py-2 px-2"
                   >
                     <div
-                      class="w-64 h-96 object-cover cursor-pointer bg-white mx-auto flex items-center justify-center pbx-theme-cover"
+                      class="w-64 h-96 object-cover cursor-pointer bg-white mx-auto flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-top"
                       v-html="theme.cover_image"
                     />
                   </div>
                   <div class="p-3">
-                    <h4 class="pbx-myPrimaryParagraph text-sm font-normal">{{ theme.title }}</h4>
-                    <div class="pbx-myPrimaryParagraph text-xs font-normal pt-2">Click to add theme</div>
+                    <h4 class="text-sm font-normal text-gray-900 lg:text-base">{{ theme.title }}</h4>
+                    <div class="text-xs font-normal text-gray-900 pt-2">Click to add theme</div>
                   </div>
                 </div>
               </template>
@@ -270,7 +270,7 @@ async function handleApplyTheme(themeId: string) {
       <template v-if="selectedTab === 'Components'">
         <!-- Helper Components -->
         <div class="mb-8">
-          <h3 class="pbx-myQuaternaryHeader mb-4">Helper Components</h3>
+          <h3 class="break-words text-base font-medium text-gray-900 md:text-lg lg:text-xl mb-4">Helper Components</h3>
           <div class="px-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <div
               v-for="helper in componentHelpers"
@@ -279,9 +279,9 @@ async function handleApplyTheme(themeId: string) {
               @click="handleDropComponent({ id: null, html_code: helper.html_code, title: helper.title })"
             >
               <div class="max-h-72 cursor-pointer object-contain bg-white mx-auto">
-                <h4 class="pbx-myPrimaryParagraph text-base font-medium">{{ helper.title }}</h4>
+                <h4 class="text-base font-medium text-gray-900">{{ helper.title }}</h4>
               </div>
-              <div class="pbx-myPrimaryParagraph text-xs font-normal pt-2">
+              <div class="text-xs font-normal text-gray-900 pt-2">
                 Click to add {{ helper.title.toLowerCase() }} component
               </div>
             </div>
@@ -290,18 +290,18 @@ async function handleApplyTheme(themeId: string) {
 
         <!-- Layout Components -->
         <div class="px-2">
-          <h3 class="pbx-myQuaternaryHeader mb-4">Layout Components</h3>
+          <h3 class="break-words text-base font-medium text-gray-900 md:text-lg lg:text-xl mb-4">Layout Components</h3>
           <div
             class="mb-4 flex jusitify-left items-center gap-2 border-0 border-solid border-b border-gray-200 pb-4 overflow-auto"
           >
             <button
               v-for="cat in categories"
               :key="cat"
-              class="pbx-mySecondaryButton text-xs px-4"
+              class="inline-flex min-h-[3rem] cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-full border border-transparent py-3 font-medium shadow-sm text-xs px-4"
               :class="[
                 selectedCategory === cat
                   ? 'bg-myPrimaryLinkColor text-white hover:bg-myPrimaryLinkColor hover:text-white'
-                  : 'hover:bg-myPrimaryLinkColor hover:text-white',
+                  : 'bg-[#dee6f0] text-gray-900 hover:bg-myPrimaryLinkColor hover:text-white',
               ]"
               @click="selectedCategory = cat"
             >
@@ -320,13 +320,13 @@ async function handleApplyTheme(themeId: string) {
                   class="overflow-hidden whitespace-pre-line flex-1 h-auto border-0 border-solid border-b border-gray-200 py-2 px-2"
                 >
                   <div
-                    class="w-64 h-64 object-cover cursor-pointer bg-white mx-auto flex items-center justify-center pbx-theme-cover"
+                    class="w-64 h-64 object-cover cursor-pointer bg-white mx-auto flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-top"
                     v-html="comp.cover_image"
                   />
                 </div>
                 <div class="p-3">
-                  <h4 class="pbx-myPrimaryParagraph text-sm font-normal">{{ comp.title }}</h4>
-                  <div class="pbx-myPrimaryParagraph text-xs font-normal pt-2">Click to add component</div>
+                  <h4 class="text-sm font-normal text-gray-900 lg:text-base">{{ comp.title }}</h4>
+                  <div class="text-xs font-normal text-gray-900 pt-2">Click to add component</div>
                 </div>
               </div>
             </div>
