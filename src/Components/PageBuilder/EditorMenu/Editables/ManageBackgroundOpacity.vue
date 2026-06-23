@@ -31,38 +31,38 @@ watch(
 </script>
 
 <template>
-  <div class="pbx-my-2 pbx-py-2">
+  <div class="my-2 py-2">
     <label for="bg-opacity" class="pbx-myPrimaryInputLabel"> Background Opacity</label>
 
     <Listbox as="div" v-model="opacityVueModel">
-      <div class="pbx-relative">
+      <div class="relative">
         <ListboxButton class="pbx-myPrimarySelect" id="bg-opacity">
-          <span class="pbx-flex pbx-items-center pbx-gap-2">
+          <span class="flex items-center gap-2">
             <div v-if="opacityVueModel === 'none'">
-              <div class="pbx-myPrimaryColorPreview pbx-border-none">
+              <div class="pbx-myPrimaryColorPreview border-none">
                 <span class="material-symbols-outlined"> ev_shadow </span>
               </div>
             </div>
 
             <div
               v-if="opacityVueModel !== 'none'"
-              class="pbx-aspect-square pbx-w-6 pbx-h-6 pbx-bg-gray-950"
+              class="aspect-square w-6 h-6 bg-gray-950"
               :class="`${opacityVueModel}`"
             ></div>
 
-            <span class="pbx-block pbx-truncate" :class="[opacityVueModel !== 'none' ? '' : '']">{{
+            <span class="block truncate" :class="[opacityVueModel !== 'none' ? '' : '']">{{
               opacityVueModel === 'none' ? 'Transparent' : opacityVueModel
             }}</span>
           </span>
         </ListboxButton>
 
         <transition
-          leave-active-class="pbx-transition pbx-ease-in pbx-duration-100"
-          leave-from-class="pbx-opacity-100"
-          leave-to-class="pbx-opacity-0"
+          leave-active-class="transition ease-in duration-100"
+          leave-from-class="opacity-100"
+          leave-to-class="opacity-0"
         >
           <ListboxOptions
-            class="pbx-absolute pbx-z-10 pbx-mt-1 pbx-max-h-56 pbx-w-full pbx-overflow-auto pbx-rounded-md pbx-bg-white pbx-text-base pbx-shadow-lg pbx-ring-1 pbx-ring-black pbx-ring-opacity-5 focus:pbx-outline-none sm:pbx-text-sm pbx-list-none pbx-p-0 pbx-m-0"
+            class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm list-none p-0 m-0"
           >
             <ListboxOption
               as="template"
@@ -75,25 +75,25 @@ watch(
               <li
                 :class="[
                   active
-                    ? 'pbx-bg-myPrimaryLinkColor text-white'
-                    : 'pbx-text-myPrimaryDarkGrayColor',
-                  'pbx-relative pbx-cursor-default pbx-select-none pbx-py-2 pbx-pl-3 pbx-pr-9',
+                    ? 'bg-myPrimaryLinkColor text-white'
+                    : 'text-myPrimaryDarkGrayColor',
+                  'relative cursor-default select-none py-2 pl-3 pr-9',
                 ]"
               >
-                <div class="pbx-flex pbx-items-center">
+                <div class="flex items-center">
                   <div v-if="backgroundOpacity === 'none'">
-                    <div class="pbx-myPrimaryColorPreview pbx-border-none">
+                    <div class="pbx-myPrimaryColorPreview border-none">
                       <span class="material-symbols-outlined"> ev_shadow </span>
                     </div>
                   </div>
 
                   <div
                     v-if="backgroundOpacity !== 'none'"
-                    class="pbx-aspect-square pbx-w-6 pbx-h-6 pbx-bg-gray-950"
+                    class="aspect-square w-6 h-6 bg-gray-950"
                     :class="`${backgroundOpacity}`"
                   ></div>
-                  <span v-if="backgroundOpacity === 'none'" class="pbx-ml-3">Transparent</span>
-                  <span v-if="backgroundOpacity !== 'none'" class="pbx-ml-3">{{
+                  <span v-if="backgroundOpacity === 'none'" class="ml-3">Transparent</span>
+                  <span v-if="backgroundOpacity !== 'none'" class="ml-3">{{
                     backgroundOpacity
                   }}</span>
                 </div>

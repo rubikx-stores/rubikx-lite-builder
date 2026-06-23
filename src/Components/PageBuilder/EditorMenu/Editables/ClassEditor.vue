@@ -34,7 +34,7 @@ const handleAddClasses = async () => {
   }
 
   // Add prefix if missing
-  const prefixedClass = classToAdd.startsWith('pbx-') ? classToAdd : 'pbx-' + classToAdd
+  const prefixedClass = classToAdd.startsWith('') ? classToAdd : '' + classToAdd
 
   // Check if class already exists
   if (currentClasses.value?.includes(prefixedClass)) {
@@ -55,7 +55,7 @@ const handleAddClasses = async () => {
   <EditorAccordion>
     <template #title>{{ translate('Generated CSS') }}</template>
     <template #content>
-      <p class="pbx-myPrimaryInputLabel pbx-my-4">
+      <p class="pbx-myPrimaryInputLabel my-4">
         {{
           translate(
             'This is the CSS applied by the builder. Add your own CSS and press Enter to apply it to the selected element.',
@@ -63,11 +63,11 @@ const handleAddClasses = async () => {
         }}
       </p>
 
-      <div class="pbx-flex pbx-flex-row pbx-flex-wrap pbx-gap-2 pbx-mt-2 pbx-mb-4">
+      <div class="flex flex-row flex-wrap gap-2 mt-2 mb-4">
         <div
           v-for="className in currentClasses"
           :key="className"
-          class="pbx-myPrimaryTag pbx-cursor-pointer hover:pbx-bg-myPrimaryErrorColor hover:pbx-text-white pbx-text-xs pbx-py-2 pbx-font-medium"
+          class="pbx-myPrimaryTag cursor-pointer hover:bg-myPrimaryErrorColor hover:text-white text-xs py-2 font-medium"
           @click="
             async () => {
               pageBuilderService.handleRemoveClasses(className)
@@ -75,8 +75,8 @@ const handleAddClasses = async () => {
             }
           "
         >
-          <div class="pbx-flex pbx-items-center pbx-gap-1">
-            <span class="pbx-mr-1">
+          <div class="flex items-center gap-1">
+            <span class="mr-1">
               {{ className }}
             </span>
           </div>
@@ -84,13 +84,13 @@ const handleAddClasses = async () => {
       </div>
 
       <hr />
-      <div class="pbx-my-2 pbx-py-2">
+      <div class="my-2 py-2">
         <label for="custom-css" class="pbx-myPrimaryInputLabel">
           {{ translate('Add your CSS.') }}
           <br />
-          {{ translate('The pbx- prefix is added automatically.') }}
+          {{ translate('The  prefix is added automatically.') }}
         </label>
-        <div class="pbx-flex pbx-gap-2 pbx-item-center">
+        <div class="flex gap-2 item-center">
           <input
             id="custom-css"
             v-model="inputClass"

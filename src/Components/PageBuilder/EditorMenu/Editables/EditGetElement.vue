@@ -310,9 +310,9 @@ const handleDelete = function () {
               />
               <div
                 v-if="urlError"
-                class="pbx-min-h-[2.5rem] pbx-flex pbx-items-center pbx-justify-start"
+                class="min-h-[2.5rem] flex items-center justify-start"
               >
-                <p class="pbx-myPrimaryInputError pbx-mt-2 pbx-mb-0 pbx-py-0 pbx-self-start">
+                <p class="pbx-myPrimaryInputError mt-2 mb-0 py-0 self-start">
                   {{ urlError }}
                 </p>
               </div>
@@ -343,7 +343,7 @@ const handleDelete = function () {
       "
     >
       <header></header>
-      <main class="pbx-overflow-y-auto">
+      <main class="overflow-y-auto">
         <TipTapInput></TipTapInput>
       </main>
     </DynamicModalBuilder>
@@ -375,20 +375,20 @@ const handleDelete = function () {
     >
     </MediaLibraryModal>
 
-    <div class="pbx-select-none">
-      <p v-if="false" class="pbx-font-medium pbx-text-[10px] pbx-w-max lg:pbx-block pbx-hidden">
+    <div class="select-none">
+      <p v-if="false" class="font-medium text-[10px] w-max lg:block hidden">
         Editing
-        <span class="pbx-lowercase">&lt;{{ elementTag }}&gt;</span>
+        <span class="lowercase">&lt;{{ elementTag }}&gt;</span>
       </p>
       <div
-        class="pbx-flex pbx-items-center pbx-justify-center pbx-gap-2"
+        class="flex items-center justify-center gap-2"
         :class="{ '': getElement }"
       >
         <template v-if="pageBuilderService.ElOrFirstChildIsIframe()">
-          <div class="pbx-flex pbx-items-center pbx-justify-start pbx-gap-2 pbx-w-max">
+          <div class="flex items-center justify-start gap-2 w-max">
             <div
               @click="handleModalIframeSrc"
-              class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center hover:pbx-bg-gray-100 pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+              class="h-10 w-10 cursor-pointer flex items-center justify-center hover:bg-gray-100 aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
             >
               <span class="material-symbols-outlined"> play_circle </span>
             </div>
@@ -401,10 +401,10 @@ const handleDelete = function () {
             !pageBuilderService.ElOrFirstChildIsIframe()
           "
         >
-          <div class="pbx-flex pbx-items-center pbx-justify-start pbx-gap-2 pbx-w-max">
+          <div class="flex items-center justify-start gap-2 w-max">
             <div
               @click="handleModalPreviewTiptap"
-              class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center hover:pbx-bg-gray-100 pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+              class="h-10 w-10 cursor-pointer flex items-center justify-center hover:bg-gray-100 aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
             >
               <span>
                 <svg
@@ -435,10 +435,10 @@ const handleDelete = function () {
             !pageBuilderService.ElOrFirstChildIsIframe()
           "
         >
-          <div class="pbx-flex pbx-items-center pbx-justify-start pbx-gap-2 pbx-w-max">
+          <div class="flex items-center justify-start gap-2 w-max">
             <div
               @click="handleAddImage"
-              class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center hover:pbx-bg-gray-100 pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+              class="h-10 w-10 cursor-pointer flex items-center justify-center hover:bg-gray-100 aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
             >
               <span class="material-symbols-outlined"> add_photo_alternate </span>
             </div>
@@ -459,7 +459,7 @@ const handleDelete = function () {
         <template v-if="getElement && false">
           <div
             @click="pageBuilderService.deleteElementFromDOM"
-            class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center hover:pbx-bg-gray-100 pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+            class="h-10 w-10 cursor-pointer flex items-center justify-center hover:bg-gray-100 aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
           >
             <span class="material-symbols-outlined"> delete </span>
           </div>
@@ -467,14 +467,14 @@ const handleDelete = function () {
 
         <div
           v-if="getElement && getComponent"
-          class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center hover:pbx-bg-gray-100 pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+          class="h-10 w-10 cursor-pointer flex items-center justify-center hover:bg-gray-100 aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
           @click="openOptionsMoreOpen = !openOptionsMoreOpen"
         >
           <span class="material-symbols-outlined"> more_horiz </span>
         </div>
         <div
           v-if="getElement && getComponent"
-          class="pbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-flex pbx-items-center pbx-justify-center hover:pbx-bg-gray-100 pbx-aspect-square pbx-text-myPrimaryDarkGrayColor pbx-bg-gray-100 pbx-rounded-xl hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white"
+          class="h-10 w-10 cursor-pointer flex items-center justify-center hover:bg-gray-100 aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
           @click="pageBuilderService.clearHtmlSelection()"
         >
           <span class="material-symbols-outlined"> close_small</span>
@@ -486,32 +486,32 @@ const handleDelete = function () {
   <transition name="popup-fade">
     <div
       v-if="openOptionsMoreOpen"
-      class="pbx-absolute pbx-top-10 pbx-transform pbx-select-none pbx-bg-white pbx-rounded-2xl pbx-py-2 pbx-px-2 pbx-border-solid pbx-border pbx-border-gray-200 pbx-inset-x-auto pbx-z-40 pbx-w-56"
+      class="absolute top-10 transform select-none bg-white rounded-2xl py-2 px-2 border-solid border border-gray-200 inset-x-auto z-40 w-56"
     >
       <div>
-        <div class="pbx-flex pbx-flex-col">
+        <div class="flex flex-col">
           <!-- content start -->
           <!-- move up and down start -->
           <div
             v-if="getElement && getComponent"
             @click="pageBuilderService.reorderComponent(-1)"
             :disabled="!canMoveUp"
-            class="pbx-flex pbx-items-center pbx-justify-start pbx-gap-2 pbx-py-2 pbx-px-2 pbx-rounded-full"
+            class="flex items-center justify-start gap-2 py-2 px-2 rounded-full"
             :class="[
-              canMoveUp ? 'pbx-cursor-pointer hover:pbx-bg-red-50' : 'pbx-cursor-not-allowed',
+              canMoveUp ? 'cursor-pointer hover:bg-red-50' : 'cursor-not-allowed',
             ]"
           >
             <div
-              class="pbx-h-10 pbx-w-10 pbx-rounded-sm pbx-flex pbx-items-center pbx-justify-center hover:pbx-bg-gray-100 pbx-aspect-square pbx-text-myPrimaryDarkGrayColor"
+              class="h-10 w-10 rounded-sm flex items-center justify-center hover:bg-gray-100 aspect-square text-myPrimaryDarkGrayColor"
               :class="[
                 canMoveUp
-                  ? 'hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white focus-visible:pbx-ring-0 pbx-cursor-pointer'
-                  : 'pbx-cursor-not-allowed pbx-bg-opacity-20 hover:pbx-bg-gray-200',
+                  ? 'hover:bg-myPrimaryLinkColor hover:text-white focus-visible:ring-0 cursor-pointer'
+                  : 'cursor-not-allowed bg-opacity-20 hover:bg-gray-200',
               ]"
             >
               <span class="material-symbols-outlined"> move_up </span>
             </div>
-            <div class="pbx-text-sm">
+            <div class="text-sm">
               {{ translate('Move up') }}
             </div>
           </div>
@@ -519,22 +519,22 @@ const handleDelete = function () {
             v-if="getElement && getComponent"
             @click="pageBuilderService.reorderComponent(1)"
             :disabled="!canMoveDown"
-            class="pbx-flex pbx-items-center pbx-justify-start pbx-gap-2 pbx-py-2 pbx-px-2 pbx-rounded-full"
+            class="flex items-center justify-start gap-2 py-2 px-2 rounded-full"
             :class="[
-              canMoveDown ? 'pbx-cursor-pointer hover:pbx-bg-red-50' : 'pbx-cursor-not-allowed ',
+              canMoveDown ? 'cursor-pointer hover:bg-red-50' : 'cursor-not-allowed ',
             ]"
           >
             <div
-              class="pbx-h-10 pbx-w-10 pbx-rounded-sm pbx-flex pbx-items-center pbx-justify-center hover:pbx-bg-gray-100 pbx-aspect-square pbx-text-myPrimaryDarkGrayColor"
+              class="h-10 w-10 rounded-sm flex items-center justify-center hover:bg-gray-100 aspect-square text-myPrimaryDarkGrayColor"
               :class="[
                 canMoveDown
-                  ? 'hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white focus-visible:pbx-ring-0 pbx-cursor-pointer'
-                  : 'pbx-cursor-not-allowed pbx-bg-opacity-20 hover:pbx-bg-gray-200',
+                  ? 'hover:bg-myPrimaryLinkColor hover:text-white focus-visible:ring-0 cursor-pointer'
+                  : 'cursor-not-allowed bg-opacity-20 hover:bg-gray-200',
               ]"
             >
               <span class="material-symbols-outlined"> move_down </span>
             </div>
-            <div class="pbx-text-sm">
+            <div class="text-sm">
               {{ translate('Move down') }}
             </div>
           </div>
@@ -544,14 +544,14 @@ const handleDelete = function () {
           <div
             v-if="getElement && getComponent"
             @click="handleDelete()"
-            class="pbx-flex pbx-items-center pbx-justify-start pbx-gap-2 pbx-cursor-pointer hover:pbx-bg-red-50 pbx-py-2 pbx-px-2 pbx-rounded-full"
+            class="flex items-center justify-start gap-2 cursor-pointer hover:bg-red-50 py-2 px-2 rounded-full"
           >
             <div
-              class="ppbx-h-10 pbx-w-10 pbx-cursor-pointer pbx-rounded-sm pbx-flex pbx-items-center pbx-border-none pbx-justify-center pbx-aspect-square hover:pbx-bg-myPrimaryErrorColor hover:pbx-text-white pbx-text-myPrimaryErrorColor"
+              class="ph-10 w-10 cursor-pointer rounded-sm flex items-center border-none justify-center aspect-square hover:bg-myPrimaryErrorColor hover:text-white text-myPrimaryErrorColor"
             >
               <span class="material-symbols-outlined"> delete_forever </span>
             </div>
-            <div class="pbx-text-sm">
+            <div class="text-sm">
               {{ translate('Delete component') }}
             </div>
           </div>
@@ -566,10 +566,10 @@ const handleDelete = function () {
                 pageBuilderService.duplicateComponent()
               }
             "
-            class="pbx-flex pbx-items-center pbx-justify-start pbx-gap-2 pbx-cursor-pointer hover:pbx-bg-red-50 pbx-py-2 pbx-px-2 pbx-rounded-full"
+            class="flex items-center justify-start gap-2 cursor-pointer hover:bg-red-50 py-2 px-2 rounded-full"
           >
             <div
-              class="pbx-h-10 pbx-w-10 pbx-rounded-sm pbx-flex pbx-items-center pbx-justify-center pbx-aspect-square pbx-text-myPrimaryDarkGrayColor hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white focus-visible:pbx-ring-0 pbx-cursor-pointer"
+              class="h-10 w-10 rounded-sm flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor hover:bg-myPrimaryLinkColor hover:text-white focus-visible:ring-0 cursor-pointer"
             >
               <span>
                 <svg
@@ -588,21 +588,21 @@ const handleDelete = function () {
                 </svg>
               </span>
             </div>
-            <div class="pbx-text-sm">
+            <div class="text-sm">
               {{ translate('Duplicate component') }}
             </div>
           </div>
           <div
             v-if="getElement && getComponent"
             @click="handleShowHTMLEditor"
-            class="pbx-flex pbx-items-center pbx-justify-start pbx-gap-2 pbx-cursor-pointer hover:pbx-bg-red-50 pbx-py-2 pbx-px-2 pbx-rounded-full"
+            class="flex items-center justify-start gap-2 cursor-pointer hover:bg-red-50 py-2 px-2 rounded-full"
           >
             <div
-              class="pbx-h-10 pbx-w-10 pbx-rounded-sm pbx-flex pbx-items-center pbx-justify-center pbx-aspect-square pbx-text-myPrimaryDarkGrayColor hover:pbx-bg-myPrimaryLinkColor hover:pbx-text-white focus-visible:pbx-ring-0 pbx-cursor-pointer"
+              class="h-10 w-10 rounded-sm flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor hover:bg-myPrimaryLinkColor hover:text-white focus-visible:ring-0 cursor-pointer"
             >
               <span class="material-symbols-outlined"> deployed_code </span>
             </div>
-            <div class="pbx-text-sm">{{ translate('HTML Editor') }}</div>
+            <div class="text-sm">{{ translate('HTML Editor') }}</div>
           </div>
 
           <!-- content end -->

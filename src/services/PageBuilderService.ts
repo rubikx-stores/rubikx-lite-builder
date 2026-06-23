@@ -58,7 +58,7 @@ export const AVAILABLE_LANGUAGES: AvailableLanguage[] = [
 export class PageBuilderService {
   // Class properties with types
   private fontSizeRegex =
-    /^(sm:|md:|lg:|xl:|2xl:)?pbx-text-(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)$/
+    /^(sm:|md:|lg:|xl:|2xl:)?text-(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)$/
 
   protected pageBuilderStateStore: ReturnType<typeof usePageBuilderStateStore>
   private getLocalStorageItemName: ComputedRef<string | null>
@@ -608,7 +608,7 @@ export class PageBuilderService {
   private renderComponentsToHtml(componentsArray: BuilderResourceData): string {
     // If the componentsArray is empty or invalid, return a default HTML structure
     if (!componentsArray || (Array.isArray(componentsArray) && componentsArray.length === 0)) {
-      return `<div id="pagebuilder" class="pbx-text-black pbx-font-sans"></div>`
+      return `<div id="pagebuilder" class="text-black font-sans"></div>`
     }
 
     const sectionsHtml = componentsArray
@@ -793,19 +793,19 @@ export class PageBuilderService {
 
     // Hardcoded mapping: selected => base
     const fontSizeBaseMap: Record<string, string> = {
-      'pbx-text-9xl': 'pbx-text-6xl',
-      'pbx-text-8xl': 'pbx-text-5xl',
-      'pbx-text-7xl': 'pbx-text-4xl',
-      'pbx-text-6xl': 'pbx-text-3xl',
-      'pbx-text-5xl': 'pbx-text-3xl',
-      'pbx-text-4xl': 'pbx-text-2xl',
-      'pbx-text-3xl': 'pbx-text-xl',
-      'pbx-text-2xl': 'pbx-text-lg',
-      'pbx-text-xl': 'pbx-text-base',
-      'pbx-text-lg': 'pbx-text-sm',
-      'pbx-text-base': 'pbx-text-xs',
-      'pbx-text-sm': 'pbx-text-xs',
-      'pbx-text-xs': 'pbx-text-xs',
+      'text-9xl': 'text-6xl',
+      'text-8xl': 'text-5xl',
+      'text-7xl': 'text-4xl',
+      'text-6xl': 'text-3xl',
+      'text-5xl': 'text-3xl',
+      'text-4xl': 'text-2xl',
+      'text-3xl': 'text-xl',
+      'text-2xl': 'text-lg',
+      'text-xl': 'text-base',
+      'text-lg': 'text-sm',
+      'text-base': 'text-xs',
+      'text-sm': 'text-xs',
+      'text-xs': 'text-xs',
     }
 
     if (userSelectedFontSize) {
@@ -866,19 +866,19 @@ export class PageBuilderService {
       if (!hasFontSizeClass) {
         // Apply responsive font size classes based on heading type
         if (heading.tagName === 'H2') {
-          element.classList.add('pbx-text-3xl', 'lg:pbx-text-4xl', 'pbx-font-medium')
+          element.classList.add('text-3xl', 'lg:text-4xl', 'font-medium')
         }
         if (heading.tagName === 'H3') {
-          element.classList.add('pbx-text-2xl', 'lg:pbx-text-3xl', 'pbx-font-medium')
+          element.classList.add('text-2xl', 'lg:text-3xl', 'font-medium')
         }
         if (heading.tagName === 'H4') {
-          element.classList.add('pbx-text-xl', 'lg:pbx-text-2xl', 'pbx-font-medium')
+          element.classList.add('text-xl', 'lg:text-2xl', 'font-medium')
         }
         if (heading.tagName === 'H5') {
-          element.classList.add('pbx-text-lg', 'lg:pbx-text-xl', 'pbx-font-medium')
+          element.classList.add('text-lg', 'lg:text-xl', 'font-medium')
         }
         if (heading.tagName === 'H6') {
-          element.classList.add('pbx-text-base', 'lg:pbx-text-base', 'pbx-font-medium')
+          element.classList.add('text-base', 'lg:text-base', 'font-medium')
         }
       }
     }
@@ -1159,7 +1159,7 @@ export class PageBuilderService {
       section.querySelectorAll('[class]').forEach((el) => {
         el.setAttribute(
           'class',
-          this.addTailwindPrefixToClasses(el.getAttribute('class') || '', 'pbx-'),
+          this.addTailwindPrefixToClasses(el.getAttribute('class') || '', ''),
         )
       })
 
@@ -1238,12 +1238,12 @@ export class PageBuilderService {
       userSelectedClass.trim() !== '' &&
       !userSelectedClass.includes(' ') &&
       // Check if class (with prefix) already exists
-      !this.getElement.value?.classList.contains('pbx-' + userSelectedClass.trim())
+      !this.getElement.value?.classList.contains('' + userSelectedClass.trim())
     ) {
       const cleanedClass = userSelectedClass.trim()
 
       // Add prefix if missing
-      const prefixedClass = cleanedClass.startsWith('pbx-') ? cleanedClass : 'pbx-' + cleanedClass
+      const prefixedClass = cleanedClass.startsWith('') ? cleanedClass : '' + cleanedClass
 
       this.getElement.value?.classList.add(prefixedClass)
 
@@ -2792,11 +2792,11 @@ export class PageBuilderService {
   /**
    * Adds a prefix to Tailwind CSS classes in a string.
    * @param {string} classList - The string of classes.
-   * @param {string} [prefix='pbx-'] - The prefix to add.
+   * @param {string} [prefix=''] - The prefix to add.
    * @returns {string} The prefixed class string.
    * @private
    */
-  private addTailwindPrefixToClasses(classList: string, prefix = 'pbx-'): string {
+  private addTailwindPrefixToClasses(classList: string, prefix = ''): string {
     return classList
       .split(/\s+/)
       .map((cls) => {
@@ -3153,7 +3153,7 @@ export class PageBuilderService {
         section.querySelectorAll('[class]').forEach((el) => {
           el.setAttribute(
             'class',
-            this.addTailwindPrefixToClasses(el.getAttribute('class') || '', 'pbx-'),
+            this.addTailwindPrefixToClasses(el.getAttribute('class') || '', ''),
           )
         })
 

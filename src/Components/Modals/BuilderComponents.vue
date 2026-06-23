@@ -38,7 +38,7 @@ const firstButtonBuilder = function () {
     minHeight=""
     maxHeight=""
   >
-    <div class="pbx-w-full pbx-inset-x-0 pbx-bg-white pbx-overflow-x-auto lg:pbx-pt-2 pbx-pt-2">
+    <div class="w-full inset-x-0 bg-white overflow-x-auto lg:pt-2 pt-2">
       <div>
         <!-- Only show custom search component if provided -->
         <div v-if="CustomBuilderComponents">

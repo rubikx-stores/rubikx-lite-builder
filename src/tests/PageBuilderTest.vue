@@ -69,8 +69,8 @@ watch(currentTranslations, async () => {
 </script>
 
 <template>
-  <div class="pbx-bg-white">
-    <div class="lg:pbx-p-2">
+  <div class="bg-white">
+    <div class="lg:p-2">
       <!--   :CustomBuilderComponents="DemoBuilderComponentsTest" -->
       <PageBuilder
         :CustomMediaLibraryComponent="DemoMediaLibraryComponentTest"

@@ -87,21 +87,21 @@ const handleToggleOpenHyperlinkInNewTab = async function () {
     <template #title>Link</template>
     <template #content>
       <!-- Hyperlink ability / start -->
-      <div v-if="getHyperlinkAbility === false" class="pbx-rounded-md pbx-bg-red-50 pbx-p-2">
-        <div class="pbx-flex pbx-items-center">
-          <div class="pbx-flex-shrink-0">
+      <div v-if="getHyperlinkAbility === false" class="rounded-md bg-red-50 p-2">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
             <span class="pbx-myMediumIcon material-symbols-outlined"> warning </span>
           </div>
-          <div class="pbx-ml-2">
-            <p class="pbx-text-sm pbx-font-medium pbx-text-green-800">
+          <div class="ml-2">
+            <p class="text-sm font-medium text-green-800">
               Not able to add hyperlink on this element
             </p>
           </div>
-          <div class="pbx-ml-auto pbx-pl-3">
-            <div class="pbx-mx-1.5 pbx-my-1.5">
+          <div class="ml-auto pl-3">
+            <div class="mx-1.5 my-1.5">
               <button
                 type="button"
-                class="pbx-inline-flex pbx-rounded-md pbx-bg-green-50 pbx-p-1.5 pbx-text-green-500 hover:pbx-bg-green-100 focus:pbx-outline-none focus:pbx-ring-2 focus:pbx-ring-green-600 focus:pbx-ring-offset-2 focus:pbx-ring-offset-green-50"
+                class="inline-flex rounded-md bg-green-50 p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50"
               ></button>
             </div>
           </div>
@@ -109,35 +109,35 @@ const handleToggleOpenHyperlinkInNewTab = async function () {
       </div>
       <!-- Hyperlink ability / end -->
       <div v-if="getHyperlinkAbility === true">
-        <div class="pbx-my-2 pbx-py-2">
-          <div class="pbx-flex pbx-items-center pbx-justify-between pbx-gap-2 pbx-w-full">
+        <div class="my-2 py-2">
+          <div class="flex items-center justify-between gap-2 w-full">
             <p class="pbx-myPrimaryParagraph">Enable hyperlink</p>
             <!-- Toggle start -->
             <Switch
               v-model="hyperlinkEnable"
               @click="handleToggleHyperlinkEnable('removeHyperlink')"
               :class="[
-                hyperlinkEnable ? 'pbx-bg-myPrimaryLinkColor' : 'pbx-bg-gray-200',
-                'pbx-relative pbx-inline-flex pbx-h-6 pbx-w-11 pbx-flex-shrink-0 pbx-cursor-pointer pbx-rounded-full pbx-border-2 pbx-border-transparent pbx-transition-colors pbx-duration-200 pbx-ease-in-out focus:pbx-outline-none focus:pbx-ring-2 focus:pbx-ring-myPrimaryLinkColor focus:pbx-ring-offset-2',
+                hyperlinkEnable ? 'bg-myPrimaryLinkColor' : 'bg-gray-200',
+                'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-myPrimaryLinkColor focus:ring-offset-2',
               ]"
             >
-              <span class="pbx-sr-only">Use setting</span>
+              <span class="sr-only">Use setting</span>
               <span
                 :class="[
-                  hyperlinkEnable ? 'pbx-translate-x-5' : 'pbx-translate-x-0',
-                  'pbx-pointer-events-none pbx-relative pbx-inline-block pbx-h-5 pbx-w-5 pbx-transform pbx-rounded-full pbx-bg-white pbx-shadow pbx-ring-0 pbx-transition pbx-duration-200 pbx-ease-in-out',
+                  hyperlinkEnable ? 'translate-x-5' : 'translate-x-0',
+                  'pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
                 ]"
               >
                 <span
                   :class="[
                     hyperlinkEnable
-                      ? 'pbx-opacity-0 pbx-ease-out pbx-duration-100'
-                      : 'pbx-opacity-100 pbx-ease-in pbx-duration-200',
-                    'pbx-absolute pbx-inset-0 pbx-flex pbx-h-full pbx-w-full pbx-items-center pbx-justify-center pbx-transition-opacity',
+                      ? 'opacity-0 ease-out duration-100'
+                      : 'opacity-100 ease-in duration-200',
+                    'absolute inset-0 flex h-full w-full items-center justify-center transition-opacity',
                   ]"
                   aria-hidden="true"
                 >
-                  <svg class="pbx-h-3 pbx-w-3 pbx-text-gray-400" fill="none" viewBox="0 0 12 12">
+                  <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 12 12">
                     <path
                       d="M4 8l2-2m0 0l2-2M6 6L4 4m2 2l2 2"
                       stroke="currentColor"
@@ -150,14 +150,14 @@ const handleToggleOpenHyperlinkInNewTab = async function () {
                 <span
                   :class="[
                     hyperlinkEnable
-                      ? 'pbx-opacity-100 pbx-ease-in pbx-duration-200'
-                      : 'pbx-opacity-0 pbx-ease-out pbx-duration-100',
-                    'pbx-absolute pbx-inset-0 pbx-flex pbx-h-full pbx-w-full pbx-items-center pbx-justify-center pbx-transition-opacity',
+                      ? 'opacity-100 ease-in duration-200'
+                      : 'opacity-0 ease-out duration-100',
+                    'absolute inset-0 flex h-full w-full items-center justify-center transition-opacity',
                   ]"
                   aria-hidden="true"
                 >
                   <svg
-                    class="pbx-h-3 pbx-w-3 pbx-text-myPrimaryLinkColor"
+                    class="h-3 w-3 text-myPrimaryLinkColor"
                     fill="currentColor"
                     viewBox="0 0 12 12"
                   >
@@ -174,20 +174,20 @@ const handleToggleOpenHyperlinkInNewTab = async function () {
         <!-- attached url - start -->
         <div
           v-if="getElementContainsHyperlink === true"
-          class="pbx-rounded-md pbx-bg-green-50 pbx-p-2"
+          class="rounded-md bg-green-50 p-2"
         >
-          <div class="pbx-flex pbx-items-center">
-            <div class="pbx-flex-shrink-0">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
               <span class="pbx-myMediumIcon material-symbols-outlined"> check </span>
             </div>
-            <div class="pbx-ml-2">
-              <p class="pbx-text-sm pbx-font-medium pbx-text-green-800">Hyperlink added</p>
+            <div class="ml-2">
+              <p class="text-sm font-medium text-green-800">Hyperlink added</p>
             </div>
-            <div class="pbx-ml-auto pbx-pl-3">
-              <div class="pbx-mx-1.5 pbx-my-1.5">
+            <div class="ml-auto pl-3">
+              <div class="mx-1.5 my-1.5">
                 <button
                   type="button"
-                  class="pbx-inline-flex pbx-rounded-md pbx-bg-green-50 pbx-p-1.5 pbx-text-green-500 hover:pbx-bg-green-100 focus:pbx-outline-none focus:pbx-ring-2 focus:pbx-ring-green-600 focus:pbx-ring-offset-2 focus:pbx-ring-offset-green-50"
+                  class="inline-flex rounded-md bg-green-50 p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50"
                 ></button>
               </div>
             </div>
@@ -197,84 +197,84 @@ const handleToggleOpenHyperlinkInNewTab = async function () {
         <!-- no attached url - start -->
         <div
           v-if="getElementContainsHyperlink === false"
-          class="pbx-rounded-md pbx-bg-red-50 pbx-p-2"
+          class="rounded-md bg-red-50 p-2"
         >
-          <div class="pbx-flex pbx-items-center">
-            <div class="pbx-flex-shrink-0">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
               <span class="pbx-myMediumIcon material-symbols-outlined"> warning </span>
             </div>
-            <div class="pbx-ml-2">
-              <p class="pbx-text-sm pbx-font-medium pbx-text-green-800">No hyperlink added</p>
+            <div class="ml-2">
+              <p class="text-sm font-medium text-green-800">No hyperlink added</p>
             </div>
-            <div class="pbx-ml-auto pbx-pl-3">
-              <div class="pbx-mx-1.5 pbx-my-1.5">
+            <div class="ml-auto pl-3">
+              <div class="mx-1.5 my-1.5">
                 <button
                   type="button"
-                  class="pbx-inline-flex pbx-rounded-md pbx-bg-green-50 pbx-p-1.5 pbx-text-green-500 hover:pbx-bg-green-100 focus:pbx-outline-none focus:pbx-ring-2 focus:pbx-ring-green-600 focus:pbx-ring-offset-2 focus:pbx-ring-offset-green-50"
+                  class="inline-flex rounded-md bg-green-50 p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50"
                 ></button>
               </div>
             </div>
           </div>
         </div>
         <!-- no attached url - end -->
-        <div v-if="hyperlinkEnable === true" class="pbx-my-2 pbx-py-2">
+        <div v-if="hyperlinkEnable === true" class="my-2 py-2">
           <div
-            class="pbx-relative pbx-flex pbx-items-center pbx-w-full pbx-border-solid pbx-border pbx-border-gray-200 pbx-myPrimaryInput pbx-py-0 pbx-p-0"
+            class="relative flex items-center w-full border-solid border border-gray-200 pbx-myPrimaryInput py-0 p-0"
           >
             <input
               v-model="urlInput"
               type="text"
               placeholder="URL.."
               autocomplete="off"
-              class="pbx-myPrimaryInput pbx-border-none pbx-rounded-r-none pbx-ml-0 pbx-w-full"
+              class="pbx-myPrimaryInput border-none rounded-r-none ml-0 w-full"
               @keydown.enter.tab.prevent="handleHyperlink()"
             />
             <div
-              class="pbx-border-none pbx-rounded pbx-flex pbx-items-center pbx-justify-center pbx-h-full pbx-w-8"
+              class="border-none rounded flex items-center justify-center h-full w-8"
             >
-              <kbd class="pbx-myPrimaryParagraph pbx-text-gray-400 pbx-border-none"> ⏎ </kbd>
+              <kbd class="pbx-myPrimaryParagraph text-gray-400 border-none"> ⏎ </kbd>
             </div>
           </div>
 
           <p
             v-if="getHyperlinkMessage !== null"
-            class="pbx-myPrimaryParagraph pbx-text-myPrimarySuccesColor pbx-mt-1"
+            class="pbx-myPrimaryParagraph text-myPrimarySuccesColor mt-1"
           >
             {{ getHyperlinkMessage }}
           </p>
-          <p v-if="getHyperlinkError !== null" class="pbx-myPrimaryParagraphError pbx-mt-1">
+          <p v-if="getHyperlinkError !== null" class="pbx-myPrimaryParagraphError mt-1">
             {{ getHyperlinkError }}
           </p>
 
-          <div class="pbx-my-2 pbx-py-2">
-            <div class="pbx-flex pbx-items-center pbx-justify-between pbx-gap-2 pbx-w-full">
+          <div class="my-2 py-2">
+            <div class="flex items-center justify-between gap-2 w-full">
               <p class="pbx-myPrimaryParagraph">Open in new tab</p>
               <!-- Toggle start -->
               <Switch
                 v-model="openHyperlinkInNewTab"
                 @click="handleToggleOpenHyperlinkInNewTab"
                 :class="[
-                  openHyperlinkInNewTab ? 'pbx-bg-myPrimaryLinkColor' : 'pbx-bg-gray-200',
-                  'pbx-relative pbx-inline-flex pbx-h-6 pbx-w-11 pbx-flex-shrink-0 pbx-cursor-pointer pbx-rounded-full pbx-border-2 pbx-border-transparent pbx-transition-colors pbx-duration-200 pbx-ease-in-out focus:pbx-outline-none focus:pbx-ring-2 focus:pbx-ring-myPrimaryLinkColor focus:pbx-ring-offset-2',
+                  openHyperlinkInNewTab ? 'bg-myPrimaryLinkColor' : 'bg-gray-200',
+                  'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-myPrimaryLinkColor focus:ring-offset-2',
                 ]"
               >
-                <span class="pbx-sr-only">Use setting</span>
+                <span class="sr-only">Use setting</span>
                 <span
                   :class="[
-                    openHyperlinkInNewTab ? 'pbx-translate-x-5' : 'pbx-translate-x-0',
-                    'pbx-pointer-events-none pbx-relative pbx-inline-block pbx-h-5 pbx-w-5 pbx-transform pbx-rounded-full pbx-bg-white pbx-shadow pbx-ring-0 pbx-transition pbx-duration-200 pbx-ease-in-out',
+                    openHyperlinkInNewTab ? 'translate-x-5' : 'translate-x-0',
+                    'pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
                   ]"
                 >
                   <span
                     :class="[
                       openHyperlinkInNewTab
-                        ? 'pbx-opacity-0 pbx-ease-out pbx-duration-100'
-                        : 'pbx-opacity-100 pbx-ease-in pbx-duration-200',
-                      'pbx-absolute pbx-inset-0 pbx-flex pbx-h-full pbx-w-full pbx-items-center pbx-justify-center pbx-transition-opacity',
+                        ? 'opacity-0 ease-out duration-100'
+                        : 'opacity-100 ease-in duration-200',
+                      'absolute inset-0 flex h-full w-full items-center justify-center transition-opacity',
                     ]"
                     aria-hidden="true"
                   >
-                    <svg class="pbx-h-3 pbx-w-3 pbx-text-gray-400" fill="none" viewBox="0 0 12 12">
+                    <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 12 12">
                       <path
                         d="M4 8l2-2m0 0l2-2M6 6L4 4m2 2l2 2"
                         stroke="currentColor"
@@ -287,14 +287,14 @@ const handleToggleOpenHyperlinkInNewTab = async function () {
                   <span
                     :class="[
                       openHyperlinkInNewTab
-                        ? 'pbx-opacity-100 pbx-ease-in pbx-duration-200'
-                        : 'pbx-opacity-0 pbx-ease-out pbx-duration-100',
-                      'pbx-absolute pbx-inset-0 pbx-flex pbx-h-full pbx-w-full pbx-items-center pbx-justify-center pbx-transition-opacity',
+                        ? 'opacity-100 ease-in duration-200'
+                        : 'opacity-0 ease-out duration-100',
+                      'absolute inset-0 flex h-full w-full items-center justify-center transition-opacity',
                     ]"
                     aria-hidden="true"
                   >
                     <svg
-                      class="pbx-h-3 pbx-w-3 pbx-text-myPrimaryLinkColor"
+                      class="h-3 w-3 text-myPrimaryLinkColor"
                       fill="currentColor"
                       viewBox="0 0 12 12"
                     >

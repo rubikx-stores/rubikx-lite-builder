@@ -48,18 +48,18 @@ const handleRedo = async function () {
         await pageBuilderService.clearHtmlSelection()
       }
     "
-    class="pbx-flex-1 pbx-flex pbx-justify-center pbx-items-center pbx-py-2 pbx-w-full gap-1"
+    class="flex-1 flex justify-center items-center py-2 w-full gap-1"
   >
     <!-- Undo Start -->
 
     <div
       @click="handleUndo"
       type="button"
-      class="pbx-h-10 pbx-w-10 pbx-rounded-full pbx-flex pbx-items-center pbx-border-none pbx-justify-center pbx-bg-gray-50 pbx-aspect-square pbx-text-black hover:pbx-text-white"
+      class="h-10 w-10 rounded-full flex items-center border-none justify-center bg-gray-50 aspect-square text-black hover:text-white"
       :class="[
         canUndo
-          ? 'pbx-cursor-pointer hover:pbx-bg-myPrimaryLinkColor focus-visible:pbx-ring-0'
-          : 'pbx-cursor-not-allowed pbx-bg-opacity-20  hover:pbx-bg-gray-200',
+          ? 'cursor-pointer hover:bg-myPrimaryLinkColor focus-visible:ring-0'
+          : 'cursor-not-allowed bg-opacity-20  hover:bg-gray-200',
       ]"
     >
       <span class="material-symbols-outlined"> undo </span>
@@ -67,7 +67,7 @@ const handleRedo = async function () {
 
     <!-- Undo End -->
     <div
-      class="pbx-text-xs pbx-text-gray-600 pbx-mx-2 pbx-py-3 pbx-px-2 pbx-border-solid pbx-border pbx-border-gray-200 pbx-rounded-full"
+      class="text-xs text-gray-600 mx-2 py-3 px-2 border-solid border border-gray-200 rounded-full"
     >
       {{ historyIndex + 1 }}/{{ historyLength }}
     </div>
@@ -75,11 +75,11 @@ const handleRedo = async function () {
 
     <div
       @click="handleRedo"
-      class="pbx-h-10 pbx-w-10 pbx-rounded-full pbx-flex pbx-items-center pbx-border-none pbx-justify-center pbx-bg-gray-50 pbx-aspect-square pbx-text-black hover:pbx-text-white"
+      class="h-10 w-10 rounded-full flex items-center border-none justify-center bg-gray-50 aspect-square text-black hover:text-white"
       :class="[
         canRedo
-          ? 'pbx-cursor-pointer hover:pbx-bg-myPrimaryLinkColor focus-visible:pbx-ring-0'
-          : 'pbx-cursor-not-allowed pbx-bg-opacity-20  hover:pbx-bg-gray-200',
+          ? 'cursor-pointer hover:bg-myPrimaryLinkColor focus-visible:ring-0'
+          : 'cursor-not-allowed bg-opacity-20  hover:bg-gray-200',
       ]"
     >
       <span class="material-symbols-outlined"> redo </span>

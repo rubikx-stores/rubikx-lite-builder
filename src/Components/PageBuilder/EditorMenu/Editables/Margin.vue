@@ -66,9 +66,9 @@ watch(
   <EditorAccordion>
     <template #title>{{ translate('Margin') }}</template>
     <template #content>
-      <div class="pbx-my-2 pbx-py-2">
-        <div class="pbx-pt-4 pbx-pb-2 pbx-mb-4">
-          <p class="pbx-myPrimaryInputLabel pbx-font-medium pbx-italic">
+      <div class="my-2 py-2">
+        <div class="pt-4 pb-2 mb-4">
+          <p class="pbx-myPrimaryInputLabel font-medium italic">
             {{ translate('Large Screens Only') }}
           </p>
           <hr />
@@ -92,7 +92,7 @@ watch(
         </select>
       </div>
       <hr />
-      <div class="pbx-my-2 pbx-py-2">
+      <div class="my-2 py-2">
         <label for="horizontal-margin" class="pbx-myPrimaryInputLabel">{{
           translate('Horizontal Margin')
         }}</label>

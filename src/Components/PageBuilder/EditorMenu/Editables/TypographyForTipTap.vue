@@ -104,7 +104,7 @@ watch(
 <template>
   <div>
     <template v-if="false">
-      <div class="pbx-my-2 pbx-py-2">
+      <div class="my-2 py-2">
         <label for="font-base" class="pbx-myPrimaryInputLabel">
           {{ translate('Font Size') }}
         </label>
@@ -121,7 +121,7 @@ watch(
         </select>
       </div>
     </template>
-    <div class="pbx-my-2 pbx-py-2">
+    <div class="my-2 py-2">
       <label for="font-desktop" class="pbx-myPrimaryInputLabel">
         {{ translate('Font size') }}
       </label>
@@ -138,7 +138,7 @@ watch(
       </select>
     </div>
     <template v-if="false">
-      <div class="pbx-my-2 pbx-py-2">
+      <div class="my-2 py-2">
         <label for="font-tablet" class="pbx-myPrimaryInputLabel">
           {{ translate('Font tablet size') }}
         </label>
@@ -154,7 +154,7 @@ watch(
           </option>
         </select>
       </div>
-      <div class="pbx-my-2 pbx-py-2">
+      <div class="my-2 py-2">
         <label for="font-mobile" class="pbx-myPrimaryInputLabel">
           {{ translate('Font small screens') }}
         </label>
@@ -173,7 +173,7 @@ watch(
     </template>
     <hr />
 
-    <div class="pbx-my-2 pbx-py-2">
+    <div class="my-2 py-2">
       <label for="font-weight" class="pbx-myPrimaryInputLabel">
         {{ translate('Font weight') }}
       </label>
@@ -192,7 +192,7 @@ watch(
     <hr />
 
     <!-- FONT FAMILY -->
-    <div class="pbx-my-2 pbx-py-2">
+    <div class="my-2 py-2">
       <label for="font-family" class="pbx-myPrimaryInputLabel">
         {{ translate('Font family') }}
       </label>
@@ -210,7 +210,7 @@ watch(
     </div>
     <hr />
 
-    <div class="pbx-my-2 pbx-py-2">
+    <div class="my-2 py-2">
       <label for="font-style" class="pbx-myPrimaryInputLabel">
         {{ translate('Font Style') }}
       </label>
