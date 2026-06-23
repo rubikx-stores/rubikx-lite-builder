@@ -29,6 +29,9 @@ body {
 .hover\:border-myPrimaryLinkColor:hover {
   border-color: var(--color-primary-link) !important;
 }
+.myPrimaryGap {
+  gap: 1rem;
+}
 
 /* ── Builder canvas cursors ───────────────────────────────────────────────── */
 
