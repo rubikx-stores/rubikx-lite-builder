@@ -652,7 +652,7 @@ onMounted(async () => {
 
     <div
       id="pagebuilder-navbar"
-      class="lg:min-w-full lg:max-w-full lg:w-full min-w-[64rem] max-w-[64rem] w-[64rem] flex-1 bg-myPrimaryLightGrayColor flex items-center justify-between border-0 border-solid border-b border-gray-200 mb-2 font-sans min-h-20"
+      class="lg:min-w-full lg:max-w-full lg:w-full min-w-[64rem] max-w-[64rem] w-[64rem] flex-1 bg-myPrimaryLightGrayColor flex items-center justify-between border-0 border-solid border-b border-gray-200 mb-2 font-sans min-h-20 sticky top-0 z-20"
     >
       <template
         v-if="
