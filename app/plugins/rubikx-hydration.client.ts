@@ -102,9 +102,89 @@ function loadSlider(el: HTMLElement) {
   startTimer()
 }
 
+async function loadCartCount(el: HTMLElement, companyId?: number) {
+  // TODO: replace with real Odoo cart API call on live storefront
+  // Demo: hardcoded count for local testing
+  const count = 3
+
+  // Remove existing badge if any
+  const existing = el.querySelector('[data-cart-badge]')
+  if (existing) existing.remove()
+
+  if (count > 0) {
+    const badge = document.createElement('span')
+    badge.setAttribute('data-cart-badge', 'true')
+    badge.textContent = String(count)
+    badge.style.cssText = 'position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none;'
+    el.appendChild(badge)
+  }
+}
+
+async function loadAuthState(el: HTMLElement, companyId?: number) {
+  const signInUrl = el.dataset.signInUrl ?? '/signin'
+  const signInLabel = el.dataset.signInLabel ?? 'Sign In'
+  const profileUrl = el.dataset.profileUrl ?? '/me/personal'
+  const linkStyle = el.dataset.linkStyle ?? 'color:#111827;font-size:14px;font-weight:500;text-decoration:none;white-space:nowrap;'
+
+  const signInLink = el.querySelector<HTMLElement>('a')
+
+  try {
+    const data = await $fetch<{ user: { name: string; email: string } }>('/api/auth/me')
+    const user = data.user
+
+    // User is logged in — hide sign in link, inject profile button + dropdown
+    if (signInLink) signInLink.style.display = 'none'
+
+    // Remove existing injected elements if re-running
+    el.querySelector('[data-auth-profile]')?.remove()
+    el.querySelector('[data-auth-dropdown]')?.remove()
+
+    // Profile button
+    const profileBtn = document.createElement('button')
+    profileBtn.setAttribute('data-auth-profile', 'true')
+    profileBtn.style.cssText = 'background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;padding:0;'
+    profileBtn.innerHTML = `
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1112 3a9 9 0 016.879 14.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <span style="${linkStyle}">${user.name}</span>
+    `
+
+    // Dropdown
+    const dropdown = document.createElement('div')
+    dropdown.setAttribute('data-auth-dropdown', 'true')
+    dropdown.style.cssText = 'display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.12);min-width:160px;z-index:9999;padding:4px 0;'
+    dropdown.innerHTML = `
+      <a href="${profileUrl}" style="display:block;padding:10px 16px;font-size:14px;color:#111827;text-decoration:none;white-space:nowrap;">My Profile</a>
+      <a href="/logout" style="display:block;padding:10px 16px;font-size:14px;color:#ef4444;text-decoration:none;white-space:nowrap;">Sign Out</a>
+    `
+
+    // Toggle dropdown on click
+    profileBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      const isOpen = dropdown.style.display === 'block'
+      dropdown.style.display = isOpen ? 'none' : 'block'
+    })
+
+    // Close dropdown on outside click
+    document.addEventListener('click', () => {
+      dropdown.style.display = 'none'
+    }, { once: false })
+
+    el.appendChild(profileBtn)
+    el.appendChild(dropdown)
+
+  } catch {
+    // User is not logged in — show sign in link as normal
+    if (signInLink) signInLink.style.display = ''
+    el.querySelector('[data-auth-profile]')?.remove()
+    el.querySelector('[data-auth-dropdown]')?.remove()
+  }
+}
+
 const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> = {
   loadCategories,
   loadSlider,
+  loadCartCount,
+  loadAuthState,
 }
 
 export function hydrateComponents(companyId = 3) {
