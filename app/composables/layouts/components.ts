@@ -82,13 +82,13 @@ export const megaMenuHeaderDefaults: MegaMenuHeaderData = {
   searchAlign: 'center',
 
   ctaButtons: [
-    { label: 'Sign In', href: '/signin', style: 'outline', textColor: '#1f2937', bgColor: '#ffffff', borderColor: '#1f2937' },
+    { label: 'Sign In', href: '/login', style: 'outline', textColor: '#1f2937', bgColor: '#ffffff', borderColor: '#1f2937' },
   ],
   buttonsAlign: 'right',
   showCart: true,
   cartUrl: '/cart',
   showSignIn: false,
-  signInUrl: '/signin',
+  signInUrl: '/login',
   signInLabel: 'Sign In',
   buttonBorderRadius: 6,
 

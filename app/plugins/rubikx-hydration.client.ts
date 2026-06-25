@@ -123,7 +123,7 @@ async function loadCartCount(el: HTMLElement, companyId?: number) {
 
 async function loadAuthState(el: HTMLElement, companyId?: number) {
   if (document.getElementById('page-builder-wrapper')) return
-  const signInUrl = el.dataset.signInUrl ?? '/signin'
+  const signInUrl = el.dataset.signInUrl ?? '/login'
   const signInLabel = el.dataset.signInLabel ?? 'Sign In'
   const profileUrl = el.dataset.profileUrl ?? '/me/personal'
   const linkStyle = el.dataset.linkStyle ?? 'color:#111827;font-size:14px;font-weight:500;text-decoration:none;white-space:nowrap;'

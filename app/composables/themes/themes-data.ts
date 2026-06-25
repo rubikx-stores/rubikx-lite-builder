@@ -140,7 +140,7 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   linkFontWeight: '500',
   showSignIn: true,
   signInLabel: 'Sign In',
-  signInUrl: '/signin',
+  signInUrl: '/login',
   showContactUs: true,
   contactUsLabel: 'Contact Us',
   contactUsUrl: '/contact',
