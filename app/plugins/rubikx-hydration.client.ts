@@ -2,6 +2,9 @@ import { buildCategoryTree } from '~/composables/categories/buildCategoryTree'
 import type { FlatCategory, CategoryNode } from '~/composables/categories/buildCategoryTree'
 import { icon } from '~/composables/useIconSvg'
 
+// Set true to preview logged-in auth state inside the builder
+const SIMULATE_AUTH = false
+
 function renderCategoryTree(categories: CategoryNode[], linkStyle: string, depth = 0): string {
   return categories.map(cat => {
     const slug = cat.headlessName ?? cat.name.toLowerCase().replace(/\s+/g, '-')
@@ -122,7 +125,8 @@ async function loadCartCount(el: HTMLElement, companyId?: number) {
 }
 
 async function loadAuthState(el: HTMLElement, companyId?: number) {
-  if (document.getElementById('page-builder-wrapper')) return
+  const inBuilder = !!document.getElementById('page-builder-wrapper')
+  if (inBuilder && !SIMULATE_AUTH) return
   const profileUrl = el.dataset.profileUrl ?? '/me/personal'
 
   // New HTML: standalone Sign In button with data-auth-signin-btn outside the shell
@@ -133,7 +137,7 @@ async function loadAuthState(el: HTMLElement, companyId?: number) {
   const isNewLayout = !!externalSignInBtn
 
   try {
-    await $fetch<{ user: { name: string; email: string } }>('/api/auth/me')
+    if (!SIMULATE_AUTH) await $fetch<{ user: { name: string; email: string } }>('/api/auth/me')
 
     if (signInEl) signInEl.style.display = 'none'
     el.style.display = 'inline-flex'
