@@ -148,8 +148,8 @@ async function loadAuthState(el: HTMLElement, companyId?: number) {
     dropdown.setAttribute('data-auth-dropdown', 'true')
     dropdown.style.cssText = 'display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.12);min-width:160px;z-index:9999;padding:4px 0;'
     dropdown.innerHTML = `
-      <a href="${profileUrl}" style="display:block;padding:10px 16px;font-size:14px;color:#111827;text-decoration:none;white-space:nowrap;">My Profile</a>
-      <a href="/logout" style="display:block;padding:10px 16px;font-size:14px;color:#ef4444;text-decoration:none;white-space:nowrap;">Sign Out</a>
+      <a href="${profileUrl}" style="display:block;padding:10px 16px;font-size:14px;color:#111827;text-decoration:none;white-space:nowrap;">Your Profile</a>
+      <a href="/logout" style="display:block;padding:10px 16px;font-size:14px;color:#ef4444;text-decoration:none;white-space:nowrap;">Sign out</a>
     `
 
     // Toggle dropdown on click
