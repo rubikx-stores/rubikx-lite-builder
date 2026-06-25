@@ -1,5 +1,9 @@
 import { buildCategoryTree } from '~/composables/categories/buildCategoryTree'
 import type { FlatCategory, CategoryNode } from '~/composables/categories/buildCategoryTree'
+import { icon } from '~/composables/useIconSvg'
+
+// Set true to preview logged-in auth state inside the builder
+const SIMULATE_AUTH = false
 
 function renderCategoryTree(categories: CategoryNode[], linkStyle: string, depth = 0): string {
   return categories.map(cat => {
@@ -102,9 +106,136 @@ function loadSlider(el: HTMLElement) {
   startTimer()
 }
 
+async function loadCartCount(el: HTMLElement, companyId?: number) {
+  // TODO: replace with real Odoo cart API call on live storefront
+  // Demo: hardcoded count for local testing
+  const count = 3
+
+  // Remove existing badge if any
+  const existing = el.querySelector('[data-cart-badge]')
+  if (existing) existing.remove()
+
+  if (count > 0) {
+    const badge = document.createElement('span')
+    badge.setAttribute('data-cart-badge', 'true')
+    badge.textContent = String(count)
+    badge.style.cssText = 'position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none;'
+    el.appendChild(badge)
+  }
+}
+
+async function loadAuthState(el: HTMLElement, companyId?: number) {
+  const inBuilder = !!document.getElementById('page-builder-wrapper')
+  if (inBuilder && !SIMULATE_AUTH) return
+  const profileUrl = el.dataset.profileUrl ?? '/me/personal'
+
+  // New HTML: standalone Sign In button with data-auth-signin-btn outside the shell
+  // Old HTML (backwards compat): Sign In link is a child <a> inside the shell itself
+  const externalSignInBtn = document.querySelector<HTMLElement>('[data-auth-signin-btn]')
+  const internalSignInLink = el.querySelector<HTMLElement>('a')
+  const signInEl = externalSignInBtn ?? internalSignInLink
+  const isNewLayout = !!externalSignInBtn
+
+  try {
+    if (!SIMULATE_AUTH) await $fetch<{ user: { name: string; email: string } }>('/api/auth/me')
+
+    if (signInEl) signInEl.style.display = 'none'
+    el.style.display = 'inline-flex'
+
+    el.querySelector('[data-auth-profile]')?.remove()
+    el.querySelector('[data-auth-dropdown]')?.remove()
+
+    const profileBtn = document.createElement('button')
+    profileBtn.setAttribute('data-auth-profile', 'true')
+    profileBtn.style.cssText = 'background:none;border:none;cursor:pointer;display:flex;align-items:center;padding:0;'
+    profileBtn.innerHTML = icon('user', { size: 24, style: 'flex-shrink:0;' })
+
+    const dropdown = document.createElement('div')
+    dropdown.setAttribute('data-auth-dropdown', 'true')
+    dropdown.style.cssText = 'display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.12);min-width:160px;z-index:9999;padding:4px 0;'
+    dropdown.innerHTML = `
+      <a href="${profileUrl}" style="display:block;padding:10px 16px;font-size:14px;color:#111827;text-decoration:none;white-space:nowrap;">Your Profile</a>
+      <a href="/logout" style="display:block;padding:10px 16px;font-size:14px;color:#ef4444;text-decoration:none;white-space:nowrap;">Sign out</a>
+    `
+
+    profileBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      const isOpen = dropdown.style.display === 'block'
+      dropdown.style.display = isOpen ? 'none' : 'block'
+    })
+
+    document.addEventListener('click', () => {
+      dropdown.style.display = 'none'
+    }, { once: false })
+
+    el.appendChild(profileBtn)
+    el.appendChild(dropdown)
+
+  } catch {
+    if (signInEl) signInEl.style.display = ''
+    // Only hide the shell for new layout — old layout shell is always visible
+    if (isNewLayout) el.style.display = 'none'
+    el.querySelector('[data-auth-profile]')?.remove()
+    el.querySelector('[data-auth-dropdown]')?.remove()
+  }
+}
+
+function loadMobileNav(el: HTMLElement) {
+  if (el.dataset.hydrated === 'true') return
+  el.dataset.hydrated = 'true'
+
+  const nav = el.closest('nav') || el.closest('section')
+  if (!nav) return
+
+  // Clean up any drawer/overlay left by a previous hydration run (e.g. builder re-render)
+  document.querySelectorAll('[data-rb-nav-drawer-live]').forEach(n => n.remove())
+  document.querySelectorAll('[data-rb-nav-overlay-live]').forEach(n => n.remove())
+
+  // Hide the static in-nav copies — position:fixed inside the builder's overflow:scroll
+  // container is clipped, so we re-create both appended to document.body instead.
+  const staticDrawer = nav.querySelector<HTMLElement>('[data-mobile-drawer]')
+  const staticOverlay = nav.querySelector<HTMLElement>('[data-mobile-overlay]')
+  if (staticDrawer) staticDrawer.style.display = 'none'
+  if (staticOverlay) staticOverlay.style.display = 'none'
+
+  // Overlay — all styles set via JS so Odoo stripping inline CSS doesn't matter
+  const overlay = document.createElement('div')
+  overlay.setAttribute('data-rb-nav-overlay-live', 'true')
+  overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;'
+  document.body.appendChild(overlay)
+
+  // Drawer — content copied from the static drawer, position:fixed set via JS
+  const drawer = document.createElement('div')
+  drawer.setAttribute('data-rb-nav-drawer-live', 'true')
+  drawer.style.cssText = 'position:fixed;top:0;left:-320px;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transition:left 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;'
+  if (staticDrawer) drawer.innerHTML = staticDrawer.innerHTML
+  document.body.appendChild(drawer)
+
+  const closeBtn = drawer.querySelector<HTMLElement>('[data-mobile-close]')
+
+  function openDrawer() {
+    drawer.style.left = '0'
+    overlay.style.display = 'block'
+    document.body.style.overflow = 'hidden'
+  }
+
+  function closeDrawer() {
+    drawer.style.left = '-320px'
+    overlay.style.display = 'none'
+    document.body.style.overflow = ''
+  }
+
+  el.addEventListener('click', openDrawer)
+  if (closeBtn) closeBtn.addEventListener('click', closeDrawer)
+  overlay.addEventListener('click', closeDrawer)
+}
+
 const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> = {
   loadCategories,
   loadSlider,
+  loadCartCount,
+  loadAuthState,
+  loadMobileNav,
 }
 
 export function hydrateComponents(companyId = 3) {

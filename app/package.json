@@ -14,10 +14,11 @@
     "clean": "rimraf .nuxt .output dist node_modules"
   },
   "dependencies": {
+    "@heroicons/vue": "^2.2.0",
     "@myissue/vue-website-page-builder": "file:../",
+    "h3": "^1.15.0",
     "nuxt": "^3.16.0",
-    "vue": "^3.5.13",
-    "h3": "^1.15.0"
+    "vue": "^3.5.13"
   },
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.12.0",

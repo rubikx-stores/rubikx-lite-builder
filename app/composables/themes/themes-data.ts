@@ -1,4 +1,5 @@
 ﻿import type { FieldConfig } from '../editor/useBlockRegistry'
+import { icon } from '../useIconSvg'
 import {
   megaMenuHeaderDefaults, megaMenuHeaderFields, renderMegaMenuHeader,
   ru1FooterDefaults as layoutFooter1Defaults, ru1FooterFields as layoutFooter1Fields, renderRu1Footer as renderLayoutFooter1,
@@ -126,11 +127,11 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   showSearch: true,
   searchPlaceholder: 'Search...',
   searchAlign: 'center',
-  searchWidth: 220,
+  searchWidth: 480,
   navLinks: [
     { label: 'Home', url: '/', visible: true },
     { label: 'Shop', url: '/shop', visible: true },
-    { label: 'About Us', url: '/about', visible: true },
+    { label: 'About Us', url: '/aboutus', visible: true },
   ],
   dynamicCategories: true,
   navLinksAlign: 'lower-left',
@@ -139,21 +140,21 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   linkFontWeight: '500',
   showSignIn: true,
   signInLabel: 'Sign In',
-  signInUrl: '/signin',
+  signInUrl: '/login',
   showContactUs: true,
   contactUsLabel: 'Contact Us',
-  contactUsUrl: '/contact',
+  contactUsUrl: '/contactus',
   showCart: true,
   cartUrl: '/cart',
   buttonsAlign: 'right',
   textColor: '#111827',
   fontSize: 14,
   fontWeight: '500',
-  paddingY: 12,
+  paddingY: 0,
   paddingX: 16,
-  borderStyle: 'none',
+  borderStyle: 'solid',
   borderWidth: 1,
-  borderColor: '#e5e7eb',
+  borderColor: '#374151',
 }
 
 export const ru1NavbarFields: FieldConfig[] = [
@@ -213,38 +214,42 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   const navStyle = [
     `background:${data.bgColor}`,
     `color:${data.textColor}`,
-    `padding:${data.paddingY}px ${data.paddingX}px`,
-    data.borderStyle !== 'none' ? `border-bottom:${data.borderWidth}px ${data.borderStyle} ${data.borderColor}` : '',
+    `padding:0 ${data.paddingX}px`,
   ].filter(Boolean).join(';')
+
+  const topRowBorder = data.borderStyle !== 'none'
+    ? `border-bottom:${data.borderWidth}px ${data.borderStyle} ${data.borderColor};`
+    : ''
 
   const logoInner = data.logoUrl
     ? `<img src="${data.logoUrl}" alt="${data.brandName}" style="width:${data.logoWidth}px;height:auto;display:block;" />`
     : `<span data-field-key="brandName" style="font-size:${data.brandFontSize}px;font-weight:${data.brandFontWeight};color:inherit;">${data.brandName}</span>`
   const logoEl = `<a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;">${logoInner}</a>`
 
-  const linkStyle = `color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;white-space:nowrap;`
+  const linkStyle = `color:${data.linkColor};font-size:1rem;text-decoration:none;display:inline-flex;align-items:center;border-radius:0.375rem;padding:0.5rem 0;`
 
-  const searchW = data.searchWidth || 220
+  const searchW = data.searchWidth || 420
   const searchEl = data.showSearch
-    ? `<div style="display:flex;align-items:center;border:1px solid #d1d5db;border-radius:9999px;padding:0.375rem 0.75rem;gap:0.5rem;width:${searchW}px;">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
-        <input type="text" placeholder="${data.searchPlaceholder}" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:${data.textColor};" />
+    ? `<style>.ru-search-input::placeholder{color:#3b82f6;opacity:1;}</style><div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0 0.5rem;gap:0.5rem;width:${searchW}px;background:#fff;">
+        ${icon('magnifyingGlass', { size: 20, stroke: '#1e40af', style: 'flex-shrink:0;' })}
+        <input type="text" placeholder="${data.searchPlaceholder}" class="ru-search-input" style="border:none;outline:none;background:#fff;font-size:0.875rem;width:100%;color:#3b82f6;padding:0.375rem 0;" />
       </div>`
     : ''
 
   const buttonsArr = [
-    data.showSignIn ? `<a href="${data.signInUrl}" style="${linkStyle}">${data.signInLabel}</a>` : '',
-    data.showContactUs ? `<a href="${data.contactUsUrl}" style="${linkStyle}">${data.contactUsLabel}</a>` : '',
+    data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${data.textColor};font-size:0.875rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;">${data.signInLabel}</a>` : '',
+    data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${data.textColor};font-size:0.875rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;">${data.contactUsLabel}</a>` : '',
     data.showCart
-      ? `<a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;"><svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg></a>`
+      ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
       : '',
+    data.showSignIn ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" style="position:relative;display:none;align-items:center;"></span>` : '',
   ].filter(Boolean)
   const buttonsEl = buttonsArr.length
-    ? `<div style="display:flex;align-items:center;gap:0.5rem;">${buttonsArr.join('')}</div>`
+    ? `<div style="display:flex;align-items:center;gap:1.5rem;">${buttonsArr.join('')}</div>`
     : ''
 
   const visibleNavLinks = data.navLinks.filter(l => l.visible !== false)
-  const staticLinks = visibleNavLinks.map(l => `<a href="${l.url}" style="${linkStyle}">${l.label}</a>`).join('')
+  const staticLinks = visibleNavLinks.map(l => `<div style="position:relative;"><a href="${l.url}" style="${linkStyle}">${l.label}</a></div>`).join('')
   const dynamicPlaceholder = data.dynamicCategories
     ? `<div
         data-rubikx-component='CategoryNav'
@@ -262,7 +267,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
       </div>`
     : ''
   const linksEl = (staticLinks || dynamicPlaceholder)
-    ? `<nav style="display:flex;align-items:center;gap:1.5rem;">${staticLinks}${dynamicPlaceholder}</nav>`
+    ? `<nav style="display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem;">${staticLinks}${dynamicPlaceholder}</nav>`
     : ''
 
   const lowerJustifyMap: Record<string, string> = {
@@ -283,19 +288,75 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     `<div style="display:flex;align-items:center;gap:0.75rem;justify-content:${justify};">${items.join('')}</div>`
 
   const lowerRow = isLowerLinks && linksEl
-    ? `<div style="margin:0 auto;display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding-top:0.5rem;">${linksEl}</div>`
+    ? `<div style="margin:0 auto;display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding:0.5rem 0;gap:0.75rem;">${linksEl}</div>`
     : ''
 
   const sectionStyle = data.sticky ? 'position:sticky;top:0;z-index:9999' : ''
 
+  const mobileDrawerLinks = visibleNavLinks.map(l =>
+    `<a href="${l.url}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;">${l.label}</a>`
+  ).join('')
+
+  const mobileSearchEl = data.showSearch
+    ? `<div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0 0.5rem;gap:0.5rem;background:#fff;margin-bottom:1rem;">
+        ${icon('magnifyingGlass', { size: 20, stroke: '#1e40af', style: 'flex-shrink:0;' })}
+        <input type="text" placeholder="${data.searchPlaceholder}" style="border:none;outline:none;background:#fff;font-size:0.875rem;width:100%;color:#3b82f6;padding:0.5rem 0;" />
+      </div>`
+    : ''
+
+  const mobileNav = `
+<style>
+  .rb-mobile-nav { display: none; }
+  .rb-desktop-nav { display: grid; }
+  @media (max-width: 1024px) {
+    .rb-mobile-nav { display: flex !important; border-bottom: 1px solid ${data.borderColor || '#374151'}; }
+    .rb-desktop-nav { display: none !important; }
+    .rb-desktop-lower { display: none !important; }
+  }
+</style>
+
+<!-- Mobile header -->
+<div class="rb-mobile-nav" style="align-items:center;justify-content:space-between;padding:1.25rem ${data.paddingX}px;border-bottom:1px solid ${data.borderColor || '#374151'};">
+  ${logoEl}
+  <div style="display:flex;align-items:center;gap:1rem;">
+    ${data.showCart ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>` : ''}
+    <span data-rubikx-component="MobileNav" data-on-mount="loadMobileNav" data-text-color="${data.textColor}" style="cursor:pointer;display:inline-flex;">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.textColor}" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </span>
+  </div>
+</div>
+
+<!-- Drawer -->
+<div data-mobile-drawer="true" style="position:fixed;top:0;left:-100%;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transition:left 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+    ${logoEl}
+    <button data-mobile-close="true" style="background:none;border:none;cursor:pointer;padding:0.25rem;display:flex;align-items:center;">
+      ${icon('xMark', { size: 24, stroke: data.textColor })}
+    </button>
+  </div>
+  ${mobileSearchEl}
+  <div style="display:flex;flex-direction:column;">
+    ${mobileDrawerLinks}
+    ${data.dynamicCategories ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;cursor:pointer;">Categories</a>` : ''}
+  </div>
+  <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
+    ${data.showContactUs ? `<a href="${data.contactUsUrl}" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;">${data.contactUsLabel}</a>` : ''}
+    ${data.showSignIn ? `<a href="${data.signInUrl}" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;">${data.signInLabel}</a>` : ''}
+  </div>
+</div>
+
+<!-- Overlay -->
+<div data-mobile-overlay="true" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;"></div>`
+
   return `<section data-component-title="Ru1-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 <nav style="${navStyle}">
-  <div style="margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
+  ${mobileNav}
+  <div class="rb-desktop-nav" style="margin:0 auto;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;height:80px;${topRowBorder}">
     ${zone(cols.left,   'flex-start')}
     ${zone(cols.center, 'center')}
     ${zone(cols.right,  'flex-end')}
   </div>
-  ${lowerRow}
+  <div class="rb-desktop-lower">${lowerRow}</div>
 </nav>
 </section>`
 }
@@ -712,8 +773,8 @@ export const ru1FooterDefaults: Ru1FooterData = {
   usefulLinks: [
     { label: 'Home', url: '/' },
     { label: 'Shop', url: '/shop' },
-    { label: 'About Us', url: '/about' },
-    { label: 'Contact Us', url: '/contact' },
+    { label: 'About Us', url: '/aboutus' },
+    { label: 'Contact Us', url: '/contactus' },
   ],
   contactEmail: 'support@yourdomain.com',
   contactPhone: '+1 000-000-0000',
@@ -1799,7 +1860,7 @@ export const ru2HomeNavbarDefaults = {
   showBottomBorder: true,
   dynamicCategories: true,
   ctaButtons: [
-    { label: 'Sign In', href: '/signin', style: 'outline', textColor: '#f59e0b', bgColor: 'transparent', borderColor: '#f59e0b' },
+    { label: 'Sign In', href: '/login', style: 'outline', textColor: '#f59e0b', bgColor: 'transparent', borderColor: '#f59e0b' },
     { label: 'Shop Now', href: '/shop', style: 'filled', textColor: '#0f1923', bgColor: '#f59e0b', borderColor: '#f59e0b' },
   ],
 }
@@ -1929,7 +1990,7 @@ export const ru3HomeNavbarDefaults = {
   showBottomBorder: true,
   dynamicCategories: true,
   ctaButtons: [
-    { label: 'Sign In', href: '/signin', style: 'outline', textColor: '#0f2d4a', bgColor: 'transparent', borderColor: '#0f2d4a' },
+    { label: 'Sign In', href: '/login', style: 'outline', textColor: '#0f2d4a', bgColor: 'transparent', borderColor: '#0f2d4a' },
     { label: 'Browse Gear', href: '/shop', style: 'filled', textColor: '#ffffff', bgColor: '#0f2d4a', borderColor: '#0f2d4a' },
   ],
 }
@@ -1952,7 +2013,7 @@ export const ru3HomeSplitHeroDefaults = {
   ctaBorderColor: '#0f2d4a',
   showSecondaryCta: true,
   secondaryCtaLabel: 'How it works',
-  secondaryCtaHref: '/about',
+  secondaryCtaHref: '/aboutus',
   secondaryCtaColor: '#10b981',
   cardMode: true,
   cardBgColor: '#e8f5f1',
@@ -2094,7 +2155,7 @@ export const ru4HomeNavbarDefaults = {
   showBottomBorder: true,
   dynamicCategories: true,
   ctaButtons: [
-    { label: 'Sign In', href: '/signin', style: 'outline', textColor: '#1a1a1a', bgColor: 'transparent', borderColor: '#1a1a1a' },
+    { label: 'Sign In', href: '/login', style: 'outline', textColor: '#1a1a1a', bgColor: 'transparent', borderColor: '#1a1a1a' },
     { label: 'Shop Now', href: '/shop', style: 'filled', textColor: '#ffffff', bgColor: '#e85d26', borderColor: '#e85d26' },
   ],
 }
@@ -2117,7 +2178,7 @@ export const ru4HomeSplitHeroDefaults = {
   ctaBorderColor: '#e85d26',
   showSecondaryCta: true,
   secondaryCtaLabel: 'How it works',
-  secondaryCtaHref: '/about',
+  secondaryCtaHref: '/aboutus',
   secondaryCtaColor: '#e85d26',
   cardMode: true,
   cardBgColor: '#e8ddd0',
