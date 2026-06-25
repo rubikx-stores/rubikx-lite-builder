@@ -241,7 +241,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     data.showCart
       ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
       : '',
-    data.showSignIn ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-sign-in-label="${data.signInLabel}" data-profile-url="/me/personal" style="position:relative;display:inline-flex;align-items:center;"><a href="${data.signInUrl}" style="color:${data.textColor};display:inline-flex;align-items:center;">${icon('user', { size: 24, stroke: data.textColor })}</a></span>` : '',
+    data.showSignIn ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-sign-in-label="${data.signInLabel}" data-profile-url="/me/personal" style="position:relative;display:inline-flex;align-items:center;"><a href="${data.signInUrl}" style="color:${data.textColor};font-size:0.875rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;">${data.signInLabel}</a></span>` : '',
   ].filter(Boolean)
   const buttonsEl = buttonsArr.length
     ? `<div style="display:flex;align-items:center;gap:1.5rem;">${buttonsArr.join('')}</div>`
