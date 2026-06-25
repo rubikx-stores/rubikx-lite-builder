@@ -69,7 +69,7 @@ export const megaMenuHeaderDefaults: MegaMenuHeaderData = {
 
   navLinks: [
     { label: 'Home',    href: '/'        },
-    { label: 'Contact', href: '/contact' },
+    { label: 'Contact', href: '/contactus' },
   ],
   navLinksAlign: 'center',
   dynamicCategories: true,
@@ -745,7 +745,7 @@ export const ru1FooterDefaults: Ru1FooterData = {
     { label: 'Home',       url: '/'        },
     { label: 'Shop',       url: '/shop'    },
     { label: 'About Us',   url: '/about'   },
-    { label: 'Contact Us', url: '/contact' },
+    { label: 'Contact Us', url: '/contactus' },
   ],
   aboutText: 'This site is for employees to order branded apparel and accessories.',
   contactEmail: 'support@yourdomain.com',
