@@ -230,15 +230,15 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 
   const searchW = data.searchWidth || 420
   const searchEl = data.showSearch
-    ? `<style>.ru-search-input::placeholder{color:#3b82f6;opacity:1;}</style><div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:6px;padding:0.5rem 0.75rem;gap:0.5rem;width:${searchW}px;background:#fff;">
-        ${icon('magnifyingGlass', { size: 18, stroke: '#1e40af', style: 'flex-shrink:0;' })}
-        <input type="text" placeholder="${data.searchPlaceholder}" class="ru-search-input" style="border:none;outline:none;background:transparent;font-size:1rem;font-weight:400;width:100%;color:#3b82f6;letter-spacing:0.01em;" />
+    ? `<style>.ru-search-input::placeholder{color:#3b82f6;opacity:1;}</style><div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0 0.5rem;gap:0.5rem;width:${searchW}px;background:#fff;">
+        ${icon('magnifyingGlass', { size: 20, stroke: '#1e40af', style: 'flex-shrink:0;' })}
+        <input type="text" placeholder="${data.searchPlaceholder}" class="ru-search-input" style="border:none;outline:none;background:#fff;font-size:0.875rem;width:100%;color:#3b82f6;padding:0.375rem 0;" />
       </div>`
     : ''
 
   const buttonsArr = [
-    data.showSignIn ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-sign-in-label="${data.signInLabel}" data-profile-url="/me/personal" data-link-style="color:${data.textColor};font-size:1rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;" style="position:relative;display:inline-flex;align-items:center;"><a href="${data.signInUrl}" style="color:${data.textColor};font-size:1rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;">${data.signInLabel}</a></span>` : '',
-    data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${data.textColor};font-size:1rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;">${data.contactUsLabel}</a>` : '',
+    data.showSignIn ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-sign-in-label="${data.signInLabel}" data-profile-url="/me/personal" data-link-style="color:${data.textColor};font-size:0.875rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;" style="position:relative;display:inline-flex;align-items:center;"><a href="${data.signInUrl}" style="color:${data.textColor};font-size:0.875rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;">${data.signInLabel}</a></span>` : '',
+    data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${data.textColor};font-size:0.875rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;">${data.contactUsLabel}</a>` : '',
     data.showCart
       ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
       : '',
