@@ -319,9 +319,9 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   ${logoEl}
   <div style="display:flex;align-items:center;gap:1rem;">
     ${data.showCart ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>` : ''}
-    <button onclick="(function(btn){var s=btn.closest('section');var d=s&&s.querySelector('[data-mobile-drawer]');var o=s&&s.querySelector('[data-mobile-overlay]');if(d){d.style.left='0';d.style.visibility='visible';}if(o){o.style.display='block';}document.body.style.overflow='hidden';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;">
+    <span data-rubikx-component="MobileNav" data-on-mount="loadMobileNav" data-text-color="${data.textColor}" style="cursor:pointer;display:inline-flex;">
       <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.textColor}" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-    </button>
+    </span>
   </div>
 </div>
 
@@ -329,7 +329,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 <div data-mobile-drawer="true" style="position:fixed;top:0;left:-100%;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transition:left 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
     ${logoEl}
-    <button onclick="(function(btn){var s=btn.closest('section');var d=s&&s.querySelector('[data-mobile-drawer]');var o=s&&s.querySelector('[data-mobile-overlay]');if(d){d.style.left='-100%';}if(o){o.style.display='none';}document.body.style.overflow='';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0.25rem;display:flex;align-items:center;">
+    <button data-mobile-close="true" style="background:none;border:none;cursor:pointer;padding:0.25rem;display:flex;align-items:center;">
       ${icon('xMark', { size: 24, stroke: data.textColor })}
     </button>
   </div>
@@ -345,7 +345,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 </div>
 
 <!-- Overlay -->
-<div data-mobile-overlay="true" onclick="(function(el){var s=document.querySelector('[data-mobile-drawer]');if(s)s.style.left='-100%';el.style.display='none';document.body.style.overflow='';})(this);" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;"></div>`
+<div data-mobile-overlay="true" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;"></div>`
 
   return `<section data-component-title="Ru1-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 <nav style="${navStyle}">

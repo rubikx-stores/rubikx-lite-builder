@@ -123,28 +123,24 @@ async function loadCartCount(el: HTMLElement, companyId?: number) {
 
 async function loadAuthState(el: HTMLElement, companyId?: number) {
   if (document.getElementById('page-builder-wrapper')) return
-  const signInUrl = el.dataset.signInUrl ?? '/login'
-  const signInLabel = el.dataset.signInLabel ?? 'Sign In'
   const profileUrl = el.dataset.profileUrl ?? '/me/personal'
-  const linkStyle = el.dataset.linkStyle ?? 'color:#111827;font-size:14px;font-weight:500;text-decoration:none;white-space:nowrap;'
 
   const signInLink = el.querySelector<HTMLElement>('a')
 
   try {
-    const data = await $fetch<{ user: { name: string; email: string } }>('/api/auth/me')
-    const user = data.user
+    await $fetch<{ user: { name: string; email: string } }>('/api/auth/me')
 
-    // User is logged in — hide sign in link, inject profile button + dropdown
+    // User is logged in — hide sign in link, inject profile icon + dropdown
     if (signInLink) signInLink.style.display = 'none'
 
     // Remove existing injected elements if re-running
     el.querySelector('[data-auth-profile]')?.remove()
     el.querySelector('[data-auth-dropdown]')?.remove()
 
-    // Profile button
+    // Profile icon button
     const profileBtn = document.createElement('button')
     profileBtn.setAttribute('data-auth-profile', 'true')
-    profileBtn.style.cssText = 'background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;padding:0;'
+    profileBtn.style.cssText = 'background:none;border:none;cursor:pointer;display:flex;align-items:center;padding:0;'
     profileBtn.innerHTML = icon('user', { size: 24, style: 'flex-shrink:0;' })
 
     // Dropdown
@@ -179,11 +175,62 @@ async function loadAuthState(el: HTMLElement, companyId?: number) {
   }
 }
 
+function loadMobileNav(el: HTMLElement) {
+  if (el.dataset.hydrated === 'true') return
+  el.dataset.hydrated = 'true'
+
+  const nav = el.closest('nav') || el.closest('section')
+  if (!nav) return
+
+  // Clean up any drawer/overlay left by a previous hydration run (e.g. builder re-render)
+  document.querySelectorAll('[data-rb-nav-drawer-live]').forEach(n => n.remove())
+  document.querySelectorAll('[data-rb-nav-overlay-live]').forEach(n => n.remove())
+
+  // Hide the static in-nav copies — position:fixed inside the builder's overflow:scroll
+  // container is clipped, so we re-create both appended to document.body instead.
+  const staticDrawer = nav.querySelector<HTMLElement>('[data-mobile-drawer]')
+  const staticOverlay = nav.querySelector<HTMLElement>('[data-mobile-overlay]')
+  if (staticDrawer) staticDrawer.style.display = 'none'
+  if (staticOverlay) staticOverlay.style.display = 'none'
+
+  // Overlay — all styles set via JS so Odoo stripping inline CSS doesn't matter
+  const overlay = document.createElement('div')
+  overlay.setAttribute('data-rb-nav-overlay-live', 'true')
+  overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;'
+  document.body.appendChild(overlay)
+
+  // Drawer — content copied from the static drawer, position:fixed set via JS
+  const drawer = document.createElement('div')
+  drawer.setAttribute('data-rb-nav-drawer-live', 'true')
+  drawer.style.cssText = 'position:fixed;top:0;left:-320px;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transition:left 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;'
+  if (staticDrawer) drawer.innerHTML = staticDrawer.innerHTML
+  document.body.appendChild(drawer)
+
+  const closeBtn = drawer.querySelector<HTMLElement>('[data-mobile-close]')
+
+  function openDrawer() {
+    drawer.style.left = '0'
+    overlay.style.display = 'block'
+    document.body.style.overflow = 'hidden'
+  }
+
+  function closeDrawer() {
+    drawer.style.left = '-320px'
+    overlay.style.display = 'none'
+    document.body.style.overflow = ''
+  }
+
+  el.addEventListener('click', openDrawer)
+  if (closeBtn) closeBtn.addEventListener('click', closeDrawer)
+  overlay.addEventListener('click', closeDrawer)
+}
+
 const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> = {
   loadCategories,
   loadSlider,
   loadCartCount,
   loadAuthState,
+  loadMobileNav,
 }
 
 export function hydrateComponents(companyId = 3) {
@@ -211,58 +258,6 @@ export function hydrateComponents(companyId = 3) {
     }
     handler(el, companyId)
   })
-
-  // Global delegation for mobile nav — works regardless of when HTML is in the DOM
-  if (!(window as any).__rbxNavDelegation) {
-    ;(window as any).__rbxNavDelegation = true
-
-    let rbxDrawer: HTMLElement | null = null
-    let rbxOverlay: HTMLElement | null = null
-
-    function closeMobileNav() {
-      if (rbxDrawer) rbxDrawer.style.left = '-320px'
-      if (rbxOverlay) rbxOverlay.style.display = 'none'
-      document.body.style.overflow = ''
-    }
-
-    document.addEventListener('click', (e) => {
-      const t = e.target as HTMLElement
-
-      // Hamburger open button
-      if (t.closest('[data-rb-nav-open]')) {
-        if (!rbxDrawer) {
-          const btn = t.closest<HTMLElement>('[data-rb-nav-open]')!
-          const nav = btn.closest('nav') || btn.closest('section')
-          const src = nav?.querySelector<HTMLElement>('[data-mobile-drawer]')
-
-          rbxOverlay = document.createElement('div')
-          rbxOverlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;'
-          rbxOverlay.addEventListener('click', closeMobileNav)
-          document.body.appendChild(rbxOverlay)
-
-          rbxDrawer = document.createElement('div')
-          rbxDrawer.style.cssText = 'position:fixed;top:0;left:-320px;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transition:left 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;'
-          if (src) rbxDrawer.innerHTML = src.innerHTML
-          document.body.appendChild(rbxDrawer)
-
-          // Hide the static in-nav drawer (clipped by builder overflow container)
-          if (src) src.style.display = 'none'
-          const staticOverlay = nav?.querySelector<HTMLElement>('[data-mobile-overlay]')
-          if (staticOverlay) staticOverlay.style.display = 'none'
-        }
-
-        rbxDrawer.style.left = '0'
-        rbxOverlay!.style.display = 'block'
-        document.body.style.overflow = 'hidden'
-        return
-      }
-
-      // Close button inside drawer or static drawer
-      if (t.closest('[data-mobile-close]')) {
-        closeMobileNav()
-      }
-    })
-  }
 
   // Watch for dynamically added slider elements
   if (!(window as any).__rbxSliderObserver) {
