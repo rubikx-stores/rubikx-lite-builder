@@ -124,26 +124,28 @@ async function loadCartCount(el: HTMLElement, companyId?: number) {
 async function loadAuthState(el: HTMLElement, companyId?: number) {
   if (document.getElementById('page-builder-wrapper')) return
   const profileUrl = el.dataset.profileUrl ?? '/me/personal'
-  const signInBtn = document.querySelector<HTMLElement>('[data-auth-signin-btn]')
+
+  // New HTML: standalone Sign In button with data-auth-signin-btn outside the shell
+  // Old HTML (backwards compat): Sign In link is a child <a> inside the shell itself
+  const externalSignInBtn = document.querySelector<HTMLElement>('[data-auth-signin-btn]')
+  const internalSignInLink = el.querySelector<HTMLElement>('a')
+  const signInEl = externalSignInBtn ?? internalSignInLink
+  const isNewLayout = !!externalSignInBtn
 
   try {
     await $fetch<{ user: { name: string; email: string } }>('/api/auth/me')
 
-    // Hide Sign In button, show profile shell
-    if (signInBtn) signInBtn.style.display = 'none'
+    if (signInEl) signInEl.style.display = 'none'
     el.style.display = 'inline-flex'
 
-    // Remove existing injected elements if re-running
     el.querySelector('[data-auth-profile]')?.remove()
     el.querySelector('[data-auth-dropdown]')?.remove()
 
-    // Profile icon button
     const profileBtn = document.createElement('button')
     profileBtn.setAttribute('data-auth-profile', 'true')
     profileBtn.style.cssText = 'background:none;border:none;cursor:pointer;display:flex;align-items:center;padding:0;'
     profileBtn.innerHTML = icon('user', { size: 24, style: 'flex-shrink:0;' })
 
-    // Dropdown
     const dropdown = document.createElement('div')
     dropdown.setAttribute('data-auth-dropdown', 'true')
     dropdown.style.cssText = 'display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.12);min-width:160px;z-index:9999;padding:4px 0;'
@@ -166,9 +168,9 @@ async function loadAuthState(el: HTMLElement, companyId?: number) {
     el.appendChild(dropdown)
 
   } catch {
-    // Not logged in — show Sign In button, keep profile shell hidden
-    if (signInBtn) signInBtn.style.display = ''
-    el.style.display = 'none'
+    if (signInEl) signInEl.style.display = ''
+    // Only hide the shell for new layout — old layout shell is always visible
+    if (isNewLayout) el.style.display = 'none'
     el.querySelector('[data-auth-profile]')?.remove()
     el.querySelector('[data-auth-dropdown]')?.remove()
   }
