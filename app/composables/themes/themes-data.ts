@@ -150,11 +150,11 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   textColor: '#111827',
   fontSize: 14,
   fontWeight: '500',
-  paddingY: 14,
+  paddingY: 0,
   paddingX: 16,
   borderStyle: 'solid',
   borderWidth: 1,
-  borderColor: '#64748b',
+  borderColor: '#374151',
 }
 
 export const ru1NavbarFields: FieldConfig[] = [
@@ -214,11 +214,11 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   const navStyle = [
     `background:${data.bgColor}`,
     `color:${data.textColor}`,
-    `padding:${data.paddingY}px ${data.paddingX}px`,
+    `padding:0 ${data.paddingX}px`,
   ].filter(Boolean).join(';')
 
   const topRowBorder = data.borderStyle !== 'none'
-    ? `padding-bottom:1.25rem;border-bottom:${data.borderWidth}px ${data.borderStyle} ${data.borderColor};margin-bottom:0.75rem;`
+    ? `border-bottom:${data.borderWidth}px ${data.borderStyle} ${data.borderColor};`
     : ''
 
   const logoInner = data.logoUrl
@@ -226,29 +226,29 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     : `<span data-field-key="brandName" style="font-size:${data.brandFontSize}px;font-weight:${data.brandFontWeight};color:inherit;">${data.brandName}</span>`
   const logoEl = `<a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;">${logoInner}</a>`
 
-  const linkStyle = `color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;white-space:nowrap;`
+  const linkStyle = `color:${data.linkColor};font-size:1rem;text-decoration:none;display:inline-flex;align-items:center;border-radius:0.375rem;padding:0.5rem 0;`
 
-  const searchW = data.searchWidth || 400
+  const searchW = data.searchWidth || 420
   const searchEl = data.showSearch
-    ? `<div style="display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:8px;padding:0.5rem 0.875rem;gap:0.5rem;width:${searchW}px;">
-        ${icon('magnifyingGlass', { size: 16, stroke: '#3b82f6', style: 'flex-shrink:0;' })}
-        <input type="text" placeholder="${data.searchPlaceholder}" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:#3b82f6;" />
+    ? `<style>.ru-search-input::placeholder{color:#3b82f6;opacity:1;}</style><div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:6px;padding:0.5rem 0.75rem;gap:0.5rem;width:${searchW}px;background:#fff;">
+        ${icon('magnifyingGlass', { size: 18, stroke: '#1e40af', style: 'flex-shrink:0;' })}
+        <input type="text" placeholder="${data.searchPlaceholder}" class="ru-search-input" style="border:none;outline:none;background:transparent;font-size:1rem;font-weight:400;width:100%;color:#3b82f6;letter-spacing:0.01em;" />
       </div>`
     : ''
 
   const buttonsArr = [
-    data.showSignIn ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-sign-in-label="${data.signInLabel}" data-profile-url="/me/personal" data-link-style="color:${data.textColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;white-space:nowrap;border:1px solid ${data.textColor};border-radius:8px;padding:0.5rem 1.25rem;display:inline-flex;align-items:center;" style="position:relative;display:inline-flex;align-items:center;"><a href="${data.signInUrl}" style="color:${data.textColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;white-space:nowrap;border:1px solid ${data.textColor};border-radius:8px;padding:0.5rem 1.25rem;display:inline-flex;align-items:center;">${data.signInLabel}</a></span>` : '',
-    data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${data.textColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;white-space:nowrap;border:1px solid ${data.textColor};border-radius:8px;padding:0.5rem 1.25rem;display:inline-flex;align-items:center;">${data.contactUsLabel}</a>` : '',
+    data.showSignIn ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-sign-in-label="${data.signInLabel}" data-profile-url="/me/personal" data-link-style="color:${data.textColor};font-size:1rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;" style="position:relative;display:inline-flex;align-items:center;"><a href="${data.signInUrl}" style="color:${data.textColor};font-size:1rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;">${data.signInLabel}</a></span>` : '',
+    data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${data.textColor};font-size:1rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;">${data.contactUsLabel}</a>` : '',
     data.showCart
       ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
       : '',
   ].filter(Boolean)
   const buttonsEl = buttonsArr.length
-    ? `<div style="display:flex;align-items:center;gap:1rem;">${buttonsArr.join('')}</div>`
+    ? `<div style="display:flex;align-items:center;gap:1.5rem;">${buttonsArr.join('')}</div>`
     : ''
 
   const visibleNavLinks = data.navLinks.filter(l => l.visible !== false)
-  const staticLinks = visibleNavLinks.map(l => `<a href="${l.url}" style="${linkStyle}">${l.label}</a>`).join('')
+  const staticLinks = visibleNavLinks.map(l => `<div style="position:relative;"><a href="${l.url}" style="${linkStyle}">${l.label}</a></div>`).join('')
   const dynamicPlaceholder = data.dynamicCategories
     ? `<div
         data-rubikx-component='CategoryNav'
@@ -266,7 +266,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
       </div>`
     : ''
   const linksEl = (staticLinks || dynamicPlaceholder)
-    ? `<nav style="display:flex;align-items:center;gap:1.5rem;">${staticLinks}${dynamicPlaceholder}</nav>`
+    ? `<nav style="display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem;">${staticLinks}${dynamicPlaceholder}</nav>`
     : ''
 
   const lowerJustifyMap: Record<string, string> = {
@@ -287,14 +287,14 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     `<div style="display:flex;align-items:center;gap:0.75rem;justify-content:${justify};">${items.join('')}</div>`
 
   const lowerRow = isLowerLinks && linksEl
-    ? `<div style="margin:0 auto;display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding-top:0.625rem;padding-bottom:0.375rem;">${linksEl}</div>`
+    ? `<div style="margin:0 auto;display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding:0.5rem 0;gap:0.75rem;">${linksEl}</div>`
     : ''
 
   const sectionStyle = data.sticky ? 'position:sticky;top:0;z-index:9999' : ''
 
   return `<section data-component-title="Ru1-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 <nav style="${navStyle}">
-  <div style="margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;${topRowBorder}">
+  <div style="margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;height:80px;${topRowBorder}">
     ${zone(cols.left,   'flex-start')}
     ${zone(cols.center, 'center')}
     ${zone(cols.right,  'flex-end')}
