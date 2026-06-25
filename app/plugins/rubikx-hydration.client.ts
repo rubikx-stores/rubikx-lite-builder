@@ -124,14 +124,14 @@ async function loadCartCount(el: HTMLElement, companyId?: number) {
 async function loadAuthState(el: HTMLElement, companyId?: number) {
   if (document.getElementById('page-builder-wrapper')) return
   const profileUrl = el.dataset.profileUrl ?? '/me/personal'
-
-  const signInLink = el.querySelector<HTMLElement>('a')
+  const signInBtn = document.querySelector<HTMLElement>('[data-auth-signin-btn]')
 
   try {
     await $fetch<{ user: { name: string; email: string } }>('/api/auth/me')
 
-    // User is logged in — hide sign in link, inject profile icon + dropdown
-    if (signInLink) signInLink.style.display = 'none'
+    // Hide Sign In button, show profile shell
+    if (signInBtn) signInBtn.style.display = 'none'
+    el.style.display = 'inline-flex'
 
     // Remove existing injected elements if re-running
     el.querySelector('[data-auth-profile]')?.remove()
@@ -152,14 +152,12 @@ async function loadAuthState(el: HTMLElement, companyId?: number) {
       <a href="/logout" style="display:block;padding:10px 16px;font-size:14px;color:#ef4444;text-decoration:none;white-space:nowrap;">Sign out</a>
     `
 
-    // Toggle dropdown on click
     profileBtn.addEventListener('click', (e) => {
       e.stopPropagation()
       const isOpen = dropdown.style.display === 'block'
       dropdown.style.display = isOpen ? 'none' : 'block'
     })
 
-    // Close dropdown on outside click
     document.addEventListener('click', () => {
       dropdown.style.display = 'none'
     }, { once: false })
@@ -168,8 +166,9 @@ async function loadAuthState(el: HTMLElement, companyId?: number) {
     el.appendChild(dropdown)
 
   } catch {
-    // User is not logged in — show sign in link as normal
-    if (signInLink) signInLink.style.display = ''
+    // Not logged in — show Sign In button, keep profile shell hidden
+    if (signInBtn) signInBtn.style.display = ''
+    el.style.display = 'none'
     el.querySelector('[data-auth-profile]')?.remove()
     el.querySelector('[data-auth-dropdown]')?.remove()
   }
