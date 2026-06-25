@@ -1,5 +1,6 @@
 import { buildCategoryTree } from '~/composables/categories/buildCategoryTree'
 import type { FlatCategory, CategoryNode } from '~/composables/categories/buildCategoryTree'
+import { icon } from '~/composables/useIconSvg'
 
 function renderCategoryTree(categories: CategoryNode[], linkStyle: string, depth = 0): string {
   return categories.map(cat => {
@@ -121,6 +122,7 @@ async function loadCartCount(el: HTMLElement, companyId?: number) {
 }
 
 async function loadAuthState(el: HTMLElement, companyId?: number) {
+  if (document.getElementById('page-builder-wrapper')) return
   const signInUrl = el.dataset.signInUrl ?? '/signin'
   const signInLabel = el.dataset.signInLabel ?? 'Sign In'
   const profileUrl = el.dataset.profileUrl ?? '/me/personal'
@@ -143,10 +145,7 @@ async function loadAuthState(el: HTMLElement, companyId?: number) {
     const profileBtn = document.createElement('button')
     profileBtn.setAttribute('data-auth-profile', 'true')
     profileBtn.style.cssText = 'background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;padding:0;'
-    profileBtn.innerHTML = `
-      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1112 3a9 9 0 016.879 14.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-      <span style="${linkStyle}">${user.name}</span>
-    `
+    profileBtn.innerHTML = icon('user', { size: 24, style: 'flex-shrink:0;' })
 
     // Dropdown
     const dropdown = document.createElement('div')

@@ -1,6 +1,7 @@
 import type { FieldConfig } from '../editor/useBlockRegistry'
 import { productImageSrc } from '../useProductImageSrc'
 import { socialIconHtml } from '../useSocialIcons'
+import { icon } from '../useIconSvg'
 
 
 export const megaMenuHeaderSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 32">
@@ -43,6 +44,11 @@ export interface MegaMenuHeaderData {
   searchAlign: string
   ctaButtons: CtaButton[]
   buttonsAlign: string
+  showCart: boolean
+  cartUrl: string
+  showSignIn: boolean
+  signInUrl: string
+  signInLabel: string
   buttonBorderRadius: number
   bgColor: string
   textColor: string
@@ -76,9 +82,14 @@ export const megaMenuHeaderDefaults: MegaMenuHeaderData = {
   searchAlign: 'center',
 
   ctaButtons: [
-    { label: 'Sign In',        href: '/signin',   style: 'outline', textColor: '#1f2937', bgColor: '#ffffff',     borderColor: '#1f2937' },
+    { label: 'Sign In', href: '/signin', style: 'outline', textColor: '#1f2937', bgColor: '#ffffff', borderColor: '#1f2937' },
   ],
   buttonsAlign: 'right',
+  showCart: true,
+  cartUrl: '/cart',
+  showSignIn: false,
+  signInUrl: '/signin',
+  signInLabel: 'Sign In',
   buttonBorderRadius: 6,
 
   bgColor: '#ffffff',
@@ -139,6 +150,11 @@ export const megaMenuHeaderFields: FieldConfig[] = [
   },
   { key: 'buttonsAlign',    label: 'Buttons Position',      type: 'select',
     options: ['left', 'center', 'right']                                    },
+  { key: 'showSignIn',  label: 'Show Sign In',    type: 'toggle' },
+  { key: 'signInLabel', label: 'Sign In Label',   type: 'text',  placeholder: 'Sign In' },
+  { key: 'signInUrl',   label: 'Sign In URL',     type: 'url'    },
+  { key: 'showCart',    label: 'Show Cart Icon',  type: 'toggle' },
+  { key: 'cartUrl',     label: 'Cart URL',        type: 'url'    },
   { key: 'buttonBorderRadius', label: 'Button Radius (px)', type: 'number',
     placeholder: '6 — corner roundness for all CTA buttons'                },
 
@@ -167,7 +183,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
 
   const searchEl = data.showSearch
     ? `<div style="display:flex;align-items:center;border:1px solid #d1d5db;border-radius:9999px;padding:0.375rem 0.75rem;gap:0.5rem;min-width:160px;max-width:220px;">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+        ${icon('magnifyingGlass', { size: 16, style: 'flex-shrink:0;' })}
         <input type="text" placeholder="${data.searchPlaceholder}" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:${data.textColor};" />
       </div>`
     : ''
@@ -227,14 +243,21 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     ? `<nav style='display:flex;align-items:center;gap:1.5rem;'>${staticLinks}${dynamicPlaceholder}</nav>`
     : ''
 
-  const buttonsEl = data.ctaButtons.length
-    ? `<div style="display:flex;align-items:center;gap:0.5rem;">${
-        data.ctaButtons.map(btn => {
-          const base = `display:inline-block;padding:0.4375rem 1rem;border-radius:${data.buttonBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:500;white-space:nowrap;`
-          const bg = btn.style === 'outline' ? (btn.bgColor || 'transparent') : btn.bgColor
-          return `<a href="${btn.href}" style="${base}background:${bg};color:${btn.textColor};border:1.5px solid ${btn.borderColor};">${btn.label}</a>`
-        }).join('')
-      }</div>`
+  const signInEl = data.showSignIn
+    ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-sign-in-label="${data.signInLabel}" data-profile-url="/me/personal" data-link-style="${linkStyle}" style="position:relative;display:inline-flex;align-items:center;"><a href="${data.signInUrl}" style="${linkStyle}">${data.signInLabel}</a></span>`
+    : ''
+  const cartEl = data.showCart
+    ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
+    : ''
+  const ctaEl = data.ctaButtons.length
+    ? data.ctaButtons.map(btn => {
+        const base = `display:inline-block;padding:0.4375rem 1rem;border-radius:${data.buttonBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:500;white-space:nowrap;`
+        const bg = btn.style === 'outline' ? (btn.bgColor || 'transparent') : btn.bgColor
+        return `<a href="${btn.href}" style="${base}background:${bg};color:${btn.textColor};border:1.5px solid ${btn.borderColor};">${btn.label}</a>`
+      }).join('')
+    : ''
+  const buttonsEl = (signInEl || cartEl || ctaEl)
+    ? `<div style="display:flex;align-items:center;gap:0.5rem;">${signInEl}${ctaEl}${cartEl}</div>`
     : ''
 
   const lowerJustifyMap: Record<string, string> = {
@@ -255,7 +278,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     `<div style="display:flex;align-items:center;gap:0.75rem;justify-content:${justify};">${items.join('')}</div>`
 
   const lowerRow = isLowerLinks && linksEl
-    ? `<div class="max-w-7xl mx-auto" style="display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding-top:0.5rem;">${linksEl}</div>`
+    ? `<div style="max-width:80rem;margin:0 auto;display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding-top:0.5rem;">${linksEl}</div>`
     : ''
 
   const hasMegaMenu = data.navLinks.some(l => l.megaMenu && l.megaMenu.length > 0)
@@ -271,7 +294,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
 .ru-pd{display:none;width:100%;border-top:1px solid #e5e7eb;overflow:hidden;}
 </style>
 <nav style="${navStyle}">
-  <div class="max-w-7xl mx-auto" style="display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
+  <div style="max-width:80rem;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
     ${zone(cols.left,   'flex-start')}
     ${zone(cols.center, 'center')}
     ${zone(cols.right,  'flex-end')}

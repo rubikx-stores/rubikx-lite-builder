@@ -1,4 +1,5 @@
 ﻿import type { FieldConfig } from '../editor/useBlockRegistry'
+import { icon } from '../useIconSvg'
 import {
   megaMenuHeaderDefaults, megaMenuHeaderFields, renderMegaMenuHeader,
   ru1FooterDefaults as layoutFooter1Defaults, ru1FooterFields as layoutFooter1Fields, renderRu1Footer as renderLayoutFooter1,
@@ -126,7 +127,7 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   showSearch: true,
   searchPlaceholder: 'Search...',
   searchAlign: 'center',
-  searchWidth: 220,
+  searchWidth: 480,
   navLinks: [
     { label: 'Home', url: '/', visible: true },
     { label: 'Shop', url: '/shop', visible: true },
@@ -149,11 +150,11 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   textColor: '#111827',
   fontSize: 14,
   fontWeight: '500',
-  paddingY: 12,
+  paddingY: 14,
   paddingX: 16,
-  borderStyle: 'none',
+  borderStyle: 'solid',
   borderWidth: 1,
-  borderColor: '#e5e7eb',
+  borderColor: '#64748b',
 }
 
 export const ru1NavbarFields: FieldConfig[] = [
@@ -214,8 +215,11 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     `background:${data.bgColor}`,
     `color:${data.textColor}`,
     `padding:${data.paddingY}px ${data.paddingX}px`,
-    data.borderStyle !== 'none' ? `border-bottom:${data.borderWidth}px ${data.borderStyle} ${data.borderColor}` : '',
   ].filter(Boolean).join(';')
+
+  const topRowBorder = data.borderStyle !== 'none'
+    ? `padding-bottom:1.25rem;border-bottom:${data.borderWidth}px ${data.borderStyle} ${data.borderColor};margin-bottom:0.75rem;`
+    : ''
 
   const logoInner = data.logoUrl
     ? `<img src="${data.logoUrl}" alt="${data.brandName}" style="width:${data.logoWidth}px;height:auto;display:block;" />`
@@ -224,23 +228,23 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 
   const linkStyle = `color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;white-space:nowrap;`
 
-  const searchW = data.searchWidth || 220
+  const searchW = data.searchWidth || 400
   const searchEl = data.showSearch
-    ? `<div style="display:flex;align-items:center;border:1px solid #d1d5db;border-radius:9999px;padding:0.375rem 0.75rem;gap:0.5rem;width:${searchW}px;">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
-        <input type="text" placeholder="${data.searchPlaceholder}" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:${data.textColor};" />
+    ? `<div style="display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:8px;padding:0.5rem 0.875rem;gap:0.5rem;width:${searchW}px;">
+        ${icon('magnifyingGlass', { size: 16, stroke: '#3b82f6', style: 'flex-shrink:0;' })}
+        <input type="text" placeholder="${data.searchPlaceholder}" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:#3b82f6;" />
       </div>`
     : ''
 
   const buttonsArr = [
-    data.showSignIn ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-sign-in-label="${data.signInLabel}" data-profile-url="/me/personal" data-link-style="${linkStyle}" style="position:relative;display:inline-flex;align-items:center;"><a href="${data.signInUrl}" style="${linkStyle}">${data.signInLabel}</a></span>` : '',
-    data.showContactUs ? `<a href="${data.contactUsUrl}" style="${linkStyle}">${data.contactUsLabel}</a>` : '',
+    data.showSignIn ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-sign-in-label="${data.signInLabel}" data-profile-url="/me/personal" data-link-style="color:${data.textColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;white-space:nowrap;border:1px solid ${data.textColor};border-radius:8px;padding:0.5rem 1.25rem;display:inline-flex;align-items:center;" style="position:relative;display:inline-flex;align-items:center;"><a href="${data.signInUrl}" style="color:${data.textColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;white-space:nowrap;border:1px solid ${data.textColor};border-radius:8px;padding:0.5rem 1.25rem;display:inline-flex;align-items:center;">${data.signInLabel}</a></span>` : '',
+    data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${data.textColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;white-space:nowrap;border:1px solid ${data.textColor};border-radius:8px;padding:0.5rem 1.25rem;display:inline-flex;align-items:center;">${data.contactUsLabel}</a>` : '',
     data.showCart
-      ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;"><svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg></a></span>`
+      ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
       : '',
   ].filter(Boolean)
   const buttonsEl = buttonsArr.length
-    ? `<div style="display:flex;align-items:center;gap:0.5rem;">${buttonsArr.join('')}</div>`
+    ? `<div style="display:flex;align-items:center;gap:1rem;">${buttonsArr.join('')}</div>`
     : ''
 
   const visibleNavLinks = data.navLinks.filter(l => l.visible !== false)
@@ -283,14 +287,14 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     `<div style="display:flex;align-items:center;gap:0.75rem;justify-content:${justify};">${items.join('')}</div>`
 
   const lowerRow = isLowerLinks && linksEl
-    ? `<div style="margin:0 auto;display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding-top:0.5rem;">${linksEl}</div>`
+    ? `<div style="margin:0 auto;display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding-top:0.625rem;padding-bottom:0.375rem;">${linksEl}</div>`
     : ''
 
   const sectionStyle = data.sticky ? 'position:sticky;top:0;z-index:9999' : ''
 
   return `<section data-component-title="Ru1-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 <nav style="${navStyle}">
-  <div style="margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
+  <div style="margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;${topRowBorder}">
     ${zone(cols.left,   'flex-start')}
     ${zone(cols.center, 'center')}
     ${zone(cols.right,  'flex-end')}
