@@ -1859,7 +1859,7 @@ export const ru2HomeNavbarDefaults = {
   showBottomBorder: true,
   dynamicCategories: true,
   ctaButtons: [
-    { label: 'Sign In', href: '/signin', style: 'outline', textColor: '#f59e0b', bgColor: 'transparent', borderColor: '#f59e0b' },
+    { label: 'Sign In', href: '/login', style: 'outline', textColor: '#f59e0b', bgColor: 'transparent', borderColor: '#f59e0b' },
     { label: 'Shop Now', href: '/shop', style: 'filled', textColor: '#0f1923', bgColor: '#f59e0b', borderColor: '#f59e0b' },
   ],
 }
@@ -1989,7 +1989,7 @@ export const ru3HomeNavbarDefaults = {
   showBottomBorder: true,
   dynamicCategories: true,
   ctaButtons: [
-    { label: 'Sign In', href: '/signin', style: 'outline', textColor: '#0f2d4a', bgColor: 'transparent', borderColor: '#0f2d4a' },
+    { label: 'Sign In', href: '/login', style: 'outline', textColor: '#0f2d4a', bgColor: 'transparent', borderColor: '#0f2d4a' },
     { label: 'Browse Gear', href: '/shop', style: 'filled', textColor: '#ffffff', bgColor: '#0f2d4a', borderColor: '#0f2d4a' },
   ],
 }
@@ -2154,7 +2154,7 @@ export const ru4HomeNavbarDefaults = {
   showBottomBorder: true,
   dynamicCategories: true,
   ctaButtons: [
-    { label: 'Sign In', href: '/signin', style: 'outline', textColor: '#1a1a1a', bgColor: 'transparent', borderColor: '#1a1a1a' },
+    { label: 'Sign In', href: '/login', style: 'outline', textColor: '#1a1a1a', bgColor: 'transparent', borderColor: '#1a1a1a' },
     { label: 'Shop Now', href: '/shop', style: 'filled', textColor: '#ffffff', bgColor: '#e85d26', borderColor: '#e85d26' },
   ],
 }
