@@ -179,55 +179,11 @@ async function loadAuthState(el: HTMLElement, companyId?: number) {
   }
 }
 
-function loadMobileNav(el: HTMLElement, companyId?: number) {
-  if (el.dataset.hydrated === 'true') return
-  el.dataset.hydrated = 'true'
-
-  const nav = el.closest('nav') || el.closest('section')
-  if (!nav) return
-
-  // Use static drawer as content source, then hide it — position:fixed inside
-  // the builder's overflow:scroll container is clipped, so we re-create both
-  // drawer and overlay appended directly to document.body instead.
-  const staticDrawer = nav.querySelector<HTMLElement>('[data-mobile-drawer]')
-  const staticOverlay = nav.querySelector<HTMLElement>('[data-mobile-overlay]')
-  if (staticDrawer) staticDrawer.style.display = 'none'
-  if (staticOverlay) staticOverlay.style.display = 'none'
-
-  const overlay = document.createElement('div')
-  overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;'
-  document.body.appendChild(overlay)
-
-  const drawer = document.createElement('div')
-  drawer.style.cssText = 'position:fixed;top:0;left:-320px;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transition:left 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;'
-  if (staticDrawer) drawer.innerHTML = staticDrawer.innerHTML
-  document.body.appendChild(drawer)
-
-  const closeBtn = drawer.querySelector<HTMLElement>('[data-mobile-close]')
-
-  function openDrawer() {
-    drawer.style.left = '0'
-    overlay.style.display = 'block'
-    document.body.style.overflow = 'hidden'
-  }
-
-  function closeDrawer() {
-    drawer.style.left = '-320px'
-    overlay.style.display = 'none'
-    document.body.style.overflow = ''
-  }
-
-  el.addEventListener('click', openDrawer)
-  if (closeBtn) closeBtn.addEventListener('click', closeDrawer)
-  overlay.addEventListener('click', closeDrawer)
-}
-
 const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> = {
   loadCategories,
   loadSlider,
   loadCartCount,
   loadAuthState,
-  loadMobileNav,
 }
 
 export function hydrateComponents(companyId = 3) {
@@ -255,6 +211,58 @@ export function hydrateComponents(companyId = 3) {
     }
     handler(el, companyId)
   })
+
+  // Global delegation for mobile nav — works regardless of when HTML is in the DOM
+  if (!(window as any).__rbxNavDelegation) {
+    ;(window as any).__rbxNavDelegation = true
+
+    let rbxDrawer: HTMLElement | null = null
+    let rbxOverlay: HTMLElement | null = null
+
+    function closeMobileNav() {
+      if (rbxDrawer) rbxDrawer.style.left = '-320px'
+      if (rbxOverlay) rbxOverlay.style.display = 'none'
+      document.body.style.overflow = ''
+    }
+
+    document.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement
+
+      // Hamburger open button
+      if (t.closest('[data-rb-nav-open]')) {
+        if (!rbxDrawer) {
+          const btn = t.closest<HTMLElement>('[data-rb-nav-open]')!
+          const nav = btn.closest('nav') || btn.closest('section')
+          const src = nav?.querySelector<HTMLElement>('[data-mobile-drawer]')
+
+          rbxOverlay = document.createElement('div')
+          rbxOverlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;'
+          rbxOverlay.addEventListener('click', closeMobileNav)
+          document.body.appendChild(rbxOverlay)
+
+          rbxDrawer = document.createElement('div')
+          rbxDrawer.style.cssText = 'position:fixed;top:0;left:-320px;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transition:left 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;'
+          if (src) rbxDrawer.innerHTML = src.innerHTML
+          document.body.appendChild(rbxDrawer)
+
+          // Hide the static in-nav drawer (clipped by builder overflow container)
+          if (src) src.style.display = 'none'
+          const staticOverlay = nav?.querySelector<HTMLElement>('[data-mobile-overlay]')
+          if (staticOverlay) staticOverlay.style.display = 'none'
+        }
+
+        rbxDrawer.style.left = '0'
+        rbxOverlay!.style.display = 'block'
+        document.body.style.overflow = 'hidden'
+        return
+      }
+
+      // Close button inside drawer or static drawer
+      if (t.closest('[data-mobile-close]')) {
+        closeMobileNav()
+      }
+    })
+  }
 
   // Watch for dynamically added slider elements
   if (!(window as any).__rbxSliderObserver) {

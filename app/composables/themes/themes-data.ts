@@ -319,9 +319,9 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   ${logoEl}
   <div style="display:flex;align-items:center;gap:1rem;">
     ${data.showCart ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>` : ''}
-    <span data-rubikx-component="MobileNav" data-on-mount="loadMobileNav" data-text-color="${data.textColor}" style="cursor:pointer;display:inline-flex;">
+    <button data-rb-nav-open="true" style="background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;">
       <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.textColor}" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-    </span>
+    </button>
   </div>
 </div>
 
