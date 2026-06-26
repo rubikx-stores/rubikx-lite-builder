@@ -1,24 +1,36 @@
 import { buildCategoryTree } from '~/composables/categories/buildCategoryTree'
-import type { FlatCategory, CategoryNode } from '~/composables/categories/buildCategoryTree'
+import type {
+  FlatCategory,
+  CategoryNode,
+} from '~/composables/categories/buildCategoryTree'
 import { icon } from '~/composables/useIconSvg'
 
 // Set true to preview logged-in auth state inside the builder
 const SIMULATE_AUTH = false
 
-function renderCategoryTree(categories: CategoryNode[], linkStyle: string, depth = 0): string {
-  return categories.map(cat => {
-    const slug = cat.headlessName ?? cat.name.toLowerCase().replace(/\s+/g, '-')
-    const label = cat.displayName.includes(' / ') ? cat.displayName.split(' / ').pop()! : cat.displayName
-    if (!cat.children || cat.children.length === 0) {
-      return `<a href='/${slug}' style='display:block;padding:6px ${16 + depth * 12}px;${linkStyle}text-decoration:none;'>${label}</a>`
-    }
-    return `<div style='padding:4px 0;'>
+function renderCategoryTree(
+  categories: CategoryNode[],
+  linkStyle: string,
+  depth = 0
+): string {
+  return categories
+    .map((cat) => {
+      const slug =
+        cat.headlessName ?? cat.name.toLowerCase().replace(/\s+/g, '-')
+      const label = cat.displayName.includes(' / ')
+        ? cat.displayName.split(' / ').pop()!
+        : cat.displayName
+      if (!cat.children || cat.children.length === 0) {
+        return `<a href='/${slug}' style='display:block;padding:6px ${16 + depth * 12}px;${linkStyle}text-decoration:none;'>${label}</a>`
+      }
+      return `<div style='padding:4px 0;'>
       <a href='/${slug}' style='display:block;padding:6px 16px;${linkStyle}text-decoration:none;font-weight:600;'>${label}</a>
       <div style='padding-left:8px;border-left:2px solid #f0f0f0;margin:2px 16px;'>
         ${renderCategoryTree(cat.children, linkStyle, depth + 1)}
       </div>
     </div>`
-  }).join('')
+    })
+    .join('')
 }
 
 async function loadCategories(el: HTMLElement, companyId = 3) {
@@ -31,33 +43,50 @@ async function loadCategories(el: HTMLElement, companyId = 3) {
   const fontWeight = el.dataset.fontWeight ?? '400'
   const linkStyle = `color:${linkColor};font-size:${fontSize}px;font-weight:${fontWeight};white-space:nowrap;`
 
-  const dropdown = el.querySelector<HTMLElement>('div[style*="position:absolute"], div[style*="position: absolute"]')
+  const dropdown = el.querySelector<HTMLElement>(
+    'div[style*="position:absolute"], div[style*="position: absolute"]'
+  )
   if (!dropdown) return
 
   try {
-    const flat = await $fetch<FlatCategory[]>('/api/categories', { query: { companyId } })
+    const flat = await $fetch<FlatCategory[]>('/api/categories', {
+      query: { companyId },
+    })
     const tree = buildCategoryTree(flat).slice(0, maxItems)
 
     if (tree.length > 6) {
       // Mega menu — horizontal grid layout
       el.setAttribute('data-mega', 'true')
-      dropdown.innerHTML = tree.map(cat => {
-        const slug = cat.headlessName ?? cat.name.toLowerCase().replace(/\s+/g, '-')
-        const childrenHtml = (cat.children ?? []).map(child => {
-          const childSlug = child.headlessName ?? child.name.toLowerCase().replace(/\s+/g, '-')
-          const childLabel = child.displayName.includes(' / ') ? child.displayName.split(' / ').pop()! : child.displayName
-          return `<div class='rubikx-mega-child'><a href='/${childSlug}'>${childLabel}</a></div>`
-        }).join('')
-        return `<div>
+      dropdown.innerHTML = tree
+        .map((cat) => {
+          const slug =
+            cat.headlessName ?? cat.name.toLowerCase().replace(/\s+/g, '-')
+          const childrenHtml = (cat.children ?? [])
+            .map((child) => {
+              const childSlug =
+                child.headlessName ??
+                child.name.toLowerCase().replace(/\s+/g, '-')
+              const childLabel = child.displayName.includes(' / ')
+                ? child.displayName.split(' / ').pop()!
+                : child.displayName
+              return `<div class='rubikx-mega-child'><a href='/${childSlug}'>${childLabel}</a></div>`
+            })
+            .join('')
+          return `<div>
           <div class='rubikx-mega-header'><a href='/${slug}'>${cat.displayName}</a></div>
           ${childrenHtml}
         </div>`
-      }).join('')
+        })
+        .join('')
     } else {
       // Simple vertical dropdown — always expanded
       el.removeAttribute('data-mega')
       dropdown.innerHTML = renderCategoryTree(tree, linkStyle)
-      dropdown.querySelectorAll<HTMLElement>('.rubikx-cat-children').forEach(el => { el.style.display = 'block' })
+      dropdown
+        .querySelectorAll<HTMLElement>('.rubikx-cat-children')
+        .forEach((el) => {
+          el.style.display = 'block'
+        })
     }
   } catch (e) {
     console.error('[Rubikx] Failed to load categories:', e)
@@ -83,7 +112,8 @@ function loadSlider(el: HTMLElement) {
     slides[cur].style.pointerEvents = 'none'
     if (dots[cur]) {
       dots[cur].style.width = '8px'
-      dots[cur].style.background = dots[cur].dataset.inactiveColor ?? 'rgba(255,255,255,0.5)'
+      dots[cur].style.background =
+        dots[cur].dataset.inactiveColor ?? 'rgba(255,255,255,0.5)'
     }
     cur = (n + slides.length) % slides.length
     slides[cur].style.opacity = '1'
@@ -94,12 +124,32 @@ function loadSlider(el: HTMLElement) {
     }
   }
 
-  function startTimer() { if (autoPlay) timer = setInterval(() => goTo(cur + 1), interval) }
-  function stopTimer() { if (timer) clearInterval(timer) }
+  function startTimer() {
+    if (autoPlay) timer = setInterval(() => goTo(cur + 1), interval)
+  }
+  function stopTimer() {
+    if (timer) clearInterval(timer)
+  }
 
-  if (prevBtn) prevBtn.addEventListener('click', () => { stopTimer(); goTo(cur - 1); startTimer() })
-  if (nextBtn) nextBtn.addEventListener('click', () => { stopTimer(); goTo(cur + 1); startTimer() })
-  dots.forEach((d, i) => d.addEventListener('click', () => { stopTimer(); goTo(i); startTimer() }))
+  if (prevBtn)
+    prevBtn.addEventListener('click', () => {
+      stopTimer()
+      goTo(cur - 1)
+      startTimer()
+    })
+  if (nextBtn)
+    nextBtn.addEventListener('click', () => {
+      stopTimer()
+      goTo(cur + 1)
+      startTimer()
+    })
+  dots.forEach((d, i) =>
+    d.addEventListener('click', () => {
+      stopTimer()
+      goTo(i)
+      startTimer()
+    })
+  )
   el.addEventListener('mouseenter', stopTimer)
   el.addEventListener('mouseleave', startTimer)
 
@@ -119,7 +169,8 @@ async function loadCartCount(el: HTMLElement, companyId?: number) {
     const badge = document.createElement('span')
     badge.setAttribute('data-cart-badge', 'true')
     badge.textContent = String(count)
-    badge.style.cssText = 'position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none;'
+    badge.style.cssText =
+      'position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none;'
     el.appendChild(badge)
   }
 }
@@ -129,34 +180,85 @@ async function loadAuthState(el: HTMLElement, companyId?: number) {
   if (inBuilder && !SIMULATE_AUTH) return
   const profileUrl = el.dataset.profileUrl ?? '/me/personal'
 
-  // New HTML: standalone Sign In button with data-auth-signin-btn outside the shell
-  // Old HTML (backwards compat): Sign In link is a child <a> inside the shell itself
-  const externalSignInBtn = document.querySelector<HTMLElement>('[data-auth-signin-btn]')
+  // New layout: querySelectorAll covers both desktop + mobile drawer Sign In buttons
+  // Old layout (backwards compat): Sign In link is a child <a> inside the shell itself
+  const externalSignInBtns = Array.from(
+    document.querySelectorAll<HTMLElement>('[data-auth-signin-btn]')
+  )
   const internalSignInLink = el.querySelector<HTMLElement>('a')
-  const signInEl = externalSignInBtn ?? internalSignInLink
-  const isNewLayout = !!externalSignInBtn
+  const isNewLayout = externalSignInBtns.length > 0
+  const signInEls: HTMLElement[] = isNewLayout
+    ? externalSignInBtns
+    : internalSignInLink
+      ? [internalSignInLink]
+      : []
 
   try {
-    if (!SIMULATE_AUTH) await $fetch<{ user: { name: string; email: string } }>('/api/auth/me')
+    let userName = ''
+    if (SIMULATE_AUTH) {
+      userName = 'Demo User'
+    } else {
+      const res = await $fetch<{ user: { name: string; email: string } }>(
+        '/api/auth/me'
+      )
+      userName = res.user?.name ?? ''
+    }
 
-    if (signInEl) signInEl.style.display = 'none'
+    signInEls.forEach((btn) => {
+      btn.style.display = 'none'
+    })
     el.style.display = 'inline-flex'
 
     el.querySelector('[data-auth-profile]')?.remove()
     el.querySelector('[data-auth-dropdown]')?.remove()
 
+    const initials = userName
+      ? userName
+          .trim()
+          .split(/\s+/)
+          .map((n: string) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
+      : ''
+
     const profileBtn = document.createElement('button')
     profileBtn.setAttribute('data-auth-profile', 'true')
-    profileBtn.style.cssText = 'background:none;border:none;cursor:pointer;display:flex;align-items:center;padding:0;'
-    profileBtn.innerHTML = icon('user', { size: 24, style: 'flex-shrink:0;' })
+    profileBtn.style.cssText =
+      'background:none;border:none;cursor:pointer;display:flex;align-items:center;padding:0;'
+
+    const avatar = document.createElement('div')
+    avatar.style.cssText =
+      'width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;'
+    if (initials) {
+      avatar.style.cssText +=
+        'background:#6366f1;color:#fff;font-size:13px;font-weight:600;letter-spacing:0.025em;'
+      avatar.textContent = initials
+    } else {
+      avatar.style.cssText += 'background:#e5e7eb;'
+      avatar.innerHTML = icon('user', { size: 20, style: 'flex-shrink:0;' })
+    }
+    profileBtn.appendChild(avatar)
 
     const dropdown = document.createElement('div')
     dropdown.setAttribute('data-auth-dropdown', 'true')
-    dropdown.style.cssText = 'display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.12);min-width:160px;z-index:9999;padding:4px 0;'
-    dropdown.innerHTML = `
-      <a href="${profileUrl}" style="display:block;padding:10px 16px;font-size:14px;color:#111827;text-decoration:none;white-space:nowrap;">Your Profile</a>
-      <a href="/logout" style="display:block;padding:10px 16px;font-size:14px;color:#ef4444;text-decoration:none;white-space:nowrap;">Sign out</a>
-    `
+    dropdown.style.cssText =
+      'display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.12);min-width:160px;z-index:9999;padding:4px 0;'
+
+    const profileLink = document.createElement('a')
+    profileLink.setAttribute('href', profileUrl)
+    profileLink.textContent = 'Your Profile'
+    profileLink.style.cssText =
+      'display:block;padding:10px 16px;font-size:14px;color:#111827;text-decoration:none;white-space:nowrap;'
+
+    const signOutLink = document.createElement('a')
+    signOutLink.setAttribute('href', '/logout')
+    signOutLink.textContent = 'Sign out'
+    signOutLink.style.cssText =
+      'display:block;padding:10px 16px;font-size:14px;color:#ef4444;text-decoration:none;white-space:nowrap;'
+
+    dropdown.appendChild(profileLink)
+    dropdown.appendChild(signOutLink)
 
     profileBtn.addEventListener('click', (e) => {
       e.stopPropagation()
@@ -164,16 +266,20 @@ async function loadAuthState(el: HTMLElement, companyId?: number) {
       dropdown.style.display = isOpen ? 'none' : 'block'
     })
 
-    document.addEventListener('click', () => {
-      dropdown.style.display = 'none'
-    }, { once: false })
+    document.addEventListener(
+      'click',
+      () => {
+        dropdown.style.display = 'none'
+      },
+      { once: false }
+    )
 
     el.appendChild(profileBtn)
     el.appendChild(dropdown)
-
   } catch {
-    if (signInEl) signInEl.style.display = ''
-    // Only hide the shell for new layout — old layout shell is always visible
+    signInEls.forEach((btn) => {
+      btn.style.display = ''
+    })
     if (isNewLayout) el.style.display = 'none'
     el.querySelector('[data-auth-profile]')?.remove()
     el.querySelector('[data-auth-dropdown]')?.remove()
@@ -188,8 +294,12 @@ function loadMobileNav(el: HTMLElement) {
   if (!nav) return
 
   // Clean up any drawer/overlay left by a previous hydration run (e.g. builder re-render)
-  document.querySelectorAll('[data-rb-nav-drawer-live]').forEach(n => n.remove())
-  document.querySelectorAll('[data-rb-nav-overlay-live]').forEach(n => n.remove())
+  document
+    .querySelectorAll('[data-rb-nav-drawer-live]')
+    .forEach((n) => n.remove())
+  document
+    .querySelectorAll('[data-rb-nav-overlay-live]')
+    .forEach((n) => n.remove())
 
   // Hide the static in-nav copies — position:fixed inside the builder's overflow:scroll
   // container is clipped, so we re-create both appended to document.body instead.
@@ -201,13 +311,15 @@ function loadMobileNav(el: HTMLElement) {
   // Overlay — all styles set via JS so Odoo stripping inline CSS doesn't matter
   const overlay = document.createElement('div')
   overlay.setAttribute('data-rb-nav-overlay-live', 'true')
-  overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;'
+  overlay.style.cssText =
+    'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;'
   document.body.appendChild(overlay)
 
   // Drawer — content copied from the static drawer, position:fixed set via JS
   const drawer = document.createElement('div')
   drawer.setAttribute('data-rb-nav-drawer-live', 'true')
-  drawer.style.cssText = 'position:fixed;top:0;left:-320px;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transition:left 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;'
+  drawer.style.cssText =
+    'position:fixed;top:0;left:-320px;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transition:left 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;'
   if (staticDrawer) drawer.innerHTML = staticDrawer.innerHTML
   document.body.appendChild(drawer)
 
@@ -230,13 +342,14 @@ function loadMobileNav(el: HTMLElement) {
   overlay.addEventListener('click', closeDrawer)
 }
 
-const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> = {
-  loadCategories,
-  loadSlider,
-  loadCartCount,
-  loadAuthState,
-  loadMobileNav,
-}
+const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> =
+  {
+    loadCategories,
+    loadSlider,
+    loadCartCount,
+    loadAuthState,
+    loadMobileNav,
+  }
 
 export function hydrateComponents(companyId = 3) {
   if (!document.getElementById('rubikx-cat-styles')) {
@@ -253,16 +366,18 @@ export function hydrateComponents(companyId = 3) {
 `
     document.head.appendChild(style)
   }
-  document.querySelectorAll<HTMLElement>('[data-rubikx-component]').forEach(el => {
-    const onMount = el.dataset.onMount
-    if (!onMount) return
-    const handler = HANDLERS[onMount]
-    if (!handler) {
-      console.warn(`[Rubikx] No handler registered for: ${onMount}`)
-      return
-    }
-    handler(el, companyId)
-  })
+  document
+    .querySelectorAll<HTMLElement>('[data-rubikx-component]')
+    .forEach((el) => {
+      const onMount = el.dataset.onMount
+      if (!onMount) return
+      const handler = HANDLERS[onMount]
+      if (!handler) {
+        console.warn(`[Rubikx] No handler registered for: ${onMount}`)
+        return
+      }
+      handler(el, companyId)
+    })
 
   // Watch for dynamically added slider elements
   if (!(window as any).__rbxSliderObserver) {
@@ -277,9 +392,11 @@ export function hydrateComponents(companyId = 3) {
             return
           }
           // Check children of added node
-          el.querySelectorAll?.('[data-rubikx-component="HeroSlider"]').forEach((child) => {
-            loadSlider(child as HTMLElement)
-          })
+          el.querySelectorAll?.('[data-rubikx-component="HeroSlider"]').forEach(
+            (child) => {
+              loadSlider(child as HTMLElement)
+            }
+          )
         })
       })
     })
