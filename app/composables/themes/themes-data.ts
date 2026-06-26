@@ -341,7 +341,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   </div>
   <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
     ${data.showContactUs ? `<a href="${data.contactUsUrl}" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;">${data.contactUsLabel}</a>` : ''}
-    ${data.showSignIn ? `<a href="${data.signInUrl}" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;">${data.signInLabel}</a>` : ''}
+    ${data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;">${data.signInLabel}</a>` : ''}
   </div>
 </div>
 

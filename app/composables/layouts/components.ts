@@ -243,8 +243,9 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     ? `<nav style='display:flex;align-items:center;gap:1.5rem;'>${staticLinks}${dynamicPlaceholder}</nav>`
     : ''
 
+  const signInBtnStyle = `display:inline-flex;align-items:center;padding:0.4375rem 1rem;border-radius:${data.buttonBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:500;white-space:nowrap;border:1.5px solid ${data.textColor};color:${data.textColor};background:transparent;`
   const signInEl = data.showSignIn
-    ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-sign-in-label="${data.signInLabel}" data-profile-url="/me/personal" data-link-style="${linkStyle}" style="position:relative;display:inline-flex;align-items:center;"><a href="${data.signInUrl}" style="${linkStyle}">${data.signInLabel}</a></span>`
+    ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="${signInBtnStyle}">${data.signInLabel}</a><span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" style="position:relative;display:none;align-items:center;"></span>`
     : ''
   const cartEl = data.showCart
     ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
