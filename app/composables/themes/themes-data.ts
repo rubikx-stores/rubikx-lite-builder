@@ -349,9 +349,8 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 <div data-mobile-overlay="true" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;"></div>`
 
   return `<section data-component-title="Ru1-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
-${mobileNav}
 <nav style="${navStyle}">
-  <div class="rb-desktop-nav" style="max-width:80rem;width:100%;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;${topRowBorder}">
+  <div style="max-width:80rem;width:100%;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;${topRowBorder}">
     ${zone(cols.left,   'flex-start')}
     ${zone(cols.center, 'center')}
     ${zone(cols.right,  'flex-end')}
