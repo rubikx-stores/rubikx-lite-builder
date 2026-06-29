@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     if (!body?.email || !body?.password) {
       throw createError({ statusCode: 400, message: 'Email and password are required' })
     }
-    const url = `${config.odooBaseUrl}/api/jwt/auth/login`
+    const url = `${config.odooBaseUrl}/graphql/api/jwt/auth/login`
     let result: any
     try {
       result = await $fetch(url, {
@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
     }
     setCookie(event, 'rb_auth_token', result.token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       path: '/',
       maxAge: maxAgeSeconds,

@@ -72,20 +72,23 @@ function selectedVersionData(page: Page) {
 async function publishPage(page: Page) {
   publishing.value[page.id] = true
   const vData = selectedVersionData(page)
+  const publishPayload = {
+    key: page.id,
+    value: vData.value,
+    version: vData.version,
+    state: 'published',
+    companyId: selectedWebsiteId.value ?? 1,
+    company_id: selectedWebsiteId.value ?? 1,
+    updatedBy: user.value?.name ?? 'editor',
+    updatedOn: new Date().toISOString(),
+  }
+  console.log('[PUBLISH] sending:', { key: publishPayload.key, version: publishPayload.version, state: publishPayload.state, valueLength: publishPayload.value?.length })
   try {
-    await $fetch('/api/proxy/odoo/cms', {
+    const res = await $fetch('/api/proxy/odoo/cms', {
       method: 'POST',
-      body: {
-        key: page.id,
-        value: vData.value,
-        version: vData.version,
-        state: 'published',
-        companyId: selectedWebsiteId.value ?? 1,
-        company_id: selectedWebsiteId.value ?? 1,
-        updatedBy: user.value?.name ?? 'editor',
-        updatedOn: new Date().toISOString(),
-      },
+      body: publishPayload,
     })
+    console.log('[PUBLISH] response:', res)
     const target = pages.value.find((p) => p.id === page.id)
     if (target) {
       target.status = 'published'
