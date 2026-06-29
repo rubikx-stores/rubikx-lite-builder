@@ -8,7 +8,7 @@ export type SidebarMode = 'none' | 'block' | 'element'
 // block, _applyBlockRender() replaces section.innerHTML and wipes those styles.
 // We record every user-applied property here and re-apply after each re-render.
 //
-// Key 1: block title  Key 2: stable element key  Value: { cssProp → value }
+// Key 1: componentId  Key 2: stable element key  Value: { cssProp → value }
 const _elementOverrides = new Map<string, Map<string, Record<string, string>>>()
 
 function _getElementKey(el: HTMLElement, section: HTMLElement): string | null {
@@ -41,38 +41,33 @@ function _getElementByKey(key: string, section: HTMLElement): HTMLElement | null
   return null
 }
 
-function _extractDataFromSection(section: HTMLElement, defaults: Record<string, any>): Record<string, any> {
-  const out: Record<string, any> = JSON.parse(JSON.stringify(defaults))
-  section.querySelectorAll<HTMLElement>('[data-field-key]').forEach((el) => {
-    const key = el.getAttribute('data-field-key')
-    if (!key) return
-    if (el.tagName === 'IMG') {
-      out[key] = (el as HTMLImageElement).src || ''
-    } else {
-      out[key] = el.textContent ?? ''
-    }
-  })
-  return out
-}
-
 export function useEditorSidebar() {
   const store = usePageBuilderStateStore() as any
   const registry = useBlockRegistry()
 
+  // Sync inline edits and undo/redo into per-instance registry state.
+  // Also auto-registers new blocks dropped during editing.
   watch(
     () => store.getHistoryIndex,
     () => {
       if (typeof document === 'undefined') return
-      document.querySelectorAll<HTMLElement>('section[data-component-title]').forEach((sec) => {
-        const title = sec.getAttribute('data-component-title')
-        if (!title) return
-        const cfg = registry.getConfig(title)
-        if (!cfg) return
+      document.querySelectorAll<HTMLElement>('section[data-component-title][data-componentid]').forEach((sec) => {
+        const title = sec.getAttribute('data-component-title')!
+        const componentId = sec.getAttribute('data-componentid')!
+        if (!registry.hasConfig(title)) return
+
+        if (!registry.getData(componentId)) {
+          // New block dropped by the user — register it with defaults
+          registry.registerInstance(componentId, title)
+          return
+        }
+
+        // Existing instance — sync text/image fields for inline edits and undo/redo
         sec.querySelectorAll<HTMLElement>('[data-field-key]').forEach((el) => {
           const key = el.getAttribute('data-field-key')
           if (!key) return
           const val = el.tagName === 'IMG' ? (el as HTMLImageElement).src || '' : el.textContent ?? ''
-          registry.setData(title, key, val)
+          registry.setData(componentId, key, val)
         })
       })
     },
@@ -82,21 +77,42 @@ export function useEditorSidebar() {
     () => (store.getElement as HTMLElement | null) ?? null,
   )
 
-  // Track the last block title seen via a LIVE element. This is used as fallback
-  // when selectedEl is null or detached (e.g. immediately after _applyBlockRender
-  // replaces section innerHTML — the old child node is orphaned for a brief window
-  // before the library re-establishes selection on the new section).
-  let _lastKnownBlockTitle: string | null = null
+  // Tracks the last instance ID seen from a LIVE element. Used as fallback when
+  // selectedEl is null or detached (briefly orphaned after _applyBlockRender
+  // swaps innerHTML).
+  let _lastKnownBlockId: string | null = null
 
-  const selectedBlockTitle = computed<string | null>(() => {
+  // Safety net: if a section is selected but not yet in the registry (race
+  // condition at startup or a block added by the library before our watcher
+  // fired), lazily register it from the section's current DOM state.
+  watch(selectedEl, (el) => {
+    if (!el?.isConnected) return
+    const section = el.closest('[data-component-title]') as HTMLElement | null
+    if (!section) return
+    const componentId = section.getAttribute('data-componentid')
+    const title = section.getAttribute('data-component-title')
+    if (!componentId || !title || !registry.hasConfig(title)) return
+    if (registry.getData(componentId)) return // already registered
+    const rawProps = section.getAttribute('data-component-props')
+    let props: Record<string, any> | undefined
+    try { if (rawProps) props = JSON.parse(decodeURIComponent(rawProps)) } catch {}
+    registry.registerInstance(componentId, title, props)
+  })
+
+  const selectedBlockId = computed<string | null>(() => {
     const el = selectedEl.value
     if (el && el.isConnected) {
-      const section = el.closest('[data-component-title]')
-      const title = section?.getAttribute('data-component-title') ?? null
-      if (title) _lastKnownBlockTitle = title
-      return title
+      const section = el.closest('section[data-componentid]')
+      const id = section?.getAttribute('data-componentid') ?? null
+      if (id) _lastKnownBlockId = id
+      return id
     }
-    return _lastKnownBlockTitle
+    return _lastKnownBlockId
+  })
+
+  const selectedBlockTitle = computed<string | null>(() => {
+    const id = selectedBlockId.value
+    return id ? registry.getTitle(id) : null
   })
 
   const mode = computed<SidebarMode>(() => {
@@ -116,8 +132,8 @@ export function useEditorSidebar() {
   })
 
   const blockData = computed(() => {
-    const title = selectedBlockTitle.value
-    return title ? registry.getData(title) : null
+    const id = selectedBlockId.value
+    return id ? registry.getData(id) : null
   })
 
   const selectedTag = computed<string>(() => {
@@ -154,13 +170,14 @@ export function useEditorSidebar() {
     await builder.addListenersToEditableElements()
   }
 
-  async function _applyBlockRender(title: string) {
-    const config = registry.getConfig(title)
-    const data = registry.getData(title)
+  async function _applyBlockRender(componentId: string) {
+    const title = registry.getTitle(componentId)
+    const config = title ? registry.getConfig(title) : null
+    const data = registry.getData(componentId)
     if (!config || !data) return
 
     const section = document.querySelector(
-      `section[data-component-title="${title}"]`,
+      `section[data-componentid="${componentId}"]`,
     ) as HTMLElement | null
     if (!section) return
 
@@ -174,27 +191,18 @@ export function useEditorSidebar() {
     // block. If they've already clicked a different component (e.g. their click
     // happened while a debounced field update was still pending), we MUST NOT
     // steal their selection back to this section.
-    //
-    // Logic:
-    //  • If selectedEl is a LIVE element → check whether it's inside this section
-    //  • If selectedEl is null/detached → fall back to _lastKnownBlockTitle, which
-    //    tracks the last block the user was actually on. If they switched to
-    //    another block, _lastKnownBlockTitle has already updated to that block.
     const currentEl = selectedEl.value
     const userIsOnThisBlock = currentEl?.isConnected
-      ? !!currentEl.closest(`section[data-component-title="${title}"]`)
-      : _lastKnownBlockTitle === title
+      ? !!currentEl.closest(`section[data-componentid="${componentId}"]`)
+      : _lastKnownBlockId === componentId
 
     // Sync attributes on the <section> tag itself (e.g. style="position:sticky")
-    // — these are NOT part of innerHTML so must be copied separately.
     const newStyle = newSection.getAttribute('style')
     if (newStyle) section.setAttribute('style', newStyle)
     else section.removeAttribute('style')
 
     // Keep data-component-props in sync so saveDomComponentsToLocalStorage()
     // captures the current field state when the builder flushes to storage.
-    // Without this, getSavedPageHtml() returns stale props and replaceData()
-    // overwrites edited values with the original defaults on reload.
     const newProps = newSection.getAttribute('data-component-props')
     if (newProps) section.setAttribute('data-component-props', newProps)
     else section.removeAttribute('data-component-props')
@@ -203,7 +211,7 @@ export function useEditorSidebar() {
 
     // Re-apply any element-level style overrides the user set via the element
     // editor — these are wiped by the innerHTML swap above.
-    const blockOverrides = _elementOverrides.get(title)
+    const blockOverrides = _elementOverrides.get(componentId)
     if (blockOverrides) {
       const stale: string[] = []
       blockOverrides.forEach((props, elKey) => {
@@ -211,28 +219,27 @@ export function useEditorSidebar() {
         if (target) {
           Object.entries(props).forEach(([p, v]) => { (target.style as any)[p] = v })
         } else {
-          stale.push(elKey) // element gone after structural change — drop override
+          stale.push(elKey)
         }
       })
       stale.forEach(k => blockOverrides.delete(k))
     }
 
-    // _syncBuilderWithListeners re-registers click handlers across the whole
-    // document, so the new children of this section become clickable regardless
-    // of which element is currently selected. setElement is only needed to keep
-    // the editor open on THIS block when the user hasn't moved away.
     if (userIsOnThisBlock) {
       store.setElement(section)
     }
     await _syncBuilderWithListeners()
   }
 
-  async function updateBlockField(key: string, value: any, forcedTitle?: string) {
-    const title = forcedTitle ?? selectedBlockTitle.value
-    if (!title || !registry.getConfig(title)) return
-    registry.setData(title, key, value)
-    _elementOverrides.delete(title)
-    await _applyBlockRender(title)
+  // forcedId allows debouncedUpdateBlockField in EditorSidebar to snapshot the
+  // componentId at call time (before the debounce fires) so a fast block switch
+  // can't misdirect the update to the newly selected block.
+  async function updateBlockField(key: string, value: any, forcedId?: string) {
+    const id = forcedId ?? selectedBlockId.value
+    if (!id || !registry.getTitle(id)) return
+    registry.setData(id, key, value)
+    _elementOverrides.delete(id)
+    await _applyBlockRender(id)
   }
 
   async function updateBlockListItem(
@@ -241,27 +248,27 @@ export function useEditorSidebar() {
     itemKey: string,
     value: any,
   ) {
-    const title = selectedBlockTitle.value
-    if (!title || !registry.getConfig(title)) return
-    registry.setListItem(title, listKey, index, itemKey, value)
-    _elementOverrides.delete(title)
-    await _applyBlockRender(title)
+    const id = selectedBlockId.value
+    if (!id || !registry.getTitle(id)) return
+    registry.setListItem(id, listKey, index, itemKey, value)
+    _elementOverrides.delete(id)
+    await _applyBlockRender(id)
   }
 
   async function addBlockListItem(listKey: string, template: Record<string, any>) {
-    const title = selectedBlockTitle.value
-    if (!title || !registry.getConfig(title)) return
-    registry.addListItem(title, listKey, template)
-    _elementOverrides.delete(title)
-    await _applyBlockRender(title)
+    const id = selectedBlockId.value
+    if (!id || !registry.getTitle(id)) return
+    registry.addListItem(id, listKey, template)
+    _elementOverrides.delete(id)
+    await _applyBlockRender(id)
   }
 
   async function removeBlockListItem(listKey: string, index: number) {
-    const title = selectedBlockTitle.value
-    if (!title || !registry.getConfig(title)) return
-    registry.removeListItem(title, listKey, index)
-    _elementOverrides.delete(title)
-    await _applyBlockRender(title)
+    const id = selectedBlockId.value
+    if (!id || !registry.getTitle(id)) return
+    registry.removeListItem(id, listKey, index)
+    _elementOverrides.delete(id)
+    await _applyBlockRender(id)
   }
 
   async function updateElementStyle(prop: string, value: string) {
@@ -269,18 +276,16 @@ export function useEditorSidebar() {
     if (!el) return
     ;(el.style as any)[prop] = value
 
-    // If the element is inside a registered block, record the override so it
-    // survives the next _applyBlockRender() innerHTML swap.
-    const title = selectedBlockTitle.value
-    if (title && registry.hasConfig(title)) {
+    const id = selectedBlockId.value
+    if (id && registry.getTitle(id)) {
       const section = document.querySelector(
-        `section[data-component-title="${title}"]`,
+        `section[data-componentid="${id}"]`,
       ) as HTMLElement | null
       if (section) {
         const elKey = _getElementKey(el, section)
         if (elKey) {
-          if (!_elementOverrides.has(title)) _elementOverrides.set(title, new Map())
-          const blockOverrides = _elementOverrides.get(title)!
+          if (!_elementOverrides.has(id)) _elementOverrides.set(id, new Map())
+          const blockOverrides = _elementOverrides.get(id)!
           if (!blockOverrides.has(elKey)) blockOverrides.set(elKey, {})
           const props = blockOverrides.get(elKey)!
           if (value !== '') props[prop] = value
@@ -333,7 +338,7 @@ export function useEditorSidebar() {
   }
 
   function closeEditor() {
-    _lastKnownBlockTitle = null
+    _lastKnownBlockId = null
     store.setElement(null)
   }
 
@@ -345,6 +350,7 @@ export function useEditorSidebar() {
 
   return {
     selectedEl,
+    selectedBlockId,
     selectedBlockTitle,
     mode,
     blockConfig,
