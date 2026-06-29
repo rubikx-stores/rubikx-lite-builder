@@ -14,12 +14,17 @@ interface OdooCompanyResponse {
 }
 
 export default defineEventHandler(async (event): Promise<OdooCompany[]> => {
-  const ODOO_URL = 'https://rubikx-stores-rubikx-2-0-prod.odoo.com/graphql'
+  const config = useRuntimeConfig(event)
+  if (!config.odooBaseUrl) {
+    throw createError({ statusCode: 500, message: 'ODOO_BASE_URL is not configured' })
+  }
 
   const token = getCookie(event, 'rb_auth_token')
   if (!token) {
-    return []
+    throw createError({ statusCode: 401, message: 'Not authenticated' })
   }
+
+  const ODOO_URL = `${config.odooBaseUrl}/graphql`
 
   try {
     const res = await $fetch<OdooCompanyResponse>(ODOO_URL, {

@@ -33,7 +33,7 @@ function renderCategoryTree(
     .join('')
 }
 
-async function loadCategories(el: HTMLElement, companyId = 3) {
+async function loadCategories(el: HTMLElement, companyId?: number) {
   if (el.dataset.hydrated === 'true') return
   el.dataset.hydrated = 'true'
 
@@ -569,7 +569,7 @@ const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> =
     loadProductDetail2,
   }
 
-export function hydrateComponents(companyId = 3) {
+export function hydrateComponents(companyId?: number) {
   if (!document.getElementById('rubikx-cat-styles')) {
     const style = document.createElement('style')
     style.id = 'rubikx-cat-styles'

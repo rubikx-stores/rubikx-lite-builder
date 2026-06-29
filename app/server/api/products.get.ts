@@ -1,4 +1,4 @@
-// GET /api/products?ids=1,2,3&companyId=3   (ids and companyId optional)
+// GET /api/products?ids=1,2,3&companyId=5   (ids and companyId optional)
 // Fetches products from Odoo GraphQL — keeps API key server-side.
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
@@ -11,10 +11,13 @@ export default defineEventHandler(async (event) => {
   }
 
   const { ids: idsParam, companyId: companyIdParam } = getQuery(event) as { ids?: string, companyId?: string }
-  const companyId = companyIdParam ? Number(companyIdParam) : 3
+  const companyId = companyIdParam ? Number(companyIdParam)
+    : config.odooCompanyId ? Number(config.odooCompanyId)
+    : undefined
   const token = getCookie(event, 'rb_auth_token') ?? config.odooGraphqlApiKey
   const idList = idsParam ? idsParam.split(',').map(Number).filter(Boolean) : []
   const domain = idList.length ? [['id', 'in', idList]] : []
+  const context = companyId ? { allowed_company_ids: [companyId] } : {}
 
   const response = await fetch(`${config.odooBaseUrl}/graphql`, {
     method: 'POST',
@@ -24,7 +27,7 @@ export default defineEventHandler(async (event) => {
     },
     body: JSON.stringify({
       query: `query products($domain: Any, $context: Any) { StoreProductTemplate(domain: $domain, order: "sequence asc", context: $context) { id name price image attributeValues { id name htmlColor displayType } } }`,
-      variables: { domain, context: { allowed_company_ids: [companyId] } },
+      variables: { domain, context },
     }),
   })
 
