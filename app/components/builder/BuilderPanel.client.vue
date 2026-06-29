@@ -108,7 +108,7 @@ async function handleDropComponent(comp: { id: string | number | null; html_code
 
     // Hydrate dynamic components after adding new component
     await nextTick()
-    hydrateComponents(selectedCompanyId.value ?? 3)
+    hydrateComponents(selectedCompanyId.value ?? undefined)
   } catch (e) {
     console.error('[ADD] Error:', e)
   } finally {
