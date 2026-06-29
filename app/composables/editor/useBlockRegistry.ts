@@ -75,9 +75,20 @@ export function useBlockRegistry() {
     const stored = _loadStorage()[title]
     // Merge defaults with stored so newly-added fields default-fill,
     // but existing field values from storage win.
-    const initialState = stored
-      ? { ...JSON.parse(JSON.stringify(config.defaults)), ...stored }
-      : JSON.parse(JSON.stringify(config.defaults))
+    // Exception: if a stored array is empty but the default has items, prefer
+    // the default — this handles stale saves where list fields lost their data.
+    let initialState: Record<string, any>
+    if (stored) {
+      initialState = { ...JSON.parse(JSON.stringify(config.defaults)), ...stored }
+      Object.keys(config.defaults).forEach(key => {
+        const def = (config.defaults as any)[key]
+        if (Array.isArray(def) && def.length > 0 && Array.isArray(stored[key]) && stored[key].length === 0) {
+          initialState[key] = JSON.parse(JSON.stringify(def))
+        }
+      })
+    } else {
+      initialState = JSON.parse(JSON.stringify(config.defaults))
+    }
     _registry.set(title, { config, state: reactive(initialState) })
   }
 
@@ -152,11 +163,19 @@ export function useBlockRegistry() {
   function replaceData(title: string, newState: Record<string, any>) {
     const entry = _registry.get(title)
     if (!entry) return
+    // Merge with defaults: fill missing keys and restore empty arrays to defaults
+    const merged = { ...JSON.parse(JSON.stringify(entry.config.defaults)), ...newState }
+    Object.keys(entry.config.defaults).forEach(key => {
+      const def = (entry.config.defaults as any)[key]
+      if (Array.isArray(def) && def.length > 0 && Array.isArray(newState[key]) && newState[key].length === 0) {
+        merged[key] = JSON.parse(JSON.stringify(def))
+      }
+    })
     // Mutate reactive object in place so existing references remain valid
     for (const k of Object.keys(entry.state)) {
-      if (!(k in newState)) delete entry.state[k]
+      if (!(k in merged)) delete entry.state[k]
     }
-    Object.assign(entry.state, JSON.parse(JSON.stringify(newState)))
+    Object.assign(entry.state, JSON.parse(JSON.stringify(merged)))
     _saveStorage()
   }
 

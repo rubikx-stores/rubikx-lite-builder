@@ -286,6 +286,222 @@ async function loadAuthState(el: HTMLElement, companyId?: number) {
   }
 }
 
+async function loadProductDetail(el: HTMLElement, companyId = 3) {
+  if (document.getElementById('page-builder-wrapper')) return
+  if (el.dataset.hydrated === 'true') return
+  el.dataset.hydrated = 'true'
+
+  const productIds = (el.dataset.productIds ?? '').trim()
+  const accentColor = el.dataset.accentColor || '#1a56db'
+  const curr = el.dataset.currency || '$'
+  const productNameColor = el.dataset.productNameColor || '#111827'
+  const productNameWeight = el.dataset.productNameWeight || '700'
+  const productNameSize = el.dataset.productNameSize || '22'
+  const priceModifierColor = el.dataset.priceModifierColor || '#6b7280'
+  const priceModifierWeight = el.dataset.priceModifierWeight || '400'
+  const priceModifierSize = el.dataset.priceModifierSize || '10'
+  const thumbSize = parseInt(el.dataset.thumbSize || '64', 10)
+  const thumbRadius = parseInt(el.dataset.thumbRadius || '4', 10)
+
+  const thumbsWrap = el.querySelector<HTMLElement>('[data-rb-pd-thumbs]')
+  const mainImgWrap = el.querySelector<HTMLElement>('[data-rb-pd-main-img]')
+  const nameEl = el.querySelector<HTMLElement>('[data-rb-pd-name]')
+  const colorsEl = el.querySelector<HTMLElement>('[data-rb-pd-colors]')
+  const priceEl = el.querySelector<HTMLElement>('[data-rb-pd-price]')
+  const totalEl = el.querySelector<HTMLElement>('[data-rb-pd-total]')
+  const tablePriceEl = el.querySelector<HTMLElement>('[data-rb-pd-table-price]')
+
+  try {
+    const query: Record<string, string | number> = { companyId }
+    if (productIds) query.ids = productIds
+
+    const products = await $fetch<any[]>('/api/products', { query })
+    if (!products || products.length === 0) return
+
+    // Build thumbnail strip from all fetched products
+    if (thumbsWrap) {
+      thumbsWrap.innerHTML = products.map((p, i) =>
+        `<div data-rb-pd-thumb="${i}" style="width:${thumbSize}px;height:${thumbSize}px;border:2px solid ${i === 0 ? accentColor : '#e5e7eb'};border-radius:${thumbRadius}px;overflow:hidden;cursor:pointer;flex-shrink:0;box-sizing:border-box;background:#fff;">
+          ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:contain;display:block;" />` : ''}
+        </div>`
+      ).join('')
+    }
+
+    function showProduct(p: any, idx: number) {
+      // Main image
+      if (mainImgWrap) {
+        mainImgWrap.style.background = '#fff'
+        mainImgWrap.innerHTML = p.image
+          ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+          : ''
+      }
+      // Name
+      if (nameEl) {
+        nameEl.textContent = p.name
+        nameEl.style.color = productNameColor
+        nameEl.style.fontWeight = productNameWeight
+        nameEl.style.fontSize = `${productNameSize}px`
+      }
+      // Colors
+      if (colorsEl) {
+        colorsEl.innerHTML = Array.isArray(p.colors) && p.colors.length
+          ? p.colors.map((c: any, i: number) =>
+              `<div style="display:inline-flex;align-items:center;gap:6px;border:${i === 0 ? `2px solid ${accentColor}` : '1px solid #d1d5db'};border-radius:9999px;padding:4px 12px;cursor:pointer;white-space:nowrap;">
+                <span style="width:12px;height:12px;border-radius:50%;background:${c.htmlColor};border:1px solid rgba(0,0,0,0.15);flex-shrink:0;display:inline-block;"></span>
+                <span style="font-size:11px;font-weight:700;color:#374151;letter-spacing:0.04em;">${c.name}</span>
+              </div>`
+            ).join('')
+          : ''
+      }
+      // Prices
+      const priceNum = Number(p.price)
+      const priceStr = `${curr}${priceNum.toFixed(2)}`
+      if (priceEl) priceEl.textContent = priceStr
+      if (totalEl) totalEl.textContent = `Total: ${priceStr}`
+      if (tablePriceEl) tablePriceEl.textContent = `${curr} ${priceNum.toFixed(2)}`
+      // Highlight active thumbnail
+      if (thumbsWrap) {
+        Array.from(thumbsWrap.querySelectorAll<HTMLElement>('[data-rb-pd-thumb]')).forEach((t, i) => {
+          t.style.borderColor = i === idx ? accentColor : '#e5e7eb'
+        })
+      }
+    }
+
+    // Apply price modifier styles to all size modifier labels
+    el.querySelectorAll<HTMLElement>('[data-rb-pd-size-pm]').forEach(pm => {
+      pm.style.color = priceModifierColor
+      pm.style.fontWeight = priceModifierWeight
+      pm.style.fontSize = `${priceModifierSize}px`
+    })
+
+    // Show first product immediately
+    showProduct(products[0], 0)
+
+    // Wire thumbnail clicks
+    if (thumbsWrap) {
+      Array.from(thumbsWrap.querySelectorAll<HTMLElement>('[data-rb-pd-thumb]')).forEach((thumb, i) => {
+        thumb.addEventListener('click', () => showProduct(products[i], i))
+      })
+    }
+
+  } catch (e) {
+    console.error('[Rubikx] Failed to load product detail:', e)
+  }
+}
+
+async function loadProductDetail2(el: HTMLElement, companyId = 3) {
+  if (document.getElementById('page-builder-wrapper')) return
+  if (el.dataset.hydrated === 'true') return
+  el.dataset.hydrated = 'true'
+
+  const productIds = (el.dataset.productIds ?? '').trim()
+  const accentColor = el.dataset.accentColor || '#4f46e5'
+  const curr = el.dataset.currency || '$'
+  const mainDiv = el.querySelector<HTMLElement>('[data-rb-pd2-main]')
+  const thumbsGrid = el.querySelector<HTMLElement>('[data-rb-pd2-thumbs]')
+  const nameEl = el.querySelector<HTMLElement>('[data-rb-pd2-name]')
+  const priceEl = el.querySelector<HTMLElement>('[data-rb-pd2-price]')
+  const descEl = el.querySelector<HTMLElement>('[data-rb-pd2-desc]')
+  const colorsEl = el.querySelector<HTMLElement>('[data-rb-pd2-colors]')
+
+
+  try {
+    const query: Record<string, string | number> = { companyId }
+    if (productIds) query.ids = productIds
+
+    const products = await $fetch<any[]>('/api/products', { query })
+    if (!products || products.length === 0) return
+    const main = products[0]
+
+    // Collect all images: main + extra thumbnails from product list
+    const allImages: string[] = []
+    if (main.image) allImages.push(main.image)
+    products.slice(1, 4).forEach((p: any) => { if (p.image) allImages.push(p.image) })
+    while (allImages.length < 4 && allImages.length > 0) allImages.push(allImages[0])
+
+    function showImage(src: string, idx: number) {
+      if (mainDiv) {
+        mainDiv.style.background = '#ffffff'
+        mainDiv.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+      }
+      if (thumbsGrid) {
+        Array.from(thumbsGrid.querySelectorAll<HTMLElement>('[data-rb-pd2-thumb]')).forEach((t, i) => {
+          t.style.borderColor = i === idx ? accentColor : '#e5e7eb'
+        })
+      }
+    }
+
+    // Main image
+    if (mainDiv && allImages[0]) {
+      mainDiv.style.background = '#ffffff'
+      mainDiv.innerHTML = `<img src="${allImages[0]}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+    }
+
+    // Thumbnails
+    if (thumbsGrid && allImages.length) {
+      thumbsGrid.innerHTML = allImages.map((src, i) =>
+        `<div data-rb-pd2-thumb="${i}" style="border:2px solid ${i === 0 ? accentColor : '#e5e7eb'};border-radius:6px;overflow:hidden;cursor:pointer;background:#fff;aspect-ratio:1;display:flex;align-items:center;justify-content:center;">
+          <img src="${src}" style="width:100%;height:100%;object-fit:contain;display:block;" />
+        </div>`
+      ).join('')
+      Array.from(thumbsGrid.querySelectorAll<HTMLElement>('[data-rb-pd2-thumb]')).forEach((t, i) => {
+        t.addEventListener('click', () => showImage(allImages[i], i))
+      })
+    }
+
+    // Name
+    if (nameEl) nameEl.textContent = main.name ?? ''
+
+    // Price
+    const priceNum = Number(main.price)
+    if (priceEl) priceEl.textContent = `${curr}${priceNum.toFixed(2)}`
+
+    // Description (HTML or plain text)
+    if (descEl) {
+      const desc = (main as any).description ?? (main as any).description_sale ?? ''
+      descEl.innerHTML = desc
+        ? desc.startsWith('<')
+          ? desc
+          : desc.split('\n').filter(Boolean).map((l: string) => `<p style="margin:0 0 8px;">${l}</p>`).join('')
+        : ''
+    }
+
+    // Color swatches
+    if (colorsEl) {
+      colorsEl.innerHTML = Array.isArray(main.colors) && main.colors.length
+        ? main.colors.map((c: any, i: number) =>
+            `<label style="display:inline-flex;align-items:center;gap:0;cursor:pointer;">
+              <input type="radio" name="rb-pd2-color" value="${c.name}" style="display:none;" ${i === 0 ? 'checked' : ''} />
+              <span title="${c.name}" style="display:block;width:28px;height:28px;border-radius:50%;background:${c.htmlColor};border:${i === 0 ? `3px solid ${accentColor}` : '2px solid #d1d5db'};box-sizing:border-box;transition:border-color 0.15s;"></span>
+            </label>`
+          ).join('')
+        : ''
+      colorsEl.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach((radio, i) => {
+        radio.addEventListener('change', () => {
+          colorsEl.querySelectorAll<HTMLElement>('label span').forEach((s, j) => {
+            s.style.border = j === i ? `3px solid ${accentColor}` : '2px solid #d1d5db'
+          })
+        })
+      })
+    }
+
+    // Wire accordion
+    el.querySelectorAll<HTMLElement>('[data-rb-pd2-acc-btn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const panel = btn.nextElementSibling as HTMLElement | null
+        if (!panel) return
+        const isOpen = panel.style.display !== 'none'
+        panel.style.display = isOpen ? 'none' : 'block'
+        const arrow = btn.querySelector<HTMLElement>('[data-rb-pd2-arrow]')
+        if (arrow) arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)'
+      })
+    })
+
+  } catch (e) {
+    console.error('[Rubikx] Failed to load product detail 2:', e)
+  }
+}
+
 function loadMobileNav(el: HTMLElement) {
   if (el.dataset.hydrated === 'true') return
   el.dataset.hydrated = 'true'
@@ -349,6 +565,8 @@ const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> =
     loadCartCount,
     loadAuthState,
     loadMobileNav,
+    loadProductDetail,
+    loadProductDetail2,
   }
 
 export function hydrateComponents(companyId = 3) {
@@ -379,17 +597,32 @@ export function hydrateComponents(companyId = 3) {
       handler(el, companyId)
     })
 
-  // Watch for dynamically added slider elements
+  // Watch for dynamically added components (HeroSlider, CartBadge).
+  // Fires the moment any matching element lands in the DOM — handles builder
+  // re-renders (innerHTML swap) without relying on timing or nextTick.
   if (!(window as any).__rbxSliderObserver) {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
           if (node.nodeType !== 1) return
           const el = node as HTMLElement
-          // Check if the added node itself is a slider
+
+          // HeroSlider
           if (el.dataset?.rubikxComponent === 'HeroSlider') {
             loadSlider(el)
-            return
+          } else {
+            el.querySelectorAll?.('[data-rubikx-component="HeroSlider"]').forEach((child) => {
+              loadSlider(child as HTMLElement)
+            })
+          }
+
+          // CartBadge — re-inject badge whenever the shell re-enters the DOM
+          if (el.dataset?.rubikxComponent === 'CartBadge') {
+            loadCartCount(el)
+          } else {
+            el.querySelectorAll?.('[data-rubikx-component="CartBadge"]').forEach((child) => {
+              loadCartCount(child as HTMLElement)
+            })
           }
           // Check children of added node
           el.querySelectorAll?.('[data-rubikx-component="HeroSlider"]').forEach(

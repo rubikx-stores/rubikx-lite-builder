@@ -153,9 +153,16 @@ export function useThemes() {
       FOOTER_TITLES.includes(s.getAttribute('data-component-title') ?? '')
     )
 
+    // Collect titles already in the canvas so we never add a duplicate section.
+    const existingTitles = new Set(
+      liveSectionCheck.map(s => s.getAttribute('data-component-title') ?? '')
+    )
+
     if (hasGlobals) {
       const contentSections = theme.sections.filter(s =>
-        !NAVBAR_TITLES.includes(s.title) && !FOOTER_TITLES.includes(s.title)
+        !NAVBAR_TITLES.includes(s.title) &&
+        !FOOTER_TITLES.includes(s.title) &&
+        !existingTitles.has(s.title)
       )
 
       const { usePageBuilderStateStore } = await import('@myissue/vue-website-page-builder')
@@ -177,7 +184,9 @@ export function useThemes() {
       store.setComponentArrayAddMethod('unshift')
     } else {
       for (const section of [...theme.sections].reverse()) {
-        await builder.addComponent(section)
+        if (!existingTitles.has(section.title)) {
+          await builder.addComponent(section)
+        }
       }
     }
   }

@@ -142,6 +142,11 @@ async function handleApplyTheme(themeId: string) {
       }
     }
   }
+  // Hydrate dynamic components (CartBadge, AuthState, CategoryNav, etc.)
+  // after all theme sections are in the DOM — same as handleAddComponent does.
+  await nextTick()
+  hydrateComponents(selectedCompanyId.value ?? 3)
+
   closeAddComponentModal()
   isLoading.value = false
 }

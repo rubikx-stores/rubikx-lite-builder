@@ -77,7 +77,7 @@ function toHex(v: string | undefined | null): string {
 }
 
 // ── Product block flag ────────────────────────────────────────────────────────
-const _PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 6 Products Minimal', 'Show 4 Products Centered', 'Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products']
+const _PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 6 Products Minimal', 'Show 4 Products Centered', 'Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products', 'Ru1-Product Detail', 'Ru2-Product Detail']
 
 const lastProductTitle = ref('')
 
@@ -115,9 +115,11 @@ let _fieldDebounceTimer = 0
 function debouncedUpdateBlockField(fieldKey: string, value: any) {
   const capturedTitle = selectedBlockTitle.value   // snapshot NOW, before any await
   clearTimeout(_fieldDebounceTimer)
-  _fieldDebounceTimer = window.setTimeout(() => {
+  _fieldDebounceTimer = window.setTimeout(async () => {
     if (!capturedTitle) return
-    updateBlockField(fieldKey, value, capturedTitle)
+    await updateBlockField(fieldKey, value, capturedTitle)
+    await nextTick()
+    hydrateComponents(selectedCompanyId.value ?? 3)
   }, 50)
 }
 
