@@ -540,6 +540,7 @@ async function doApplyThemeBlock(confirm = false) {
       const firstProduct = selected.value[0]
       const sectionEl = getSection()
       const compId = sectionEl?.getAttribute('data-componentid')
+
       if (compId) {
         registry.setData(compId, 'mainImageSrc', firstProduct?.image ? productImageSrc(firstProduct.image) : '')
         registry.setData(compId, 'thumbImageSrcs', selected.value.map(p => p.image ? productImageSrc(p.image) : ''))
