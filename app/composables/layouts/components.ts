@@ -4784,4 +4784,3 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
   </div>
 </section>`
 }
-}
