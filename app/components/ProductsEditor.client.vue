@@ -540,55 +540,21 @@ async function doApplyThemeBlock(confirm = false) {
       const firstProduct = selected.value[0]
       const sectionEl = getSection()
       const compId = sectionEl?.getAttribute('data-componentid')
-
       if (compId) {
-        if (firstProduct) {
-          registry.setData(compId, 'mainImageSrc', productImageSrc(firstProduct.image))
-          registry.setData(compId, 'thumbImageSrcs', selected.value.map(p => p.image ? productImageSrc(p.image) : ''))
-          registry.setData(compId, '_productName', firstProduct.name ?? '')
-          registry.setData(compId, '_productPriceNum', Number(firstProduct.price))
-          registry.setData(compId, '_productColors',
-            Array.isArray(firstProduct.colors) && firstProduct.colors.length
-              ? firstProduct.colors.map(c => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
-              : []
-          )
-        } else {
-          // Selection cleared — restore 0th auto-loaded product so block reverts to auto-load state
-          const autoProduct = products.value[0]
-          const autoImg = autoProduct?.image ? productImageSrc(autoProduct.image) : ''
-          registry.setData(compId, 'mainImageSrc', autoImg)
-          registry.setData(compId, 'thumbImageSrcs', autoImg ? [autoImg] : [])
-          registry.setData(compId, '_productName', autoProduct?.name ?? '')
-          registry.setData(compId, '_productPriceNum', autoProduct ? (Number(autoProduct.price) || 0) : null)
-          registry.setData(compId, '_productColors',
-            Array.isArray(autoProduct?.colors) && autoProduct.colors.length
-              ? autoProduct.colors.map(c => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
-              : []
-          )
-        }
+        registry.setData(compId, 'mainImageSrc', firstProduct?.image ? productImageSrc(firstProduct.image) : '')
+        registry.setData(compId, 'thumbImageSrcs', selected.value.map(p => p.image ? productImageSrc(p.image) : ''))
+        registry.setData(compId, '_productName', firstProduct?.name ?? '')
+        registry.setData(compId, '_productPriceNum', firstProduct ? Number(firstProduct.price) : null)
+        registry.setData(compId, '_productColors',
+          Array.isArray(firstProduct?.colors) && firstProduct.colors.length
+            ? firstProduct.colors.map(c => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
+            : []
+        )
       }
 
       await props.updateBlockField('productIds', selected.value.map(p => p.id).join(','))
     } else {
-      if (selected.value.length === 0 && products.value.length > 0) {
-        const n = _autoLoadCount()
-        const curr = props.blockData?.currency || '$'
-        const restored = products.value.slice(0, n).map((p, i) => ({
-          id: p.id,
-          imageUrl: productImageSrc(p.image),
-          name: p.name ?? `Product ${i + 1}`,
-          price: `${curr}${Number(p.price || 0).toFixed(2)}`,
-          oldPrice: '',
-          buttonLabel: 'Add to Cart',
-          buttonUrl: '/shop',
-          colors: Array.isArray(p.colors) && p.colors.length
-            ? p.colors.map(c => c.htmlColor || '').filter(Boolean).join(', ')
-            : '#FF0000, #0000FF',
-        }))
-        props.updateBlockField('products', restored)
-      } else {
-        props.updateBlockField('products', mapped)
-      }
+      props.updateBlockField('products', mapped)
     }
   }
 
