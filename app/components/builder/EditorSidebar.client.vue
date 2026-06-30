@@ -2,6 +2,7 @@
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { usePageBuilderStateStore, sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
 import ProductsEditor from '../ProductsEditor.client.vue'
+import { useBlockRegistry } from '~/composables/editor/useBlockRegistry'
 import { productImageSrc } from '~/composables/useProductImageSrc'
 import { getDomain, faviconUrl } from '~/composables/useSocialIcons'
 import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
@@ -77,14 +78,26 @@ function toHex(v: string | undefined | null): string {
 }
 
 // ── Product block flag ────────────────────────────────────────────────────────
-const _PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 6 Products Minimal', 'Show 4 Products Centered', 'Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products', 'Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail']
+// Legacy blocks that pre-date the block registry
+const _LEGACY_PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 6 Products Minimal', 'Show 4 Products Centered']
+
+const _blockRegistry = useBlockRegistry()
+
+function _isProductTitle(title: string): boolean {
+  if (!title) return false
+  if (_LEGACY_PRODUCT_TITLES.includes(title)) return true
+  // Any registry block whose defaults include a productIds or products field
+  const config = _blockRegistry.getConfig(title)
+  if (config) return 'productIds' in config.defaults || 'products' in config.defaults
+  return false
+}
 
 const lastProductTitle = ref('')
 
 watch(
   () => (sharedPageBuilderStore as any).getComponent,
   (comp: any) => {
-    if (comp?.title && _PRODUCT_TITLES.includes(comp.title)) {
+    if (comp?.title && _isProductTitle(comp.title)) {
       lastProductTitle.value = comp.title
     } else if (comp !== null) {
       lastProductTitle.value = ''
@@ -94,8 +107,8 @@ watch(
 )
 
 const isProductBlock = computed(() =>
-  _PRODUCT_TITLES.includes((sharedPageBuilderStore as any).getComponent?.title ?? '') ||
-  _PRODUCT_TITLES.includes(selectedBlockTitle.value ?? '') ||
+  _isProductTitle((sharedPageBuilderStore as any).getComponent?.title ?? '') ||
+  _isProductTitle(selectedBlockTitle.value ?? '') ||
   lastProductTitle.value !== ''
 )
 
