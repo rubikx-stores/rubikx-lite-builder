@@ -125,7 +125,7 @@ async function _persistRel(key, value) {
   const title = component.value?.title ?? props.selectedBlockTitle
   if (!props.updateBlockField || !title || !isRu2ProductDetail.value) return
   if (props.blockData?.[key] === value) return
-  await props.updateBlockField(key, value, title)
+  await props.updateBlockField(key, value)
 }
 
 const _dRelCardBg          = debounce((v) => _persistRel('relatedCardBg', v), 200)
@@ -198,7 +198,7 @@ async function doApplyRelated(confirm = false) {
       ? p.colors.map(c => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
       : [],
   }))
-  await props.updateBlockField('relatedProducts', mapped, title)
+  await props.updateBlockField('relatedProducts', mapped)
   if (confirm) relatedApplied.value = true
 }
 
@@ -457,20 +457,23 @@ async function doApplyThemeBlock(confirm = false) {
       // data intact — no post-hoc DOM injection needed.
       const registry = useBlockRegistry()
       const firstProduct = selected.value[0]
+      const sectionEl = getSection()
+      const compId = sectionEl?.getAttribute('data-componentid')
+      if (compId) {
+        registry.setData(compId, 'mainImageSrc', firstProduct?.image ? productImageSrc(firstProduct.image) : '')
+        registry.setData(compId, 'thumbImageSrcs', selected.value.map(p => p.image ? productImageSrc(p.image) : ''))
+        registry.setData(compId, '_productName', firstProduct?.name ?? '')
+        registry.setData(compId, '_productPriceNum', firstProduct ? Number(firstProduct.price) : null)
+        registry.setData(compId, '_productColors',
+          Array.isArray(firstProduct?.colors) && firstProduct.colors.length
+            ? firstProduct.colors.map(c => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
+            : []
+        )
+      }
 
-      registry.setData(title, 'mainImageSrc', firstProduct?.image ? productImageSrc(firstProduct.image) : '')
-      registry.setData(title, 'thumbImageSrcs', selected.value.map(p => p.image ? productImageSrc(p.image) : ''))
-      registry.setData(title, '_productName', firstProduct?.name ?? '')
-      registry.setData(title, '_productPriceNum', firstProduct ? Number(firstProduct.price) : null)
-      registry.setData(title, '_productColors',
-        Array.isArray(firstProduct?.colors) && firstProduct.colors.length
-          ? firstProduct.colors.map(c => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
-          : []
-      )
-
-      await props.updateBlockField('productIds', selected.value.map(p => p.id).join(','), title)
+      await props.updateBlockField('productIds', selected.value.map(p => p.id).join(','))
     } else {
-      props.updateBlockField('products', mapped, title)
+      props.updateBlockField('products', mapped)
     }
   }
 
