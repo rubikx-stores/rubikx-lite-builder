@@ -9,9 +9,9 @@ const props = defineProps({
   blockData: { type: Object, default: null },
 })
 
-const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products', 'Ru1-Product Detail', 'Ru2-Product Detail']
+const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products', 'Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail']
 // Blocks that store selected IDs as a comma-separated productIds field (not a products array)
-const PRODUCT_IDS_BLOCKS = ['Ru1-Product Detail', 'Ru2-Product Detail']
+const PRODUCT_IDS_BLOCKS = ['Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail']
 // Blocks that support pagination — allow many products across multiple pages
 const PAGINATED_BLOCKS = ['Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products']
 
@@ -75,9 +75,10 @@ const isProductIdsBlock = computed(() => {
   return PRODUCT_IDS_BLOCKS.includes(title)
 })
 
-const isRu2ProductDetail = computed(() =>
-  (component.value?.title ?? props.selectedBlockTitle ?? '') === 'Ru2-Product Detail'
-)
+const isRu2ProductDetail = computed(() => {
+  const t = component.value?.title ?? props.selectedBlockTitle ?? ''
+  return t === 'Ru2-Product Detail' || t === 'Ru3-Product Detail'
+})
 
 // ── Related products picker state (Ru2-Product Detail only) ──────────────────
 const relatedSelected = ref([])
@@ -125,7 +126,7 @@ async function _persistRel(key, value) {
   const title = component.value?.title ?? props.selectedBlockTitle
   if (!props.updateBlockField || !title || !isRu2ProductDetail.value) return
   if (props.blockData?.[key] === value) return
-  await props.updateBlockField(key, value, title)
+  await props.updateBlockField(key, value)
 }
 
 const _dRelCardBg          = debounce((v) => _persistRel('relatedCardBg', v), 200)
@@ -198,7 +199,7 @@ async function doApplyRelated(confirm = false) {
       ? p.colors.map(c => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
       : [],
   }))
-  await props.updateBlockField('relatedProducts', mapped, title)
+  await props.updateBlockField('relatedProducts', mapped)
   if (confirm) relatedApplied.value = true
 }
 
@@ -457,20 +458,24 @@ async function doApplyThemeBlock(confirm = false) {
       // data intact — no post-hoc DOM injection needed.
       const registry = useBlockRegistry()
       const firstProduct = selected.value[0]
+      const sectionEl = getSection()
+      const compId = sectionEl?.getAttribute('data-componentid')
 
-      registry.setData(title, 'mainImageSrc', firstProduct?.image ? productImageSrc(firstProduct.image) : '')
-      registry.setData(title, 'thumbImageSrcs', selected.value.map(p => p.image ? productImageSrc(p.image) : ''))
-      registry.setData(title, '_productName', firstProduct?.name ?? '')
-      registry.setData(title, '_productPriceNum', firstProduct ? Number(firstProduct.price) : null)
-      registry.setData(title, '_productColors',
-        Array.isArray(firstProduct?.colors) && firstProduct.colors.length
-          ? firstProduct.colors.map(c => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
-          : []
-      )
+      if (compId) {
+        registry.setData(compId, 'mainImageSrc', firstProduct?.image ? productImageSrc(firstProduct.image) : '')
+        registry.setData(compId, 'thumbImageSrcs', selected.value.map(p => p.image ? productImageSrc(p.image) : ''))
+        registry.setData(compId, '_productName', firstProduct?.name ?? '')
+        registry.setData(compId, '_productPriceNum', firstProduct ? Number(firstProduct.price) : null)
+        registry.setData(compId, '_productColors',
+          Array.isArray(firstProduct?.colors) && firstProduct.colors.length
+            ? firstProduct.colors.map(c => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
+            : []
+        )
+      }
 
-      await props.updateBlockField('productIds', selected.value.map(p => p.id).join(','), title)
+      await props.updateBlockField('productIds', selected.value.map(p => p.id).join(','))
     } else {
-      props.updateBlockField('products', mapped, title)
+      props.updateBlockField('products', mapped)
     }
   }
 
