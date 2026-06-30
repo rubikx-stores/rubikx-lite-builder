@@ -80,9 +80,13 @@ async function confirmSave() {
     const { getData } = useBlockRegistry()
     allSections.forEach(sec => {
       const title = sec.getAttribute('data-component-title')
-      if (!title) return
-      const data = getData(title)
-      if (data) sec.setAttribute('data-component-props', encodeURIComponent(JSON.stringify(data)))
+      const componentId = sec.getAttribute('data-componentid')
+      if (!title || !componentId) return
+      const data = getData(componentId)
+      if (data) {
+        const { mainImageSrc: _m, thumbImageSrcs: _t, _productName, _productPriceNum, _productColors, ...persistable } = data as any
+        sec.setAttribute('data-component-props', encodeURIComponent(JSON.stringify(persistable)))
+      }
     })
 
     const navbarSections = allSections.filter(s =>
@@ -211,6 +215,7 @@ onUnmounted(() => {
 onMounted(async () => {
   const builder = getPageBuilder() as any
   let parsedComponents: any[] | undefined = undefined
+  const savedProps = new Map<string, Record<string, any>>()
 
   if (props.pageId) {
     const storageKey = `page-builder-update-resource-page-${sanitize(props.pageId)}`
@@ -253,29 +258,46 @@ onMounted(async () => {
         }),
       )
 
-      // Restore block field values from data-component-props embedded in saved HTML.
-      // useBlockRegistry reads localStorage once at registration time (before onMounted),
-      // so we update the live in-memory registry directly via replaceData.
-      const { replaceData } = useBlockRegistry()
-      new DOMParser().parseFromString(html, 'text/html')
-        .querySelectorAll('section[data-component-title][data-component-props]')
-        .forEach(sec => {
-          const title = sec.getAttribute('data-component-title')!
-          const raw = sec.getAttribute('data-component-props')!
-          try { replaceData(title, JSON.parse(decodeURIComponent(raw))) } catch {}
-        })
+      // parsePageBuilderHTML assigns a UUID to each section (comp.id) and
+      // preserves data-component-props in comp.html_code. We pre-build the
+      // savedProps map here so registerInstance (called after startBuilder)
+      // can restore each section's exact saved field state.
+      // Note: the library strips data-componentid from Odoo-saved HTML, so
+      // comp.html_code is the canonical source for both the UUID and the props.
+      ;(parsedComponents ?? []).forEach((comp: any) => {
+        if (!comp.id) return
+        try {
+          const m = (comp.html_code as string)?.match(/data-component-props="([^"]*)"/)
+          if (m) savedProps.set(comp.id, JSON.parse(decodeURIComponent(m[1])))
+        } catch {}
+      })
     } else {
       localStorage.removeItem(storageKey)
     }
   }
 
   await builder.startBuilder(config, parsedComponents)
+  // Wait for Vue to flush DOM after the library's reactive state changes
+  await nextTick()
+
+  // Register each section as an independent instance. parsedComponents has the
+  // UUID (comp.id) that parsePageBuilderHTML assigned, plus the saved props we
+  // extracted from comp.html_code above. For a new/empty page parsedComponents
+  // is undefined so there's nothing to register yet — the history watcher in
+  // useEditorSidebar picks up new blocks as they're added.
+  const { registerInstance } = useBlockRegistry()
+  ;(parsedComponents ?? []).forEach((comp: any) => {
+    const componentId = comp.id
+    const title = comp.title as string | undefined
+    if (!componentId || !title) return
+    registerInstance(componentId, title, savedProps.get(componentId))
+  })
 
   const stopHydrationWatch = watch(
     () => (sharedPageBuilderStore as any).getIsLoadingGlobal,
     (loading) => {
       if (!loading) {
-        hydrateComponents(selectedCompanyId.value ?? 3)
+        hydrateComponents(selectedCompanyId.value ?? undefined)
         stopHydrationWatch()
       }
     }

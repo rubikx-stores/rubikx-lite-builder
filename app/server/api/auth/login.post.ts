@@ -2,13 +2,17 @@
 import { setCookie } from 'h3'
 
 export default defineEventHandler(async (event) => {
+  const config = useRuntimeConfig(event)
+  if (!config.odooBaseUrl) {
+    throw createError({ statusCode: 500, message: 'ODOO_BASE_URL is not configured' })
+  }
   const _error = 'An unexpected error occurred during login!'
   try {
     const body = await readBody(event)
     if (!body?.email || !body?.password) {
       throw createError({ statusCode: 400, message: 'Email and password are required' })
     }
-    const url = 'https://rubikx-stores-rubikx-2-0-prod.odoo.com/graphql/api/jwt/auth/login'
+    const url = `${config.odooBaseUrl}/graphql/api/jwt/auth/login`
     let result: any
     try {
       result = await $fetch(url, {
@@ -33,7 +37,7 @@ export default defineEventHandler(async (event) => {
     }
     setCookie(event, 'rb_auth_token', result.token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       path: '/',
       maxAge: maxAgeSeconds,

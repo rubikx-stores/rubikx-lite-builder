@@ -19,9 +19,12 @@ export default defineEventHandler(async (event) => {
   }
 
   const companyId = Number(getQuery(event).companyId) || undefined
-  const token = getCookie(event, 'rb_auth_token') ?? 'ec66a59946ecae022949f32f5c65cc67'
+  const token = getCookie(event, 'rb_auth_token') ?? config.odooApiKey
+  if (!token) {
+    throw createError({ statusCode: 401, message: 'No auth token and ODOO_API_KEY is not configured' })
+  }
 
-  const url = 'https://rubikx-stores-rubikx-2-0-prod.odoo.com/graphql'
+  const url = `${config.odooBaseUrl}/graphql`
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -84,9 +87,23 @@ export default defineEventHandler(async (event) => {
     grouped.get(item.key)!.push(item)
   }
 
+  console.log('[CMS GET] grouped keys:', Array.from(grouped.keys()))
+  for (const [key, versions] of grouped.entries()) {
+    console.log(`[CMS GET] key="${key}" has ${versions.length} record(s):`,
+      versions.map(v => ({ version: v.version, state: v.state, updatedOn: v.updatedOn }))
+    )
+  }
+
   return Array.from(grouped.entries()).map(([key, versions]) => {
-    versions.sort((a, b) => b.version - a.version)
+    versions.sort((a, b) => {
+      if (b.version !== a.version) return b.version - a.version
+      // Same version: published beats draft
+      if (a.state === 'published' && b.state !== 'published') return -1
+      if (b.state === 'published' && a.state !== 'published') return 1
+      return 0
+    })
     const latest = versions[0]
+    console.log(`[CMS GET] key="${key}" → picked latest: version=${latest.version} state=${latest.state} updatedOn=${latest.updatedOn}`)
     return {
       id: key,
       name: key,

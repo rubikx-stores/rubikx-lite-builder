@@ -10,7 +10,7 @@ const selectedCompanyId = useState<number | null>('selectedCompanyId')
 
 const store = usePageBuilderStateStore() as any
 const {
-  selectedEl, selectedBlockTitle, mode,
+  selectedEl, selectedBlockId, selectedBlockTitle, mode,
   blockConfig, blockData,
   updateBlockField, updateBlockListItem, addBlockListItem, removeBlockListItem,
   updateElementStyle,
@@ -113,11 +113,11 @@ const isImgEl  = computed(() => selectedEl.value?.tagName?.toUpperCase() === 'IM
 
 let _fieldDebounceTimer = 0
 function debouncedUpdateBlockField(fieldKey: string, value: any) {
-  const capturedTitle = selectedBlockTitle.value   // snapshot NOW, before any await
+  const capturedId = selectedBlockId.value   // snapshot NOW, before any await
   clearTimeout(_fieldDebounceTimer)
   _fieldDebounceTimer = window.setTimeout(() => {
-    if (!capturedTitle) return
-    updateBlockField(fieldKey, value, capturedTitle)
+    if (!capturedId) return
+    updateBlockField(fieldKey, value, capturedId)
   }, 50)
 }
 
@@ -128,7 +128,7 @@ async function onToggleField(fieldKey: string, newValue: boolean) {
     document.querySelectorAll('[data-rubikx-component="CategoryNav"]').forEach(el => {
       (el as HTMLElement).removeAttribute('data-hydrated')
     })
-    hydrateComponents(selectedCompanyId.value ?? 3)
+    hydrateComponents(selectedCompanyId.value ?? undefined)
   }
 }
 

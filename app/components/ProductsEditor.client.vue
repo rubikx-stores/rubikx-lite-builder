@@ -187,7 +187,7 @@ const selectedCompanyId = useState('selectedCompanyId', () => null)
 onMounted(async () => {
   loading.value = true
   try {
-    const res = await fetch(`/api/products?companyId=${selectedCompanyId.value ?? 3}`)
+    const res = await fetch(`/api/products${selectedCompanyId.value ? `?companyId=${selectedCompanyId.value}` : ''}`)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     products.value = await res.json()
   } catch (e) {
