@@ -4536,19 +4536,20 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
 
   // ── Image gallery ─────────────────────────────────────────────────────────
   const mainImgHtml = _m
-    ? `<img src="${_m}" style="width:100%;height:100%;object-fit:cover;display:block;" />`
+    ? `<img src="${_m}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
     : skeletonImg
-  const small1Html = _t?.[1]
-    ? `<img src="${_t[1]}" style="width:100%;height:100%;object-fit:cover;display:block;" />`
+  // _t[0] is the selected product — show it as the active thumbnail
+  const small1Html = _t?.[0]
+    ? `<img src="${_t[0]}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
     : skeletonImg
-  const small2Html = _t?.[2]
-    ? `<img src="${_t[2]}" style="width:100%;height:100%;object-fit:cover;display:block;" />`
+  const small2Html = _t?.[1]
+    ? `<img src="${_t[1]}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
     : skeletonImg
 
   const imageGalleryHtml = `<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
-    <div style="grid-column:1/3;border-radius:8px;overflow:hidden;background:${_m ? '#fff' : '#f3f4f6'};aspect-ratio:1/1;">${mainImgHtml}</div>
-    <div style="border-radius:8px;overflow:hidden;background:${_t?.[1] ? '#fff' : '#f3f4f6'};aspect-ratio:1/1;">${small1Html}</div>
-    <div style="border-radius:8px;overflow:hidden;background:${_t?.[2] ? '#fff' : '#f3f4f6'};aspect-ratio:1/1;">${small2Html}</div>
+    <div style="grid-column:1/3;border-radius:8px;overflow:hidden;background:#f9fafb;aspect-ratio:4/3;">${mainImgHtml}</div>
+    <div style="border-radius:8px;overflow:hidden;background:#f9fafb;aspect-ratio:1/1;">${small1Html}</div>
+    <div style="border-radius:8px;overflow:hidden;background:#f9fafb;aspect-ratio:1/1;">${small2Html}</div>
   </div>`
 
   // ── Name + Price ──────────────────────────────────────────────────────────
@@ -4719,7 +4720,7 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
       : ''
     const subtitleHtml = relSubtitle ? `<div style="font-size:11px;color:#6b7280;margin-bottom:6px;text-align:${relTextAlign};">${relSubtitle}</div>` : ''
     const btnHtml  = `<button style="width:100%;padding:10px;background:${relBtnBg};color:${relBtnColor};border:none;border-radius:${relBtnRadius}px;font-size:${relFontSize}px;font-weight:500;cursor:pointer;margin-top:auto;">${data.relatedAddToCartLabel || 'Add to cart'}</button>`
-    const imgBox   = `<div style="aspect-ratio:1/1;background:${p.imageUrl ? '#fff' : '#f3f4f6'};display:flex;align-items:center;justify-content:center;">${p.imageUrl ? `<img src="${p.imageUrl}" style="width:100%;height:100%;object-fit:cover;display:block;" />` : skeletonImg}</div>`
+    const imgBox   = `<div style="aspect-ratio:4/3;background:${p.imageUrl ? '#f9fafb' : '#f3f4f6'};display:flex;align-items:center;justify-content:center;overflow:hidden;">${p.imageUrl ? `<img src="${p.imageUrl}" style="width:100%;height:100%;object-fit:contain;display:block;" />` : skeletonImg}</div>`
     const cardWrap = (inner: string) =>
       `<div style="background:${relCardBg};border-radius:${relCardRadius}px;overflow:hidden;box-shadow:${relShadow};margin:${relCardMar}px;display:flex;flex-direction:column;">${imgBox}${inner}</div>`
 
@@ -4740,7 +4741,7 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
     ? data.relatedProducts.map(relCardItem).join('')
     : Array(relCount).fill(0).map(() =>
         `<div style="background:${relCardBg};border-radius:${relCardRadius}px;overflow:hidden;box-shadow:${relShadow};margin:${relCardMar}px;">
-          <div style="aspect-ratio:1/1;background:#f3f4f6;">${skeletonImg}</div>
+          <div style="aspect-ratio:4/3;background:#f3f4f6;">${skeletonImg}</div>
           <div style="padding:${relCardPad}px;">
             <div style="height:14px;background:#f3f4f6;border-radius:4px;width:68%;margin-bottom:6px;"></div>
             <div style="height:13px;background:#f3f4f6;border-radius:4px;width:48%;margin-bottom:12px;"></div>
