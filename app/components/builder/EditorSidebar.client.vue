@@ -145,6 +145,37 @@ async function onToggleField(fieldKey: string, newValue: boolean) {
   }
 }
 
+async function onSelectField(fieldKey: string, value: string | number) {
+  await updateBlockField(fieldKey, value)
+  // When gallery layout changes, the block re-renders with new carousel HTML.
+  // Re-run hydration — the fresh element has no data-hydrated so it gets wired.
+  if (fieldKey === 'galleryLayout') {
+    await nextTick()
+    await nextTick()
+    hydrateComponents(selectedCompanyId.value ?? undefined)
+  }
+}
+
+// Re-wire Layout 3 carousel after ANY field change while that layout is active.
+// When a field changes the block re-renders → new DOM element (no data-hydrated).
+// The watcher calls hydrateComponents so the fresh element gets its carousel wired.
+// Other ProductDetail blocks keep their data-hydrated and are skipped automatically.
+let _carouselRewireTimer = 0
+watch(
+  blockData,
+  async (newData) => {
+    if (!newData || (newData as Record<string, any>).galleryLayout !== 'layout3') return
+    if (!document.getElementById('page-builder-wrapper')) return
+    clearTimeout(_carouselRewireTimer)
+    _carouselRewireTimer = window.setTimeout(async () => {
+      await nextTick()
+      await nextTick()
+      hydrateComponents(selectedCompanyId.value ?? undefined)
+    }, 150)
+  },
+  { deep: true },
+)
+
 // Debounced list-item updater — fires 150ms after the user stops typing so
 // every keystroke reflects in the canvas without hammering _applyBlockRender.
 let _listItemDebounceTimer = 0
@@ -416,6 +447,7 @@ onUnmounted(() => {
       <template v-if="mode === 'block' && blockConfig && blockData">
         <div class="border-b border-gray-100 px-3 pt-3 pb-3">
           <template v-for="field in blockConfig.fields" :key="field.key">
+            <template v-if="!field.visibleIf || field.visibleIf(blockData)">
 
             <!-- header sentinel -->
             <div v-if="field.type === 'header'" class="mb-3 mt-6 first:mt-2 flex items-center gap-2">
@@ -520,11 +552,16 @@ onUnmounted(() => {
             <!-- select -->
             <div v-else-if="field.type === 'select'" class="mb-2.5">
               <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
-              <select class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors appearance-none cursor-pointer"
-                :value="String(blockData[field.key])"
-                @change="updateBlockField(field.key, Number(($event.target as HTMLSelectElement).value) || ($event.target as HTMLSelectElement).value)">
-                <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
-              </select>
+              <div class="relative">
+                <select class="w-full rounded-lg border border-gray-300 px-3 py-2 pr-8 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors appearance-none cursor-pointer"
+                  :value="String(blockData[field.key])"
+                  @change="onSelectField(field.key, Number(($event.target as HTMLSelectElement).value) || ($event.target as HTMLSelectElement).value)">
+                  <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
+                </select>
+                <svg class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 5L7 9L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
             </div>
 
             <!-- column-order -->
@@ -755,6 +792,7 @@ onUnmounted(() => {
               </div>
             </div>
 
+            </template><!-- /visibleIf -->
           </template>
         </div>
       </template>
