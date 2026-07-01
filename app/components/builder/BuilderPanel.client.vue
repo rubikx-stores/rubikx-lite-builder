@@ -175,11 +175,6 @@ async function handleDropComponent(comp: { id: string | number | null; html_code
     // Hydrate dynamic components after adding new component
     await nextTick()
     hydrateComponents(selectedCompanyId.value ?? undefined)
-
-    // Immediately populate product blocks with real Odoo data (non-blocking)
-    if (_PRODUCT_BLOCK_TITLES.has(comp.title)) {
-      _autoLoadProductsOnAdd(comp.title, selectedCompanyId.value).catch(() => {})
-    }
   } catch (e) {
     console.error('[ADD] Error:', e)
   } finally {

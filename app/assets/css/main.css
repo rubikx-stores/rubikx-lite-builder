@@ -73,3 +73,12 @@ body {
 #pagebuilder-navbar .lg\:flex.hidden {
   display: flex !important;
 }
+
+/* ── Ru1-Navbar responsive layout ────────────────────────────────────────── */
+[data-nav-mobile]        { display: none; }
+[data-nav-desktop]       { display: grid; }
+@media (max-width: 1024px) {
+  [data-nav-mobile]        { display: flex !important; }
+  [data-nav-desktop]       { display: none !important; }
+  [data-nav-desktop-lower] { display: none !important; }
+}

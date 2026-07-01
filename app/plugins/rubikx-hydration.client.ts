@@ -691,24 +691,25 @@ function loadMobileNav(el: HTMLElement) {
     'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;'
   document.body.appendChild(overlay)
 
-  // Drawer — content copied from the static drawer, position:fixed set via JS
+  // Drawer — uses transform for show/hide so a CSS transform on an Odoo ancestor
+  // element cannot break positioning (position:fixed containing block issue).
   const drawer = document.createElement('div')
   drawer.setAttribute('data-rb-nav-drawer-live', 'true')
   drawer.style.cssText =
-    'position:fixed;top:0;left:-320px;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transition:left 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;'
+    'position:fixed;top:0;left:0;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transform:translateX(-100%);transition:transform 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;'
   if (staticDrawer) drawer.innerHTML = staticDrawer.innerHTML
   document.body.appendChild(drawer)
 
   const closeBtn = drawer.querySelector<HTMLElement>('[data-mobile-close]')
 
   function openDrawer() {
-    drawer.style.left = '0'
+    drawer.style.transform = 'translateX(0)'
     overlay.style.display = 'block'
     document.body.style.overflow = 'hidden'
   }
 
   function closeDrawer() {
-    drawer.style.left = '-320px'
+    drawer.style.transform = 'translateX(-100%)'
     overlay.style.display = 'none'
     document.body.style.overflow = ''
   }
@@ -724,12 +725,25 @@ const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> =
     loadSlider,
     loadCartCount,
     loadAuthState,
-    loadMobileNav,
-    loadProductDetail,
-    loadProductDetail2,
   }
 
 export function hydrateComponents(companyId?: number) {
+  // Inject responsive navbar CSS for the live Odoo site (where main.css is not loaded).
+  // main.css covers the builder; this covers the live site. Same selectors, same rules.
+  if (!document.getElementById('rubikx-nav-styles')) {
+    const s = document.createElement('style')
+    s.id = 'rubikx-nav-styles'
+    s.textContent = `
+[data-nav-mobile]{display:none}
+[data-nav-desktop]{display:grid}
+@media(max-width:1024px){
+  [data-nav-mobile]{display:flex!important}
+  [data-nav-desktop]{display:none!important}
+  [data-nav-desktop-lower]{display:none!important}
+}`
+    document.head.appendChild(s)
+  }
+
   if (!document.getElementById('rubikx-cat-styles')) {
     const style = document.createElement('style')
     style.id = 'rubikx-cat-styles'
