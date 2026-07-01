@@ -564,12 +564,7 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   arrowBtnBg: '#1e293b',
   arrowBtnColor: '#ffffff',
   arrowBtnPosition: 'center',
-  products: [
-    { imageUrl: placeholderSvg, name: 'Product One',   price: '$0', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '#FF0000, #0000FF' },
-    { imageUrl: placeholderSvg, name: 'Product Two',   price: '$0', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '#FF0000, #0000FF' },
-    { imageUrl: placeholderSvg, name: 'Product Three', price: '$0', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '#FF0000, #0000FF' },
-    { imageUrl: placeholderSvg, name: 'Product Four',  price: '$0', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '#FF0000, #0000FF' },
-  ],
+  products: [],
 }
 
 export const ru1ProductsFields: FieldConfig[] = [
@@ -720,7 +715,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
     return `
       <div data-fp-card="1" style="border-radius:${data.cardBorderRadius}px;overflow:hidden;display:flex;flex-direction:column;border:1px solid #e5e7eb">
         <div style="position:relative;overflow:hidden">
-          <img style="width:100%;height:auto;display:block" src="${p.imageUrl}" alt="${p.name}" />
+          <img style="width:100%;aspect-ratio:1/1;object-fit:contain;display:block;background:#f9fafb" src="${p.imageUrl}" alt="${p.name}" />
           ${overlayHtml}
         </div>
         <div style="display:flex;flex-direction:column;gap:0.25rem;padding:0.75rem;flex:1">
