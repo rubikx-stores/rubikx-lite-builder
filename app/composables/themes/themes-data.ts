@@ -306,31 +306,31 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 
   const mobileNav = `
 <style>
-  .rb-mobile-nav { display: none; }
-  .rb-desktop-nav { display: grid; }
+  [data-nav-mobile] { display: none; }
+  [data-nav-desktop] { display: grid; }
+  [data-nav-desktop-lower] { display: block; }
   @media (max-width: 1024px) {
-    .rb-mobile-nav { display: flex !important; border-bottom: 1px solid ${data.borderColor || '#374151'}; }
-    .rb-desktop-nav { display: none !important; }
-    .rb-desktop-lower { display: none !important; }
+    [data-nav-mobile] { display: flex !important; }
+    [data-nav-desktop] { display: none !important; }
+    [data-nav-desktop-lower] { display: none !important; }
   }
 </style>
-
 <!-- Mobile header -->
-<div class="rb-mobile-nav" style="align-items:center;justify-content:space-between;padding:1.25rem ${data.paddingX}px;border-bottom:1px solid ${data.borderColor || '#374151'};">
+<div data-nav-mobile="true" style="display:none;align-items:center;justify-content:space-between;padding:1.25rem ${data.paddingX}px;border-bottom:1px solid ${data.borderColor || '#374151'};">
   ${logoEl}
   <div style="display:flex;align-items:center;gap:1rem;">
     ${data.showCart ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>` : ''}
-    <span data-rubikx-component="MobileNav" data-on-mount="loadMobileNav" data-text-color="${data.textColor}" style="cursor:pointer;display:inline-flex;">
+    <button onclick="(function(btn){var s=btn.closest('section');var d=s&&s.querySelector('[data-mobile-drawer]');var o=s&&s.querySelector('[data-mobile-overlay]');if(d){d.style.transform='translateX(0)';}if(o){o.style.display='block';}document.body.style.overflow='hidden';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;">
       <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.textColor}" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-    </span>
+    </button>
   </div>
 </div>
 
 <!-- Drawer -->
-<div data-mobile-drawer="true" style="position:fixed;top:0;left:-100%;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transition:left 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;">
+<div data-mobile-drawer="true" style="position:fixed;top:0;left:0;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transform:translateX(-100%);transition:transform 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
     ${logoEl}
-    <button data-mobile-close="true" style="background:none;border:none;cursor:pointer;padding:0.25rem;display:flex;align-items:center;">
+    <button onclick="(function(btn){var d=document.querySelector('[data-mobile-drawer]');var o=document.querySelector('[data-mobile-overlay]');if(d){d.style.transform='translateX(-100%)';}if(o){o.style.display='none';}document.body.style.overflow='';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0.25rem;display:flex;align-items:center;">
       ${icon('xMark', { size: 24, stroke: data.textColor })}
     </button>
   </div>
@@ -346,17 +346,17 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 </div>
 
 <!-- Overlay -->
-<div data-mobile-overlay="true" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;"></div>`
+<div data-mobile-overlay="true" onclick="(function(el){var d=document.querySelector('[data-mobile-drawer]');if(d){d.style.transform='translateX(-100%)';}el.style.display='none';document.body.style.overflow='';})(this);" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;"></div>`
 
   return `<section data-component-title="Ru1-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 <nav style="${navStyle}">
   ${mobileNav}
-  <div class="rb-desktop-nav" style="margin:0 auto;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;height:80px;${topRowBorder}">
+  <div data-nav-desktop="true" style="display:grid;margin:0 auto;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;height:80px;${topRowBorder}">
     ${zone(cols.left,   'flex-start')}
     ${zone(cols.center, 'center')}
     ${zone(cols.right,  'flex-end')}
   </div>
-  <div class="rb-desktop-lower">${lowerRow}</div>
+  <div data-nav-desktop-lower="true">${lowerRow}</div>
 </nav>
 </section>`
 }
