@@ -4,6 +4,8 @@ import type {
   CategoryNode,
 } from '~/composables/categories/buildCategoryTree'
 import { icon } from '~/composables/useIconSvg'
+import { productImageSrc } from '~/composables/useProductImageSrc'
+import { useBlockRegistry } from '~/composables/editor/useBlockRegistry'
 
 // Set true to preview logged-in auth state inside the builder
 const SIMULATE_AUTH = false
@@ -286,6 +288,380 @@ async function loadAuthState(el: HTMLElement, companyId?: number) {
   }
 }
 
+async function loadProductDetail(el: HTMLElement, companyId = 3) {
+  const isBuilder = !!document.getElementById('page-builder-wrapper')
+  const layout = el.dataset.galleryLayout || 'layout1'
+
+  // In the builder only Layout 3 needs JS wiring (carousel + auto-slide).
+  if (isBuilder && layout !== 'layout3') return
+
+  if (isBuilder) {
+    // Builder: cancel any previous carousel on this element and restart fresh.
+    // Do NOT use data-hydrated here — we want re-entry so that field edits and
+    // DOM replacements (syncDomToStoreOnly) always get a fresh working carousel.
+    const old = (el as any).__rbxPdTimer
+    if (old) clearTimeout(old)
+  } else {
+    if (el.dataset.hydrated === 'true') return
+    el.dataset.hydrated = 'true'
+  }
+
+  const productIds = (el.dataset.productIds ?? '').trim()
+  const accentColor = el.dataset.accentColor || '#1a56db'
+  const curr = el.dataset.currency || '$'
+  const productNameColor = el.dataset.productNameColor || '#111827'
+  const productNameWeight = el.dataset.productNameWeight || '700'
+  const productNameSize = el.dataset.productNameSize || '22'
+  const priceModifierColor = el.dataset.priceModifierColor || '#6b7280'
+  const priceModifierWeight = el.dataset.priceModifierWeight || '400'
+  const priceModifierSize = el.dataset.priceModifierSize || '10'
+  const thumbSize = parseInt(el.dataset.thumbSize || '64', 10)
+  const thumbRadius = parseInt(el.dataset.thumbRadius || '4', 10)
+  const thumbCount = parseInt(
+    layout === 'layout3' ? (el.dataset.l3ThumbCount || '3')
+    : layout === 'layout2' ? (el.dataset.l2ThumbCount || '2')
+    : (el.dataset.l1ThumbCount || '1'),
+    10
+  )
+  const autoSlideMs = (parseInt(el.dataset.l3AutoSlideSeconds || '3', 10)) * 1000
+
+  const thumbsWrap = el.querySelector<HTMLElement>('[data-rb-pd-thumbs]')
+  const mainImgWrap = el.querySelector<HTMLElement>('[data-rb-pd-main-img]')
+  const nameEl = el.querySelector<HTMLElement>('[data-rb-pd-name]')
+  const colorsEl = el.querySelector<HTMLElement>('[data-rb-pd-colors]')
+  const priceEl = el.querySelector<HTMLElement>('[data-rb-pd-price]')
+  const totalEl = el.querySelector<HTMLElement>('[data-rb-pd-total]')
+  const tablePriceEl = el.querySelector<HTMLElement>('[data-rb-pd-table-price]')
+
+  try {
+    const skeletonThumbInner = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f3f4f6;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="7" width="18" height="14" rx="2"/><circle cx="12" cy="14" r="3"/>
+        <path d="M8 7V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+      </svg>
+    </div>`
+
+    const skeletonMainImg = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f3f4f6;">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="7" width="18" height="14" rx="2"/><circle cx="12" cy="14" r="3"/>
+        <path d="M8 7V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+      </svg>
+    </div>`
+
+    // Mutable slots — start as all-null (skeletons), filled once products resolve.
+    // The auto-slide timer reads slots[i] on every fire, so product data appears
+    // on the next slide after the fetch resolves — no timer restart needed.
+    const slots: (any | null)[] = Array(thumbCount).fill(null)
+
+    // ── Resolve products ────────────────────────────────────────────────────
+    // Builder: try registry first (sync, no fetch). Fall back to API in background
+    // AFTER the carousel is already running so sliding is always instant.
+    // Non-builder: await the fetch here (blocking), then proceed.
+    let builderNeedsFetch = false
+
+    if (isBuilder) {
+      const sectionEl = el.closest('[data-componentid]') as HTMLElement | null
+      const compId = sectionEl?.getAttribute('data-componentid')
+      const regData = compId ? useBlockRegistry().getData(compId) : null
+      const thumbSrcs: string[] = Array.isArray(regData?.thumbImageSrcs) ? regData.thumbImageSrcs : []
+
+      if (thumbSrcs.length > 0) {
+        thumbSrcs.filter(src => !!src).slice(0, thumbCount).forEach((src, i) => {
+          slots[i] = {
+            image: src,
+            name: i === 0 ? (regData?._productName ?? '') : '',
+            price: i === 0 ? (regData?._productPriceNum ?? null) : null,
+            colors: i === 0 ? (Array.isArray(regData?._productColors) ? regData._productColors : []) : [],
+          }
+        })
+      } else if (productIds) {
+        builderNeedsFetch = true  // kick off fetch AFTER carousel starts
+      }
+    } else {
+      // Live page: blocking fetch fills slots before any UI is built
+      const query: Record<string, string | number> = { companyId }
+      if (productIds) query.ids = productIds
+      const raw = await $fetch<any[]>('/api/products', { query }).catch(() => [] as any[])
+      if (!document.contains(el)) return
+      const fetched = (raw ?? []).map(p => ({ ...p, image: productImageSrc(p.image) }))
+      fetched.slice(0, thumbCount).forEach((p, i) => { slots[i] = p })
+    }
+
+    // ── Build thumbnail strip ───────────────────────────────────────────────
+    if (thumbsWrap) {
+      thumbsWrap.innerHTML = slots.map((p, i) =>
+        `<div data-rb-pd-thumb="${i}" style="width:${thumbSize}px;height:${thumbSize}px;border:2px solid ${i === 0 ? accentColor : '#e5e7eb'};border-radius:${thumbRadius}px;overflow:hidden;cursor:pointer;flex-shrink:0;box-sizing:border-box;background:#fff;">
+          ${p?.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:contain;display:block;" />` : skeletonThumbInner}
+        </div>`
+      ).join('')
+    }
+
+    let currentIdx = 0
+    let autoSlideTimer: ReturnType<typeof setInterval> | null = null
+
+    function updateDots(idx: number) {
+      el.querySelectorAll<HTMLElement>('[data-rb-pd-dot]').forEach(dot => {
+        dot.style.background = parseInt(dot.dataset.rbPdDot ?? '0', 10) === idx ? accentColor : '#d1d5db'
+      })
+    }
+
+    function highlightThumb(idx: number) {
+      if (!thumbsWrap) return
+      thumbsWrap.querySelectorAll<HTMLElement>('[data-rb-pd-thumb]').forEach((t, i) => {
+        t.style.borderColor = i === idx ? accentColor : '#e5e7eb'
+      })
+    }
+
+    function showSlot(p: any | null, idx: number) {
+      currentIdx = idx
+      if (mainImgWrap) {
+        mainImgWrap.style.background = '#fff'
+        mainImgWrap.innerHTML = p?.image
+          ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+          : skeletonMainImg
+      }
+      // Only update name/colors/price for real product slots — skeleton slides
+      // keep the last real product's info frozen (only gallery image changes).
+      if (p) {
+        if (nameEl) {
+          nameEl.textContent = p.name
+          nameEl.style.color = productNameColor
+          nameEl.style.fontWeight = productNameWeight
+          nameEl.style.fontSize = `${productNameSize}px`
+        }
+        if (colorsEl) {
+          colorsEl.innerHTML = Array.isArray(p.colors) && p.colors.length
+            ? p.colors.map((c: any, i: number) =>
+                `<div style="display:inline-flex;align-items:center;gap:6px;border:${i === 0 ? `2px solid ${accentColor}` : '1px solid #d1d5db'};border-radius:9999px;padding:4px 12px;cursor:pointer;white-space:nowrap;">
+                  <span style="width:12px;height:12px;border-radius:50%;background:${c.htmlColor};border:1px solid rgba(0,0,0,0.15);flex-shrink:0;display:inline-block;"></span>
+                  <span style="font-size:11px;font-weight:700;color:#374151;letter-spacing:0.04em;">${c.name}</span>
+                </div>`
+              ).join('')
+            : '<div style="height:30px;background:#f3f4f6;border-radius:9999px;width:110px;"></div>'
+        }
+        const priceNum = Number(p.price)
+        const priceStr = `${curr}${priceNum.toFixed(2)}`
+        if (priceEl) priceEl.textContent = priceStr
+        if (totalEl) totalEl.textContent = `Total: ${priceStr}`
+        if (tablePriceEl) tablePriceEl.textContent = `${curr} ${priceNum.toFixed(2)}`
+        // TODO: populate descEl with real product description when API query is ready
+      }
+      highlightThumb(idx)
+      updateDots(idx)
+    }
+
+    el.querySelectorAll<HTMLElement>('[data-rb-pd-size-pm]').forEach(pm => {
+      pm.style.color = priceModifierColor
+      pm.style.fontWeight = priceModifierWeight
+      pm.style.fontSize = `${priceModifierSize}px`
+    })
+
+    showSlot(slots[0], 0)
+
+    // Wire thumbnail clicks
+    if (thumbsWrap) {
+      thumbsWrap.querySelectorAll<HTMLElement>('[data-rb-pd-thumb]').forEach((thumb, i) => {
+        thumb.addEventListener('click', () => showSlot(slots[i] ?? null, i))
+      })
+    }
+
+    // ── Layout 3: carousel controls + auto-slide ────────────────────────────
+    if (layout === 'layout3') {
+      const prevBtn = el.querySelector<HTMLElement>('[data-rb-pd-prev]')
+      const nextBtn = el.querySelector<HTMLElement>('[data-rb-pd-next]')
+      const thumbPrevBtn = el.querySelector<HTMLElement>('[data-rb-pd-thumb-prev]')
+      const thumbNextBtn = el.querySelector<HTMLElement>('[data-rb-pd-thumb-next]')
+
+      prevBtn?.addEventListener('click', () => {
+        const next = (currentIdx - 1 + slots.length) % slots.length
+        showSlot(slots[next] ?? null, next)
+      })
+      nextBtn?.addEventListener('click', () => {
+        const next = (currentIdx + 1) % slots.length
+        showSlot(slots[next] ?? null, next)
+      })
+
+      let thumbScrollOffset = 0
+      const thumbItemH = thumbSize + 8
+      const maxThumbScroll = Math.max(0, (slots.length - 1) * thumbItemH)
+
+      thumbPrevBtn?.addEventListener('click', () => {
+        thumbScrollOffset = Math.max(0, thumbScrollOffset - thumbItemH)
+        if (thumbsWrap) thumbsWrap.style.transform = `translateY(-${thumbScrollOffset}px)`
+      })
+      thumbNextBtn?.addEventListener('click', () => {
+        thumbScrollOffset = Math.min(maxThumbScroll, thumbScrollOffset + thumbItemH)
+        if (thumbsWrap) thumbsWrap.style.transform = `translateY(-${thumbScrollOffset}px)`
+      })
+
+      el.querySelectorAll<HTMLElement>('[data-rb-pd-dot]').forEach(dot => {
+        dot.addEventListener('click', () => {
+          const idx = parseInt(dot.dataset.rbPdDot ?? '0', 10)
+          showSlot(slots[idx] ?? null, idx)
+        })
+      })
+
+      if (slots.length > 1 && autoSlideMs > 0) {
+        if (isBuilder) {
+          // Self-canceling chain — stops when el is replaced by a field edit.
+          // Timer ref is stored on el so any re-entry (field edit, re-render)
+          // cancels the previous chain before starting a new one.
+          const slide = () => {
+            if (!document.contains(el)) { delete (el as any).__rbxPdTimer; return }
+            const next = (currentIdx + 1) % slots.length
+            showSlot(slots[next] ?? null, next)
+            ;(el as any).__rbxPdTimer = setTimeout(slide, autoSlideMs)
+          }
+          ;(el as any).__rbxPdTimer = setTimeout(slide, autoSlideMs)
+        } else {
+          autoSlideTimer = setInterval(() => {
+            const next = (currentIdx + 1) % slots.length
+            showSlot(slots[next] ?? null, next)
+          }, autoSlideMs)
+        }
+      }
+    }
+
+    // ── Background fetch for builder (save+re-open) ─────────────────────────
+    // Carousel is already running. Fill slots[] in-place — timer picks up
+    // product images on the next slide without any restart.
+    if (builderNeedsFetch) {
+      $fetch<any[]>('/api/products', { query: { companyId, ids: productIds } })
+        .catch(() => [] as any[])
+        .then((raw: any[]) => {
+          if (!document.contains(el)) return
+          const products = (raw ?? []).map((p: any) => ({ ...p, image: productImageSrc(p.image) }))
+          products.slice(0, thumbCount).forEach((p: any, i: number) => { slots[i] = p })
+          if (thumbsWrap) {
+            slots.forEach((p, i) => {
+              const thumbEl = thumbsWrap.querySelector<HTMLElement>(`[data-rb-pd-thumb="${i}"]`)
+              if (thumbEl && p?.image) {
+                thumbEl.innerHTML = `<img src="${p.image}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+              }
+            })
+          }
+          showSlot(slots[currentIdx] ?? null, currentIdx)
+        })
+    }
+
+  } catch (e) {
+    console.error('[Rubikx] Failed to load product detail:', e)
+  }
+}
+
+async function loadProductDetail2(el: HTMLElement, companyId = 3) {
+  if (document.getElementById('page-builder-wrapper')) return
+  if (el.dataset.hydrated === 'true') return
+  el.dataset.hydrated = 'true'
+
+  const productIds = (el.dataset.productIds ?? '').trim()
+  const accentColor = el.dataset.accentColor || '#4f46e5'
+  const curr = el.dataset.currency || '$'
+  const mainDiv = el.querySelector<HTMLElement>('[data-rb-pd2-main]')
+  const thumbsGrid = el.querySelector<HTMLElement>('[data-rb-pd2-thumbs]')
+  const nameEl = el.querySelector<HTMLElement>('[data-rb-pd2-name]')
+  const priceEl = el.querySelector<HTMLElement>('[data-rb-pd2-price]')
+  const descEl = el.querySelector<HTMLElement>('[data-rb-pd2-desc]')
+  const colorsEl = el.querySelector<HTMLElement>('[data-rb-pd2-colors]')
+
+
+  try {
+    const query: Record<string, string | number> = { companyId }
+    if (productIds) query.ids = productIds
+
+    const products = await $fetch<any[]>('/api/products', { query })
+    if (!products || products.length === 0) return
+    const main = products[0]
+
+    // Collect all images: main + extra thumbnails from product list
+    const allImages: string[] = []
+    if (main.image) allImages.push(main.image)
+    products.slice(1, 4).forEach((p: any) => { if (p.image) allImages.push(p.image) })
+    while (allImages.length < 4 && allImages.length > 0) allImages.push(allImages[0])
+
+    function showImage(src: string, idx: number) {
+      if (mainDiv) {
+        mainDiv.style.background = '#ffffff'
+        mainDiv.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+      }
+      if (thumbsGrid) {
+        Array.from(thumbsGrid.querySelectorAll<HTMLElement>('[data-rb-pd2-thumb]')).forEach((t, i) => {
+          t.style.borderColor = i === idx ? accentColor : '#e5e7eb'
+        })
+      }
+    }
+
+    // Main image
+    if (mainDiv && allImages[0]) {
+      mainDiv.style.background = '#ffffff'
+      mainDiv.innerHTML = `<img src="${allImages[0]}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+    }
+
+    // Thumbnails
+    if (thumbsGrid && allImages.length) {
+      thumbsGrid.innerHTML = allImages.map((src, i) =>
+        `<div data-rb-pd2-thumb="${i}" style="border:2px solid ${i === 0 ? accentColor : '#e5e7eb'};border-radius:6px;overflow:hidden;cursor:pointer;background:#fff;aspect-ratio:1;display:flex;align-items:center;justify-content:center;">
+          <img src="${src}" style="width:100%;height:100%;object-fit:contain;display:block;" />
+        </div>`
+      ).join('')
+      Array.from(thumbsGrid.querySelectorAll<HTMLElement>('[data-rb-pd2-thumb]')).forEach((t, i) => {
+        t.addEventListener('click', () => showImage(allImages[i], i))
+      })
+    }
+
+    // Name
+    if (nameEl) nameEl.textContent = main.name ?? ''
+
+    // Price
+    const priceNum = Number(main.price)
+    if (priceEl) priceEl.textContent = `${curr}${priceNum.toFixed(2)}`
+
+    // Description (HTML or plain text)
+    if (descEl) {
+      const desc = (main as any).description ?? (main as any).description_sale ?? ''
+      descEl.innerHTML = desc
+        ? desc.startsWith('<')
+          ? desc
+          : desc.split('\n').filter(Boolean).map((l: string) => `<p style="margin:0 0 8px;">${l}</p>`).join('')
+        : ''
+    }
+
+    // Color swatches
+    if (colorsEl) {
+      colorsEl.innerHTML = Array.isArray(main.colors) && main.colors.length
+        ? main.colors.map((c: any, i: number) =>
+            `<label style="display:inline-flex;align-items:center;gap:0;cursor:pointer;">
+              <input type="radio" name="rb-pd2-color" value="${c.name}" style="display:none;" ${i === 0 ? 'checked' : ''} />
+              <span title="${c.name}" style="display:block;width:28px;height:28px;border-radius:50%;background:${c.htmlColor};border:${i === 0 ? `3px solid ${accentColor}` : '2px solid #d1d5db'};box-sizing:border-box;transition:border-color 0.15s;"></span>
+            </label>`
+          ).join('')
+        : ''
+      colorsEl.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach((radio, i) => {
+        radio.addEventListener('change', () => {
+          colorsEl.querySelectorAll<HTMLElement>('label span').forEach((s, j) => {
+            s.style.border = j === i ? `3px solid ${accentColor}` : '2px solid #d1d5db'
+          })
+        })
+      })
+    }
+
+    // Wire accordion
+    el.querySelectorAll<HTMLElement>('[data-rb-pd2-acc-btn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const panel = btn.nextElementSibling as HTMLElement | null
+        if (!panel) return
+        const isOpen = panel.style.display !== 'none'
+        panel.style.display = isOpen ? 'none' : 'block'
+        const arrow = btn.querySelector<HTMLElement>('[data-rb-pd2-arrow]')
+        if (arrow) arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)'
+      })
+    })
+
+  } catch (e) {
+    console.error('[Rubikx] Failed to load product detail 2:', e)
+  }
+}
+
 function loadMobileNav(el: HTMLElement) {
   if (el.dataset.hydrated === 'true') return
   el.dataset.hydrated = 'true'
@@ -395,24 +771,47 @@ export function hydrateComponents(companyId?: number) {
       handler(el, companyId)
     })
 
-  // Watch for dynamically added slider elements
+  // Watch for dynamically added components (HeroSlider, CartBadge).
+  // Fires the moment any matching element lands in the DOM — handles builder
+  // re-renders (innerHTML swap) without relying on timing or nextTick.
   if (!(window as any).__rbxSliderObserver) {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
           if (node.nodeType !== 1) return
           const el = node as HTMLElement
-          // Check if the added node itself is a slider
+
+          // HeroSlider
           if (el.dataset?.rubikxComponent === 'HeroSlider') {
             loadSlider(el)
-            return
-          }
-          // Check children of added node
-          el.querySelectorAll?.('[data-rubikx-component="HeroSlider"]').forEach(
-            (child) => {
+          } else {
+            el.querySelectorAll?.('[data-rubikx-component="HeroSlider"]').forEach((child) => {
               loadSlider(child as HTMLElement)
+            })
+          }
+
+          // CartBadge — re-inject badge whenever the shell re-enters the DOM
+          if (el.dataset?.rubikxComponent === 'CartBadge') {
+            loadCartCount(el)
+          } else {
+            el.querySelectorAll?.('[data-rubikx-component="CartBadge"]').forEach((child) => {
+              loadCartCount(child as HTMLElement)
+            })
+          }
+
+          // ProductDetail layout3 (builder only) — fires whenever a fresh layout3
+          // element lands in the DOM, e.g. after builder library injects sections or
+          // after _applyBlockRender swaps innerHTML. The data-hydrated guard inside
+          // loadProductDetail prevents double-wiring on the same element.
+          if (document.getElementById('page-builder-wrapper')) {
+            if (el.dataset?.rubikxComponent === 'ProductDetail' && el.dataset?.galleryLayout === 'layout3') {
+              loadProductDetail(el as HTMLElement)
+            } else {
+              el.querySelectorAll?.('[data-rubikx-component="ProductDetail"][data-gallery-layout="layout3"]').forEach((child) => {
+                loadProductDetail(child as HTMLElement)
+              })
             }
-          )
+          }
         })
       })
     })

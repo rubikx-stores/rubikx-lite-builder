@@ -75,6 +75,18 @@ import {
   ru2FooterFields,
   ru2FooterSvg,
   renderRu2Footer,
+  ru1ProductDetailDefaults,
+  ru1ProductDetailFields,
+  ru1ProductDetailSvg,
+  renderRu1ProductDetail,
+  ru2ProductDetailDefaults,
+  ru2ProductDetailFields,
+  ru2ProductDetailSvg,
+  renderRu2ProductDetail,
+  ru3ProductDetailDefaults,
+  ru3ProductDetailFields,
+  ru3ProductDetailSvg,
+  renderRu3ProductDetail,
 } from './components'
 
 export interface LayoutComponentItem {
@@ -213,6 +225,26 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       html_code: renderRu2Footer(ru2FooterDefaults),
     },
   ],
+  'Product Showcase': [
+    {
+      title: 'Ru1-Product Detail',
+      category: 'Product Showcase',
+      cover_image: ru1ProductDetailSvg,
+      html_code: renderRu1ProductDetail(ru1ProductDetailDefaults),
+    },
+    {
+      title: 'Ru2-Product Detail',
+      category: 'Product Showcase',
+      cover_image: ru2ProductDetailSvg,
+      html_code: renderRu2ProductDetail(ru2ProductDetailDefaults),
+    },
+    {
+      title: 'Ru3-Product Detail',
+      category: 'Product Showcase',
+      cover_image: ru3ProductDetailSvg,
+      html_code: renderRu3ProductDetail(ru3ProductDetailDefaults),
+    },
+  ],
 }
 
 export function useLayouts() {
@@ -300,6 +332,24 @@ export function useLayouts() {
     defaults: ru2FooterDefaults,
     fields: ru2FooterFields,
     render: renderRu2Footer,
+  })
+
+  blockRegistry.register('Ru1-Product Detail', {
+    defaults: ru1ProductDetailDefaults,
+    fields: ru1ProductDetailFields,
+    render: renderRu1ProductDetail,
+  })
+
+  blockRegistry.register('Ru2-Product Detail', {
+    defaults: ru2ProductDetailDefaults,
+    fields: ru2ProductDetailFields,
+    render: renderRu2ProductDetail,
+  })
+
+  blockRegistry.register('Ru3-Product Detail', {
+    defaults: ru3ProductDetailDefaults,
+    fields: ru3ProductDetailFields,
+    render: renderRu3ProductDetail,
   })
 
   blockRegistry.register('Ru1-Stats', {

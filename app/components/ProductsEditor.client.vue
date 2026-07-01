@@ -1,6 +1,7 @@
 ﻿<script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { sharedPageBuilderStore, getPageBuilder } from '@myissue/vue-website-page-builder'
+import { useBlockRegistry } from '~/composables/editor/useBlockRegistry'
 
 const props = defineProps({
   updateBlockField: { type: Function, default: null },
@@ -8,7 +9,9 @@ const props = defineProps({
   blockData: { type: Object, default: null },
 })
 
-const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products']
+const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products', 'Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail']
+// Blocks that store selected IDs as a comma-separated productIds field (not a products array)
+const PRODUCT_IDS_BLOCKS = ['Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail']
 // Blocks that support pagination — allow many products across multiple pages
 const PAGINATED_BLOCKS = ['Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products']
 
@@ -67,6 +70,147 @@ const isThemeBlock = computed(() => {
   return THEME_REGISTRY_BLOCKS.includes(title)
 })
 
+const isProductIdsBlock = computed(() => {
+  const title = component.value?.title ?? props.selectedBlockTitle ?? ''
+  return PRODUCT_IDS_BLOCKS.includes(title)
+})
+
+const isRu2ProductDetail = computed(() => {
+  const t = component.value?.title ?? props.selectedBlockTitle ?? ''
+  return t === 'Ru2-Product Detail' || t === 'Ru3-Product Detail'
+})
+
+// ── Related products picker state (Ru2-Product Detail only) ──────────────────
+const relatedSelected = ref([])
+const relatedSearch = ref('')
+const relatedApplied = ref(false)
+
+// ── Related card / button style refs ─────────────────────────────────────────
+const relCardBgRef = ref('#ffffff')
+const relCardTextColorRef = ref('#111827')
+const relCardFontSizeRef = ref(14)
+const relCardBorderRadiusRef = ref(8)
+const relCardShadowRef = ref('none')
+const relCardLayoutRef = ref('default')
+const relCardMarginRef = ref(0)
+const relCardPaddingRef = ref(0)
+const relCardFontWeightRef = ref('400')
+const relCardTextAlignRef = ref('left')
+const relCardSubtitleRef = ref('')
+const relCardSubtitleEnabledRef = ref(true)
+const relBtnTextRef = ref('Add to bag')
+const relBtnBgRef = ref('#111827')
+const relBtnColorRef = ref('#ffffff')
+const relBtnBorderRadiusRef = ref(8)
+
+function _syncRelStyles(bd) {
+  relCardBgRef.value          = bd?.relatedCardBg ?? '#ffffff'
+  relCardTextColorRef.value   = bd?.relatedCardTextColor ?? '#111827'
+  relCardFontSizeRef.value    = bd?.relatedCardFontSize ?? 14
+  relCardBorderRadiusRef.value = bd?.relatedCardBorderRadius ?? 8
+  relCardShadowRef.value      = bd?.relatedCardShadow ?? 'none'
+  relCardLayoutRef.value      = bd?.relatedCardLayout ?? 'default'
+  relCardMarginRef.value      = bd?.relatedCardMargin ?? 0
+  relCardPaddingRef.value     = bd?.relatedCardPadding ?? 0
+  relCardFontWeightRef.value  = bd?.relatedCardFontWeight ?? '400'
+  relCardTextAlignRef.value   = bd?.relatedCardTextAlign ?? 'left'
+  relCardSubtitleRef.value    = bd?.relatedCardSubtitle ?? ''
+  relCardSubtitleEnabledRef.value = bd?.relatedCardSubtitleEnabled !== false
+  relBtnTextRef.value         = bd?.relatedAddToCartLabel ?? 'Add to bag'
+  relBtnBgRef.value           = bd?.relatedButtonBgColor ?? '#111827'
+  relBtnColorRef.value        = bd?.relatedButtonTextColor ?? '#ffffff'
+  relBtnBorderRadiusRef.value = bd?.relatedButtonBorderRadius ?? 8
+}
+
+async function _persistRel(key, value) {
+  const title = component.value?.title ?? props.selectedBlockTitle
+  if (!props.updateBlockField || !title || !isRu2ProductDetail.value) return
+  if (props.blockData?.[key] === value) return
+  await props.updateBlockField(key, value)
+}
+
+const _dRelCardBg          = debounce((v) => _persistRel('relatedCardBg', v), 200)
+const _dRelCardText        = debounce((v) => _persistRel('relatedCardTextColor', v), 200)
+const _dRelCardFontSize    = debounce((v) => _persistRel('relatedCardFontSize', v), 200)
+const _dRelCardRadius      = debounce((v) => _persistRel('relatedCardBorderRadius', v), 200)
+const _dRelCardShadow      = debounce((v) => _persistRel('relatedCardShadow', v), 0)
+const _dRelCardLayout      = debounce((v) => _persistRel('relatedCardLayout', v), 0)
+const _dRelCardMargin      = debounce((v) => _persistRel('relatedCardMargin', v), 200)
+const _dRelCardPadding     = debounce((v) => _persistRel('relatedCardPadding', v), 200)
+const _dRelCardFontWeight  = debounce((v) => _persistRel('relatedCardFontWeight', v), 0)
+const _dRelCardTextAlign   = debounce((v) => _persistRel('relatedCardTextAlign', v), 0)
+const _dRelCardSubtitle    = debounce((v) => _persistRel('relatedCardSubtitle', v), 300)
+const _dRelCardSubtitleEn  = debounce((v) => _persistRel('relatedCardSubtitleEnabled', v), 0)
+const _dRelBtnText         = debounce((v) => _persistRel('relatedAddToCartLabel', v), 300)
+const _dRelBtnBg           = debounce((v) => _persistRel('relatedButtonBgColor', v), 200)
+const _dRelBtnColor        = debounce((v) => _persistRel('relatedButtonTextColor', v), 200)
+const _dRelBtnRadius       = debounce((v) => _persistRel('relatedButtonBorderRadius', v), 200)
+
+watch(relCardBgRef,          (v) => _dRelCardBg(v))
+watch(relCardTextColorRef,   (v) => _dRelCardText(v))
+watch(relCardFontSizeRef,    (v) => _dRelCardFontSize(v))
+watch(relCardBorderRadiusRef,(v) => _dRelCardRadius(v))
+watch(relCardShadowRef,      (v) => _dRelCardShadow(v))
+watch(relCardLayoutRef,      (v) => _dRelCardLayout(v))
+watch(relCardMarginRef,      (v) => _dRelCardMargin(v))
+watch(relCardPaddingRef,     (v) => _dRelCardPadding(v))
+watch(relCardFontWeightRef,  (v) => _dRelCardFontWeight(v))
+watch(relCardTextAlignRef,   (v) => _dRelCardTextAlign(v))
+watch(relCardSubtitleRef,    (v) => _dRelCardSubtitle(v))
+watch(relCardSubtitleEnabledRef, (v) => _dRelCardSubtitleEn(v))
+watch(relBtnTextRef,         (v) => _dRelBtnText(v))
+watch(relBtnBgRef,           (v) => _dRelBtnBg(v))
+watch(relBtnColorRef,        (v) => _dRelBtnColor(v))
+watch(relBtnBorderRadiusRef, (v) => _dRelBtnRadius(v))
+
+const relatedMaxSelection = computed(() =>
+  Math.max(1, Number(props.blockData?.relatedColumns ?? 4)) *
+  Math.max(1, Number(props.blockData?.relatedRows ?? 1))
+)
+
+const filteredRelatedProducts = computed(() => {
+  const q = relatedSearch.value.trim().toLowerCase()
+  if (!q) return products.value
+  return products.value.filter((p) => p.name?.toLowerCase().includes(q))
+})
+
+function isRelatedSelected(product) {
+  return relatedSelected.value.some((p) => p.id === product.id)
+}
+function isRelatedDisabled(product) {
+  return !isRelatedSelected(product) && relatedSelected.value.length >= relatedMaxSelection.value
+}
+function toggleRelated(product) {
+  const idx = relatedSelected.value.findIndex(p => p.id === product.id)
+  if (idx >= 0) relatedSelected.value.splice(idx, 1)
+  else if (relatedSelected.value.length < relatedMaxSelection.value) relatedSelected.value.push(product)
+  doApplyRelated()
+}
+
+async function doApplyRelated(confirm = false) {
+  const title = component.value?.title ?? props.selectedBlockTitle
+  if (!props.updateBlockField || !title) return
+  const mapped = relatedSelected.value.map(p => ({
+    id: p.id,
+    imageUrl: productImageSrc(p.image),
+    name: p.name,
+    price: p.price != null ? (typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : String(p.price)) : '',
+    colors: Array.isArray(p.colors) && p.colors.length
+      ? p.colors.map(c => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
+      : [],
+  }))
+  await props.updateBlockField('relatedProducts', mapped)
+  if (confirm) relatedApplied.value = true
+}
+
+watch(() => props.blockData?.relatedProducts, (prods) => {
+  if (!Array.isArray(prods) || !prods.length || !products.value.length) return
+  const matched = prods
+    .map(rp => products.value.find(p => p.id === rp.id))
+    .filter(Boolean)
+  if (matched.length) { relatedSelected.value = matched; relatedApplied.value = true }
+}, { immediate: true })
+
 const lastAppliedCompId = ref('')
 const _lastResetForId = ref('')
 
@@ -79,6 +223,7 @@ watch(component, async (newComp) => {
   if (newComp?.id && newComp.id !== _lastResetForId.value) {
     _lastResetForId.value = newComp.id
     if (isThemeBlock.value) {
+      if (isRu2ProductDetail.value) _syncRelStyles(props.blockData)
       // Don't reset state — but restore the selection if it was cleared
       // (e.g. user navigated to a non-theme block which reset selected.value).
       // Guard: only restore when empty AND products are loaded; if products
@@ -96,7 +241,11 @@ watch(component, async (newComp) => {
         }
         // Fallback after reload: data-selected-products is lost in the
         // parsePageBuilderHTML → startBuilder cycle, so match by id then name.
-        if (!selected.value.length && props.blockData?.products?.length) {
+        if (!selected.value.length && isProductIdsBlock.value && props.blockData?.productIds) {
+          const ids = String(props.blockData.productIds).split(',').map(s => s.trim()).filter(Boolean).map(Number)
+          const matched = products.value.filter(p => ids.includes(p.id))
+          if (matched.length) { selected.value = matched; applied.value = true }
+        } else if (!selected.value.length && props.blockData?.products?.length) {
           const matched = props.blockData.products
             .flatMap(tp => {
               const found = tp.id != null
@@ -167,6 +316,7 @@ const perPage = computed(() =>
 )
 
 const maxSelection = computed(() => {
+  if (isProductIdsBlock.value) return 1
   if (isThemeBlock.value) {
     // Shop/paginated blocks: allow up to 10 pages worth of products
     if (isPaginatedBlock.value) return perPage.value * 10
@@ -183,6 +333,23 @@ const filteredProducts = computed(() => {
 })
 
 const selectedCompanyId = useState('selectedCompanyId', () => null)
+
+function _needsAutoLoad() {
+  if (isProductIdsBlock.value) {
+    const main = props.blockData?.mainImageSrc
+    const thumbs = props.blockData?.thumbImageSrcs
+    return (!main || main === '') && (!Array.isArray(thumbs) || thumbs.length === 0)
+  }
+  const prods = props.blockData?.products
+  if (!Array.isArray(prods) || prods.length === 0) return true
+  return prods.every(p => !p.imageUrl || p.imageUrl === '' || p.imageUrl.startsWith('data:image/svg+xml'))
+}
+
+function _autoLoadCount() {
+  if (isProductIdsBlock.value) return 1
+  if (isPaginatedBlock.value) return perPage.value
+  return maxSelection.value
+}
 
 onMounted(async () => {
   loading.value = true
@@ -214,8 +381,24 @@ onMounted(async () => {
     }
   }
 
+  // Fallback for productIds blocks (e.g. Ru1-Product Detail): restore from comma-separated IDs
+  if (!selected.value.length && isProductIdsBlock.value && props.blockData?.productIds) {
+    const ids = String(props.blockData.productIds).split(',').map(s => s.trim()).filter(Boolean).map(Number)
+    const matched = products.value.filter(p => ids.includes(p.id))
+    if (matched.length) selected.value = matched
+  }
+
+  // Fallback for auto-loaded productIds blocks: restore from _autoLoadProductId (set without writing productIds)
+  if (!selected.value.length && isProductIdsBlock.value && props.blockData?._autoLoadProductId) {
+    const id = Number(props.blockData._autoLoadProductId)
+    if (id) {
+      const matched = products.value.filter(p => p.id === id)
+      if (matched.length) selected.value = matched
+    }
+  }
+
   // Fallback for theme blocks: match by id then name from blockData.products when no IDs stored
-  if (!selected.value.length && isThemeBlock.value && props.blockData?.products?.length) {
+  if (!selected.value.length && isThemeBlock.value && !isProductIdsBlock.value && props.blockData?.products?.length) {
     const matched = props.blockData.products
       .map(tp => tp.id != null
         ? products.value.find(op => op.id === tp.id)
@@ -226,10 +409,75 @@ onMounted(async () => {
 
   // Sync registry with restored selection and show applied state so the user
   // sees "N products applied" immediately after save/reload.
-  if (isThemeBlock.value && selected.value.length > 0) {
+  // For productIds blocks in auto-loaded state (productIds is empty), skip doApplyThemeBlock
+  // so that writing productIds doesn't clear the description placeholder.
+  if (isThemeBlock.value && selected.value.length > 0 && (!isProductIdsBlock.value || props.blockData?.productIds)) {
     await nextTick()
     doApplyThemeBlock()
     applied.value = true
+  }
+
+  // Sync related card style refs from blockData on mount
+  if (isRu2ProductDetail.value) _syncRelStyles(props.blockData)
+
+  // Restore related products selection (Ru2-Product Detail)
+  if (isRu2ProductDetail.value && !relatedSelected.value.length && Array.isArray(props.blockData?.relatedProducts) && props.blockData.relatedProducts.length) {
+    const matched = props.blockData.relatedProducts
+      .map(rp => products.value.find(p => p.id === rp.id))
+      .filter(Boolean)
+    if (matched.length) { relatedSelected.value = matched; relatedApplied.value = true }
+  }
+
+  // Auto-load: populate cards with real Odoo product data on first add.
+  // For productIds blocks: writes runtime fields + mainImageSrc. productIds stays empty so the
+  //   description placeholder stays visible until user explicitly picks via the picker.
+  // For products-array blocks: writes full products array with real image/name/price/colors.
+  if (_needsAutoLoad() && products.value.length > 0 && props.updateBlockField) {
+    const n = _autoLoadCount()
+    const firstN = products.value.slice(0, n)
+    const curr = props.blockData?.currency || '$'
+    try {
+      if (isProductIdsBlock.value) {
+        const first = firstN[0]
+        if (first) {
+          const sectionEl = getSection()
+          const compId = sectionEl?.getAttribute('data-componentid')
+          if (compId) {
+            const reg = useBlockRegistry()
+            const img = productImageSrc(first.image)
+            reg.setData(compId, '_productName', first.name ?? '')
+            reg.setData(compId, '_productPriceNum', Number(first.price) || 0)
+            reg.setData(compId, '_productColors',
+              Array.isArray(first.colors) && first.colors.length
+                ? first.colors.map(c => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
+                : []
+            )
+            // Store for picker auto-restore without touching productIds
+            reg.setData(compId, '_autoLoadProductId', String(first.id))
+            await props.updateBlockField('mainImageSrc', img)
+            await props.updateBlockField('thumbImageSrcs', img ? [img] : [])
+          }
+        }
+        selected.value = firstN
+      } else if (isThemeBlock.value) {
+        const mapped = firstN.map((p, i) => ({
+          id: p.id,
+          imageUrl: productImageSrc(p.image),
+          name: p.name ?? `Product ${i + 1}`,
+          price: `${curr}${Number(p.price || 0).toFixed(2)}`,
+          oldPrice: '',
+          buttonLabel: 'Add to Cart',
+          buttonUrl: '/shop',
+          colors: Array.isArray(p.colors) && p.colors.length
+            ? p.colors.map(c => c.htmlColor || '').filter(Boolean).join(', ')
+            : '#FF0000, #0000FF',
+        }))
+        await props.updateBlockField('products', mapped)
+        selected.value = firstN
+      }
+    } catch {
+      // Graceful: placeholder data remains if persist fails
+    }
   }
 })
 
@@ -282,7 +530,66 @@ async function doApplyThemeBlock(confirm = false) {
   }
 
   if (props.updateBlockField && title) {
-    props.updateBlockField('products', mapped, title)
+    if (isProductIdsBlock.value) {
+      // All product display data is stored in the registry as builder-only runtime
+      // fields. The render function uses them and strips them from data-component-props
+      // so they never bloat the saved HTML. This means any editor field change
+      // (currency, button label, accent color, etc.) re-renders with current product
+      // data intact — no post-hoc DOM injection needed.
+      const registry = useBlockRegistry()
+      const firstProduct = selected.value[0]
+      const sectionEl = getSection()
+      const compId = sectionEl?.getAttribute('data-componentid')
+
+      if (compId) {
+        if (firstProduct) {
+          registry.setData(compId, 'mainImageSrc', productImageSrc(firstProduct.image))
+          registry.setData(compId, 'thumbImageSrcs', selected.value.map(p => p.image ? productImageSrc(p.image) : ''))
+          registry.setData(compId, '_productName', firstProduct.name ?? '')
+          registry.setData(compId, '_productPriceNum', Number(firstProduct.price))
+          registry.setData(compId, '_productColors',
+            Array.isArray(firstProduct.colors) && firstProduct.colors.length
+              ? firstProduct.colors.map(c => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
+              : []
+          )
+        } else {
+          // Selection cleared — restore 0th auto-loaded product so block reverts to auto-load state
+          const autoProduct = products.value[0]
+          const autoImg = autoProduct?.image ? productImageSrc(autoProduct.image) : ''
+          registry.setData(compId, 'mainImageSrc', autoImg)
+          registry.setData(compId, 'thumbImageSrcs', autoImg ? [autoImg] : [])
+          registry.setData(compId, '_productName', autoProduct?.name ?? '')
+          registry.setData(compId, '_productPriceNum', autoProduct ? (Number(autoProduct.price) || 0) : null)
+          registry.setData(compId, '_productColors',
+            Array.isArray(autoProduct?.colors) && autoProduct.colors.length
+              ? autoProduct.colors.map(c => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
+              : []
+          )
+        }
+      }
+
+      await props.updateBlockField('productIds', selected.value.map(p => p.id).join(','))
+    } else {
+      if (selected.value.length === 0 && products.value.length > 0) {
+        const n = _autoLoadCount()
+        const curr = props.blockData?.currency || '$'
+        const restored = products.value.slice(0, n).map((p, i) => ({
+          id: p.id,
+          imageUrl: productImageSrc(p.image),
+          name: p.name ?? `Product ${i + 1}`,
+          price: `${curr}${Number(p.price || 0).toFixed(2)}`,
+          oldPrice: '',
+          buttonLabel: 'Add to Cart',
+          buttonUrl: '/shop',
+          colors: Array.isArray(p.colors) && p.colors.length
+            ? p.colors.map(c => c.htmlColor || '').filter(Boolean).join(', ')
+            : '#FF0000, #0000FF',
+        }))
+        props.updateBlockField('products', restored)
+      } else {
+        props.updateBlockField('products', mapped)
+      }
+    }
   }
 
   // Restore the page the user was on — re-render resets to page 1
@@ -961,4 +1268,265 @@ watch(perPage, (newPerPage) => {
     </div>
     </template><!-- end v-else (picker state) -->
   </div>
+
+  <!-- ── Customers also bought picker (Ru2-Product Detail only) ──────────── -->
+  <template v-if="isRu2ProductDetail">
+    <div class="w-full border-t border-gray-200 my-4"></div>
+
+    <div class="mt-1 mb-3">
+      <!-- Applied state -->
+      <div v-if="relatedApplied" class="px-2 py-5 text-center">
+        <div class="w-10 h-10 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mx-auto mb-2">
+          <span class="text-green-600 text-base">✓</span>
+        </div>
+        <p class="text-sm font-medium text-gray-800 mb-0.5">{{ relatedSelected.length }} related product{{ relatedSelected.length !== 1 ? 's' : '' }} applied</p>
+        <p class="text-xs text-gray-400 mb-3">{{ relatedMaxSelection }} max ({{ blockData?.relatedColumns ?? 4 }} cols × {{ blockData?.relatedRows ?? 1 }} rows)</p>
+        <button @click="relatedApplied = false" class="text-xs text-blue-600 underline cursor-pointer bg-transparent border-0 p-0">Edit related</button>
+      </div>
+
+      <!-- Picker -->
+      <template v-else>
+        <p class="font-medium text-sm mb-1 px-1">Customers also bought</p>
+        <p class="text-xs text-gray-400 mb-2 px-1">{{ relatedSelected.length }}/{{ relatedMaxSelection }} · {{ blockData?.relatedColumns ?? 4 }} cols × {{ blockData?.relatedRows ?? 1 }} rows</p>
+
+        <div v-if="loading" class="flex items-center justify-center py-6">
+          <div class="inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-current border-r-transparent" role="status"></div>
+        </div>
+
+        <div v-else>
+          <!-- Search -->
+          <div class="px-1 mb-2">
+            <input v-model="relatedSearch" type="text" placeholder="Search products..."
+              class="w-full border border-gray-300 text-xs px-2 py-1.5 rounded outline-none focus:border-gray-500 bg-white" />
+          </div>
+
+          <p v-if="filteredRelatedProducts.length === 0" class="text-xs text-gray-400 text-center py-4">No products found</p>
+
+          <!-- Grid -->
+          <div v-else class="grid grid-cols-2 gap-1.5 max-h-80 overflow-y-auto px-1 pb-1">
+            <div
+              v-for="product in filteredRelatedProducts"
+              :key="product.id"
+              @click="!isRelatedDisabled(product) && toggleRelated(product)"
+              :class="[
+                'relative border-2 rounded overflow-hidden transition-all',
+                isRelatedSelected(product) ? 'border-blue-500 cursor-pointer'
+                  : isRelatedDisabled(product) ? 'border-transparent cursor-not-allowed'
+                  : 'border-transparent cursor-pointer hover:border-gray-300',
+              ]"
+              :style="isRelatedDisabled(product) ? { filter: 'blur(2px)', opacity: '0.55', pointerEvents: 'none' } : {}"
+            >
+              <img :src="productImageSrc(product.image)" :alt="product.name" class="w-full aspect-square object-cover block" />
+              <div class="px-1 py-1">
+                <p class="text-xs font-medium truncate leading-tight m-0">{{ product.name }}</p>
+                <p class="text-xs text-gray-500 leading-tight m-0">{{ product.price }}</p>
+              </div>
+              <div v-if="isRelatedSelected(product)" class="absolute top-1 right-1 bg-blue-500 rounded-full w-5 h-5 flex items-center justify-center">
+                <span class="text-white text-xs leading-none">✓</span>
+              </div>
+            </div>
+          </div>
+
+          <p v-if="relatedSelected.length >= relatedMaxSelection" class="text-xs text-gray-400 text-center mt-2 px-1">
+            Grid full ({{ relatedSelected.length }}/{{ relatedMaxSelection }}). Increase Rows or Columns to add more.
+          </p>
+
+          <div v-if="relatedSelected.length > 0" class="px-1 mt-3">
+            <button @click="doApplyRelated(true)" class="w-full bg-gray-900 text-white text-xs font-medium py-2 px-3 rounded cursor-pointer border-0">
+              Apply {{ relatedSelected.length }} Related Product{{ relatedSelected.length !== 1 ? 's' : '' }}
+            </button>
+          </div>
+        </div>
+      </template>
+
+      <!-- ── Card Style ──────────────────────────────────────────────────── -->
+      <div class="w-full border-t border-gray-200 my-4"></div>
+      <div class="px-1">
+        <p class="font-medium text-sm mb-3">Card Style</p>
+
+        <!-- Card layout -->
+        <div class="mb-3">
+          <label class="block text-xs text-gray-500 mb-1.5">Card Layout</label>
+          <div class="flex gap-2">
+            <button type="button" @click="relCardLayoutRef = 'default'"
+              :class="relCardLayoutRef === 'default' ? 'border-gray-900 bg-gray-50' : 'border-gray-200 bg-white'"
+              class="flex-1 border-2 rounded-lg p-1.5 cursor-pointer transition-colors">
+              <svg viewBox='0 0 40 48' fill='none' xmlns='http://www.w3.org/2000/svg' class='w-full'>
+                <rect width='40' height='26' rx='2' fill='#E2E8F0'/><rect y='29' width='28' height='3' rx='1' fill='#94A3B8'/><rect y='34' width='20' height='3' rx='1' fill='#CBD5E1'/><rect y='39' width='40' height='9' rx='2' fill='#1E293B'/>
+              </svg>
+              <span class="text-xs text-gray-500 mt-1 block text-center">Default</span>
+            </button>
+            <button type="button" @click="relCardLayoutRef = 'inline'"
+              :class="relCardLayoutRef === 'inline' ? 'border-gray-900 bg-gray-50' : 'border-gray-200 bg-white'"
+              class="flex-1 border-2 rounded-lg p-1.5 cursor-pointer transition-colors">
+              <svg viewBox='0 0 40 48' fill='none' xmlns='http://www.w3.org/2000/svg' class='w-full'>
+                <rect width='40' height='26' rx='2' fill='#E2E8F0'/><rect y='29' width='18' height='3' rx='1' fill='#94A3B8'/><rect x='24' y='29' width='16' height='3' rx='1' fill='#94A3B8'/><rect y='34' width='40' height='9' rx='2' fill='#1E293B'/>
+              </svg>
+              <span class="text-xs text-gray-500 mt-1 block text-center">Inline</span>
+            </button>
+            <button type="button" @click="relCardLayoutRef = 'centered'"
+              :class="relCardLayoutRef === 'centered' ? 'border-gray-900 bg-gray-50' : 'border-gray-200 bg-white'"
+              class="flex-1 border-2 rounded-lg p-1.5 cursor-pointer transition-colors">
+              <svg viewBox='0 0 40 48' fill='none' xmlns='http://www.w3.org/2000/svg' class='w-full'>
+                <rect width='40' height='26' rx='2' fill='#E2E8F0'/><rect x='6' y='29' width='28' height='3' rx='1' fill='#94A3B8'/><rect x='10' y='34' width='20' height='3' rx='1' fill='#CBD5E1'/><rect y='39' width='40' height='9' rx='2' fill='#1E293B'/>
+              </svg>
+              <span class="text-xs text-gray-500 mt-1 block text-center">Centered</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Font weight + Text align -->
+        <div class="flex gap-2 mb-2">
+          <div class="flex-1">
+            <label class="block text-xs text-gray-500 mb-1">Font weight</label>
+            <select v-model="relCardFontWeightRef" class="w-full border border-gray-300 text-xs px-2 py-1.5 rounded outline-none bg-white focus:border-gray-500 cursor-pointer">
+              <option value="300">Light</option>
+              <option value="400">Normal</option>
+              <option value="500">Medium</option>
+              <option value="600">SemiBold</option>
+              <option value="700">Bold</option>
+            </select>
+          </div>
+          <div class="flex-1">
+            <label class="block text-xs text-gray-500 mb-1">Text align</label>
+            <div class="flex gap-1">
+              <button type="button" @click="relCardTextAlignRef = 'left'"
+                :class="relCardTextAlignRef === 'left' ? 'border-gray-900 bg-gray-100' : 'border-gray-200 bg-white'"
+                class="flex-1 border-2 rounded py-1.5 cursor-pointer transition-colors flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="w-3.5 h-3.5 fill-current"><path d="M1 3h14v1H1zm0 3h8v1H1zm0 3h14v1H1zm0 3h8v1H1z"/></svg>
+              </button>
+              <button type="button" @click="relCardTextAlignRef = 'center'"
+                :class="relCardTextAlignRef === 'center' ? 'border-gray-900 bg-gray-100' : 'border-gray-200 bg-white'"
+                class="flex-1 border-2 rounded py-1.5 cursor-pointer transition-colors flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="w-3.5 h-3.5 fill-current"><path d="M1 3h14v1H1zm3 3h8v1H4zm-3 3h14v1H1zm3 3h8v1H4z"/></svg>
+              </button>
+              <button type="button" @click="relCardTextAlignRef = 'right'"
+                :class="relCardTextAlignRef === 'right' ? 'border-gray-900 bg-gray-100' : 'border-gray-200 bg-white'"
+                class="flex-1 border-2 rounded py-1.5 cursor-pointer transition-colors flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="w-3.5 h-3.5 fill-current"><path d="M1 3h14v1H1zm6 3h8v1H7zm-6 3h14v1H1zm6 3h8v1H7z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card bg + text color -->
+        <div class="flex gap-2 mb-2">
+          <div class="flex-1">
+            <label class="block text-xs text-gray-500 mb-1">Background</label>
+            <div class="flex items-center gap-1.5 border border-gray-300 rounded px-2 py-1 bg-white">
+              <input v-model="relCardBgRef" type="color" class="w-5 h-5 rounded border-0 cursor-pointer p-0" />
+              <span class="text-xs text-gray-600 font-mono">{{ relCardBgRef }}</span>
+            </div>
+          </div>
+          <div class="flex-1">
+            <label class="block text-xs text-gray-500 mb-1">Text color</label>
+            <div class="flex items-center gap-1.5 border border-gray-300 rounded px-2 py-1 bg-white">
+              <input v-model="relCardTextColorRef" type="color" class="w-5 h-5 rounded border-0 cursor-pointer p-0" />
+              <span class="text-xs text-gray-600 font-mono">{{ relCardTextColorRef }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Font size + border radius -->
+        <div class="flex gap-2 mb-2">
+          <div class="flex-1">
+            <label class="block text-xs text-gray-500 mb-1">Font size</label>
+            <div class="flex items-center border border-gray-300 rounded bg-white">
+              <input v-model.number="relCardFontSizeRef" type="number" min="10" max="32" class="w-full text-xs px-2 py-1.5 outline-none bg-transparent" />
+              <span class="text-xs text-gray-400 pr-2">px</span>
+            </div>
+          </div>
+          <div class="flex-1">
+            <label class="block text-xs text-gray-500 mb-1">Border radius</label>
+            <div class="flex items-center border border-gray-300 rounded bg-white">
+              <input v-model.number="relCardBorderRadiusRef" type="number" min="0" max="50" class="w-full text-xs px-2 py-1.5 outline-none bg-transparent" />
+              <span class="text-xs text-gray-400 pr-2">px</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Box shadow -->
+        <div class="mb-2">
+          <label class="block text-xs text-gray-500 mb-1">Box shadow</label>
+          <select v-model="relCardShadowRef" class="w-full border border-gray-300 text-xs px-2 py-1.5 rounded outline-none bg-white focus:border-gray-500 cursor-pointer">
+            <option value="none">None</option>
+            <option value="shadow-sm">sm</option>
+            <option value="shadow-md">md</option>
+            <option value="shadow-lg">lg</option>
+            <option value="shadow-xl">xl</option>
+          </select>
+        </div>
+
+        <!-- Margin + Padding -->
+        <div class="flex gap-2 mb-3">
+          <div class="flex-1">
+            <label class="block text-xs text-gray-500 mb-1">Margin</label>
+            <div class="flex items-center border border-gray-300 rounded bg-white">
+              <input v-model.number="relCardMarginRef" type="number" min="0" max="50" class="w-full text-xs px-2 py-1.5 outline-none bg-transparent" />
+              <span class="text-xs text-gray-400 pr-2">px</span>
+            </div>
+          </div>
+          <div class="flex-1">
+            <label class="block text-xs text-gray-500 mb-1">Padding</label>
+            <div class="flex items-center border border-gray-300 rounded bg-white">
+              <input v-model.number="relCardPaddingRef" type="number" min="0" max="50" class="w-full text-xs px-2 py-1.5 outline-none bg-transparent" />
+              <span class="text-xs text-gray-400 pr-2">px</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Button ──────────────────────────────────────────────────────── -->
+      <div class="w-full border-t border-gray-200 my-4"></div>
+      <div class="px-1">
+        <p class="font-medium text-sm mb-3">Button</p>
+
+        <!-- Button text -->
+        <div class="mb-2">
+          <label class="block text-xs text-gray-500 mb-1">Button text</label>
+          <input v-model="relBtnTextRef" type="text" class="w-full border border-gray-300 text-xs px-2 py-1.5 rounded outline-none focus:border-gray-500 bg-white" />
+        </div>
+
+        <!-- Card Subtitle -->
+        <div class="mb-3">
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs text-gray-500">Card Subtitle</label>
+            <label class="flex items-center gap-1 cursor-pointer">
+              <input type="checkbox" v-model="relCardSubtitleEnabledRef" class="cursor-pointer" />
+              <span class="text-xs text-gray-400">Show</span>
+            </label>
+          </div>
+          <input v-if="relCardSubtitleEnabledRef" v-model="relCardSubtitleRef" type="text" maxlength="50"
+            placeholder="e.g. Available in 3 colors"
+            class="w-full border border-gray-300 text-xs px-2 py-1.5 rounded outline-none focus:border-gray-500 bg-white" />
+          <p v-if="relCardSubtitleEnabledRef" class="text-right text-xs text-gray-400 mt-0.5">{{ relCardSubtitleRef.length }}/50</p>
+        </div>
+
+        <!-- Button colors + radius -->
+        <div class="flex gap-2 mb-2">
+          <div class="flex-1">
+            <label class="block text-xs text-gray-500 mb-1">Background</label>
+            <div class="flex items-center gap-1.5 border border-gray-300 rounded px-2 py-1 bg-white">
+              <input v-model="relBtnBgRef" type="color" class="w-5 h-5 rounded border-0 cursor-pointer p-0" />
+              <span class="text-xs text-gray-600 font-mono">{{ relBtnBgRef }}</span>
+            </div>
+          </div>
+          <div class="flex-1">
+            <label class="block text-xs text-gray-500 mb-1">Text color</label>
+            <div class="flex items-center gap-1.5 border border-gray-300 rounded px-2 py-1 bg-white">
+              <input v-model="relBtnColorRef" type="color" class="w-5 h-5 rounded border-0 cursor-pointer p-0" />
+              <span class="text-xs text-gray-600 font-mono">{{ relBtnColorRef }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="block text-xs text-gray-500 mb-1">Border radius</label>
+          <div class="flex items-center border border-gray-300 rounded bg-white">
+            <input v-model.number="relBtnBorderRadiusRef" type="number" min="0" max="50" class="w-full text-xs px-2 py-1.5 outline-none bg-transparent" />
+            <span class="text-xs text-gray-400 pr-2">px</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
 </template>

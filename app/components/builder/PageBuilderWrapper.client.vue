@@ -8,6 +8,7 @@ import { NAVBAR_TITLES, FOOTER_TITLES } from '~/composables/useGlobalSections'
 import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
 import { sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
 import { useBlockRegistry } from '~/composables/editor/useBlockRegistry'
+import { usePageHtmlCache } from '~/composables/usePageHtmlCache'
 
 // Register all block configs eagerly on builder mount so the editor opens
 // correctly even on page reload with saved canvas data (before the user opens
@@ -89,12 +90,16 @@ async function confirmSave() {
       }
     })
 
-    const navbarSections = allSections.filter(s =>
+    const allNavbarSections = allSections.filter(s =>
       NAVBAR_TITLES.includes(s.getAttribute('data-component-title') ?? '')
     )
-    const footerSections = allSections.filter(s =>
+    const allFooterSections = allSections.filter(s =>
       FOOTER_TITLES.includes(s.getAttribute('data-component-title') ?? '')
     )
+    // Keep only the last navbar/footer — prevents double-header when user
+    // accidentally has two header blocks on canvas at save time.
+    const navbarSections = allNavbarSections.length > 1 ? allNavbarSections.slice(-1) : allNavbarSections
+    const footerSections = allFooterSections.length > 1 ? allFooterSections.slice(-1) : allFooterSections
     const contentSections = allSections.filter(s =>
       !navbarSections.includes(s) && !footerSections.includes(s)
     )
@@ -136,6 +141,15 @@ async function confirmSave() {
     }
 
     await Promise.all(saves)
+
+    // Keep pageHtmlCache in sync so the next editor open uses the freshly saved
+    // HTML even if pages.value in index.vue is stale (e.g. global-header was just
+    // created for the first time and hasn't propagated to the pages list yet).
+    const pageHtmlCache = usePageHtmlCache()
+    if (navbarSections.length > 0)  pageHtmlCache.value['global-header'] = toHtml(navbarSections)
+    if (contentSections.length > 0) pageHtmlCache.value[props.pageId]    = toHtml(contentSections)
+    if (footerSections.length > 0)  pageHtmlCache.value['global-footer'] = toHtml(footerSections)
+
     showVersionModal.value = false
   } catch (error) {
     console.error('[CMS] Save error:', error)
@@ -242,6 +256,19 @@ onMounted(async () => {
 
       contentHtml = Array.from(doc.querySelectorAll('section[data-component-title]'))
         .map(s => s.outerHTML).join('\n')
+    }
+
+    // Dedup headerHtml — handles double-header saved before the save-time fix was deployed.
+    // If global-header somehow contains two navbar sections, keep only the last one.
+    if (headerHtml) {
+      const hDoc = new DOMParser().parseFromString(headerHtml, 'text/html')
+      const hNavbars = Array.from(hDoc.querySelectorAll('section[data-component-title]'))
+        .filter(s => NAVBAR_TITLES.includes(s.getAttribute('data-component-title') ?? ''))
+      if (hNavbars.length > 1) {
+        hNavbars.slice(0, -1).forEach(s => s.remove())
+        headerHtml = Array.from(hDoc.querySelectorAll('section[data-component-title]'))
+          .map(s => s.outerHTML).join('\n')
+      }
     }
 
     const html = [headerHtml, contentHtml, footerHtml].filter(Boolean).join('\n') || null

@@ -3590,3 +3590,1525 @@ export function renderRu4OverlayPanel(data: Ru4OverlayPanelData): string {
   </div>
 </section>`
 }
+
+// ─── Ru1-Product Detail ──────────────────────────────────────────────────────
+
+export const ru1ProductDetailSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
+  <!-- Left: thumbnail strip (4 thumbs) -->
+  <rect fill="#394152" x="8" y="8"  width="22" height="22" rx="1"/>
+  <rect fill="#718096" x="8" y="34" width="22" height="22" rx="1"/>
+  <rect fill="#718096" x="8" y="60" width="22" height="22" rx="1"/>
+  <rect fill="#718096" x="8" y="86" width="22" height="22" rx="1"/>
+  <!-- Left: main product image -->
+  <rect fill="#394152" x="36" y="8" width="106" height="160" rx="2"/>
+  <polygon fill="#718096" points="56 152 86 116 116 152 56 152"/>
+  <polygon fill="#718096" points="98 152 118 130 138 152 98 152"/>
+  <circle fill="#718096" cx="118" cy="125" r="6"/>
+  <!-- Right: product name -->
+  <rect fill="#394152" x="154" y="8"  width="118" height="9"  rx="2"/>
+  <rect fill="#394152" x="154" y="21" width="82"  height="7"  rx="2"/>
+  <!-- Right: color label -->
+  <rect fill="#718096" x="154" y="36" width="26" height="4" rx="1"/>
+  <!-- Color swatches -->
+  <circle fill="#394152" cx="164" cy="50" r="7"/>
+  <rect fill="#718096" x="174" y="44" width="42" height="14" rx="7"/>
+  <circle fill="#394152" cx="226" cy="50" r="7" opacity="0.5"/>
+  <rect fill="#718096" x="236" y="44" width="36" height="14" rx="7"/>
+  <!-- Right: size label -->
+  <rect fill="#718096" x="154" y="66" width="18" height="4" rx="1"/>
+  <!-- Size boxes row 1 -->
+  <rect fill="#394152" x="154" y="74" width="20" height="14" rx="1"/>
+  <rect fill="#394152" x="178" y="74" width="20" height="14" rx="1"/>
+  <rect fill="#394152" x="202" y="74" width="20" height="14" rx="1"/>
+  <rect fill="#394152" x="226" y="74" width="20" height="14" rx="1"/>
+  <rect fill="#394152" x="250" y="74" width="20" height="14" rx="1"/>
+  <!-- Size boxes row 2 -->
+  <rect fill="#394152" x="154" y="92" width="20" height="14" rx="1"/>
+  <rect fill="#394152" x="178" y="92" width="20" height="14" rx="1"/>
+  <!-- Right: unit price row -->
+  <rect fill="#718096" x="154" y="114" width="70" height="6" rx="1"/>
+  <rect fill="#394152" x="232" y="112" width="24" height="10" rx="5"/>
+  <!-- Right: total -->
+  <rect fill="#394152" x="154" y="126" width="58" height="9" rx="2"/>
+  <!-- Right: add to cart button -->
+  <rect fill="#394152" x="154" y="140" width="118" height="20" rx="2"/>
+  <!-- Right: qty/price table -->
+  <rect fill="#718096" x="154" y="168" width="118" height="10" rx="1"/>
+  <rect fill="#718096" x="154" y="182" width="118" height="10" rx="1"/>
+  <!-- Right: description title -->
+  <rect fill="#394152" x="154" y="200" width="54" height="7" rx="1"/>
+  <!-- Description lines -->
+  <rect fill="#718096" x="154" y="214" width="118" height="4" rx="1"/>
+  <rect fill="#718096" x="154" y="222" width="94"  height="4" rx="1"/>
+  <rect fill="#718096" x="154" y="230" width="108" height="4" rx="1"/>
+  <rect fill="#718096" x="154" y="238" width="80"  height="4" rx="1"/>
+  <rect fill="#718096" x="154" y="246" width="100" height="4" rx="1"/>
+</svg>`
+
+export interface Ru1ProductDetailData {
+  productIds: string
+  /** Builder-only runtime fields — used for preview, stripped from saved HTML */
+  mainImageSrc?: string
+  thumbImageSrcs?: string[]
+  _productName?: string
+  _productPriceNum?: number
+  _productColors?: { htmlColor: string; name: string }[]
+  sizes: { label: string; priceModifier: string }[]
+  currency: string
+  addToCartLabel: string
+  unitPriceBadge: string
+  unitPriceNote: string
+  descriptionTitle: string
+  description?: string
+  descriptionColor?: string
+  // Legacy flat fields — kept for backwards compat, overridden by l1/l2/l3 namespaced fields when galleryLayout is set
+  buttonBgColor: string
+  buttonTextColor: string
+  accentColor: string
+  productNameColor: string
+  productNameFontWeight: string
+  productNameFontSize: number
+  priceModifierColor: string
+  priceModifierFontWeight: string
+  priceModifierFontSize: number
+  thumbSize: number
+  thumbBorderRadius: number
+  bgColor: string
+  paddingY: number
+  paddingX: number
+  /** Gallery layout selector */
+  galleryLayout?: 'layout1' | 'layout2' | 'layout3'
+  /** Layout 1 — vertical thumb strip left + main image right */
+  l1ThumbCount?: number
+  l1ThumbSize?: number
+  l1ThumbBorderRadius?: number
+  l1BgColor?: string
+  l1AccentColor?: string
+  l1ButtonBgColor?: string
+  l1ButtonTextColor?: string
+  l1ProductNameColor?: string
+  l1ProductNameFontWeight?: string
+  l1ProductNameFontSize?: number
+  l1PriceModifierColor?: string
+  l1PriceModifierFontWeight?: string
+  l1PriceModifierFontSize?: number
+  l1PaddingY?: number
+  l1PaddingX?: number
+  /** Layout 2 — main image top + horizontal thumb row below */
+  l2ThumbCount?: number
+  l2ThumbSize?: number
+  l2ThumbBorderRadius?: number
+  l2BgColor?: string
+  l2AccentColor?: string
+  l2ButtonBgColor?: string
+  l2ButtonTextColor?: string
+  l2ProductNameColor?: string
+  l2ProductNameFontWeight?: string
+  l2ProductNameFontSize?: number
+  l2PriceModifierColor?: string
+  l2PriceModifierFontWeight?: string
+  l2PriceModifierFontSize?: number
+  l2PaddingY?: number
+  l2PaddingX?: number
+  /** Layout 3 — vertical thumb strip with scroll arrows + carousel with dots + auto-slide */
+  l3ThumbCount?: number
+  l3ThumbSize?: number
+  l3ThumbBorderRadius?: number
+  l3AutoSlideSeconds?: number
+  l3BgColor?: string
+  l3AccentColor?: string
+  l3ButtonBgColor?: string
+  l3ButtonTextColor?: string
+  l3ProductNameColor?: string
+  l3ProductNameFontWeight?: string
+  l3ProductNameFontSize?: number
+  l3PriceModifierColor?: string
+  l3PriceModifierFontWeight?: string
+  l3PriceModifierFontSize?: number
+  l3PaddingY?: number
+  l3PaddingX?: number
+}
+
+export const ru1ProductDetailDefaults: Ru1ProductDetailData = {
+  productIds: '',
+  sizes: [
+    { label: 'XS', priceModifier: '' },
+    { label: 'S', priceModifier: '' },
+    { label: 'M', priceModifier: '' },
+    { label: 'L', priceModifier: '' },
+    { label: 'XL', priceModifier: '' },
+    { label: '2XL', priceModifier: '+$5.16' },
+    { label: '3XL', priceModifier: '+$7.68' },
+  ],
+  currency: '$',
+  addToCartLabel: 'Add to cart',
+  unitPriceBadge: '1+',
+  unitPriceNote: '* some sizes may vary',
+  descriptionTitle: 'Description',
+  description: '',
+  descriptionColor: '#374151',
+  // Legacy fallback fields
+  buttonBgColor: '#1e3a5f',
+  buttonTextColor: '#ffffff',
+  accentColor: '#1a56db',
+  productNameColor: '#111827',
+  productNameFontWeight: '700',
+  productNameFontSize: 22,
+  priceModifierColor: '#6b7280',
+  priceModifierFontWeight: '400',
+  priceModifierFontSize: 10,
+  thumbSize: 64,
+  thumbBorderRadius: 4,
+  bgColor: '#ffffff',
+  paddingY: 48,
+  paddingX: 16,
+  // Gallery layout
+  galleryLayout: 'layout1',
+  // Layout 1 defaults
+  l1ThumbCount: 1,
+  l1ThumbSize: 64,
+  l1ThumbBorderRadius: 4,
+  l1BgColor: '#ffffff',
+  l1AccentColor: '#1a56db',
+  l1ButtonBgColor: '#1e3a5f',
+  l1ButtonTextColor: '#ffffff',
+  l1ProductNameColor: '#111827',
+  l1ProductNameFontWeight: '700',
+  l1ProductNameFontSize: 22,
+  l1PriceModifierColor: '#6b7280',
+  l1PriceModifierFontWeight: '400',
+  l1PriceModifierFontSize: 10,
+  l1PaddingY: 48,
+  l1PaddingX: 16,
+  // Layout 2 defaults
+  l2ThumbCount: 2,
+  l2ThumbSize: 64,
+  l2ThumbBorderRadius: 4,
+  l2BgColor: '#ffffff',
+  l2AccentColor: '#1a56db',
+  l2ButtonBgColor: '#1e3a5f',
+  l2ButtonTextColor: '#ffffff',
+  l2ProductNameColor: '#111827',
+  l2ProductNameFontWeight: '700',
+  l2ProductNameFontSize: 22,
+  l2PriceModifierColor: '#6b7280',
+  l2PriceModifierFontWeight: '400',
+  l2PriceModifierFontSize: 10,
+  l2PaddingY: 48,
+  l2PaddingX: 16,
+  // Layout 3 defaults
+  l3ThumbCount: 3,
+  l3ThumbSize: 64,
+  l3ThumbBorderRadius: 4,
+  l3AutoSlideSeconds: 3,
+  l3BgColor: '#ffffff',
+  l3AccentColor: '#1a56db',
+  l3ButtonBgColor: '#1e3a5f',
+  l3ButtonTextColor: '#ffffff',
+  l3ProductNameColor: '#111827',
+  l3ProductNameFontWeight: '700',
+  l3ProductNameFontSize: 22,
+  l3PriceModifierColor: '#6b7280',
+  l3PriceModifierFontWeight: '400',
+  l3PriceModifierFontSize: 10,
+  l3PaddingY: 48,
+  l3PaddingX: 16,
+}
+
+const _l1 = (d: Record<string, any>) => !d.galleryLayout || d.galleryLayout === 'layout1'
+const _l2 = (d: Record<string, any>) => d.galleryLayout === 'layout2'
+const _l3 = (d: Record<string, any>) => d.galleryLayout === 'layout3'
+
+export const ru1ProductDetailFields: FieldConfig[] = [
+  // ── Gallery layout selector (always visible) ───────────────────────────────
+  { key: 'galleryLayout', label: 'Gallery Layout', type: 'select', options: ['layout1', 'layout2', 'layout3'] },
+
+  // ── Shared fields (all layouts) ────────────────────────────────────────────
+  { key: 'currency', label: 'Currency Symbol', type: 'text', placeholder: '$' },
+  { key: 'addToCartLabel', label: 'Add to Cart Label', type: 'text', placeholder: 'Add to cart' },
+  { key: 'unitPriceBadge', label: 'Unit Price Badge', type: 'text', placeholder: '1+' },
+  { key: 'unitPriceNote', label: 'Price Note', type: 'text', placeholder: '* some sizes may vary' },
+  { key: 'descriptionTitle', label: 'Description Section Title', type: 'text', placeholder: 'Description' },
+  { key: 'description', label: 'Description (one bullet per line)', type: 'textarea', placeholder: 'Enter each bullet point on a new line...' },
+  { key: 'descriptionColor', label: 'Description Text Color', type: 'color' },
+  { key: 'sizes', label: 'Sizes (applies to all products)', type: 'list', listFields: [
+    { key: 'label', label: 'Size Label', type: 'text', placeholder: 'XL' },
+    { key: 'priceModifier', label: 'Price Modifier', type: 'text', placeholder: '+$5.16' },
+  ]},
+
+  // ── Layout 1 fields ────────────────────────────────────────────────────────
+  { key: '_h_l1_gallery', label: 'Layout 1 — Gallery', type: 'header', visibleIf: _l1 },
+  { key: 'l1ThumbCount', label: 'Thumbnails', type: 'select', options: ['1', '2', '3', '4', '5'], visibleIf: _l1 },
+  { key: 'l1ThumbSize', label: 'Thumbnail Size', type: 'number', unit: 'px', step: 4, visibleIf: _l1 },
+  { key: 'l1ThumbBorderRadius', label: 'Thumbnail Radius', type: 'number', unit: 'px', step: 2, visibleIf: _l1 },
+  { key: '_h_l1_colors', label: 'Layout 1 — Colors', type: 'header', visibleIf: _l1 },
+  { key: 'l1BgColor', label: 'Background Color', type: 'color', visibleIf: _l1 },
+  { key: 'l1AccentColor', label: 'Accent Color', type: 'color', visibleIf: _l1 },
+  { key: 'l1ButtonBgColor', label: 'Button Color', type: 'color', visibleIf: _l1 },
+  { key: 'l1ButtonTextColor', label: 'Button Text Color', type: 'color', visibleIf: _l1 },
+  { key: 'l1ProductNameColor', label: 'Product Name Color', type: 'color', visibleIf: _l1 },
+  { key: 'l1ProductNameFontWeight', label: 'Product Name Weight', type: 'select', options: ['400', '500', '600', '700', '800'], visibleIf: _l1 },
+  { key: 'l1ProductNameFontSize', label: 'Product Name Size', type: 'number', unit: 'px', step: 1, visibleIf: _l1 },
+  { key: 'l1PriceModifierColor', label: 'Price Modifier Color', type: 'color', visibleIf: _l1 },
+  { key: 'l1PriceModifierFontWeight', label: 'Price Modifier Weight', type: 'select', options: ['400', '500', '600', '700'], visibleIf: _l1 },
+  { key: 'l1PriceModifierFontSize', label: 'Price Modifier Size', type: 'number', unit: 'px', step: 1, visibleIf: _l1 },
+  { key: '_h_l1_spacing', label: 'Layout 1 — Spacing', type: 'header', visibleIf: _l1 },
+  { key: 'l1PaddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, visibleIf: _l1 },
+  { key: 'l1PaddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, visibleIf: _l1 },
+
+  // ── Layout 2 fields ────────────────────────────────────────────────────────
+  { key: '_h_l2_gallery', label: 'Layout 2 — Gallery', type: 'header', visibleIf: _l2 },
+  { key: 'l2ThumbCount', label: 'Thumbnails', type: 'select', options: ['2', '3', '4', '5'], visibleIf: _l2 },
+  { key: 'l2ThumbSize', label: 'Thumbnail Size', type: 'number', unit: 'px', step: 4, visibleIf: _l2 },
+  { key: 'l2ThumbBorderRadius', label: 'Thumbnail Radius', type: 'number', unit: 'px', step: 2, visibleIf: _l2 },
+  { key: '_h_l2_colors', label: 'Layout 2 — Colors', type: 'header', visibleIf: _l2 },
+  { key: 'l2BgColor', label: 'Background Color', type: 'color', visibleIf: _l2 },
+  { key: 'l2AccentColor', label: 'Accent Color', type: 'color', visibleIf: _l2 },
+  { key: 'l2ButtonBgColor', label: 'Button Color', type: 'color', visibleIf: _l2 },
+  { key: 'l2ButtonTextColor', label: 'Button Text Color', type: 'color', visibleIf: _l2 },
+  { key: 'l2ProductNameColor', label: 'Product Name Color', type: 'color', visibleIf: _l2 },
+  { key: 'l2ProductNameFontWeight', label: 'Product Name Weight', type: 'select', options: ['400', '500', '600', '700', '800'], visibleIf: _l2 },
+  { key: 'l2ProductNameFontSize', label: 'Product Name Size', type: 'number', unit: 'px', step: 1, visibleIf: _l2 },
+  { key: 'l2PriceModifierColor', label: 'Price Modifier Color', type: 'color', visibleIf: _l2 },
+  { key: 'l2PriceModifierFontWeight', label: 'Price Modifier Weight', type: 'select', options: ['400', '500', '600', '700'], visibleIf: _l2 },
+  { key: 'l2PriceModifierFontSize', label: 'Price Modifier Size', type: 'number', unit: 'px', step: 1, visibleIf: _l2 },
+  { key: '_h_l2_spacing', label: 'Layout 2 — Spacing', type: 'header', visibleIf: _l2 },
+  { key: 'l2PaddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, visibleIf: _l2 },
+  { key: 'l2PaddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, visibleIf: _l2 },
+
+  // ── Layout 3 fields ────────────────────────────────────────────────────────
+  { key: '_h_l3_gallery', label: 'Layout 3 — Gallery', type: 'header', visibleIf: _l3 },
+  { key: 'l3ThumbCount', label: 'Thumbnails', type: 'select', options: ['3', '4', '5', '6', '7'], visibleIf: _l3 },
+  { key: 'l3ThumbSize', label: 'Thumbnail Size', type: 'number', unit: 'px', step: 4, visibleIf: _l3 },
+  { key: 'l3ThumbBorderRadius', label: 'Thumbnail Radius', type: 'number', unit: 'px', step: 2, visibleIf: _l3 },
+  { key: 'l3AutoSlideSeconds', label: 'Auto-slide (seconds)', type: 'number', unit: 's', step: 1, visibleIf: _l3 },
+  { key: '_h_l3_colors', label: 'Layout 3 — Colors', type: 'header', visibleIf: _l3 },
+  { key: 'l3BgColor', label: 'Background Color', type: 'color', visibleIf: _l3 },
+  { key: 'l3AccentColor', label: 'Accent Color', type: 'color', visibleIf: _l3 },
+  { key: 'l3ButtonBgColor', label: 'Button Color', type: 'color', visibleIf: _l3 },
+  { key: 'l3ButtonTextColor', label: 'Button Text Color', type: 'color', visibleIf: _l3 },
+  { key: 'l3ProductNameColor', label: 'Product Name Color', type: 'color', visibleIf: _l3 },
+  { key: 'l3ProductNameFontWeight', label: 'Product Name Weight', type: 'select', options: ['400', '500', '600', '700', '800'], visibleIf: _l3 },
+  { key: 'l3ProductNameFontSize', label: 'Product Name Size', type: 'number', unit: 'px', step: 1, visibleIf: _l3 },
+  { key: 'l3PriceModifierColor', label: 'Price Modifier Color', type: 'color', visibleIf: _l3 },
+  { key: 'l3PriceModifierFontWeight', label: 'Price Modifier Weight', type: 'select', options: ['400', '500', '600', '700'], visibleIf: _l3 },
+  { key: 'l3PriceModifierFontSize', label: 'Price Modifier Size', type: 'number', unit: 'px', step: 1, visibleIf: _l3 },
+  { key: '_h_l3_spacing', label: 'Layout 3 — Spacing', type: 'header', visibleIf: _l3 },
+  { key: 'l3PaddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, visibleIf: _l3 },
+  { key: 'l3PaddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, visibleIf: _l3 },
+]
+
+// ─── Ru2-Product Detail ───────────────────────────────────────────────────────
+
+export const ru2ProductDetailSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
+  <!-- Left: main product image -->
+  <rect fill="#394152" x="8" y="8" width="126" height="126" rx="3"/>
+  <polygon fill="#718096" points="28 128 68 84 108 128 28 128"/>
+  <polygon fill="#718096" points="88 128 110 102 130 128 88 128"/>
+  <circle fill="#718096" cx="112" cy="98" r="8"/>
+  <!-- Left: 4 thumbnails in a row -->
+  <rect fill="#394152" x="8"  y="142" width="26" height="26" rx="2"/>
+  <rect fill="#718096" x="38" y="142" width="26" height="26" rx="2"/>
+  <rect fill="#718096" x="68" y="142" width="26" height="26" rx="2"/>
+  <rect fill="#718096" x="98" y="142" width="26" height="26" rx="2"/>
+  <!-- Right: product name -->
+  <rect fill="#394152" x="150" y="8"  width="122" height="12" rx="2"/>
+  <rect fill="#394152" x="150" y="24" width="80"  height="9"  rx="2"/>
+  <!-- Right: price -->
+  <rect fill="#718096" x="150" y="42" width="52"  height="12" rx="2"/>
+  <!-- Right: desc lines -->
+  <rect fill="#718096" x="150" y="62" width="122" height="4" rx="1"/>
+  <rect fill="#718096" x="150" y="70" width="98"  height="4" rx="1"/>
+  <rect fill="#718096" x="150" y="78" width="114" height="4" rx="1"/>
+  <!-- Right: Color label + circles -->
+  <rect fill="#718096" x="150" y="92" width="28" height="4" rx="1"/>
+  <circle fill="#394152" cx="160" cy="110" r="8"/>
+  <circle fill="#718096" cx="180" cy="110" r="8"/>
+  <circle fill="#718096" cx="200" cy="110" r="8"/>
+  <!-- Right: Add to bag button -->
+  <rect fill="#394152" x="150" y="126" width="116" height="18" rx="4"/>
+  <!-- Right: divider -->
+  <rect fill="#718096" x="150" y="152" width="122" height="1"/>
+  <!-- Right: accordion rows -->
+  <rect fill="#394152" x="150" y="160" width="72" height="5" rx="1"/>
+  <rect fill="#394152" x="258" y="159" width="14" height="7" rx="2"/>
+  <rect fill="#718096" x="150" y="176" width="62" height="4" rx="1"/>
+  <rect fill="#394152" x="260" y="175" width="12" height="6" rx="2"/>
+  <rect fill="#718096" x="150" y="190" width="68" height="4" rx="1"/>
+  <rect fill="#394152" x="260" y="189" width="12" height="6" rx="2"/>
+  <!-- Bottom divider -->
+  <rect fill="#718096" x="8" y="182" width="130" height="1"/>
+  <!-- Bottom: related title -->
+  <rect fill="#394152" x="8" y="188" width="90" height="6" rx="1"/>
+  <!-- 4 related cards -->
+  <rect fill="#394152" x="8"   y="202" width="56" height="56" rx="3"/>
+  <rect fill="#718096" x="8"   y="262" width="38" height="4"  rx="1"/>
+  <rect fill="#718096" x="8"   y="270" width="28" height="4"  rx="1"/>
+  <rect fill="#394152" x="8"   y="278" width="56" height="10" rx="2"/>
+  <rect fill="#394152" x="70"  y="202" width="56" height="56" rx="3"/>
+  <rect fill="#718096" x="70"  y="262" width="38" height="4"  rx="1"/>
+  <rect fill="#718096" x="70"  y="270" width="28" height="4"  rx="1"/>
+  <rect fill="#394152" x="70"  y="278" width="56" height="10" rx="2"/>
+  <rect fill="#394152" x="132" y="202" width="56" height="56" rx="3"/>
+  <rect fill="#718096" x="132" y="262" width="38" height="4"  rx="1"/>
+  <rect fill="#718096" x="132" y="270" width="28" height="4"  rx="1"/>
+  <rect fill="#394152" x="132" y="278" width="56" height="10" rx="2"/>
+  <rect fill="#394152" x="194" y="202" width="56" height="56" rx="3"/>
+  <rect fill="#718096" x="194" y="262" width="38" height="4"  rx="1"/>
+  <rect fill="#718096" x="194" y="270" width="28" height="4"  rx="1"/>
+  <rect fill="#394152" x="194" y="278" width="56" height="10" rx="2"/>
+</svg>`
+
+export interface Ru2ProductDetailDetail {
+  name: string
+  items: string
+}
+
+export interface Ru2ProductDetailData {
+  productIds: string
+  /** Builder-only runtime fields — used for preview, stripped from saved HTML */
+  mainImageSrc?: string
+  thumbImageSrcs?: string[]
+  _productName?: string
+  _productPriceNum?: number
+  _productColors?: { htmlColor: string; name: string }[]
+  bgColor: string
+  accentColor: string
+  buttonBgColor: string
+  buttonTextColor: string
+  buttonBorderRadius: number
+  addToCartLabel: string
+  productNameColor: string
+  productNameFontWeight: string
+  productNameFontSize: number
+  priceColor: string
+  priceFontWeight: string
+  priceFontSize: number
+  currency: string
+  thumbBorderRadius: number
+  productDetails: Ru2ProductDetailDetail[]
+  showRelatedProducts: boolean
+  relatedTitle: string
+  relatedProducts: { id: number; imageUrl: string; name: string; price: string; colors?: { htmlColor: string; name: string }[] }[]
+  relatedColumns: number
+  relatedRows: number
+  relatedCardBg: string
+  relatedCardTextColor: string
+  relatedCardFontSize: number
+  relatedCardBorderRadius: number
+  relatedCardShadow: string
+  relatedCardLayout: string
+  relatedCardMargin: number
+  relatedCardPadding: number
+  relatedCardFontWeight: string
+  relatedCardTextAlign: string
+  relatedCardSubtitle: string
+  relatedCardSubtitleEnabled: boolean
+  relatedButtonBgColor: string
+  relatedButtonTextColor: string
+  relatedButtonBorderRadius: number
+  relatedAddToCartLabel: string
+  paddingY: number
+  paddingX: number
+}
+
+export const ru2ProductDetailDefaults: Ru2ProductDetailData = {
+  productIds: '',
+  bgColor: '#ffffff',
+  accentColor: '#4f46e5',
+  buttonBgColor: '#4f46e5',
+  buttonTextColor: '#ffffff',
+  buttonBorderRadius: 8,
+  addToCartLabel: 'Add to bag',
+  productNameColor: '#111827',
+  productNameFontWeight: '700',
+  productNameFontSize: 30,
+  priceColor: '#111827',
+  priceFontWeight: '400',
+  priceFontSize: 30,
+  currency: '$',
+  thumbBorderRadius: 6,
+  productDetails: [
+    { name: 'Features', items: 'Multiple strap configurations\nSpacious interior with top zip\nLeather handle and tabs\nInterior dividers\nStainless strap loops\nDouble stitched construction\nWater-resistant' },
+    { name: 'Care', items: 'Spot clean only\nDo not submerge in water\nAir dry flat' },
+    { name: 'Shipping', items: 'Free standard shipping on orders over $100\nExpress delivery available at checkout\nFree returns within 30 days' },
+    { name: 'Returns', items: 'Items must be in original condition\nFree return label included\nRefund processed in 5–7 business days' },
+  ],
+  showRelatedProducts: true,
+  relatedTitle: 'Customers also bought',
+  relatedProducts: [],
+  relatedColumns: 4,
+  relatedRows: 1,
+  relatedCardBg: '#ffffff',
+  relatedCardTextColor: '#111827',
+  relatedCardFontSize: 14,
+  relatedCardBorderRadius: 8,
+  relatedCardShadow: 'none',
+  relatedCardLayout: 'default',
+  relatedCardMargin: 0,
+  relatedCardPadding: 0,
+  relatedCardFontWeight: '400',
+  relatedCardTextAlign: 'left',
+  relatedCardSubtitle: '',
+  relatedCardSubtitleEnabled: true,
+  relatedButtonBgColor: '#111827',
+  relatedButtonTextColor: '#ffffff',
+  relatedButtonBorderRadius: 8,
+  relatedAddToCartLabel: 'Add to bag',
+  paddingY: 48,
+  paddingX: 16,
+}
+
+export const ru2ProductDetailFields: FieldConfig[] = [
+  { key: '_h_appearance', label: 'Appearance', type: 'header' },
+  { key: 'bgColor',             label: 'Background Color',      type: 'color' },
+  { key: 'accentColor',         label: 'Accent Color',          type: 'color' },
+
+  { key: '_h_btn', label: 'Button', type: 'header' },
+  { key: 'buttonBgColor',       label: 'Button Color',          type: 'color' },
+  { key: 'buttonTextColor',     label: 'Button Text Color',     type: 'color' },
+  { key: 'buttonBorderRadius',  label: 'Button Radius',         type: 'number', unit: 'px', step: 2 },
+  { key: 'addToCartLabel',      label: 'Add to Cart Label',     type: 'text',  placeholder: 'Add to bag' },
+
+  { key: '_h_name', label: 'Product Name', type: 'header' },
+  { key: 'productNameColor',       label: 'Name Color',  type: 'color' },
+  { key: 'productNameFontWeight',  label: 'Name Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  { key: 'productNameFontSize',    label: 'Name Size',   type: 'number', unit: 'px', step: 1 },
+
+  { key: '_h_price', label: 'Price', type: 'header' },
+  { key: 'priceColor',       label: 'Price Color',  type: 'color' },
+  { key: 'priceFontWeight',  label: 'Price Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  { key: 'priceFontSize',    label: 'Price Size',   type: 'number', unit: 'px', step: 1 },
+  { key: 'currency',         label: 'Currency Symbol', type: 'text', placeholder: '$' },
+
+  { key: '_h_thumb', label: 'Thumbnails', type: 'header' },
+  { key: 'thumbBorderRadius', label: 'Thumbnail Radius', type: 'number', unit: 'px', step: 2 },
+
+  { key: '_h_details', label: 'Details Accordion', type: 'header' },
+  {
+    key: 'productDetails', label: 'Detail Sections', type: 'list',
+    listFields: [
+      { key: 'name',  label: 'Section Name',          type: 'text',     placeholder: 'e.g. Features' },
+      { key: 'items', label: 'Items (one per line)',   type: 'textarea', placeholder: 'Multiple strap configurations\nSpacious interior' },
+    ],
+  },
+
+  { key: '_h_related', label: 'Related Products', type: 'header' },
+  { key: 'showRelatedProducts', label: 'Show Related Products', type: 'toggle' },
+  { key: 'relatedTitle',        label: 'Section Title',         type: 'text', placeholder: 'Customers also bought' },
+  { key: 'relatedColumns',      label: 'Columns',               type: 'number', step: 1 },
+  { key: 'relatedRows',         label: 'Rows',                  type: 'number', step: 1 },
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'paddingY', label: 'Vertical Padding',   type: 'number', unit: 'px', step: 4 },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4 },
+]
+
+export function renderRu2ProductDetail(data: Ru2ProductDetailData): string {
+  const { mainImageSrc: _m, thumbImageSrcs: _t, _productName, _productPriceNum, _productColors, ...persistable } = data
+
+  const curr = data.currency || '$'
+  const tRadius = data.thumbBorderRadius ?? 6
+  const accent  = data.accentColor || '#4f46e5'
+
+  const skeletonImg = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f3f4f6;">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="7" width="18" height="14" rx="2"/><circle cx="12" cy="14" r="3"/>
+      <path d="M8 7V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+    </svg>
+  </div>`
+
+  const mainImgHtml = _m
+    ? `<img src="${_m}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+    : skeletonImg
+  const mainBg = _m ? '#ffffff' : '#f3f4f6'
+
+  // 4 placeholder thumbnails (row below main image)
+  const thumbsHtml = Array(4).fill(0).map((_, i) => {
+    const src = _t?.[i]
+    return `<div data-rb-pd2-thumb="${i}" style="aspect-ratio:1/1;border:2px solid ${i === 0 ? accent : '#e5e7eb'};border-radius:${tRadius}px;overflow:hidden;cursor:pointer;box-sizing:border-box;background:${src ? '#ffffff' : '#f3f4f6'};transition:border-color .15s;">
+      ${src ? `<img src="${src}" style="width:100%;height:100%;object-fit:contain;display:block;" />` : skeletonImg}
+    </div>`
+  }).join('')
+
+  const nameHtml = _productName
+    ? _productName
+    : 'Product One'
+
+  const priceHtml = _productPriceNum != null
+    ? `${curr}${_productPriceNum.toFixed(0)}`
+    : `${curr}0`
+
+  const colorsHtml = (_productColors && _productColors.length)
+    ? _productColors.map((c, i) =>
+        `<div style="width:32px;height:32px;border-radius:50%;background:${c.htmlColor};border:2px solid ${i === 0 ? accent : 'transparent'};outline:2px solid ${i === 0 ? accent : '#e5e7eb'};outline-offset:2px;cursor:pointer;transition:outline-color .15s;" title="${c.name}"></div>`
+      ).join('')
+    : `<div style="width:32px;height:32px;border-radius:50%;background:#FF0000;border:2px solid ${accent};outline:2px solid ${accent};outline-offset:2px;cursor:pointer;transition:outline-color .15s;" title="Red"></div>
+       <div style="width:32px;height:32px;border-radius:50%;background:#0000FF;border:2px solid transparent;outline:2px solid #e5e7eb;outline-offset:2px;cursor:pointer;transition:outline-color .15s;" title="Blue"></div>`
+
+  // Accordion — first section open, rest closed
+  const accordionHtml = (data.productDetails || []).map((detail, i) => {
+    const isFirst = i === 0
+    const lines = (detail.items || '').split('\n').map(s => s.trim()).filter(Boolean)
+    const listHtml = lines.map(line =>
+      `<li style="display:flex;align-items:baseline;gap:10px;padding:5px 0;font-size:14px;color:#374151;line-height:1.6;">
+        <span style="width:6px;height:6px;border-radius:50%;background:${accent};flex-shrink:0;margin-top:7px;display:inline-block;"></span>
+        ${line}
+      </li>`
+    ).join('')
+
+    return `<div style="border-bottom:1px solid #e5e7eb;">
+      <button data-rb-pd2-acc-btn style="width:100%;display:flex;justify-content:space-between;align-items:center;padding:20px 0;background:none;border:none;cursor:pointer;" data-open="${isFirst ? '1' : '0'}">
+        <span style="font-size:16px;font-weight:600;color:${isFirst ? accent : '#111827'};">${detail.name}</span>
+        <span style="font-size:22px;font-weight:300;color:${isFirst ? accent : '#9ca3af'};line-height:1;user-select:none;">${isFirst ? '−' : '+'}</span>
+      </button>
+      <div data-rb-pd2-acc-panel style="display:${isFirst ? 'block' : 'none'};padding-bottom:20px;">
+        <ul style="list-style:none;margin:0;padding:0;">${listHtml}</ul>
+      </div>
+    </div>`
+  }).join('')
+
+  const relCols = Math.max(1, data.relatedColumns ?? 4)
+  const relRows = Math.max(1, data.relatedRows ?? 1)
+  const relCount = relCols * relRows
+  const relCardRadius = data.relatedCardBorderRadius ?? 8
+  const relBtnRadius = data.relatedButtonBorderRadius ?? 8
+  const relCardBg = data.relatedCardBg || '#ffffff'
+  const relBtnBg = data.relatedButtonBgColor || '#111827'
+  const relBtnColor = data.relatedButtonTextColor || '#ffffff'
+  const shadowPresets: Record<string, string> = {
+    'none':       '0 0 #0000',
+    'shadow-sm':  '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+    'shadow-md':  '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+    'shadow-lg':  '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+    'shadow-xl':  '0 20px 25px -5px rgb(0 0 0 / 0.1)',
+  }
+  const relShadow = shadowPresets[data.relatedCardShadow ?? 'none'] ?? '0 0 #0000'
+
+  const hasRelatedProducts = Array.isArray(data.relatedProducts) && data.relatedProducts.length > 0
+  const actualRelCols = hasRelatedProducts ? Math.min(relCols, data.relatedProducts.length) : relCols
+  const relGridStyle = `display:grid;grid-template-columns:repeat(${actualRelCols},minmax(0,1fr));gap:24px;${actualRelCols < relCols ? 'justify-content:center;max-width:' + (actualRelCols * 300) + 'px;margin:0 auto;' : ''}`
+
+  const relFontSize = data.relatedCardFontSize ?? 14
+  const relFontWeight = data.relatedCardFontWeight || '400'
+  const relLayout = data.relatedCardLayout || 'default'
+  const relTextAlign = data.relatedCardTextAlign || (relLayout === 'centered' ? 'center' : 'left')
+  const relCardPad = data.relatedCardPadding > 0 ? data.relatedCardPadding : 12
+  const relCardMar = data.relatedCardMargin ?? 0
+  const relSubtitle = (data.relatedCardSubtitleEnabled !== false && data.relatedCardSubtitle)
+    ? data.relatedCardSubtitle : ''
+  const relTextColor = data.relatedCardTextColor ?? '#111827'
+
+  const relCardItem = (p: { id: number; imageUrl: string; name: string; price: string; colors?: { htmlColor: string; name: string }[] }) => {
+    const swatchesHtml = Array.isArray(p.colors) && p.colors.length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:4px;padding:4px 0;justify-content:${relLayout === 'centered' ? 'center' : 'flex-start'};">${
+          p.colors.slice(0, 12).map(c =>
+            `<span title="${c.name}" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${c.htmlColor};border:1px solid rgba(0,0,0,0.15);flex-shrink:0;"></span>`
+          ).join('')
+        }</div>`
+      : ''
+    const subtitleHtml = relSubtitle
+      ? `<div style="font-size:11px;color:#6b7280;margin-bottom:6px;text-align:${relTextAlign};">${relSubtitle}</div>`
+      : ''
+    const btnHtml = `<button style="width:100%;padding:10px;background:${relBtnBg};color:${relBtnColor};border:none;border-radius:${relBtnRadius}px;font-size:${relFontSize}px;font-weight:500;cursor:pointer;margin-top:auto;">${data.relatedAddToCartLabel || 'Add to bag'}</button>`
+    const imgBox = `<div style="aspect-ratio:1/1;background:${p.imageUrl ? '#ffffff' : '#f3f4f6'};display:flex;align-items:center;justify-content:center;">
+      ${p.imageUrl ? `<img src="${p.imageUrl}" style="width:100%;height:100%;object-fit:contain;display:block;" />` : skeletonImg}
+    </div>`
+    const cardWrap = (inner: string) =>
+      `<div style="background:${relCardBg};border-radius:${relCardRadius}px;overflow:hidden;box-shadow:${relShadow};margin:${relCardMar}px;display:flex;flex-direction:column;">${imgBox}${inner}</div>`
+
+    if (relLayout === 'inline') {
+      return cardWrap(`<div style="padding:${relCardPad}px;display:flex;flex-direction:column;flex:1;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;">
+          <span style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${relTextColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">${p.name}</span>
+          <span style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${accent};white-space:nowrap;flex-shrink:0;">${p.price}</span>
+        </div>${swatchesHtml}${subtitleHtml}${btnHtml}</div>`)
+    }
+    return cardWrap(`<div style="padding:${relCardPad}px;text-align:${relTextAlign};display:flex;flex-direction:column;flex:1;">
+      <div style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${relTextColor};margin-bottom:4px;${relLayout !== 'centered' ? 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;' : ''}">${p.name}</div>
+      <div style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${accent};margin-bottom:6px;">${p.price}</div>
+      ${swatchesHtml}${subtitleHtml}${btnHtml}</div>`)
+  }
+
+  const relatedCardsHtml = hasRelatedProducts
+    ? data.relatedProducts.map(relCardItem).join('')
+    : Array(relCount).fill(0).map(() =>
+        `<div style="background:${relCardBg};border-radius:${relCardRadius}px;overflow:hidden;box-shadow:${relShadow};margin:${relCardMar}px;">
+          <div style="aspect-ratio:1/1;background:#f3f4f6;">${skeletonImg}</div>
+          <div style="padding:${relCardPad}px;">
+            <div style="height:14px;background:#f3f4f6;border-radius:4px;width:68%;margin-bottom:6px;"></div>
+            <div style="height:13px;background:#f3f4f6;border-radius:4px;width:48%;margin-bottom:12px;"></div>
+            <button style="width:100%;padding:10px;background:${relBtnBg};color:${relBtnColor};border:none;border-radius:${relBtnRadius}px;font-size:${relFontSize}px;font-weight:500;cursor:pointer;">${data.relatedAddToCartLabel || 'Add to bag'}</button>
+          </div>
+        </div>`
+      ).join('')
+
+  const relatedSection = data.showRelatedProducts !== false
+    ? `<div style="border-top:1px solid #e5e7eb;padding-top:64px;margin-top:64px;">
+        <h2 style="font-size:20px;font-weight:700;color:#111827;margin:0 0 32px;">${data.relatedTitle || 'Customers also bought'}</h2>
+        <div style="${relGridStyle}">${relatedCardsHtml}</div>
+      </div>`
+    : ''
+
+  return `<section data-component-title="Ru2-Product Detail" data-component-props="${encodeURIComponent(JSON.stringify(persistable))}" style="background:${data.bgColor};padding:${data.paddingY ?? 48}px ${data.paddingX ?? 16}px;">
+  <div style="max-width:80rem;margin:0 auto;">
+    <div
+      data-rubikx-component="ProductDetail2"
+      data-on-mount="loadProductDetail2"
+      data-product-ids="${data.productIds ?? ''}"
+      data-accent-color="${accent}"
+      data-button-bg="${data.buttonBgColor}"
+      data-button-color="${data.buttonTextColor}"
+      data-button-radius="${data.buttonBorderRadius ?? 8}"
+      data-currency="${curr}"
+      data-add-to-cart-label="${data.addToCartLabel}"
+      data-related-title="${data.relatedTitle || 'Customers also bought'}"
+      data-related-add-to-cart-label="${data.relatedAddToCartLabel || 'Add to bag'}"
+      data-show-related="${data.showRelatedProducts !== false ? 'true' : 'false'}"
+      data-product-name-color="${data.productNameColor ?? '#111827'}"
+      data-product-name-weight="${data.productNameFontWeight ?? '700'}"
+      data-product-name-size="${data.productNameFontSize ?? 30}"
+      data-price-color="${data.priceColor ?? '#111827'}"
+      data-price-weight="${data.priceFontWeight ?? '400'}"
+      data-price-size="${data.priceFontSize ?? 30}"
+      data-thumb-radius="${tRadius}"
+    >
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:flex-start;">
+
+        <!-- Left: image gallery -->
+        <div>
+          <div data-rb-pd2-main style="aspect-ratio:1/1;border-radius:8px;overflow:hidden;background:${mainBg};">${mainImgHtml}</div>
+          <div data-rb-pd2-thumbs style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px;">${thumbsHtml}</div>
+        </div>
+
+        <!-- Right: product info -->
+        <div>
+          <h1 data-rb-pd2-name style="font-size:${data.productNameFontSize ?? 30}px;font-weight:${data.productNameFontWeight ?? '700'};color:${data.productNameColor ?? '#111827'};margin:0 0 12px;line-height:1.2;">${nameHtml}</h1>
+          <p data-rb-pd2-price style="font-size:${data.priceFontSize ?? 30}px;font-weight:${data.priceFontWeight ?? '400'};color:${data.priceColor ?? '#111827'};margin:0 0 20px;">${priceHtml}</p>
+
+          <div data-rb-pd2-desc style="font-size:15px;color:#374151;line-height:1.75;margin-bottom:28px;"></div>
+
+          <div style="margin-bottom:32px;">
+            <div style="font-size:14px;font-weight:500;color:#374151;margin-bottom:12px;">Color</div>
+            <div data-rb-pd2-colors style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">${colorsHtml}</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:36px;">
+            <button style="flex:1;padding:16px 24px;background:${data.buttonBgColor};color:${data.buttonTextColor};border:none;border-radius:${data.buttonBorderRadius ?? 8}px;font-size:16px;font-weight:600;cursor:pointer;">${data.addToCartLabel || 'Add to bag'}</button>
+            <button style="width:44px;height:44px;border:1px solid #e5e7eb;border-radius:50%;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+          </div>
+
+          <div style="border-top:1px solid #e5e7eb;">${accordionHtml}</div>
+        </div>
+      </div>
+
+      ${relatedSection}
+    </div>
+  </div>
+</section>`
+}
+
+function _ru1PdSkeletonImg(): string {
+  return `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f3f4f6;">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="7" width="18" height="14" rx="2"/><circle cx="12" cy="14" r="3"/>
+      <path d="M8 7V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+    </svg>
+  </div>`
+}
+
+function _ru1PdThumbs(count: number, tSize: number, tRadius: number, accentColor: string, thumbSrcs?: string[]): string {
+  const skeleton = _ru1PdSkeletonImg()
+  return Array(count).fill(0).map((_, i) => {
+    const src = thumbSrcs?.[i]
+    return `<div style="width:${tSize}px;height:${tSize}px;border:2px solid ${i === 0 ? accentColor : '#e5e7eb'};border-radius:${tRadius}px;overflow:hidden;flex-shrink:0;box-sizing:border-box;background:#fff;">${
+      src ? `<img src="${src}" style="width:100%;height:100%;object-fit:contain;display:block;" />` : skeleton
+    }</div>`
+  }).join('')
+}
+
+function _ru1PdGalleryL1(data: Ru1ProductDetailData, tSize: number, tRadius: number, accentColor: string, thumbCount: number, imgPlaceholder: string): string {
+  const thumbsHtml = _ru1PdThumbs(thumbCount, tSize, tRadius, accentColor, data.thumbImageSrcs)
+  return `<div style="display:flex;gap:12px;">
+        <div data-rb-pd-thumbs style="display:flex;flex-direction:column;gap:8px;">${thumbsHtml}</div>
+        <div data-rb-pd-main-img style="flex:1;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;aspect-ratio:1/1;background:#fff;">${imgPlaceholder}</div>
+      </div>`
+}
+
+function _ru1PdGalleryL2(data: Ru1ProductDetailData, tSize: number, tRadius: number, accentColor: string, thumbCount: number, imgPlaceholder: string): string {
+  const thumbsHtml = _ru1PdThumbs(thumbCount, tSize, tRadius, accentColor, data.thumbImageSrcs)
+  return `<div style="display:flex;flex-direction:column;gap:12px;">
+        <div data-rb-pd-main-img style="width:100%;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;aspect-ratio:1/1;background:#fff;">${imgPlaceholder}</div>
+        <div data-rb-pd-thumbs style="display:flex;flex-direction:row;gap:8px;flex-wrap:wrap;">${thumbsHtml}</div>
+      </div>`
+}
+
+function _ru1PdGalleryL3(data: Ru1ProductDetailData, tSize: number, tRadius: number, accentColor: string, thumbCount: number, imgPlaceholder: string): string {
+  const thumbsHtml = _ru1PdThumbs(thumbCount, tSize, tRadius, accentColor, data.thumbImageSrcs)
+  const dots = Array(thumbCount).fill(0).map((_, i) =>
+    `<span data-rb-pd-dot="${i}" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${i === 0 ? accentColor : '#d1d5db'};cursor:pointer;transition:background 0.2s;"></span>`
+  ).join('')
+  const arrowBtn = (dir: string, label: string) =>
+    `<button data-rb-pd-thumb-${dir} style="background:none;border:1px solid #e5e7eb;border-radius:4px;width:${tSize}px;height:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#6b7280;font-size:12px;">${label}</button>`
+  return `<div style="display:flex;gap:12px;align-items:stretch;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          ${arrowBtn('prev', '▲')}
+          <div data-rb-pd-thumbs style="display:flex;flex-direction:column;gap:8px;overflow:hidden;">${thumbsHtml}</div>
+          ${arrowBtn('next', '▼')}
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+          <div style="position:relative;">
+            <button data-rb-pd-prev style="position:absolute;left:8px;top:50%;transform:translateY(-50%);z-index:2;background:rgba(255,255,255,0.9);border:1px solid #e5e7eb;border-radius:50%;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:#374151;">&#8249;</button>
+            <div data-rb-pd-main-img style="width:100%;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;aspect-ratio:1/1;background:#fff;">${imgPlaceholder}</div>
+            <button data-rb-pd-next style="position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:2;background:rgba(255,255,255,0.9);border:1px solid #e5e7eb;border-radius:50%;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:#374151;">&#8250;</button>
+          </div>
+          <div data-rb-pd-dots style="display:flex;justify-content:center;gap:6px;padding:4px 0;">${dots}</div>
+        </div>
+      </div>`
+}
+
+export function renderRu1ProductDetail(data: Ru1ProductDetailData): string {
+  const layout = data.galleryLayout || 'layout1'
+  const curr = data.currency || '$'
+
+  // Resolve active layout settings with fallback to legacy fields
+  const accentColor  = layout === 'layout3' ? (data.l3AccentColor  ?? data.accentColor)  : layout === 'layout2' ? (data.l2AccentColor  ?? data.accentColor)  : (data.l1AccentColor  ?? data.accentColor)
+  const btnBg        = layout === 'layout3' ? (data.l3ButtonBgColor ?? data.buttonBgColor) : layout === 'layout2' ? (data.l2ButtonBgColor ?? data.buttonBgColor) : (data.l1ButtonBgColor ?? data.buttonBgColor)
+  const btnColor     = layout === 'layout3' ? (data.l3ButtonTextColor ?? data.buttonTextColor) : layout === 'layout2' ? (data.l2ButtonTextColor ?? data.buttonTextColor) : (data.l1ButtonTextColor ?? data.buttonTextColor)
+  const bgColor      = layout === 'layout3' ? (data.l3BgColor  ?? data.bgColor)  : layout === 'layout2' ? (data.l2BgColor  ?? data.bgColor)  : (data.l1BgColor  ?? data.bgColor)
+  const paddingY     = layout === 'layout3' ? (data.l3PaddingY ?? data.paddingY) : layout === 'layout2' ? (data.l2PaddingY ?? data.paddingY) : (data.l1PaddingY ?? data.paddingY)
+  const paddingX     = layout === 'layout3' ? (data.l3PaddingX ?? data.paddingX) : layout === 'layout2' ? (data.l2PaddingX ?? data.paddingX) : (data.l1PaddingX ?? data.paddingX)
+  const nameColor    = layout === 'layout3' ? (data.l3ProductNameColor ?? data.productNameColor) : layout === 'layout2' ? (data.l2ProductNameColor ?? data.productNameColor) : (data.l1ProductNameColor ?? data.productNameColor)
+  const nameWeight   = layout === 'layout3' ? (data.l3ProductNameFontWeight ?? data.productNameFontWeight) : layout === 'layout2' ? (data.l2ProductNameFontWeight ?? data.productNameFontWeight) : (data.l1ProductNameFontWeight ?? data.productNameFontWeight)
+  const nameSize     = layout === 'layout3' ? (data.l3ProductNameFontSize ?? data.productNameFontSize) : layout === 'layout2' ? (data.l2ProductNameFontSize ?? data.productNameFontSize) : (data.l1ProductNameFontSize ?? data.productNameFontSize)
+  const pmColor      = layout === 'layout3' ? (data.l3PriceModifierColor ?? data.priceModifierColor) : layout === 'layout2' ? (data.l2PriceModifierColor ?? data.priceModifierColor) : (data.l1PriceModifierColor ?? data.priceModifierColor)
+  const pmWeight     = layout === 'layout3' ? (data.l3PriceModifierFontWeight ?? data.priceModifierFontWeight) : layout === 'layout2' ? (data.l2PriceModifierFontWeight ?? data.priceModifierFontWeight) : (data.l1PriceModifierFontWeight ?? data.priceModifierFontWeight)
+  const pmSize       = layout === 'layout3' ? (data.l3PriceModifierFontSize ?? data.priceModifierFontSize) : layout === 'layout2' ? (data.l2PriceModifierFontSize ?? data.priceModifierFontSize) : (data.l1PriceModifierFontSize ?? data.priceModifierFontSize)
+  const tSize        = layout === 'layout3' ? (data.l3ThumbSize ?? data.thumbSize) : layout === 'layout2' ? (data.l2ThumbSize ?? data.thumbSize) : (data.l1ThumbSize ?? data.thumbSize)
+  const tRadius      = layout === 'layout3' ? (data.l3ThumbBorderRadius ?? data.thumbBorderRadius) : layout === 'layout2' ? (data.l2ThumbBorderRadius ?? data.thumbBorderRadius) : (data.l1ThumbBorderRadius ?? data.thumbBorderRadius)
+  const thumbCount   = Number(layout === 'layout3' ? (data.l3ThumbCount ?? 3) : layout === 'layout2' ? (data.l2ThumbCount ?? 2) : (data.l1ThumbCount ?? 1))
+
+  const imgPlaceholder = data.mainImageSrc
+    ? `<img src="${data.mainImageSrc}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+    : _ru1PdSkeletonImg()
+
+  const galleryHtml = layout === 'layout3'
+    ? _ru1PdGalleryL3(data, tSize, tRadius, accentColor, thumbCount, imgPlaceholder)
+    : layout === 'layout2'
+    ? _ru1PdGalleryL2(data, tSize, tRadius, accentColor, thumbCount, imgPlaceholder)
+    : _ru1PdGalleryL1(data, tSize, tRadius, accentColor, thumbCount, imgPlaceholder)
+
+  // Strip all builder-only runtime fields before embedding in data-component-props
+  const { mainImageSrc: _m, thumbImageSrcs: _t, _productName, _productPriceNum, _productColors, ...persistable } = data
+
+  const nameContent = _productName
+    ? _productName
+    : 'Product One'
+
+  const colorsContent = (_productColors && _productColors.length)
+    ? _productColors.map((c, i) =>
+        `<div style="display:inline-flex;align-items:center;gap:6px;border:${i === 0 ? `2px solid ${accentColor}` : '1px solid #d1d5db'};border-radius:9999px;padding:4px 12px;cursor:pointer;white-space:nowrap;">
+          <span style="width:12px;height:12px;border-radius:50%;background:${c.htmlColor};border:1px solid rgba(0,0,0,0.15);flex-shrink:0;display:inline-block;"></span>
+          <span style="font-size:11px;font-weight:700;color:#374151;letter-spacing:0.04em;">${c.name}</span>
+        </div>`
+      ).join('')
+    : `<div style="display:inline-flex;align-items:center;gap:6px;border:2px solid ${accentColor};border-radius:9999px;padding:4px 12px;cursor:pointer;white-space:nowrap;">
+          <span style="width:12px;height:12px;border-radius:50%;background:#FF0000;border:1px solid rgba(0,0,0,0.15);flex-shrink:0;display:inline-block;"></span>
+          <span style="font-size:11px;font-weight:700;color:#374151;letter-spacing:0.04em;">Red</span>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;border:1px solid #d1d5db;border-radius:9999px;padding:4px 12px;cursor:pointer;white-space:nowrap;">
+          <span style="width:12px;height:12px;border-radius:50%;background:#0000FF;border:1px solid rgba(0,0,0,0.15);flex-shrink:0;display:inline-block;"></span>
+          <span style="font-size:11px;font-weight:700;color:#374151;letter-spacing:0.04em;">Blue</span>
+        </div>`
+
+  const priceDisplay = (_productPriceNum != null) ? `${curr}${_productPriceNum.toFixed(2)}` : `${curr}0.00`
+  const totalDisplay = (_productPriceNum != null) ? `Total: ${curr}${_productPriceNum.toFixed(2)}` : `Total: ${curr}0.00`
+  const tablePriceDisplay = (_productPriceNum != null) ? `${curr} ${_productPriceNum.toFixed(2)}` : `${curr} 0.00`
+
+  const sizesHtml = (data.sizes || []).map(s =>
+    `<div style="text-align:center;">
+      <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">${s.label}</div>
+      <input type="text" placeholder="Qty" style="width:100%;box-sizing:border-box;border:1px solid #d1d5db;border-radius:4px;padding:6px 4px;font-size:12px;text-align:center;outline:none;background:#fff;" />
+      ${s.priceModifier ? `<div data-rb-pd-size-pm style="font-size:${pmSize}px;font-weight:${pmWeight};color:${pmColor};margin-top:3px;">${s.priceModifier}</div>` : `<div style="height:16px;"></div>`}
+    </div>`
+  ).join('')
+
+  const autoSlideSecs = data.l3AutoSlideSeconds ?? 3
+
+  return `<section data-component-title="Ru1-Product Detail" data-component-props="${encodeURIComponent(JSON.stringify(persistable))}" style="background:${bgColor};padding:${paddingY ?? 48}px ${paddingX ?? 16}px;">
+  <div style="max-width:80rem;margin:0 auto;">
+    <div
+      data-rubikx-component="ProductDetail"
+      data-on-mount="loadProductDetail"
+      data-product-ids="${data.productIds ?? ''}"
+      data-gallery-layout="${layout}"
+      data-l1-thumb-count="${data.l1ThumbCount ?? 1}"
+      data-l2-thumb-count="${data.l2ThumbCount ?? 2}"
+      data-l3-thumb-count="${data.l3ThumbCount ?? 3}"
+      data-l3-auto-slide-seconds="${autoSlideSecs}"
+      data-accent-color="${accentColor}"
+      data-button-bg="${btnBg}"
+      data-button-color="${btnColor}"
+      data-currency="${curr}"
+      data-unit-price-badge="${data.unitPriceBadge}"
+      data-unit-price-note="${data.unitPriceNote}"
+      data-add-to-cart-label="${data.addToCartLabel}"
+      data-description-title="${data.descriptionTitle}"
+      data-product-name-color="${nameColor ?? '#111827'}"
+      data-product-name-weight="${nameWeight ?? '700'}"
+      data-product-name-size="${nameSize ?? 22}"
+      data-price-modifier-color="${pmColor ?? '#6b7280'}"
+      data-price-modifier-weight="${pmWeight ?? '400'}"
+      data-price-modifier-size="${pmSize ?? 10}"
+      data-thumb-size="${tSize}"
+      data-thumb-radius="${tRadius}"
+      data-sizes="${encodeURIComponent(JSON.stringify(data.sizes))}"
+      style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:flex-start;"
+    >
+      ${galleryHtml}
+      <div>
+        <h2 data-rb-pd-name style="font-size:${nameSize ?? 22}px;font-weight:${nameWeight ?? '700'};color:${nameColor ?? '#111827'};margin:0 0 20px;line-height:1.3;">${nameContent}</h2>
+        <div style="margin-bottom:20px;">
+          <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:10px;">Color</div>
+          <div data-rb-pd-colors style="display:flex;gap:10px;flex-wrap:wrap;">${colorsContent}</div>
+        </div>
+        <div style="margin-bottom:20px;">
+          <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:10px;">Size</div>
+          <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;">${sizesHtml}</div>
+        </div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+          <span style="font-size:13px;font-weight:500;color:#374151;">Unit Price:</span>
+          <span data-rb-pd-price style="font-size:15px;font-weight:700;color:#111827;">${priceDisplay}</span>
+          <span style="background:${accentColor};color:#fff;border-radius:9999px;padding:2px 10px;font-size:12px;font-weight:700;">${data.unitPriceBadge}</span>
+          <span style="font-size:12px;color:#6b7280;font-style:italic;">${data.unitPriceNote}</span>
+        </div>
+        <div data-rb-pd-total style="font-size:18px;font-weight:700;color:#111827;margin-bottom:20px;">${totalDisplay}</div>
+        <button style="width:100%;padding:14px;background:${btnBg};color:${btnColor};border:none;border-radius:4px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:20px;">${data.addToCartLabel}</button>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:13px;">
+          <tr>
+            <td style="border:1px solid #e5e7eb;padding:10px 14px;color:#374151;font-weight:500;">Quantity</td>
+            <td style="border:1px solid #e5e7eb;padding:10px 14px;color:#374151;text-align:right;">1 +</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #e5e7eb;padding:10px 14px;color:#374151;font-weight:500;">Price</td>
+            <td data-rb-pd-table-price style="border:1px solid #e5e7eb;padding:10px 14px;color:#374151;text-align:right;">${tablePriceDisplay}</td>
+          </tr>
+        </table>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:${accentColor};margin-bottom:10px;">${data.descriptionTitle}</div>
+          <ul data-rb-pd-desc style="margin:0;padding-left:20px;list-style:disc;">${
+            (() => {
+              const descColor = data.descriptionColor || '#374151'
+              const lines = (data.description || '').split('\n').map((s: string) => s.trim()).filter(Boolean)
+              if (lines.length > 0) return lines.map((l: string) => `<li style="margin-bottom:6px;font-size:14px;color:${descColor};">${l}</li>`).join('')
+              if (!data.productIds) return [
+                'Center front hand warmer pocket',
+                'Moisture wicking',
+                'Center front coil zipper with rubber pull',
+              ].map((l: string) => `<li style="margin-bottom:6px;font-size:14px;color:${descColor};">${l}</li>`).join('')
+              return ''
+            })()
+          }</ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>`
+}
+
+// ─── Ru3-Product Detail ───────────────────────────────────────────────────────
+
+export const ru3ProductDetailSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
+  <!-- Left: large main image spanning 2 cols -->
+  <rect fill="#394152" x="8" y="8" width="126" height="100" rx="3"/>
+  <polygon fill="#718096" points="28 102 58 74 88 102 28 102"/>
+  <polygon fill="#718096" points="78 102 96 84 114 102 78 102"/>
+  <circle fill="#718096" cx="96" cy="76" r="7"/>
+  <!-- Left: 2 small images below main -->
+  <rect fill="#718096" x="8" y="116" width="60" height="50" rx="2"/>
+  <rect fill="#718096" x="74" y="116" width="60" height="50" rx="2"/>
+  <!-- Right: product name + price -->
+  <rect fill="#394152" x="150" y="8"  width="90" height="10" rx="2"/>
+  <rect fill="#394152" x="244" y="8"  width="28" height="10" rx="2"/>
+  <!-- Right: stars row -->
+  <rect fill="#394152" x="150" y="26" width="7" height="7" rx="1"/>
+  <rect fill="#394152" x="160" y="26" width="7" height="7" rx="1"/>
+  <rect fill="#394152" x="170" y="26" width="7" height="7" rx="1"/>
+  <rect fill="#394152" x="180" y="26" width="7" height="7" rx="1"/>
+  <rect fill="#718096" x="190" y="26" width="7" height="7" rx="1"/>
+  <rect fill="#718096" x="200" y="28" width="42" height="4" rx="1"/>
+  <!-- Right: color label + swatches -->
+  <rect fill="#718096" x="150" y="42" width="22" height="4" rx="1"/>
+  <circle fill="#394152" cx="160" cy="56" r="8"/>
+  <circle fill="#718096" cx="180" cy="56" r="8"/>
+  <!-- Right: size label + grid -->
+  <rect fill="#718096" x="150" y="72" width="18" height="4" rx="1"/>
+  <rect fill="#394152" x="150" y="80" width="18" height="12" rx="2"/>
+  <rect fill="#394152" x="172" y="80" width="18" height="12" rx="2"/>
+  <rect fill="#394152" x="194" y="80" width="18" height="12" rx="2"/>
+  <rect fill="#394152" x="216" y="80" width="18" height="12" rx="2"/>
+  <rect fill="#394152" x="238" y="80" width="18" height="12" rx="2"/>
+  <!-- Right: add to cart button -->
+  <rect fill="#394152" x="150" y="100" width="120" height="16" rx="3"/>
+  <!-- Right: description title + lines -->
+  <rect fill="#394152" x="150" y="124" width="52" height="5" rx="1"/>
+  <rect fill="#718096" x="150" y="134" width="120" height="3" rx="1"/>
+  <rect fill="#718096" x="150" y="141" width="95"  height="3" rx="1"/>
+  <!-- Right: fabric & care -->
+  <rect fill="#394152" x="150" y="156" width="52" height="5" rx="1"/>
+  <rect fill="#718096" x="154" y="166" width="85" height="3" rx="1"/>
+  <rect fill="#718096" x="154" y="173" width="70" height="3" rx="1"/>
+  <rect fill="#718096" x="154" y="180" width="78" height="3" rx="1"/>
+  <!-- Right: policy cards -->
+  <rect fill="#718096" x="150" y="192" width="55" height="32" rx="3"/>
+  <rect fill="#394152" x="152" y="209" width="51" height="4" rx="1"/>
+  <rect fill="#718096" x="215" y="192" width="55" height="32" rx="3"/>
+  <rect fill="#394152" x="217" y="209" width="51" height="4" rx="1"/>
+  <!-- Bottom: reviews section title -->
+  <rect fill="#394152" x="8" y="182" width="80" height="6" rx="1"/>
+  <rect fill="#718096" x="8" y="196" width="130" height="1"/>
+  <rect fill="#394152" x="8" y="204" width="55" height="4" rx="1"/>
+  <rect fill="#718096" x="8" y="212" width="130" height="3" rx="1"/>
+  <rect fill="#718096" x="8" y="219" width="110" height="3" rx="1"/>
+  <!-- Bottom: related products title + 4 cards -->
+  <rect fill="#394152" x="8" y="236" width="100" height="6" rx="1"/>
+  <rect fill="#394152" x="8"   y="250" width="56" height="48" rx="3"/>
+  <rect fill="#394152" x="72"  y="250" width="56" height="48" rx="3"/>
+  <rect fill="#394152" x="136" y="250" width="56" height="48" rx="3"/>
+  <rect fill="#394152" x="200" y="250" width="56" height="48" rx="3"/>
+  <rect fill="#718096" x="8"   y="304" width="38" height="4" rx="1"/>
+  <rect fill="#718096" x="72"  y="304" width="38" height="4" rx="1"/>
+  <rect fill="#718096" x="136" y="304" width="38" height="4" rx="1"/>
+  <rect fill="#718096" x="200" y="304" width="38" height="4" rx="1"/>
+  <rect fill="#718096" x="8"   y="312" width="28" height="4" rx="1"/>
+  <rect fill="#718096" x="72"  y="312" width="28" height="4" rx="1"/>
+  <rect fill="#718096" x="136" y="312" width="28" height="4" rx="1"/>
+  <rect fill="#718096" x="200" y="312" width="28" height="4" rx="1"/>
+</svg>`
+
+export interface Ru3ProductDetailReview {
+  author: string
+  date: string
+  title: string
+  rating: number
+  content: string
+}
+
+export interface Ru3ProductDetailPolicy {
+  title: string
+  description: string
+}
+
+export interface Ru3ProductDetailSize {
+  label: string
+  inStock: boolean
+}
+
+export interface Ru3ProductDetailData {
+  productIds: string
+  /** Builder-only runtime fields — stripped from saved HTML */
+  mainImageSrc?: string
+  thumbImageSrcs?: string[]
+  _productName?: string
+  _productPriceNum?: number
+  _productColors?: { htmlColor: string; name: string }[]
+  bgColor: string
+  accentColor: string
+  productNameColor: string
+  productNameFontWeight: string
+  productNameFontSize: number
+  priceColor: string
+  priceFontWeight: string
+  priceFontSize: number
+  currency: string
+  buttonBgColor: string
+  buttonTextColor: string
+  buttonBorderRadius: number
+  addToCartLabel: string
+  showRating: boolean
+  ratingValue: number
+  reviewCount: number
+  reviewsLinkText: string
+  showSizes: boolean
+  sizingChartUrl: string
+  sizes: Ru3ProductDetailSize[]
+  descriptionTitle: string
+  description: string
+  showFabricCare: boolean
+  fabricCareTitle: string
+  fabricCareItems: string
+  showPolicies: boolean
+  policies: Ru3ProductDetailPolicy[]
+  showReviews: boolean
+  reviewsTitle: string
+  reviews: Ru3ProductDetailReview[]
+  showRelatedProducts: boolean
+  relatedTitle: string
+  relatedTitleColor: string
+  relatedTitleFontWeight: string
+  relatedTitleAlign: string
+  relatedProducts: { id: number; imageUrl: string; name: string; price: string; colors?: { htmlColor: string; name: string }[] }[]
+  relatedColumns: number
+  relatedRows: number
+  relatedCardBg: string
+  relatedCardTextColor: string
+  relatedCardFontSize: number
+  relatedCardBorderRadius: number
+  relatedCardShadow: string
+  relatedCardLayout: string
+  relatedCardMargin: number
+  relatedCardPadding: number
+  relatedCardFontWeight: string
+  relatedCardTextAlign: string
+  relatedCardSubtitle: string
+  relatedCardSubtitleEnabled: boolean
+  relatedButtonBgColor: string
+  relatedButtonTextColor: string
+  relatedButtonBorderRadius: number
+  relatedAddToCartLabel: string
+  paddingY: number
+  paddingX: number
+}
+
+export const ru3ProductDetailDefaults: Ru3ProductDetailData = {
+  productIds: '',
+  bgColor: '#ffffff',
+  accentColor: '#4f46e5',
+  productNameColor: '#111827',
+  productNameFontWeight: '500',
+  productNameFontSize: 24,
+  priceColor: '#111827',
+  priceFontWeight: '500',
+  priceFontSize: 24,
+  currency: '$',
+  buttonBgColor: '#4f46e5',
+  buttonTextColor: '#ffffff',
+  buttonBorderRadius: 6,
+  addToCartLabel: 'Add to cart',
+  showRating: true,
+  ratingValue: 3.9,
+  reviewCount: 512,
+  reviewsLinkText: 'See all reviews',
+  showSizes: true,
+  sizingChartUrl: '#',
+  sizes: [
+    { label: 'XXS', inStock: true },
+    { label: 'XS',  inStock: true },
+    { label: 'S',   inStock: true },
+    { label: 'M',   inStock: true },
+    { label: 'L',   inStock: true },
+    { label: 'XL',  inStock: false },
+  ],
+  descriptionTitle: 'Description',
+  description: "The Basic tee is an honest new take on a classic. The tee uses super soft, pre-shrunk cotton for true comfort and a dependable fit. They are hand cut and sewn locally, with a special dye technique that gives each tee its own look.\n\nLooking to stock your closet? The Basic tee also comes in a 3-pack or 5-pack at a bundle discount.",
+  showFabricCare: true,
+  fabricCareTitle: 'Fabric & Care',
+  fabricCareItems: 'Only the best materials\nEthically and locally made\nPre-washed and pre-shrunk\nMachine wash cold with similar colors',
+  showPolicies: true,
+  policies: [
+    { title: 'International delivery', description: 'Get your order in 2 years' },
+    { title: 'Loyalty rewards',        description: "Don't look at other tees" },
+  ],
+  showReviews: true,
+  reviewsTitle: 'Recent reviews',
+  reviews: [
+    {
+      author: 'Risako M',
+      date: 'May 16, 2021',
+      title: "Can't say enough good things",
+      rating: 5,
+      content: "I was really pleased with the overall shopping experience. My order even included a little personal, handwritten note, which delighted me!\n\nThe product quality is amazing, it looks and feel even better than I had anticipated. Brilliant stuff!",
+    },
+    {
+      author: 'Jackie H',
+      date: 'April 6, 2021',
+      title: 'Very comfy and looks the part',
+      rating: 5,
+      content: "After a quick chat with customer support, I had a good feeling about this shirt and ordered three of them.\n\nLess than 48 hours later, my delivery arrived. I haven't worn anything else since that day!",
+    },
+  ],
+  showRelatedProducts: true,
+  relatedTitle: 'Customers also purchased',
+  relatedTitleColor: '#111827',
+  relatedTitleFontWeight: '500',
+  relatedTitleAlign: 'left',
+  relatedProducts: [],
+  relatedColumns: 4,
+  relatedRows: 1,
+  relatedCardBg: '#ffffff',
+  relatedCardTextColor: '#111827',
+  relatedCardFontSize: 14,
+  relatedCardBorderRadius: 8,
+  relatedCardShadow: 'none',
+  relatedCardLayout: 'default',
+  relatedCardMargin: 0,
+  relatedCardPadding: 0,
+  relatedCardFontWeight: '400',
+  relatedCardTextAlign: 'left',
+  relatedCardSubtitle: '',
+  relatedCardSubtitleEnabled: true,
+  relatedButtonBgColor: '#111827',
+  relatedButtonTextColor: '#ffffff',
+  relatedButtonBorderRadius: 6,
+  relatedAddToCartLabel: 'Add to cart',
+  paddingY: 32,
+  paddingX: 16,
+}
+
+export const ru3ProductDetailFields: FieldConfig[] = [
+  { key: '_h_appearance', label: 'Appearance', type: 'header' },
+  { key: 'bgColor',    label: 'Background Color', type: 'color' },
+  { key: 'accentColor', label: 'Accent Color',    type: 'color' },
+
+  { key: '_h_name', label: 'Product Name', type: 'header' },
+  { key: 'productNameColor',       label: 'Name Color',  type: 'color' },
+  { key: 'productNameFontWeight',  label: 'Name Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  { key: 'productNameFontSize',    label: 'Name Size',   type: 'number', unit: 'px', step: 1 },
+
+  { key: '_h_price', label: 'Price', type: 'header' },
+  { key: 'priceColor',      label: 'Price Color',     type: 'color' },
+  { key: 'priceFontWeight', label: 'Price Weight',    type: 'select', options: ['400', '500', '600', '700', '800'] },
+  { key: 'priceFontSize',   label: 'Price Size',      type: 'number', unit: 'px', step: 1 },
+  { key: 'currency',        label: 'Currency Symbol', type: 'text', placeholder: '$' },
+
+  { key: '_h_btn', label: 'Button', type: 'header' },
+  { key: 'buttonBgColor',     label: 'Button Color',      type: 'color' },
+  { key: 'buttonTextColor',   label: 'Button Text Color', type: 'color' },
+  { key: 'buttonBorderRadius', label: 'Button Radius',    type: 'number', unit: 'px', step: 2 },
+  { key: 'addToCartLabel',    label: 'Button Label',      type: 'text', placeholder: 'Add to cart' },
+
+  { key: '_h_rating', label: 'Rating', type: 'header' },
+  { key: 'showRating',     label: 'Show Rating',      type: 'toggle' },
+  { key: 'ratingValue',    label: 'Rating (out of 5)', type: 'number', step: 0.1 },
+  { key: 'reviewCount',    label: 'Review Count',      type: 'number', step: 1 },
+  { key: 'reviewsLinkText', label: 'Reviews Link Text', type: 'text', placeholder: 'See all reviews' },
+
+  { key: '_h_sizes', label: 'Sizes', type: 'header' },
+  { key: 'showSizes',      label: 'Show Sizes',   type: 'toggle' },
+  { key: 'sizingChartUrl', label: 'Sizing Chart URL', type: 'url', placeholder: '#' },
+  { key: 'sizes', label: 'Size Options', type: 'list', listFields: [
+    { key: 'label',   label: 'Size Label', type: 'text',   placeholder: 'M' },
+    { key: 'inStock', label: 'In Stock',   type: 'toggle' },
+  ]},
+
+  { key: '_h_desc', label: 'Description', type: 'header' },
+  { key: 'descriptionTitle', label: 'Section Title',   type: 'text',     placeholder: 'Description' },
+  { key: 'description',      label: 'Description Text', type: 'textarea', placeholder: 'Product description...' },
+
+  { key: '_h_fabric', label: 'Fabric & Care', type: 'header' },
+  { key: 'showFabricCare',  label: 'Show Section',       type: 'toggle' },
+  { key: 'fabricCareTitle', label: 'Section Title',      type: 'text',     placeholder: 'Fabric & Care' },
+  { key: 'fabricCareItems', label: 'Items (one per line)', type: 'textarea', placeholder: 'Only the best materials\nEthically and locally made' },
+
+  { key: '_h_policies', label: 'Policies', type: 'header' },
+  { key: 'showPolicies', label: 'Show Policies', type: 'toggle' },
+  { key: 'policies', label: 'Policy Cards', type: 'list', listFields: [
+    { key: 'title',       label: 'Title',       type: 'text', placeholder: 'International delivery' },
+    { key: 'description', label: 'Description', type: 'text', placeholder: 'Get your order in 2 years' },
+  ]},
+
+  { key: '_h_reviews', label: 'Reviews', type: 'header' },
+  { key: 'showReviews',  label: 'Show Reviews',  type: 'toggle' },
+  { key: 'reviewsTitle', label: 'Section Title', type: 'text', placeholder: 'Recent reviews' },
+  { key: 'reviews', label: 'Reviews', type: 'list', listFields: [
+    { key: 'author',  label: 'Author',           type: 'text',     placeholder: 'John D.' },
+    { key: 'date',    label: 'Date',             type: 'text',     placeholder: 'May 16, 2021' },
+    { key: 'title',   label: 'Review Title',     type: 'text',     placeholder: 'Great product!' },
+    { key: 'rating',  label: 'Rating (1–5)',     type: 'number',   step: 1 },
+    { key: 'content', label: 'Content',          type: 'textarea', placeholder: 'Review text...' },
+  ]},
+
+  { key: '_h_related', label: 'Related Products', type: 'header' },
+  { key: 'showRelatedProducts',  label: 'Show Related Products', type: 'toggle' },
+  { key: 'relatedTitle',         label: 'Section Title',         type: 'text',   placeholder: 'Customers also purchased' },
+  { key: 'relatedTitleColor',    label: 'Title Color',           type: 'color' },
+  { key: 'relatedTitleFontWeight', label: 'Title Weight',        type: 'select', options: ['400', '500', '600', '700', '800'] },
+  { key: 'relatedTitleAlign',    label: 'Title Align',           type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'relatedColumns',       label: 'Columns',               type: 'number', step: 1 },
+  { key: 'relatedRows',          label: 'Rows',                  type: 'number', step: 1 },
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'paddingY', label: 'Vertical Padding',   type: 'number', unit: 'px', step: 4 },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4 },
+]
+
+export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
+  const { mainImageSrc: _m, thumbImageSrcs: _t, _productName, _productPriceNum, _productColors, ...persistable } = data
+
+  const curr     = data.currency   || '$'
+  const accent   = data.accentColor || '#4f46e5'
+
+  const skeletonImg = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f3f4f6;">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="7" width="18" height="14" rx="2"/><circle cx="12" cy="14" r="3"/>
+      <path d="M8 7V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+    </svg>
+  </div>`
+
+  // ── Image gallery ─────────────────────────────────────────────────────────
+  const mainImgHtml = _m
+    ? `<img src="${_m}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+    : skeletonImg
+  // _t[0] is the selected product — shown as the active (highlighted) thumbnail
+  const thumb1Html = _t?.[0]
+    ? `<img src="${_t[0]}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+    : skeletonImg
+  const thumb2Html = _t?.[1]
+    ? `<img src="${_t[1]}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+    : skeletonImg
+  const thumb3Html = _t?.[2]
+    ? `<img src="${_t[2]}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+    : skeletonImg
+
+  // Gallery image = large main view; Thumbnails = small selectable strip below
+  const imageGalleryHtml = `<div style="display:flex;flex-direction:column;gap:8px;">
+    <div style="border-radius:8px;overflow:hidden;background:${_m ? '#ffffff' : '#f3f4f6'};aspect-ratio:1/1;">${mainImgHtml}</div>
+    <div style="display:flex;gap:8px;">
+      <div style="width:72px;height:72px;flex-shrink:0;border-radius:6px;overflow:hidden;background:${_t?.[0] ? '#ffffff' : '#f3f4f6'};border:2px solid ${accent};">${thumb1Html}</div>
+      <div style="width:72px;height:72px;flex-shrink:0;border-radius:6px;overflow:hidden;background:${_t?.[1] ? '#ffffff' : '#f3f4f6'};border:2px solid #e5e7eb;">${thumb2Html}</div>
+      <div style="width:72px;height:72px;flex-shrink:0;border-radius:6px;overflow:hidden;background:${_t?.[2] ? '#ffffff' : '#f3f4f6'};border:2px solid #e5e7eb;">${thumb3Html}</div>
+    </div>
+  </div>`
+
+  // ── Name + Price ──────────────────────────────────────────────────────────
+  const nameHtml = _productName
+    ? _productName
+    : 'Product One'
+  const priceHtml = _productPriceNum != null
+    ? `${curr}${_productPriceNum.toFixed(0)}`
+    : `${curr}0`
+
+  // ── Stars ─────────────────────────────────────────────────────────────────
+  const ratingVal = Number(data.ratingValue ?? 3.9)
+  const starPath  = 'M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z'
+  const starSvg   = (filled: boolean) =>
+    `<svg width="20" height="20" viewBox="0 0 20 20" fill="${filled ? '#fbbf24' : '#e5e7eb'}" aria-hidden="true"><path d="${starPath}"/></svg>`
+  const starsHtml = [0,1,2,3,4].map(i => starSvg(ratingVal > i)).join('')
+
+  const ratingHtml = data.showRating !== false
+    ? `<div style="margin-top:12px;display:flex;align-items:center;gap:8px;">
+        <p style="font-size:14px;color:#374151;margin:0;">${ratingVal}</p>
+        <div style="display:flex;align-items:center;gap:1px;">${starsHtml}</div>
+        <span style="display:inline-block;width:1px;height:16px;background:#e5e7eb;margin:0 4px;"></span>
+        <a href="#ru3-reviews" style="font-size:14px;font-weight:500;color:${accent};text-decoration:none;">${data.reviewsLinkText || 'See all reviews'} (${data.reviewCount ?? 512})</a>
+      </div>`
+    : ''
+
+  // ── Color swatches ────────────────────────────────────────────────────────
+  const colorsHtml = (_productColors && _productColors.length)
+    ? `<div style="margin-top:16px;">
+        <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 8px;">Color</h2>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          ${_productColors.map((c, i) =>
+            `<div style="border-radius:50%;outline:2px solid ${i === 0 ? accent : 'transparent'};outline-offset:2px;cursor:pointer;" title="${c.name}">
+              <div style="width:32px;height:32px;border-radius:50%;background:${c.htmlColor};border:1px solid rgba(0,0,0,0.1);"></div>
+            </div>`
+          ).join('')}
+        </div>
+      </div>`
+    : `<div style="margin-top:16px;">
+        <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 8px;">Color</h2>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div style="border-radius:50%;outline:2px solid ${accent};outline-offset:2px;cursor:pointer;" title="Red">
+            <div style="width:32px;height:32px;border-radius:50%;background:#FF0000;border:1px solid rgba(0,0,0,0.1);"></div>
+          </div>
+          <div style="border-radius:50%;outline:2px solid transparent;outline-offset:2px;cursor:pointer;" title="Blue">
+            <div style="width:32px;height:32px;border-radius:50%;background:#0000FF;border:1px solid rgba(0,0,0,0.1);"></div>
+          </div>
+        </div>
+      </div>`
+
+  // ── Sizes ─────────────────────────────────────────────────────────────────
+  const sizesHtml = data.showSizes !== false
+    ? `<div style="margin-top:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0;">Size</h2>
+          <a href="${data.sizingChartUrl || '#'}" style="font-size:14px;font-weight:500;color:${accent};text-decoration:none;">See sizing chart</a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;">
+          ${(data.sizes || []).map((size, i) =>
+            `<div style="position:relative;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid ${i === 2 ? accent : '#d1d5db'};background:${i === 2 ? accent : '#fff'};padding:12px;opacity:${size.inStock ? '1' : '0.25'};">
+              <span style="font-size:14px;font-weight:500;color:${i === 2 ? '#fff' : '#111827'};text-transform:uppercase;">${size.label}</span>
+            </div>`
+          ).join('')}
+        </div>
+      </div>`
+    : ''
+
+  // ── Button ────────────────────────────────────────────────────────────────
+  const buttonHtml = `<button style="margin-top:24px;width:100%;padding:14px 24px;background:${data.buttonBgColor || accent};color:${data.buttonTextColor || '#fff'};border:none;border-radius:${data.buttonBorderRadius ?? 6}px;font-size:16px;font-weight:500;cursor:pointer;">
+    ${data.addToCartLabel || 'Add to cart'}
+  </button>`
+
+  // ── Description ───────────────────────────────────────────────────────────
+  const descParagraphs = (data.description || '').split('\n').filter(l => l.trim())
+    .map(line => `<p style="margin:0 0 16px;font-size:14px;line-height:1.75;color:#6b7280;">${line}</p>`).join('')
+  const descriptionHtml = `<div style="margin-top:32px;">
+    <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 16px;">${data.descriptionTitle || 'Description'}</h2>
+    ${descParagraphs}
+  </div>`
+
+  // ── Fabric & Care ─────────────────────────────────────────────────────────
+  const fabricLines = (data.fabricCareItems || '').split('\n').map(s => s.trim()).filter(Boolean)
+  const fabricCareHtml = data.showFabricCare !== false
+    ? `<div style="margin-top:32px;border-top:1px solid #e5e7eb;padding-top:32px;">
+        <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 16px;">${data.fabricCareTitle || 'Fabric & Care'}</h2>
+        <ul style="margin:0;padding-left:24px;display:flex;flex-direction:column;gap:4px;">
+          ${fabricLines.map(item => `<li style="font-size:14px;line-height:1.75;color:#6b7280;">${item}</li>`).join('')}
+        </ul>
+      </div>`
+    : ''
+
+  // ── Policies ──────────────────────────────────────────────────────────────
+  const infoIcon = `<svg style="margin:0 auto 12px;display:block;" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>`
+  const policyCards = (data.policies || []).map(p =>
+    `<div style="border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;padding:24px;text-align:center;">
+      ${infoIcon}
+      <span style="font-size:14px;font-weight:500;color:#111827;display:block;">${p.title}</span>
+      <span style="font-size:14px;color:#6b7280;display:block;margin-top:4px;">${p.description}</span>
+    </div>`
+  ).join('')
+  const policiesHtml = data.showPolicies !== false && (data.policies || []).length
+    ? `<div style="margin-top:32px;">
+        <div style="display:grid;grid-template-columns:repeat(${Math.min((data.policies || []).length, 2)},minmax(0,1fr));gap:24px;">
+          ${policyCards}
+        </div>
+      </div>`
+    : ''
+
+  // ── Reviews ───────────────────────────────────────────────────────────────
+  const reviewStars = (rating: number) => [0,1,2,3,4].map(i => starSvg(rating > i)).join('')
+  const reviewItems = (data.reviews || []).map(r => {
+    const paragraphs = (r.content || '').split('\n').filter(l => l.trim())
+      .map(line => `<p style="margin:0 0 16px;font-size:14px;color:#6b7280;line-height:1.75;">${line}</p>`).join('')
+    return `<div style="padding:40px 0;border-top:1px solid #e5e7eb;display:grid;grid-template-columns:4fr 8fr;gap:32px;">
+      <div>
+        <p style="font-weight:500;color:#111827;font-size:14px;margin:0 0 4px;">${r.author || ''}</p>
+        <time style="font-size:14px;color:#6b7280;">${r.date || ''}</time>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;gap:4px;margin-bottom:8px;">
+          ${reviewStars(r.rating ?? 5)}
+          <span style="font-size:14px;color:#374151;margin-left:8px;">${r.rating ?? 5}</span>
+        </div>
+        <h3 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 12px;">${r.title || ''}</h3>
+        ${paragraphs}
+      </div>
+    </div>`
+  }).join('')
+
+  const reviewsSection = data.showReviews !== false && (data.reviews || []).length
+    ? `<div style="margin-top:64px;border-top:1px solid #e5e7eb;padding-top:64px;" id="ru3-reviews">
+        <h2 style="font-size:18px;font-weight:500;color:#111827;margin:0 0 24px;">${data.reviewsTitle || 'Recent reviews'}</h2>
+        <div style="border-top:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;">${reviewItems}</div>
+      </div>`
+    : ''
+
+  // ── Related products (same pattern as Ru2) ────────────────────────────────
+  const relCols      = Math.max(1, data.relatedColumns ?? 4)
+  const relRows      = Math.max(1, data.relatedRows ?? 1)
+  const relCount     = relCols * relRows
+  const relCardRadius = data.relatedCardBorderRadius ?? 8
+  const relBtnRadius  = data.relatedButtonBorderRadius ?? 6
+  const relCardBg     = data.relatedCardBg || '#ffffff'
+  const relBtnBg      = data.relatedButtonBgColor || '#111827'
+  const relBtnColor   = data.relatedButtonTextColor || '#ffffff'
+  const shadowPresets: Record<string, string> = {
+    'none':      '0 0 #0000',
+    'shadow-sm': '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+    'shadow-md': '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+    'shadow-lg': '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+    'shadow-xl': '0 20px 25px -5px rgb(0 0 0 / 0.1)',
+  }
+  const relShadow = shadowPresets[data.relatedCardShadow ?? 'none'] ?? '0 0 #0000'
+
+  const hasRelatedProducts = Array.isArray(data.relatedProducts) && data.relatedProducts.length > 0
+  const actualRelCols  = hasRelatedProducts ? Math.min(relCols, data.relatedProducts.length) : relCols
+  const relGridStyle   = `display:grid;grid-template-columns:repeat(${actualRelCols},minmax(0,1fr));gap:24px;${actualRelCols < relCols ? 'justify-content:center;max-width:' + (actualRelCols * 300) + 'px;margin:0 auto;' : ''}`
+
+  const relFontSize  = data.relatedCardFontSize ?? 14
+  const relFontWeight = data.relatedCardFontWeight || '400'
+  const relLayout    = data.relatedCardLayout || 'default'
+  const relTextAlign = data.relatedCardTextAlign || (relLayout === 'centered' ? 'center' : 'left')
+  const relCardPad   = data.relatedCardPadding > 0 ? data.relatedCardPadding : 12
+  const relCardMar   = data.relatedCardMargin ?? 0
+  const relSubtitle  = (data.relatedCardSubtitleEnabled !== false && data.relatedCardSubtitle) ? data.relatedCardSubtitle : ''
+  const relTextColor = data.relatedCardTextColor ?? '#111827'
+
+  const relCardItem = (p: { id: number; imageUrl: string; name: string; price: string; colors?: { htmlColor: string; name: string }[] }) => {
+    const swatchesHtml = Array.isArray(p.colors) && p.colors.length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:4px;padding:4px 0;justify-content:${relLayout === 'centered' ? 'center' : 'flex-start'};">${
+          p.colors.slice(0, 12).map(c =>
+            `<span title="${c.name}" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${c.htmlColor};border:1px solid rgba(0,0,0,0.15);flex-shrink:0;"></span>`
+          ).join('')
+        }</div>`
+      : ''
+    const subtitleHtml = relSubtitle ? `<div style="font-size:11px;color:#6b7280;margin-bottom:6px;text-align:${relTextAlign};">${relSubtitle}</div>` : ''
+    const btnHtml  = `<button style="width:100%;padding:10px;background:${relBtnBg};color:${relBtnColor};border:none;border-radius:${relBtnRadius}px;font-size:${relFontSize}px;font-weight:500;cursor:pointer;margin-top:auto;">${data.relatedAddToCartLabel || 'Add to cart'}</button>`
+    const imgBox   = `<div style="aspect-ratio:4/3;background:${p.imageUrl ? '#ffffff' : '#f3f4f6'};display:flex;align-items:center;justify-content:center;overflow:hidden;">${p.imageUrl ? `<img src="${p.imageUrl}" style="width:100%;height:100%;object-fit:contain;display:block;" />` : skeletonImg}</div>`
+    const cardWrap = (inner: string) =>
+      `<div style="background:${relCardBg};border-radius:${relCardRadius}px;overflow:hidden;box-shadow:${relShadow};margin:${relCardMar}px;display:flex;flex-direction:column;">${imgBox}${inner}</div>`
+
+    if (relLayout === 'inline') {
+      return cardWrap(`<div style="padding:${relCardPad}px;display:flex;flex-direction:column;flex:1;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;">
+          <span style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${relTextColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">${p.name}</span>
+          <span style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${accent};white-space:nowrap;flex-shrink:0;">${p.price}</span>
+        </div>${swatchesHtml}${subtitleHtml}${btnHtml}</div>`)
+    }
+    return cardWrap(`<div style="padding:${relCardPad}px;text-align:${relTextAlign};display:flex;flex-direction:column;flex:1;">
+      <div style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${relTextColor};margin-bottom:4px;${relLayout !== 'centered' ? 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;' : ''}">${p.name}</div>
+      <div style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${accent};margin-bottom:6px;">${p.price}</div>
+      ${swatchesHtml}${subtitleHtml}${btnHtml}</div>`)
+  }
+
+  const relatedCardsHtml = hasRelatedProducts
+    ? data.relatedProducts.map(relCardItem).join('')
+    : Array(relCount).fill(0).map(() =>
+        `<div style="background:${relCardBg};border-radius:${relCardRadius}px;overflow:hidden;box-shadow:${relShadow};margin:${relCardMar}px;">
+          <div style="aspect-ratio:4/3;background:#f3f4f6;display:flex;align-items:center;justify-content:center;">${skeletonImg}</div>
+          <div style="padding:${relCardPad}px;">
+            <div style="height:14px;background:#f3f4f6;border-radius:4px;width:68%;margin-bottom:6px;"></div>
+            <div style="height:13px;background:#f3f4f6;border-radius:4px;width:48%;margin-bottom:12px;"></div>
+            <button style="width:100%;padding:10px;background:${relBtnBg};color:${relBtnColor};border:none;border-radius:${relBtnRadius}px;font-size:${relFontSize}px;font-weight:500;cursor:pointer;">${data.relatedAddToCartLabel || 'Add to cart'}</button>
+          </div>
+        </div>`
+      ).join('')
+
+  const relatedSection = data.showRelatedProducts !== false
+    ? `<div style="margin-top:64px;border-top:1px solid #e5e7eb;padding-top:64px;">
+        <h2 style="font-size:20px;font-weight:${data.relatedTitleFontWeight || '500'};color:${data.relatedTitleColor || '#111827'};text-align:${data.relatedTitleAlign || 'left'};margin:0 0 32px;">${data.relatedTitle || 'Customers also purchased'}</h2>
+        <div style="${relGridStyle}">${relatedCardsHtml}</div>
+      </div>`
+    : ''
+
+  return `<section data-component-title="Ru3-Product Detail" data-component-props="${encodeURIComponent(JSON.stringify(persistable))}" style="background:${data.bgColor || '#ffffff'};padding:${data.paddingY ?? 32}px ${data.paddingX ?? 16}px;">
+  <div style="max-width:80rem;margin:0 auto;">
+    <div style="display:grid;grid-template-columns:7fr 5fr;gap:4rem;align-items:flex-start;">
+
+      <!-- Left: image gallery -->
+      <div>${imageGalleryHtml}</div>
+
+      <!-- Right: product info -->
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+          <h1 style="font-size:${data.productNameFontSize ?? 24}px;font-weight:${data.productNameFontWeight ?? '500'};color:${data.productNameColor ?? '#111827'};margin:0;line-height:1.3;">${nameHtml}</h1>
+          <p style="font-size:${data.priceFontSize ?? 24}px;font-weight:${data.priceFontWeight ?? '500'};color:${data.priceColor ?? '#111827'};margin:0;white-space:nowrap;">${priceHtml}</p>
+        </div>
+        ${ratingHtml}
+        ${colorsHtml}
+        ${sizesHtml}
+        ${buttonHtml}
+        ${descriptionHtml}
+        ${fabricCareHtml}
+        ${policiesHtml}
+      </div>
+    </div>
+
+    ${reviewsSection}
+    ${relatedSection}
+  </div>
+</section>`
+}
