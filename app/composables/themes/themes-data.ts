@@ -127,7 +127,7 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   showSearch: true,
   searchPlaceholder: 'Search...',
   searchAlign: 'center',
-  searchWidth: 480,
+  searchWidth: 560,
   navLinks: [
     { label: 'Home', url: '/', visible: true },
     { label: 'Shop', url: '/shop', visible: true },
@@ -230,22 +230,22 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 
   const searchW = data.searchWidth || 420
   const searchEl = data.showSearch
-    ? `<style>.ru-search-input::placeholder{color:#3b82f6;opacity:1;}</style><div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0 0.5rem;gap:0.5rem;width:${searchW}px;background:#fff;">
-        ${icon('magnifyingGlass', { size: 20, stroke: '#1e40af', style: 'flex-shrink:0;' })}
-        <input type="text" placeholder="${data.searchPlaceholder}" class="ru-search-input" style="border:none;outline:none;background:#fff;font-size:0.875rem;width:100%;color:#3b82f6;padding:0.375rem 0;" />
+    ? `<div style="display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:8px;padding:0.5rem 0.875rem;gap:0.5rem;width:${searchW}px;max-width:100%;min-width:0;">
+        ${icon('magnifyingGlass', { size: 16, stroke: '#3b82f6', style: 'flex-shrink:0;' })}
+        <input type="text" placeholder="${data.searchPlaceholder}" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:#3b82f6;min-width:0;" />
       </div>`
     : ''
 
   const buttonsArr = [
-    data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${data.textColor};font-size:0.875rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;">${data.signInLabel}</a>` : '',
-    data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${data.textColor};font-size:0.875rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;">${data.contactUsLabel}</a>` : '',
+    data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${data.textColor};font-size:0.875rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;">${data.signInLabel}</a>` : '',
+    data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${data.textColor};font-size:0.875rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;">${data.contactUsLabel}</a>` : '',
     data.showCart
-      ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
+      ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;flex-shrink:0;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
       : '',
-    data.showSignIn ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" style="position:relative;display:none;align-items:center;"></span>` : '',
+    data.showSignIn ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" style="position:relative;display:none;align-items:center;flex-shrink:0;"></span>` : '',
   ].filter(Boolean)
   const buttonsEl = buttonsArr.length
-    ? `<div style="display:flex;align-items:center;gap:1.5rem;">${buttonsArr.join('')}</div>`
+    ? `<div style="display:flex;align-items:center;flex-wrap:nowrap;flex-shrink:0;gap:1.5rem;">${buttonsArr.join('')}</div>`
     : ''
 
   const visibleNavLinks = data.navLinks.filter(l => l.visible !== false)
@@ -564,12 +564,7 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   arrowBtnBg: '#1e293b',
   arrowBtnColor: '#ffffff',
   arrowBtnPosition: 'center',
-  products: [
-    { imageUrl: placeholderSvg, name: 'Product One',   price: '$29.99', oldPrice: '',       buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
-    { imageUrl: placeholderSvg, name: 'Product Two',   price: '$39.99', oldPrice: '$49.99', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
-    { imageUrl: placeholderSvg, name: 'Product Three', price: '$49.99', oldPrice: '',       buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
-    { imageUrl: placeholderSvg, name: 'Product Four',  price: '$59.99', oldPrice: '$79.99', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
-  ],
+  products: [],
 }
 
 export const ru1ProductsFields: FieldConfig[] = [
@@ -720,7 +715,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
     return `
       <div data-fp-card="1" style="border-radius:${data.cardBorderRadius}px;overflow:hidden;display:flex;flex-direction:column;border:1px solid #e5e7eb">
         <div style="position:relative;overflow:hidden">
-          <img style="width:100%;height:auto;display:block" src="${p.imageUrl}" alt="${p.name}" />
+          <img style="width:100%;aspect-ratio:1/1;object-fit:contain;display:block;background:#f9fafb" src="${p.imageUrl}" alt="${p.name}" />
           ${overlayHtml}
         </div>
         <div style="display:flex;flex-direction:column;gap:0.25rem;padding:0.75rem;flex:1">
@@ -1156,19 +1151,14 @@ export const ru2ShopContentDefaults: Ru2ShopContentData = {
   buttonTextColor: '#ffffff',
   addToCartRadius: 6,
   products: [
-    { imageUrl: placeholderSvg, name: 'Gift Card',                     price: '',       oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
-    { imageUrl: placeholderSvg, name: "Men's Performance Polo",         price: '$67.45', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'black' },
-    { imageUrl: placeholderSvg, name: "Women's Performance Polo",       price: '$49.68', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'black' },
-    { imageUrl: placeholderSvg, name: 'Zone Performance Quarter-Zip',   price: '$30.22', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'black' },
-    { imageUrl: placeholderSvg, name: "Men's Crown Collection Shirt",   price: '$65.67', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'white, black' },
-    { imageUrl: placeholderSvg, name: "Women's Crown Collection Shirt", price: '$65.67', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'white, black' },
-    { imageUrl: placeholderSvg, name: '12" Solid Cuffed Beanie',        price: '$10.22', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'black' },
-    { imageUrl: placeholderSvg, name: '12" Pom-Pom Cuffed Beanie',      price: '$11.07', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'black' },
-    { imageUrl: placeholderSvg, name: 'Product 9',                      price: '$24.99', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
-    { imageUrl: placeholderSvg, name: 'Product 10',                     price: '$39.99', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
-    { imageUrl: placeholderSvg, name: 'Product 11',                     price: '$19.99', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
-    { imageUrl: placeholderSvg, name: 'Product 12',                     price: '$14.99', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' },
-    { imageUrl: placeholderSvg, name: 'City Trek Heavyweight Beanie',   price: '$41.88', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: 'black' },
+    { imageUrl: placeholderSvg, name: 'Product One',   price: '$0', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '#FF0000, #0000FF' },
+    { imageUrl: placeholderSvg, name: 'Product Two',   price: '$0', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '#FF0000, #0000FF' },
+    { imageUrl: placeholderSvg, name: 'Product Three', price: '$0', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '#FF0000, #0000FF' },
+    { imageUrl: placeholderSvg, name: 'Product Four',  price: '$0', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '#FF0000, #0000FF' },
+    { imageUrl: placeholderSvg, name: 'Product Five',  price: '$0', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '#FF0000, #0000FF' },
+    { imageUrl: placeholderSvg, name: 'Product Six',   price: '$0', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '#FF0000, #0000FF' },
+    { imageUrl: placeholderSvg, name: 'Product Seven', price: '$0', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '#FF0000, #0000FF' },
+    { imageUrl: placeholderSvg, name: 'Product Eight', price: '$0', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '#FF0000, #0000FF' },
   ],
   showPagination: true,
   totalPages: 1,
@@ -1680,14 +1670,14 @@ export const ru3ShopProductsDefaults: Ru3ShopProductsData = {
   titleColor: '#111111',
   columns: 4,
   rows: 2,
-  products: Array.from({ length: 8 }, () => ({
+  products: ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'].map(ord => ({
     imageUrl: '',
-    name: 'Product Name',
-    price: '$0.00',
+    name: `Product ${ord}`,
+    price: '$0',
     oldPrice: '',
     buttonLabel: 'Shop Now',
     buttonUrl: '/shop',
-    colors: '',
+    colors: '#FF0000, #0000FF',
   })),
   bgColor: '#ffffff',
   paddingY: 24,
