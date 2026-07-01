@@ -284,6 +284,64 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
 
   const hasMegaMenu = data.navLinks.some(l => l.megaMenu && l.megaMenu.length > 0)
 
+  const mobileDrawerLinks = data.navLinks.map(l =>
+    `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;">${l.label}</a>`
+  ).join('')
+
+  const mobileSearchEl = data.showSearch
+    ? `<div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0 0.5rem;gap:0.5rem;background:#fff;margin-bottom:1rem;">
+        ${icon('magnifyingGlass', { size: 20, stroke: '#1e40af', style: 'flex-shrink:0;' })}
+        <input type="text" placeholder="${data.searchPlaceholder}" style="border:none;outline:none;background:#fff;font-size:0.875rem;width:100%;color:#3b82f6;padding:0.5rem 0;" />
+      </div>`
+    : ''
+
+  const mobileCTAButtons = data.ctaButtons.map(btn =>
+    `<a href="${btn.href}" style="display:flex;align-items:center;justify-content:center;border:1.5px solid ${btn.borderColor};border-radius:${data.buttonBorderRadius}px;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${btn.textColor};background:${btn.bgColor};text-decoration:none;">${btn.label}</a>`
+  ).join('')
+
+  const mobileNav = `
+<style>
+  [data-nav-mobile] { display: none; }
+  [data-nav-desktop] { display: grid; }
+  [data-nav-desktop-lower] { display: block; }
+  @media (max-width: 1024px) {
+    [data-nav-mobile] { display: flex !important; }
+    [data-nav-desktop] { display: none !important; }
+    [data-nav-desktop-lower] { display: none !important; }
+  }
+</style>
+<!-- Mobile header -->
+<div data-nav-mobile="true" style="display:none;align-items:center;justify-content:space-between;padding:1.25rem ${data.paddingX}px;${data.showBottomBorder ? `border-bottom:1px solid ${data.bottomBorderColor};` : ''}">
+  ${logoEl}
+  <div style="display:flex;align-items:center;gap:1rem;">
+    ${data.showCart ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>` : ''}
+    <button onclick="(function(btn){var s=btn.closest('section');var d=s&&s.querySelector('[data-mobile-drawer]');var o=s&&s.querySelector('[data-mobile-overlay]');if(d){d.style.transform='translateX(0)';}if(o){o.style.display='block';}document.body.style.overflow='hidden';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.textColor}" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+</div>
+<!-- Drawer -->
+<div data-mobile-drawer="true" style="position:fixed;top:0;left:0;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transform:translateX(-100%);transition:transform 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+    ${logoEl}
+    <button onclick="(function(btn){var d=document.querySelector('[data-mobile-drawer]');var o=document.querySelector('[data-mobile-overlay]');if(d){d.style.transform='translateX(-100%)';}if(o){o.style.display='none';}document.body.style.overflow='';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0.25rem;display:flex;align-items:center;">
+      ${icon('xMark', { size: 24, stroke: data.textColor })}
+    </button>
+  </div>
+  ${mobileSearchEl}
+  <div style="display:flex;flex-direction:column;">
+    ${mobileDrawerLinks}
+    ${data.dynamicCategories ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;cursor:pointer;">Categories</a>` : ''}
+  </div>
+  <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
+    ${mobileCTAButtons}
+    ${data.showCart ? `<a href="${data.cartUrl}" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:${data.buttonBorderRadius}px;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;">Cart</a>` : ''}
+  </div>
+</div>
+<!-- Overlay -->
+<div data-mobile-overlay="true" onclick="(function(el){var d=document.querySelector('[data-mobile-drawer]');if(d){d.style.transform='translateX(-100%)';}el.style.display='none';document.body.style.overflow='';})(this);" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;"></div>`
+
+
   // Refresh dropdowns with live Odoo data + wire product-tile click → detail panel
   const megaScript = hasMegaMenu
     ? `<script>(function(){function wireTiles(sec){sec.querySelectorAll('.ru-ptile').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var panel=sec.querySelector('.ru-pd');if(!panel)return;var imgEl=a.querySelector('img');var imgSrc=imgEl?imgEl.src:'';var name=(a.querySelector('.ru-ptile-name')||{}).textContent||'';var price=(a.querySelector('.ru-ptile-price')||{}).textContent||'';var imgCol=imgSrc?'<img src="'+imgSrc+'" style="width:100%;height:100%;object-fit:cover;display:block;" />':'<div style="width:100%;height:100%;background:#f3f4f6;"></div>';panel.innerHTML='<div style="display:grid;grid-template-columns:40% 60%;height:380px;position:relative;">'+  '<div style="overflow:hidden;">'+imgCol+'</div>'+  '<div style="padding:40px 48px;display:flex;flex-direction:column;justify-content:center;background:#fff;">'+    '<div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;">Featured Product</div>'+    '<div style="font-size:26px;font-weight:700;color:#111827;line-height:1.25;margin-bottom:12px;">'+name+'</div>'+    '<div style="font-size:22px;font-weight:600;color:#374151;margin-bottom:28px;">'+price+'</div>'+    '<div><a href="'+a.href+'" style="display:inline-block;padding:12px 28px;background:#111827;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:500;letter-spacing:.02em;">View Product →</a></div>'+  '</div>'+  '<button onclick="this.closest(\\'.ru-pd\\').style.display=\\'none\\'" style="position:absolute;top:12px;right:16px;background:rgba(255,255,255,.9);border:1px solid #e5e7eb;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;color:#6b7280;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>'+  '</div>';panel.style.display='block';panel.scrollIntoView({behavior:'smooth',block:'nearest'});});})}function init(){var ts=document.querySelectorAll('.ru-mega-item[data-mega-json]');if(!ts.length)return;var allIds=[];ts.forEach(function(t){try{JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"')).forEach(function(g){(g.ids||[]).forEach(function(id){if(allIds.indexOf(id)<0)allIds.push(id);});});}catch(e){}});ts.forEach(function(t){var sec=t.closest('section');if(sec)wireTiles(sec);});if(!allIds.length)return;fetch('/api/products?ids='+allIds.join(',')).then(function(r){return r.json();}).then(function(prods){var map={};prods.forEach(function(p){map[p.id]=p;});ts.forEach(function(t){var groups;try{groups=JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"'));}catch(e){return;}var drop=t.querySelector('.ru-mega-drop');if(!drop)return;var html=groups.map(function(g){var items=(g.ids||[]).map(function(id){var p=map[id];if(!p)return'';var img=p.image?'<img src="data:image/png;base64,'+p.image+'" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;"/>':'<div style="width:44px;height:44px;background:#f3f4f6;border-radius:6px;flex-shrink:0;"></div>';var price=p.price!=null?'<span class="ru-ptile-price" style="font-size:11px;color:#6b7280;">$'+Number(p.price).toFixed(2)+'</span>':'';return'<a href="/shop/'+p.id+'" class="ru-ptile" style="display:flex;align-items:center;gap:10px;padding:7px 14px;text-decoration:none;cursor:pointer;" onmouseover="this.style.background=\\'#f9fafb\\'" onmouseout="this.style.background=\\'\\''">'+img+'<div style="min-width:0;"><div class="ru-ptile-name" style="font-size:13px;font-weight:500;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">'+p.name+'</div>'+price+'</div></a>';}).join('');if(!items.trim())return'';return'<div><a href="'+(g.href||'#')+'" style="display:block;padding:8px 14px 4px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;">'+g.label+'</a>'+items+'</div>';}).filter(Boolean).join('<div style="height:1px;background:#f3f4f6;margin:4px 0;"></div>');drop.innerHTML=html;var sec=t.closest('section');if(sec)wireTiles(sec);});}).catch(function(){});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();<\/script>`
@@ -295,12 +353,13 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
 .ru-pd{display:none;width:100%;border-top:1px solid #e5e7eb;overflow:hidden;}
 </style>
 <nav style="${navStyle}">
-  <div style="max-width:80rem;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
+  ${mobileNav}
+  <div data-nav-desktop="true" style="max-width:80rem;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
     ${zone(cols.left,   'flex-start')}
     ${zone(cols.center, 'center')}
     ${zone(cols.right,  'flex-end')}
   </div>
-  ${lowerRow}
+  <div data-nav-desktop-lower="true">${lowerRow}</div>
 </nav>
 ${hasMegaMenu ? '<div class="ru-pd"></div>' : ''}
 ${megaScript}</section>`
