@@ -3600,6 +3600,8 @@ export interface Ru1ProductDetailData {
   unitPriceBadge: string
   unitPriceNote: string
   descriptionTitle: string
+  description?: string
+  descriptionColor?: string
   // Legacy flat fields — kept for backwards compat, overridden by l1/l2/l3 namespaced fields when galleryLayout is set
   buttonBgColor: string
   buttonTextColor: string
@@ -3684,6 +3686,8 @@ export const ru1ProductDetailDefaults: Ru1ProductDetailData = {
   unitPriceBadge: '1+',
   unitPriceNote: '* some sizes may vary',
   descriptionTitle: 'Description',
+  description: '',
+  descriptionColor: '#374151',
   // Legacy fallback fields
   buttonBgColor: '#1e3a5f',
   buttonTextColor: '#ffffff',
@@ -3766,6 +3770,8 @@ export const ru1ProductDetailFields: FieldConfig[] = [
   { key: 'unitPriceBadge', label: 'Unit Price Badge', type: 'text', placeholder: '1+' },
   { key: 'unitPriceNote', label: 'Price Note', type: 'text', placeholder: '* some sizes may vary' },
   { key: 'descriptionTitle', label: 'Description Section Title', type: 'text', placeholder: 'Description' },
+  { key: 'description', label: 'Description (one bullet per line)', type: 'textarea', placeholder: 'Enter each bullet point on a new line...' },
+  { key: 'descriptionColor', label: 'Description Text Color', type: 'color' },
   { key: 'sizes', label: 'Sizes (applies to all products)', type: 'list', listFields: [
     { key: 'label', label: 'Size Label', type: 'text', placeholder: 'XL' },
     { key: 'priceModifier', label: 'Price Modifier', type: 'text', placeholder: '+$5.16' },
@@ -4068,17 +4074,18 @@ export function renderRu2ProductDetail(data: Ru2ProductDetailData): string {
 
   const nameHtml = _productName
     ? _productName
-    : '<span style="display:inline-block;height:28px;width:65%;background:#f3f4f6;border-radius:4px;"></span>'
+    : 'Product One'
 
   const priceHtml = _productPriceNum != null
     ? `${curr}${_productPriceNum.toFixed(0)}`
-    : '<span style="display:inline-block;height:28px;width:25%;background:#f3f4f6;border-radius:4px;"></span>'
+    : `${curr}0`
 
   const colorsHtml = (_productColors && _productColors.length)
     ? _productColors.map((c, i) =>
         `<div style="width:32px;height:32px;border-radius:50%;background:${c.htmlColor};border:2px solid ${i === 0 ? accent : 'transparent'};outline:2px solid ${i === 0 ? accent : '#e5e7eb'};outline-offset:2px;cursor:pointer;transition:outline-color .15s;" title="${c.name}"></div>`
       ).join('')
-    : '<div style="height:32px;width:100px;background:#f3f4f6;border-radius:16px;"></div>'
+    : `<div style="width:32px;height:32px;border-radius:50%;background:#FF0000;border:2px solid ${accent};outline:2px solid ${accent};outline-offset:2px;cursor:pointer;transition:outline-color .15s;" title="Red"></div>
+       <div style="width:32px;height:32px;border-radius:50%;background:#0000FF;border:2px solid transparent;outline:2px solid #e5e7eb;outline-offset:2px;cursor:pointer;transition:outline-color .15s;" title="Blue"></div>`
 
   // Accordion — first section open, rest closed
   const accordionHtml = (data.productDetails || []).map((detail, i) => {
@@ -4339,7 +4346,7 @@ export function renderRu1ProductDetail(data: Ru1ProductDetailData): string {
 
   const nameContent = _productName
     ? _productName
-    : '<div style="height:22px;background:#f3f4f6;border-radius:4px;width:80%;"></div>'
+    : 'Product One'
 
   const colorsContent = (_productColors && _productColors.length)
     ? _productColors.map((c, i) =>
@@ -4348,11 +4355,18 @@ export function renderRu1ProductDetail(data: Ru1ProductDetailData): string {
           <span style="font-size:11px;font-weight:700;color:#374151;letter-spacing:0.04em;">${c.name}</span>
         </div>`
       ).join('')
-    : '<div style="height:30px;background:#f3f4f6;border-radius:9999px;width:110px;"></div>'
+    : `<div style="display:inline-flex;align-items:center;gap:6px;border:2px solid ${accentColor};border-radius:9999px;padding:4px 12px;cursor:pointer;white-space:nowrap;">
+          <span style="width:12px;height:12px;border-radius:50%;background:#FF0000;border:1px solid rgba(0,0,0,0.15);flex-shrink:0;display:inline-block;"></span>
+          <span style="font-size:11px;font-weight:700;color:#374151;letter-spacing:0.04em;">Red</span>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;border:1px solid #d1d5db;border-radius:9999px;padding:4px 12px;cursor:pointer;white-space:nowrap;">
+          <span style="width:12px;height:12px;border-radius:50%;background:#0000FF;border:1px solid rgba(0,0,0,0.15);flex-shrink:0;display:inline-block;"></span>
+          <span style="font-size:11px;font-weight:700;color:#374151;letter-spacing:0.04em;">Blue</span>
+        </div>`
 
-  const priceDisplay = (_productPriceNum != null) ? `${curr}${_productPriceNum.toFixed(2)}` : '—'
-  const totalDisplay = (_productPriceNum != null) ? `Total: ${curr}${_productPriceNum.toFixed(2)}` : 'Total: —'
-  const tablePriceDisplay = (_productPriceNum != null) ? `${curr} ${_productPriceNum.toFixed(2)}` : '—'
+  const priceDisplay = (_productPriceNum != null) ? `${curr}${_productPriceNum.toFixed(2)}` : `${curr}0.00`
+  const totalDisplay = (_productPriceNum != null) ? `Total: ${curr}${_productPriceNum.toFixed(2)}` : `Total: ${curr}0.00`
+  const tablePriceDisplay = (_productPriceNum != null) ? `${curr} ${_productPriceNum.toFixed(2)}` : `${curr} 0.00`
 
   const sizesHtml = (data.sizes || []).map(s =>
     `<div style="text-align:center;">
@@ -4425,7 +4439,19 @@ export function renderRu1ProductDetail(data: Ru1ProductDetailData): string {
         </table>
         <div>
           <div style="font-size:15px;font-weight:700;color:${accentColor};margin-bottom:10px;">${data.descriptionTitle}</div>
-          <ul data-rb-pd-desc style="margin:0;padding-left:20px;list-style:disc;"></ul>
+          <ul data-rb-pd-desc style="margin:0;padding-left:20px;list-style:disc;">${
+            (() => {
+              const descColor = data.descriptionColor || '#374151'
+              const lines = (data.description || '').split('\n').map((s: string) => s.trim()).filter(Boolean)
+              if (lines.length > 0) return lines.map((l: string) => `<li style="margin-bottom:6px;font-size:14px;color:${descColor};">${l}</li>`).join('')
+              if (!data.productIds) return [
+                'Center front hand warmer pocket',
+                'Moisture wicking',
+                'Center front coil zipper with rubber pull',
+              ].map((l: string) => `<li style="margin-bottom:6px;font-size:14px;color:${descColor};">${l}</li>`).join('')
+              return ''
+            })()
+          }</ul>
         </div>
       </div>
     </div>
@@ -4790,10 +4816,10 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
   // ── Name + Price ──────────────────────────────────────────────────────────
   const nameHtml = _productName
     ? _productName
-    : '<span style="display:inline-block;height:24px;width:65%;background:#f3f4f6;border-radius:4px;vertical-align:middle;"></span>'
+    : 'Product One'
   const priceHtml = _productPriceNum != null
     ? `${curr}${_productPriceNum.toFixed(0)}`
-    : '<span style="display:inline-block;height:24px;width:20%;background:#f3f4f6;border-radius:4px;vertical-align:middle;"></span>'
+    : `${curr}0`
 
   // ── Stars ─────────────────────────────────────────────────────────────────
   const ratingVal = Number(data.ratingValue ?? 3.9)
@@ -4825,7 +4851,14 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
       </div>`
     : `<div style="margin-top:16px;">
         <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 8px;">Color</h2>
-        <div style="height:32px;width:120px;background:#f3f4f6;border-radius:16px;"></div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div style="border-radius:50%;outline:2px solid ${accent};outline-offset:2px;cursor:pointer;" title="Red">
+            <div style="width:32px;height:32px;border-radius:50%;background:#FF0000;border:1px solid rgba(0,0,0,0.1);"></div>
+          </div>
+          <div style="border-radius:50%;outline:2px solid transparent;outline-offset:2px;cursor:pointer;" title="Blue">
+            <div style="width:32px;height:32px;border-radius:50%;background:#0000FF;border:1px solid rgba(0,0,0,0.1);"></div>
+          </div>
+        </div>
       </div>`
 
   // ── Sizes ─────────────────────────────────────────────────────────────────

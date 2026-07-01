@@ -295,8 +295,16 @@ async function loadProductDetail(el: HTMLElement, companyId = 3) {
   // In the builder only Layout 3 needs JS wiring (carousel + auto-slide).
   if (isBuilder && layout !== 'layout3') return
 
-  if (el.dataset.hydrated === 'true') return
-  el.dataset.hydrated = 'true'
+  if (isBuilder) {
+    // Builder: cancel any previous carousel on this element and restart fresh.
+    // Do NOT use data-hydrated here — we want re-entry so that field edits and
+    // DOM replacements (syncDomToStoreOnly) always get a fresh working carousel.
+    const old = (el as any).__rbxPdTimer
+    if (old) clearTimeout(old)
+  } else {
+    if (el.dataset.hydrated === 'true') return
+    el.dataset.hydrated = 'true'
+  }
 
   const productIds = (el.dataset.productIds ?? '').trim()
   const accentColor = el.dataset.accentColor || '#1a56db'
@@ -436,6 +444,7 @@ async function loadProductDetail(el: HTMLElement, companyId = 3) {
         if (priceEl) priceEl.textContent = priceStr
         if (totalEl) totalEl.textContent = `Total: ${priceStr}`
         if (tablePriceEl) tablePriceEl.textContent = `${curr} ${priceNum.toFixed(2)}`
+        // TODO: populate descEl with real product description when API query is ready
       }
       highlightThumb(idx)
       updateDots(idx)
@@ -495,14 +504,15 @@ async function loadProductDetail(el: HTMLElement, companyId = 3) {
       if (slots.length > 1 && autoSlideMs > 0) {
         if (isBuilder) {
           // Self-canceling chain — stops when el is replaced by a field edit.
-          // Starts IMMEDIATELY so sliding is instant even before products load.
+          // Timer ref is stored on el so any re-entry (field edit, re-render)
+          // cancels the previous chain before starting a new one.
           const slide = () => {
-            if (!document.contains(el)) return
+            if (!document.contains(el)) { delete (el as any).__rbxPdTimer; return }
             const next = (currentIdx + 1) % slots.length
             showSlot(slots[next] ?? null, next)
-            setTimeout(slide, autoSlideMs)
+            ;(el as any).__rbxPdTimer = setTimeout(slide, autoSlideMs)
           }
-          setTimeout(slide, autoSlideMs)
+          ;(el as any).__rbxPdTimer = setTimeout(slide, autoSlideMs)
         } else {
           autoSlideTimer = setInterval(() => {
             const next = (currentIdx + 1) % slots.length
