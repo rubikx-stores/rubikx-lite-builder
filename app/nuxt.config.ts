@@ -45,6 +45,12 @@ export default defineNuxtConfig({
 
   devtools: { enabled: true },
 
+  vite: {
+    resolve: {
+      dedupe: ['vue'],
+    },
+  },
+
   experimental: {
     payloadExtraction: true,
   },
