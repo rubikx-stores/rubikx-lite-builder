@@ -368,6 +368,7 @@ export interface Ru1HeroData {
   altText: string
   linkUrl: string
   aspectRatio: string
+  extraHeight: number
   headline: string
   subheadline: string
   textColor: string
@@ -389,6 +390,7 @@ export const ru1HeroDefaults: Ru1HeroData = {
   altText: 'Hero image',
   linkUrl: '',
   aspectRatio: '4/1',
+  extraHeight: 15,
   headline: '',
   subheadline: '',
   textColor: '#ffffff',
@@ -410,7 +412,8 @@ export const ru1HeroFields: FieldConfig[] = [
   { key: 'imageUrl', label: 'Banner Image', type: 'image', noAspectRatio: true },
   { key: 'altText', label: 'Alt Text', type: 'text' },
   { key: 'linkUrl', label: 'Link URL', type: 'url' },
-  { key: 'aspectRatio', label: 'Aspect Ratio', type: 'select', options: ['4/1', '3/1', '16/9', '2/1', '4/3', '1/1'] },
+  { key: 'aspectRatio', label: 'Aspect Ratio', type: 'select', options: ['4/1', '3/1', '3.49/1', '16/9', '2/1', '4/3', '1/1'] },
+  { key: 'extraHeight', label: 'Extra Height', type: 'number', unit: 'cm', step: 0.5, placeholder: '0' },
 
   { key: '_h_overlay', label: 'Overlay', type: 'header' },
   { key: 'overlayColor', label: 'Overlay Color', type: 'color' },
@@ -435,8 +438,15 @@ export const ru1HeroFields: FieldConfig[] = [
   { key: 'borderRadius', label: 'Corner Radius', type: 'number', unit: 'px', step: 2, placeholder: '8' },
 ]
 
+function ru1HeroRatioPercent(ratio: string): number {
+  const [w, h] = ratio.split('/').map(Number)
+  return w > 0 && h > 0 ? (h / w) * 100 : 100
+}
+
 export function renderRu1Hero(data: Ru1HeroData): string {
   const alignItems = data.textAlign === 'left' ? 'flex-start' : data.textAlign === 'right' ? 'flex-end' : 'center'
+  const ratioPercent = ru1HeroRatioPercent(data.aspectRatio)
+  const boxHeight = data.extraHeight ? `calc(${ratioPercent}% + ${data.extraHeight}cm)` : `${ratioPercent}%`
 
   const sectionStyle = [
     `background:${data.bgColor}`,
@@ -460,8 +470,8 @@ export function renderRu1Hero(data: Ru1HeroData): string {
     </div>`
     : ''
 
-  const inner = `<div style="position:relative;">
-    <img src="${data.imageUrl}" alt="${data.altText}" style="width:100%;aspect-ratio:${data.aspectRatio};object-fit:cover;display:block;" />
+  const inner = `<div style="position:relative;width:100%;height:0;padding-bottom:${boxHeight};overflow:hidden;">
+    <img src="${data.imageUrl}" alt="${data.altText}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block;" />
     ${overlayDiv}
     ${textLayer}
   </div>`
