@@ -794,8 +794,15 @@ export interface Ru1FooterData {
   contactEmail: string
   contactPhone: string
   copyright: string
+  copyrightAlign: string
   bgColor: string
   textColor: string
+  linkColor: string
+  headingColor: string
+  columnOrder: string[]
+  borderStyle: string
+  borderWidth: number
+  borderColor: string
   paddingY: number
   paddingX: number
 }
@@ -811,13 +818,21 @@ export const ru1FooterDefaults: Ru1FooterData = {
   contactEmail: 'support@yourdomain.com',
   contactPhone: '+1 000-000-0000',
   copyright: '© Your Store. All rights reserved.',
+  copyrightAlign: 'center',
   bgColor: '#ffffff',
-  textColor: '#000000',
+  textColor: '#374151',
+  linkColor: '#111827',
+  headingColor: '#111827',
+  columnOrder: ['links', 'about', 'contact'],
+  borderStyle: 'none',
+  borderWidth: 1,
+  borderColor: '#e5e7eb',
   paddingY: 48,
   paddingX: 16,
 }
 
 export const ru1FooterFields: FieldConfig[] = [
+  { key: '_h_content', label: 'Content', type: 'header' },
   {
     key: 'usefulLinks', label: 'Useful Links', type: 'list',
     listFields: [
@@ -829,41 +844,70 @@ export const ru1FooterFields: FieldConfig[] = [
   { key: 'contactEmail', label: 'Contact Email',      type: 'text'   },
   { key: 'contactPhone', label: 'Contact Phone',      type: 'text'   },
   { key: 'copyright',    label: 'Copyright',          type: 'textarea'   },
+  { key: 'copyrightAlign', label: 'Align Text', type: 'select', options: ['left', 'center', 'right'] },
+
+  { key: '_h_columns', label: 'Column Order', type: 'header' },
+  { key: 'columnOrder', label: 'Column Order', type: 'column-order' },
+
+  { key: '_h_style', label: 'Style', type: 'header' },
   { key: 'bgColor',      label: 'Background Color',   type: 'color'  },
   { key: 'textColor',    label: 'Text Color',          type: 'color'  },
-  { key: 'paddingY',     label: 'Vertical Padding',   type: 'number' },
-  { key: 'paddingX',     label: 'Horizontal Padding', type: 'number' },
+  { key: 'linkColor',    label: 'Link Color',          type: 'color'  },
+  { key: 'headingColor', label: 'Heading Color',       type: 'color'  },
+  { key: 'borderStyle',  label: 'Border Style',        type: 'select', options: ['none', 'solid', 'dashed', 'dotted'] },
+  { key: 'borderWidth',  label: 'Border Width',        type: 'number', unit: 'px', step: 1, placeholder: '1' },
+  { key: 'borderColor',  label: 'Border Color',        type: 'color'  },
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'paddingY',     label: 'Vertical Padding',   type: 'number', unit: 'px', step: 4, placeholder: '48' },
+  { key: 'paddingX',     label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '16' },
 ]
 
 export function renderRu1Footer(data: Ru1FooterData): string {
+  const bg      = data.bgColor      || '#ffffff'
+  const text    = data.textColor    || '#374151'
+  const link    = data.linkColor    || '#111827'
+  const heading = data.headingColor || '#111827'
+  const borderTop = (data.borderStyle && data.borderStyle !== 'none')
+    ? `border-top:${data.borderWidth ?? 1}px ${data.borderStyle} ${data.borderColor || '#e5e7eb'};`
+    : ''
+
+  const hStyle = `font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:${heading};margin-bottom:16px;`
+  const pStyle = `font-size:14px;color:${text};line-height:1.6;`
+  const aStyle = `font-size:14px;color:${link};text-decoration:none;`
+
+  const linksCol = `<div style="max-width:320px;">
+        <h3 style="${hStyle}">Useful Links</h3>
+        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">
+          ${(data.usefulLinks ?? []).map(l => `<li><a href="${l.url}" style="${aStyle}">${l.label}</a></li>`).join('\n          ')}
+        </ul>
+      </div>`
+  const aboutCol = `<div style="max-width:320px;">
+        <h3 style="${hStyle}">About Us</h3>
+        <p data-field-key="aboutText" style="${pStyle}">${data.aboutText}</p>
+      </div>`
+  const contactCol = `<div style="max-width:320px;">
+        <h3 style="${hStyle}">Connect with Us</h3>
+        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">
+          <li style="${pStyle}">${data.contactEmail}</li>
+          <li style="${pStyle}">${data.contactPhone}</li>
+        </ul>
+      </div>`
+
+  const colMap: Record<string, string> = { links: linksCol, about: aboutCol, contact: contactCol }
+  const orderedCols = (data.columnOrder ?? ['links', 'about', 'contact']).map(k => colMap[k] ?? '').join('\n      ')
+
   return `<section data-component-title="Ru1-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
-<footer style="background-color:${data.bgColor};color:${data.textColor};padding:${data.paddingY}px ${data.paddingX}px;">
-  <div style="max-width:1280px;margin:0 auto;">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;padding-bottom:40px;">
-      <div>
-        <h3 style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;opacity:0.5;">Useful Links</h3>
-        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">
-          ${data.usefulLinks.map(l => `<li><a href="${l.url}" style="font-size:14px;color:${data.textColor};text-decoration:none;opacity:0.7;">${l.label}</a></li>`).join('')}
-        </ul>
-      </div>
-      <div>
-        <h3 style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;opacity:0.5;">About Us</h3>
-        <p data-field-key="aboutText" style="font-size:14px;opacity:0.7;line-height:1.6;">${data.aboutText}</p>
-      </div>
-      <div>
-        <h3 style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;opacity:0.5;">Connect with Us</h3>
-        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">
-          <li style="font-size:14px;opacity:0.7;">${data.contactEmail}</li>
-          <li style="font-size:14px;opacity:0.7;">${data.contactPhone}</li>
-        </ul>
-      </div>
+<footer style="background-color:${bg};color:${text};padding:${data.paddingY}px ${data.paddingX}px;${borderTop}">
+  <div style="width:100%;max-width:1280px;margin:0 auto;box-sizing:border-box;">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:32px;padding-bottom:40px;align-items:start;">
+      ${orderedCols}
     </div>
-    <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:24px;text-align:center;">
-      <p data-field-key="copyright" style="font-size:14px;opacity:0.5;">${data.copyright}</p>
+    <div style="border-top:1px solid ${data.borderColor || '#e5e7eb'};padding-top:24px;text-align:${data.copyrightAlign || 'center'};">
+      <p data-field-key="copyright" style="font-size:14px;color:${text};opacity:0.6;">${data.copyright}</p>
     </div>
   </div>
 </footer>
-
 </section>`
 }
 
@@ -1937,8 +1981,12 @@ export function renderRu1Stats(data: Ru1StatsData): string {
   }).join('')
 
   return `<section data-component-title="Ru1-Stats" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;">
-  <div style="max-width:1280px;margin:0 auto;">
-    <div style="display:grid;grid-template-columns:${gridCols};gap:16px;">
+<style>
+  @media(max-width:768px){[data-ru1-stats-grid]{grid-template-columns:repeat(2,1fr)!important}}
+  @media(max-width:480px){[data-ru1-stats-grid]{grid-template-columns:1fr!important;gap:12px!important}}
+</style>
+  <div style="width:100%;max-width:1280px;margin:0 auto;">
+    <div data-ru1-stats-grid="true" style="display:grid;grid-template-columns:${gridCols};gap:16px;">
       ${cardsHtml}
     </div>
   </div>
@@ -2307,7 +2355,11 @@ export function renderRu2Stats(data: Ru2StatsData): string {
   }).join('')
 
   return `<section data-component-title="Ru2-Stats" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;">
-  <div style="max-width:1280px;margin:0 auto;">
+<style>
+  @media(max-width:768px){[data-ru2-stats-grid]{grid-template-columns:repeat(2,1fr)!important;gap:20px!important}[data-ru2-stats-grid]>div{border-left:none!important}}
+  @media(max-width:480px){[data-ru2-stats-grid]{grid-template-columns:1fr!important;gap:0!important}[data-ru2-stats-grid]>div{border-top:1px solid rgba(0,0,0,0.08);padding-top:20px!important}[data-ru2-stats-grid]>div:first-child{border-top:none!important;padding-top:0!important}}
+</style>
+  <div style="width:100%;max-width:1280px;margin:0 auto;">
     <div style="background:${data.cardBgColor};${cardBorder}border-radius:${data.cardBorderRadius}px;padding:32px;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap;">
         <div>
@@ -2316,7 +2368,7 @@ export function renderRu2Stats(data: Ru2StatsData): string {
         </div>
         ${(cta1Html || cta2Html) ? `<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">${cta1Html}${cta2Html}</div>` : ''}
       </div>
-      <div style="display:grid;grid-template-columns:${gridCols};gap:0;">
+      <div data-ru2-stats-grid="true" style="display:grid;grid-template-columns:${gridCols};gap:0;">
         ${statsHtml}
       </div>
     </div>
@@ -2479,7 +2531,7 @@ export function renderRu3Stats(data: Ru3StatsData): string {
     : ''
 
   const separatorHtml = data.showSeparator
-    ? `<div style="flex-shrink:0;width:10px;height:10px;background:${data.separatorColor};transform:rotate(45deg);margin:0 16px;align-self:center;"></div>`
+    ? `<div data-ru3-stats-sep="true" style="flex-shrink:0;width:10px;height:10px;background:${data.separatorColor};transform:rotate(45deg);margin:0 16px;align-self:center;"></div>`
     : ''
 
   const itemsHtml = (data.items ?? []).map((item, i) => {
@@ -2502,9 +2554,12 @@ export function renderRu3Stats(data: Ru3StatsData): string {
   }).join('')
 
   return `<section data-component-title="Ru3-Stats" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;">
-  <div style="max-width:1280px;margin:0 auto;">
+<style>
+  @media(max-width:768px){[data-ru3-stats-row]{flex-direction:column!important}[data-ru3-stats-sep]{display:none!important}}
+</style>
+  <div style="width:100%;max-width:1280px;margin:0 auto;">
     ${sectionHeaderHtml}
-    <div style="background:${data.cardBgColor};${cardBorder}border-radius:${data.cardBorderRadius}px;padding:32px 40px;display:flex;align-items:stretch;flex-wrap:wrap;gap:16px;">
+    <div data-ru3-stats-row="true" style="background:${data.cardBgColor};${cardBorder}border-radius:${data.cardBorderRadius}px;padding:32px 40px;display:flex;align-items:stretch;flex-wrap:wrap;gap:16px;">
       ${itemsHtml}
     </div>
   </div>
@@ -2675,15 +2730,19 @@ export function renderRu4Stats(data: Ru4StatsData): string {
   ).join('')
 
   return `<section data-component-title="Ru4-Stats" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;">
-  <div style="max-width:1280px;margin:0 auto;">
+<style>
+  @media(max-width:768px){[data-ru4-stats-outer]{grid-template-columns:1fr!important}}
+  @media(max-width:480px){[data-ru4-stats-inner]{grid-template-columns:1fr!important}}
+</style>
+  <div style="width:100%;max-width:1280px;margin:0 auto;">
     ${titleHtml}
     ${dividerHtml}
-    <div style="display:grid;grid-template-columns:1fr 2fr;gap:${data.gridGap}px;align-items:start;">
+    <div data-ru4-stats-outer="true" style="display:grid;grid-template-columns:1fr 2fr;gap:${data.gridGap}px;align-items:start;">
       <div>
         <div style="font-size:${data.sectionNumberSize}px;font-weight:${data.sectionTitleWeight};color:${data.sectionNumberColor};font-family:${data.sectionNumberFont};line-height:1;margin-bottom:16px;">${data.sectionNumber}</div>
         <p style="margin:0;font-size:${data.sectionDescriptionSize}px;color:${data.sectionDescriptionColor};line-height:1.7;max-width:280px;">${data.sectionDescription}</p>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:${data.gridGap}px;">
+      <div data-ru4-stats-inner="true" style="display:grid;grid-template-columns:1fr 1fr;gap:${data.gridGap}px;">
         ${statsGrid}
       </div>
     </div>

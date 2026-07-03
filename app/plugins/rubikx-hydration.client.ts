@@ -744,6 +744,28 @@ export function hydrateComponents(companyId?: number) {
     document.head.appendChild(s)
   }
 
+  if (!document.getElementById('rubikx-stats-styles')) {
+    const ss = document.createElement('style')
+    ss.id = 'rubikx-stats-styles'
+    ss.textContent = `
+@media(max-width:768px){
+  [data-ru1-stats-grid]{grid-template-columns:repeat(2,1fr)!important}
+  [data-ru2-stats-grid]{grid-template-columns:repeat(2,1fr)!important;gap:20px!important}
+  [data-ru2-stats-grid]>div{border-left:none!important}
+  [data-ru4-stats-outer]{grid-template-columns:1fr!important}
+  [data-ru3-stats-row]{flex-direction:column!important}
+  [data-ru3-stats-sep]{display:none!important}
+}
+@media(max-width:480px){
+  [data-ru1-stats-grid]{grid-template-columns:1fr!important;gap:12px!important}
+  [data-ru2-stats-grid]{grid-template-columns:1fr!important;gap:0!important}
+  [data-ru2-stats-grid]>div{border-top:1px solid rgba(0,0,0,0.08);padding-top:20px!important}
+  [data-ru2-stats-grid]>div:first-child{border-top:none!important;padding-top:0!important}
+  [data-ru4-stats-inner]{grid-template-columns:1fr!important}
+}`
+    document.head.appendChild(ss)
+  }
+
   if (!document.getElementById('rubikx-cat-styles')) {
     const style = document.createElement('style')
     style.id = 'rubikx-cat-styles'

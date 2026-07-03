@@ -368,6 +368,7 @@ export interface Ru1HeroData {
   altText: string
   linkUrl: string
   aspectRatio: string
+  extraHeight: number
   headline: string
   subheadline: string
   textColor: string
@@ -389,6 +390,7 @@ export const ru1HeroDefaults: Ru1HeroData = {
   altText: 'Hero image',
   linkUrl: '',
   aspectRatio: '4/1',
+  extraHeight: 15,
   headline: '',
   subheadline: '',
   textColor: '#ffffff',
@@ -410,7 +412,8 @@ export const ru1HeroFields: FieldConfig[] = [
   { key: 'imageUrl', label: 'Banner Image', type: 'image', noAspectRatio: true },
   { key: 'altText', label: 'Alt Text', type: 'text' },
   { key: 'linkUrl', label: 'Link URL', type: 'url' },
-  { key: 'aspectRatio', label: 'Aspect Ratio', type: 'select', options: ['4/1', '3/1', '16/9', '2/1', '4/3', '1/1'] },
+  { key: 'aspectRatio', label: 'Aspect Ratio', type: 'select', options: ['4/1', '3/1', '3.49/1', '16/9', '2/1', '4/3', '1/1'] },
+  { key: 'extraHeight', label: 'Extra Height', type: 'number', unit: 'cm', step: 0.5, placeholder: '0' },
 
   { key: '_h_overlay', label: 'Overlay', type: 'header' },
   { key: 'overlayColor', label: 'Overlay Color', type: 'color' },
@@ -435,8 +438,15 @@ export const ru1HeroFields: FieldConfig[] = [
   { key: 'borderRadius', label: 'Corner Radius', type: 'number', unit: 'px', step: 2, placeholder: '8' },
 ]
 
+function ru1HeroRatioPercent(ratio: string): number {
+  const [w, h] = ratio.split('/').map(Number)
+  return w > 0 && h > 0 ? (h / w) * 100 : 100
+}
+
 export function renderRu1Hero(data: Ru1HeroData): string {
   const alignItems = data.textAlign === 'left' ? 'flex-start' : data.textAlign === 'right' ? 'flex-end' : 'center'
+  const ratioPercent = ru1HeroRatioPercent(data.aspectRatio)
+  const boxHeight = data.extraHeight ? `calc(${ratioPercent}% + ${data.extraHeight}cm)` : `${ratioPercent}%`
 
   const sectionStyle = [
     `background:${data.bgColor}`,
@@ -460,8 +470,8 @@ export function renderRu1Hero(data: Ru1HeroData): string {
     </div>`
     : ''
 
-  const inner = `<div style="position:relative;">
-    <img src="${data.imageUrl}" alt="${data.altText}" style="width:100%;aspect-ratio:${data.aspectRatio};object-fit:cover;display:block;" />
+  const inner = `<div style="position:relative;width:100%;height:0;padding-bottom:${boxHeight};overflow:hidden;">
+    <img src="${data.imageUrl}" alt="${data.altText}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block;" />
     ${overlayDiv}
     ${textLayer}
   </div>`
@@ -751,6 +761,7 @@ export interface Ru1FooterData {
   contactEmail: string
   contactPhone: string
   copyright: string
+  copyrightAlign: string
   bgColor: string
   textColor: string
   linkColor: string
@@ -774,12 +785,13 @@ export const ru1FooterDefaults: Ru1FooterData = {
   contactEmail: 'support@yourdomain.com',
   contactPhone: '+1 000-000-0000',
   copyright: '© Your Store. All rights reserved.',
+  copyrightAlign: 'center',
   bgColor: '#f9fafb',
   textColor: '#374151',
   linkColor: '#111827',
   headingColor: '#111827',
   paddingY: 48,
-  paddingX: 16,
+  paddingX: 60,
   borderStyle: 'solid',
   borderWidth: 1,
   borderColor: '#e5e7eb',
@@ -792,6 +804,7 @@ export const ru1FooterFields: FieldConfig[] = [
   { key: 'contactEmail', label: 'Contact Email', type: 'text' },
   { key: 'contactPhone', label: 'Contact Phone', type: 'text' },
   { key: 'copyright', label: 'Copyright Text', type: 'textarea' },
+  { key: 'copyrightAlign', label: 'Align Text', type: 'select', options: ['left', 'center', 'right'] },
   {
     key: 'usefulLinks', label: 'Useful Links', type: 'list',
     listFields: [
@@ -834,17 +847,17 @@ export function renderRu1Footer(data: Ru1FooterData): string {
   const pStyle = `font-size:0.875rem;color:${text};line-height:1.625;`
   const aStyle = `font-size:0.875rem;color:${link};text-decoration:none;`
 
-  const linksCol = `<div>
+  const linksCol = `<div style="max-width:20rem;">
         <h3 style="${hStyle}">Useful Links</h3>
         <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.5rem;">
           ${data.usefulLinks.map(l => `<li><a href="${l.url}" style="${aStyle}">${l.label}</a></li>`).join('\n          ')}
         </ul>
       </div>`
-  const aboutCol = `<div>
+  const aboutCol = `<div style="max-width:20rem;">
         <h3 style="${hStyle}">About Us</h3>
         <p data-field-key="tagline" style="${pStyle}">${data.tagline}</p>
       </div>`
-  const contactCol = `<div>
+  const contactCol = `<div style="max-width:20rem;">
         <h3 style="${hStyle}">Connect with Us</h3>
         <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.5rem;">
           <li style="${pStyle}">${data.contactEmail}</li>
@@ -857,10 +870,10 @@ export function renderRu1Footer(data: Ru1FooterData): string {
   return `<section data-component-title="Ru1 Homepage Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
 <footer style="${footerStyle}">
   <div style="max-width:80rem;margin:0 auto">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:2rem;">
       ${orderedCols}
     </div>
-    <div style="border-top:1px solid ${data.borderColor || '#e5e7eb'};margin-top:2rem;padding-top:1.5rem;text-align:center;">
+    <div style="border-top:1px solid ${data.borderColor || '#e5e7eb'};margin-top:2rem;padding-top:1.5rem;text-align:${data.copyrightAlign || 'center'};">
       <p data-field-key="copyright" style="font-size:0.875rem;color:${text};">${data.copyright}</p>
     </div>
   </div>
