@@ -794,6 +794,7 @@ export interface Ru1FooterData {
   contactEmail: string
   contactPhone: string
   copyright: string
+  copyrightAlign: string
   bgColor: string
   textColor: string
   linkColor: string
@@ -817,6 +818,7 @@ export const ru1FooterDefaults: Ru1FooterData = {
   contactEmail: 'support@yourdomain.com',
   contactPhone: '+1 000-000-0000',
   copyright: '© Your Store. All rights reserved.',
+  copyrightAlign: 'center',
   bgColor: '#ffffff',
   textColor: '#374151',
   linkColor: '#111827',
@@ -842,6 +844,7 @@ export const ru1FooterFields: FieldConfig[] = [
   { key: 'contactEmail', label: 'Contact Email',      type: 'text'   },
   { key: 'contactPhone', label: 'Contact Phone',      type: 'text'   },
   { key: 'copyright',    label: 'Copyright',          type: 'textarea'   },
+  { key: 'copyrightAlign', label: 'Align Text', type: 'select', options: ['left', 'center', 'right'] },
 
   { key: '_h_columns', label: 'Column Order', type: 'header' },
   { key: 'columnOrder', label: 'Column Order', type: 'column-order' },
@@ -873,17 +876,17 @@ export function renderRu1Footer(data: Ru1FooterData): string {
   const pStyle = `font-size:14px;color:${text};line-height:1.6;`
   const aStyle = `font-size:14px;color:${link};text-decoration:none;`
 
-  const linksCol = `<div style="padding-left:1.5rem;">
+  const linksCol = `<div style="max-width:320px;">
         <h3 style="${hStyle}">Useful Links</h3>
         <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">
           ${(data.usefulLinks ?? []).map(l => `<li><a href="${l.url}" style="${aStyle}">${l.label}</a></li>`).join('\n          ')}
         </ul>
       </div>`
-  const aboutCol = `<div style="padding-left:1.5rem;">
+  const aboutCol = `<div style="max-width:320px;">
         <h3 style="${hStyle}">About Us</h3>
         <p data-field-key="aboutText" style="${pStyle}">${data.aboutText}</p>
       </div>`
-  const contactCol = `<div style="padding-left:1.5rem;">
+  const contactCol = `<div style="max-width:320px;">
         <h3 style="${hStyle}">Connect with Us</h3>
         <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">
           <li style="${pStyle}">${data.contactEmail}</li>
@@ -897,10 +900,10 @@ export function renderRu1Footer(data: Ru1FooterData): string {
   return `<section data-component-title="Ru1-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
 <footer style="background-color:${bg};color:${text};padding:${data.paddingY}px ${data.paddingX}px;${borderTop}">
   <div style="width:100%;max-width:1280px;margin:0 auto;box-sizing:border-box;">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;padding-bottom:40px;align-items:start;">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:32px;padding-bottom:40px;align-items:start;">
       ${orderedCols}
     </div>
-    <div style="border-top:1px solid ${data.borderColor || '#e5e7eb'};padding-top:24px;text-align:center;">
+    <div style="border-top:1px solid ${data.borderColor || '#e5e7eb'};padding-top:24px;text-align:${data.copyrightAlign || 'center'};">
       <p data-field-key="copyright" style="font-size:14px;color:${text};opacity:0.6;">${data.copyright}</p>
     </div>
   </div>
