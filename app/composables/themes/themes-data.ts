@@ -1,4 +1,5 @@
 ﻿import type { FieldConfig } from '../editor/useBlockRegistry'
+import { fontField, fontCss } from '../editor/fontFields'
 import { icon } from '../useIconSvg'
 import {
   megaMenuHeaderDefaults, megaMenuHeaderFields, renderMegaMenuHeader,
@@ -113,6 +114,10 @@ export interface Ru1NavbarData {
   borderStyle: string
   borderWidth: number
   borderColor: string
+  fontFamily: string
+  brandFont: string
+  linkFont: string
+  buttonFont: string
 }
 
 export const ru1NavbarDefaults: Ru1NavbarData = {
@@ -155,9 +160,16 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   borderStyle: 'solid',
   borderWidth: 1,
   borderColor: '#374151',
+  fontFamily: '',
+  brandFont: '',
+  linkFont: '',
+  buttonFont: '',
 }
 
 export const ru1NavbarFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_branding', label: 'Branding', type: 'header' },
   { key: 'logoUrl', label: 'Logo Image', type: 'image', noAspectRatio: true },
   { key: 'brandName', label: 'Brand Name', type: 'text' },
@@ -165,6 +177,7 @@ export const ru1NavbarFields: FieldConfig[] = [
   { key: 'logoAlign', label: 'Logo Position', type: 'select', options: ['left', 'center', 'right'] },
   { key: 'brandFontSize', label: 'Brand Font Size (px)', type: 'number', step: 1, placeholder: '20' },
   { key: 'brandFontWeight', label: 'Brand Font Weight', type: 'select', options: ['300', '400', '500', '600', '700', '800'] },
+  fontField('brandFont', 'Brand Font'),
 
   { key: '_h_navigation', label: 'Navigation', type: 'header' },
   {
@@ -180,6 +193,7 @@ export const ru1NavbarFields: FieldConfig[] = [
   { key: 'linkColor', label: 'Link Colour', type: 'color' },
   { key: 'linkFontSize', label: 'Link Font Size (px)', type: 'number', step: 1, placeholder: '14' },
   { key: 'linkFontWeight', label: 'Link Font Weight', type: 'select', options: ['300', '400', '500', '600', '700', '800'] },
+  fontField('linkFont', 'Link Font'),
   { key: 'showSearch', label: 'Show Search Bar', type: 'toggle' },
   { key: 'searchPlaceholder', label: 'Search Placeholder', type: 'text' },
   { key: 'searchAlign', label: 'Search Position', type: 'select', options: ['left', 'center', 'right'] },
@@ -195,6 +209,7 @@ export const ru1NavbarFields: FieldConfig[] = [
   { key: 'showCart', label: 'Show Cart Icon', type: 'toggle' },
   { key: 'cartUrl', label: 'Cart URL', type: 'url' },
   { key: 'buttonsAlign', label: 'Buttons Position', type: 'select', options: ['left', 'center', 'right'] },
+  fontField('buttonFont', 'Button Font'),
 
   { key: '_h_style', label: 'Style', type: 'header' },
   { key: 'bgColor', label: 'Background Colour', type: 'color' },
@@ -223,10 +238,10 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 
   const logoInner = data.logoUrl
     ? `<img src="${data.logoUrl}" alt="${data.brandName}" style="width:${data.logoWidth}px;height:auto;display:block;" />`
-    : `<span data-field-key="brandName" style="font-size:${data.brandFontSize}px;font-weight:${data.brandFontWeight};color:inherit;">${data.brandName}</span>`
+    : `<span data-field-key="brandName" style="font-size:${data.brandFontSize}px;font-weight:${data.brandFontWeight};color:inherit;${fontCss(data.brandFont, data.fontFamily)}">${data.brandName}</span>`
   const logoEl = `<a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;">${logoInner}</a>`
 
-  const linkStyle = `color:${data.linkColor};font-size:1rem;text-decoration:none;display:inline-flex;align-items:center;border-radius:0.375rem;padding:0.5rem 0;`
+  const linkStyle = `color:${data.linkColor};font-size:1rem;text-decoration:none;display:inline-flex;align-items:center;border-radius:0.375rem;padding:0.5rem 0;${fontCss(data.linkFont, data.fontFamily)}`
 
   const searchW = data.searchWidth || 420
   const searchEl = data.showSearch
@@ -237,8 +252,8 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     : ''
 
   const buttonsArr = [
-    data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${data.textColor};font-size:0.875rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;">${data.signInLabel}</a>` : '',
-    data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${data.textColor};font-size:0.875rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;">${data.contactUsLabel}</a>` : '',
+    data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${data.textColor};font-size:0.875rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;${fontCss(data.buttonFont, data.fontFamily)}">${data.signInLabel}</a>` : '',
+    data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${data.textColor};font-size:0.875rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;${fontCss(data.buttonFont, data.fontFamily)}">${data.contactUsLabel}</a>` : '',
     data.showCart
       ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;flex-shrink:0;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
       : '',
@@ -291,7 +306,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     ? `<div style="margin:0 auto;display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding:0.5rem 0;gap:0.75rem;">${linksEl}</div>`
     : ''
 
-  const sectionStyle = data.sticky ? 'position:sticky;top:0;z-index:9999' : ''
+  const sectionStyle = fontCss(undefined, data.fontFamily) + (data.sticky ? 'position:sticky;top:0;z-index:9999' : '')
 
   const mobileDrawerLinks = visibleNavLinks.map(l =>
     `<a href="${l.url}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;">${l.label}</a>`
@@ -340,8 +355,8 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     ${data.dynamicCategories ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;cursor:pointer;">Categories</a>` : ''}
   </div>
   <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
-    ${data.showContactUs ? `<a href="${data.contactUsUrl}" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;">${data.contactUsLabel}</a>` : ''}
-    ${data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;">${data.signInLabel}</a>` : ''}
+    ${data.showContactUs ? `<a href="${data.contactUsUrl}" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;${fontCss(data.buttonFont, data.fontFamily)}">${data.contactUsLabel}</a>` : ''}
+    ${data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;${fontCss(data.buttonFont, data.fontFamily)}">${data.signInLabel}</a>` : ''}
   </div>
 </div>
 
@@ -383,14 +398,18 @@ export interface Ru1HeroData {
   paddingY: number
   paddingX: number
   borderRadius: number
+  fontFamily: string
+  headlineFont: string
+  subheadlineFont: string
+  ctaFont: string
 }
 
 export const ru1HeroDefaults: Ru1HeroData = {
   imageUrl: placeholderSvg,
   altText: 'Hero image',
   linkUrl: '',
-  aspectRatio: '4/1',
-  extraHeight: 15,
+  aspectRatio: '3.49/1',
+  extraHeight: 0,
   headline: '',
   subheadline: '',
   textColor: '#ffffff',
@@ -405,9 +424,16 @@ export const ru1HeroDefaults: Ru1HeroData = {
   paddingY: 0,
   paddingX: 0,
   borderRadius: 0,
+  fontFamily: '',
+  headlineFont: '',
+  subheadlineFont: '',
+  ctaFont: '',
 }
 
 export const ru1HeroFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_image', label: 'Image', type: 'header' },
   { key: 'imageUrl', label: 'Banner Image', type: 'image', noAspectRatio: true },
   { key: 'altText', label: 'Alt Text', type: 'text' },
@@ -421,7 +447,9 @@ export const ru1HeroFields: FieldConfig[] = [
 
   { key: '_h_text', label: 'Text', type: 'header' },
   { key: 'headline', label: 'Headline', type: 'text' },
+  fontField('headlineFont', 'Headline Font'),
   { key: 'subheadline', label: 'Subheadline', type: 'text' },
+  fontField('subheadlineFont', 'Subheadline Font'),
   { key: 'textColor', label: 'Text Color', type: 'color' },
   { key: 'textAlign', label: 'Text Alignment', type: 'select', options: ['left', 'center', 'right'] },
 
@@ -430,6 +458,7 @@ export const ru1HeroFields: FieldConfig[] = [
   { key: 'ctaUrl', label: 'Button URL', type: 'url' },
   { key: 'ctaBgColor', label: 'Button Background', type: 'color' },
   { key: 'ctaTextColor', label: 'Button Text Color', type: 'color' },
+  fontField('ctaFont', 'Button Font'),
 
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'bgColor', label: 'Section Background', type: 'color' },
@@ -449,6 +478,7 @@ export function renderRu1Hero(data: Ru1HeroData): string {
   const boxHeight = data.extraHeight ? `calc(${ratioPercent}% + ${data.extraHeight}cm)` : `${ratioPercent}%`
 
   const sectionStyle = [
+    fontCss(undefined, data.fontFamily),
     `background:${data.bgColor}`,
     data.paddingY ? `padding-top:${data.paddingY}px;padding-bottom:${data.paddingY}px` : '',
     data.paddingX ? `padding-left:${data.paddingX}px;padding-right:${data.paddingX}px` : '',
@@ -458,14 +488,14 @@ export function renderRu1Hero(data: Ru1HeroData): string {
   const overlayDiv = `<div style="position:absolute;inset:0;background:${data.overlayColor};opacity:${(data.overlayOpacity / 100).toFixed(2)};pointer-events:none"></div>`
 
   const ctaBtn = data.ctaText
-    ? `<a href="${data.ctaUrl}" style="display:inline-block;background:${data.ctaBgColor};color:${data.ctaTextColor};padding:0.625rem 1.5rem;border-radius:0.375rem;text-decoration:none;font-weight:600;margin-top:1rem">${data.ctaText}</a>`
+    ? `<a href="${data.ctaUrl}" style="display:inline-block;background:${data.ctaBgColor};color:${data.ctaTextColor};padding:0.625rem 1.5rem;border-radius:0.375rem;text-decoration:none;font-weight:600;margin-top:1rem;${fontCss(data.ctaFont, data.fontFamily)}">${data.ctaText}</a>`
     : ''
 
   const hasText = data.headline || data.subheadline || data.ctaText
   const textLayer = hasText
     ? `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:${alignItems};justify-content:center;padding:2rem;text-align:${data.textAlign};color:${data.textColor}">
-      ${data.headline ? `<h2 data-field-key="headline" style="font-size:2.25rem;font-weight:700;margin:0;line-height:1.2">${data.headline}</h2>` : ''}
-      ${data.subheadline ? `<p data-field-key="subheadline" style="font-size:1.125rem;margin:0.5rem 0 0">${data.subheadline}</p>` : ''}
+      ${data.headline ? `<h2 data-field-key="headline" style="font-size:2.25rem;font-weight:700;margin:0;line-height:1.2;${fontCss(data.headlineFont, data.fontFamily)}">${data.headline}</h2>` : ''}
+      ${data.subheadline ? `<p data-field-key="subheadline" style="font-size:1.125rem;margin:0.5rem 0 0;${fontCss(data.subheadlineFont, data.fontFamily)}">${data.subheadline}</p>` : ''}
       ${ctaBtn}
     </div>`
     : ''
@@ -525,6 +555,11 @@ export interface Ru1ProductsData {
   arrowBtnBg: string
   arrowBtnColor: string
   arrowBtnPosition: 'top' | 'center' | 'bottom'
+  fontFamily: string
+  sectionTitleFont: string
+  productNameFont: string
+  priceFont: string
+  buttonFont: string
 }
 
 const _colClass: Record<string, string> = {
@@ -575,13 +610,22 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   arrowBtnColor: '#ffffff',
   arrowBtnPosition: 'center',
   products: [],
+  fontFamily: '',
+  sectionTitleFont: '',
+  productNameFont: '',
+  priceFont: '',
+  buttonFont: '',
 }
 
 export const ru1ProductsFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_section', label: 'Section', type: 'header' },
   { key: 'sectionTitle', label: 'Section Title', type: 'text' },
   { key: 'titleAlign', label: 'Title Alignment', type: 'select', options: ['left', 'center', 'right'] },
   { key: 'titleColor', label: 'Title Color', type: 'color' },
+  fontField('sectionTitleFont', 'Section Title Font'),
 
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'bgColor', label: 'Section Background', type: 'color' },
@@ -615,10 +659,13 @@ export const ru1ProductsFields: FieldConfig[] = [
 
   { key: '_h_pricing', label: 'Pricing & Button', type: 'header' },
   { key: 'oldPriceColor', label: 'Old Price Color', type: 'color' },
+  fontField('priceFont', 'Price Font'),
+  fontField('productNameFont', 'Product Name Font'),
   { key: 'showAddToCart', label: 'Show Add to Cart Button', type: 'toggle' },
   { key: 'buttonBgColor', label: 'Button Background', type: 'color' },
   { key: 'buttonTextColor', label: 'Button Text Color', type: 'color' },
   { key: 'addToCartRadius', label: 'Button Border Radius', type: 'number', unit: 'px', step: 2, placeholder: '6' },
+  fontField('buttonFont', 'Button Font'),
 
   { key: '_h_products', label: 'Products', type: 'header' },
   {
@@ -708,14 +755,14 @@ export function renderRu1Products(data: Ru1ProductsData): string {
     const priceRow = arrowBtnPos === 'center'
       ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:0.375rem">
           <div style="display:flex;align-items:center;gap:0.5rem">
-            <p style="font-size:0.875rem">${p.price}</p>
-            ${p.oldPrice ? `<s style="color:${data.oldPriceColor};font-size:0.875rem">${p.oldPrice}</s>` : ''}
+            <p style="font-size:0.875rem;${fontCss(data.priceFont, data.fontFamily)}">${p.price}</p>
+            ${p.oldPrice ? `<s style="color:${data.oldPriceColor};font-size:0.875rem;${fontCss(data.priceFont, data.fontFamily)}">${p.oldPrice}</s>` : ''}
           </div>
           ${arrowBtnEl}
         </div>`
       : `<div style="display:flex;align-items:center;gap:0.5rem">
-          <p style="font-size:0.875rem">${p.price}</p>
-          ${p.oldPrice ? `<s style="color:${data.oldPriceColor};font-size:0.875rem">${p.oldPrice}</s>` : ''}
+          <p style="font-size:0.875rem;${fontCss(data.priceFont, data.fontFamily)}">${p.price}</p>
+          ${p.oldPrice ? `<s style="color:${data.oldPriceColor};font-size:0.875rem;${fontCss(data.priceFont, data.fontFamily)}">${p.oldPrice}</s>` : ''}
         </div>`
 
     const bottomRow = arrowBtnPos === 'bottom'
@@ -729,21 +776,23 @@ export function renderRu1Products(data: Ru1ProductsData): string {
           ${overlayHtml}
         </div>
         <div style="display:flex;flex-direction:column;gap:0.25rem;padding:0.75rem;flex:1">
-          <p style="font-weight:600;font-size:0.875rem">${p.name}</p>
+          <p style="font-weight:600;font-size:0.875rem;${fontCss(data.productNameFont, data.fontFamily)}">${p.name}</p>
           ${priceRow}
           ${colorsHtml}
-          ${data.showAddToCart !== false ? `<a href="${p.buttonUrl}" class="shop-btn" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.addToCartRadius ?? 6}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block">${p.buttonLabel}</a>` : ''}
+          ${data.showAddToCart !== false ? `<a href="${p.buttonUrl}" class="shop-btn" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.addToCartRadius ?? 6}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block;${fontCss(data.buttonFont, data.fontFamily)}">${p.buttonLabel}</a>` : ''}
           ${bottomRow}
         </div>
       </div>`
   }).join('')
 
-  return `<section data-component-title="Ru1 Homepage Featured Products" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionBg ? ` style="${sectionBg}"` : ''}>
+  const sectionStyle = fontCss(undefined, data.fontFamily) + sectionBg
+
+  return `<section data-component-title="Ru1 Homepage Featured Products" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 ${animStyle}
 <div style="${innerStyle}">
   <div style="max-width:80rem;margin:0 auto">
     <div style="margin-bottom:2rem">
-      <h1 data-field-key="sectionTitle" style="margin:0;font-size:2rem;font-weight:600;text-align:${data.titleAlign};color:${data.titleColor}">${data.sectionTitle}</h1>
+      <h1 data-field-key="sectionTitle" style="margin:0;font-size:2rem;font-weight:600;text-align:${data.titleAlign};color:${data.titleColor};${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h1>
     </div>
     <div id="${gridId}">
       ${cards}
@@ -772,6 +821,10 @@ export interface Ru1FooterData {
   borderWidth: number
   borderColor: string
   columnOrder: string[]
+  fontFamily: string
+  headingFont: string
+  bodyFont: string
+  copyrightFont: string
 }
 
 export const ru1FooterDefaults: Ru1FooterData = {
@@ -796,15 +849,23 @@ export const ru1FooterDefaults: Ru1FooterData = {
   borderWidth: 1,
   borderColor: '#e5e7eb',
   columnOrder: ['links', 'about', 'contact'],
+  fontFamily: '',
+  headingFont: '',
+  bodyFont: '',
+  copyrightFont: '',
 }
 
 export const ru1FooterFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_content', label: 'Content', type: 'header' },
   { key: 'tagline', label: 'Tagline', type: 'textarea' },
   { key: 'contactEmail', label: 'Contact Email', type: 'text' },
   { key: 'contactPhone', label: 'Contact Phone', type: 'text' },
   { key: 'copyright', label: 'Copyright Text', type: 'textarea' },
   { key: 'copyrightAlign', label: 'Align Text', type: 'select', options: ['left', 'center', 'right'] },
+  fontField('copyrightFont', 'Copyright Font'),
   {
     key: 'usefulLinks', label: 'Useful Links', type: 'list',
     listFields: [
@@ -812,6 +873,8 @@ export const ru1FooterFields: FieldConfig[] = [
       { key: 'url', label: 'URL', type: 'url' },
     ],
   },
+  fontField('headingFont', 'Heading Font'),
+  fontField('bodyFont', 'Body Font'),
 
   { key: '_h_columns', label: 'Column Order', type: 'header' },
   { key: 'columnOrder', label: 'Column Order', type: 'column-order' },
@@ -843,9 +906,9 @@ export function renderRu1Footer(data: Ru1FooterData): string {
     data.borderStyle !== 'none' ? `border-top:${data.borderWidth}px ${data.borderStyle} ${data.borderColor}` : '',
   ].filter(Boolean).join(';')
 
-  const hStyle = `font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:${heading};margin-bottom:1rem;`
-  const pStyle = `font-size:0.875rem;color:${text};line-height:1.625;`
-  const aStyle = `font-size:0.875rem;color:${link};text-decoration:none;`
+  const hStyle = `font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:${heading};margin-bottom:1rem;${fontCss(data.headingFont, data.fontFamily)}`
+  const pStyle = `font-size:0.875rem;color:${text};line-height:1.625;${fontCss(data.bodyFont, data.fontFamily)}`
+  const aStyle = `font-size:0.875rem;color:${link};text-decoration:none;${fontCss(data.bodyFont, data.fontFamily)}`
 
   const linksCol = `<div style="max-width:20rem;">
         <h3 style="${hStyle}">Useful Links</h3>
@@ -867,14 +930,16 @@ export function renderRu1Footer(data: Ru1FooterData): string {
   const colMap: Record<string, string> = { links: linksCol, about: aboutCol, contact: contactCol }
   const orderedCols = (data.columnOrder ?? ['links', 'about', 'contact']).map(k => colMap[k] ?? '').join('\n      ')
 
-  return `<section data-component-title="Ru1 Homepage Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
+  const sectionFontStyle = fontCss(undefined, data.fontFamily)
+
+  return `<section data-component-title="Ru1 Homepage Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionFontStyle ? ` style="${sectionFontStyle}"` : ''}>
 <footer style="${footerStyle}">
   <div style="max-width:80rem;margin:0 auto">
     <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:2rem;">
       ${orderedCols}
     </div>
     <div style="border-top:1px solid ${data.borderColor || '#e5e7eb'};margin-top:2rem;padding-top:1.5rem;text-align:${data.copyrightAlign || 'center'};">
-      <p data-field-key="copyright" style="font-size:0.875rem;color:${text};">${data.copyright}</p>
+      <p data-field-key="copyright" style="font-size:0.875rem;color:${text};${fontCss(data.copyrightFont, data.fontFamily)}">${data.copyright}</p>
     </div>
   </div>
 </footer>
@@ -2062,17 +2127,14 @@ export const ru3HomeEditorialDefaults = {
   bgColor: '#f0f7f4',
   sectionTitle: '"The gear that defines how your team shows up."',
   sectionTitleColor: '#0f2d4a',
-  sectionTitleFont: 'Georgia, serif',
   sectionTitleWeight: '300',
   dividerColor: '#b2d8cc',
   showDivider: true,
   sectionNumber: '03',
   sectionNumberColor: '#0f2d4a',
-  sectionNumberFont: 'Georgia, serif',
   sectionDescription: 'Three simple steps — pick your gear, redeem your allowance, and ship it home. Your team always looks the part.',
   sectionDescriptionColor: '#6b7280',
   valueColor: '#0f2d4a',
-  valueFont: 'Georgia, serif',
   valueFontWeight: '300',
   labelColor: '#6b7280',
   items: [

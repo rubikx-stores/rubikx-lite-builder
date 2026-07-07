@@ -2,6 +2,7 @@ import type { FieldConfig } from '../editor/useBlockRegistry'
 import { productImageSrc } from '../useProductImageSrc'
 import { socialIconHtml } from '../useSocialIcons'
 import { icon } from '../useIconSvg'
+import { fontField, fontCss } from '../editor/fontFields'
 
 
 export const megaMenuHeaderSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 32">
@@ -57,6 +58,14 @@ export interface MegaMenuHeaderData {
   sticky: boolean
   showBottomBorder: boolean
   bottomBorderColor: string
+  fontFamily: string
+  brandFont: string
+  linkFont: string
+  megaGroupLabelFont: string
+  megaProductNameFont: string
+  megaProductPriceFont: string
+  searchFont: string
+  buttonFont: string
 }
 
 export const megaMenuHeaderDefaults: MegaMenuHeaderData = {
@@ -99,9 +108,20 @@ export const megaMenuHeaderDefaults: MegaMenuHeaderData = {
   sticky: false,
   showBottomBorder: true,
   bottomBorderColor: '#e5e7eb',
+  fontFamily: '',
+  brandFont: '',
+  linkFont: '',
+  megaGroupLabelFont: '',
+  megaProductNameFont: '',
+  megaProductPriceFont: '',
+  searchFont: '',
+  buttonFont: '',
 }
 
 export const megaMenuHeaderFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: 'logoUrl',         label: 'Logo Image',           type: 'image',
     placeholder: 'https://example.com/logo.png', noAspectRatio: true       },
   { key: 'logoText',        label: 'Brand Name',           type: 'text',
@@ -114,6 +134,7 @@ export const megaMenuHeaderFields: FieldConfig[] = [
     placeholder: '20 — size of the brand text when no logo image is set'    },
   { key: 'brandFontWeight', label: 'Brand Font Weight',    type: 'select',
     options: ['400', '500', '600', '700', '800']                            },
+  fontField('brandFont', 'Brand Font'),
 
   {
     key: 'navLinks', label: 'Nav Links', type: 'list',
@@ -129,6 +150,10 @@ export const megaMenuHeaderFields: FieldConfig[] = [
     placeholder: '14'                                                       },
   { key: 'linkFontWeight',  label: 'Link Font Weight',      type: 'select',
     options: ['400', '500', '600', '700']                                   },
+  fontField('linkFont', 'Link Font'),
+  fontField('megaGroupLabelFont', 'Mega Menu Group Label Font'),
+  fontField('megaProductNameFont', 'Mega Menu Product Name Font'),
+  fontField('megaProductPriceFont', 'Mega Menu Product Price Font'),
 
   { key: 'showSearch',        label: 'Show Search Bar',               type: 'toggle'  },
   { key: 'dynamicCategories', label: 'Dynamic Categories',  type: 'toggle'  },
@@ -136,6 +161,7 @@ export const megaMenuHeaderFields: FieldConfig[] = [
     placeholder: 'e.g. Search products…'                                    },
   { key: 'searchAlign',     label: 'Search Position',       type: 'select',
     options: ['left', 'center', 'right']                                    },
+  fontField('searchFont', 'Search Font'),
 
   {
     key: 'ctaButtons', label: 'CTA Buttons', type: 'list',
@@ -157,6 +183,7 @@ export const megaMenuHeaderFields: FieldConfig[] = [
   { key: 'cartUrl',     label: 'Cart URL',        type: 'url'    },
   { key: 'buttonBorderRadius', label: 'Button Radius (px)', type: 'number',
     placeholder: '6 — corner roundness for all CTA buttons'                },
+  fontField('buttonFont', 'Button Font'),
 
   { key: 'bgColor',         label: 'Background Colour',     type: 'color'   },
   { key: 'paddingY',        label: 'Vertical Padding (px)', type: 'number',
@@ -178,17 +205,17 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
 
   const logoInner = data.logoUrl
     ? `<img src="${data.logoUrl}" alt="${data.logoText}" style="width:${data.logoWidth}px;height:auto;display:block;" />`
-    : `<span data-field-key="logoText" style="font-size:${data.brandFontSize}px;font-weight:${data.brandFontWeight};color:inherit;">${data.logoText}</span>`
+    : `<span data-field-key="logoText" style="font-size:${data.brandFontSize}px;font-weight:${data.brandFontWeight};color:inherit;${fontCss(data.brandFont, data.fontFamily)}">${data.logoText}</span>`
   const logoEl = `<a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;">${logoInner}</a>`
 
   const searchEl = data.showSearch
     ? `<div style="display:flex;align-items:center;border:1px solid #d1d5db;border-radius:9999px;padding:0.375rem 0.75rem;gap:0.5rem;min-width:160px;max-width:220px;">
         ${icon('magnifyingGlass', { size: 16, style: 'flex-shrink:0;' })}
-        <input type="text" placeholder="${data.searchPlaceholder}" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:${data.textColor};" />
+        <input type="text" placeholder="${data.searchPlaceholder}" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:${data.textColor};${fontCss(data.searchFont, data.fontFamily)}" />
       </div>`
     : ''
 
-  const linkStyle = `color:${data.linkColor};text-decoration:none;font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};white-space:nowrap;`
+  const linkStyle = `color:${data.linkColor};text-decoration:none;font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}`
 
   const renderStaticDrop = (megaMenu: typeof data.navLinks[0]['megaMenu']) => {
     if (!megaMenu || !megaMenu.length) return ''
@@ -198,11 +225,11 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
         const img = imgSrc
           ? `<img src="${imgSrc}" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;"/>`
           : `<div style="width:44px;height:44px;background:#f3f4f6;border-radius:6px;flex-shrink:0;"></div>`
-        const price = p.price != null ? `<span class="ru-ptile-price" style="font-size:11px;color:#6b7280;">$${Number(p.price).toFixed(2)}</span>` : ''
-        return `<a href="/shop/${p.id}" class="ru-ptile" data-img="${p.image ?? ''}" style="display:flex;align-items:center;gap:10px;padding:7px 14px;text-decoration:none;cursor:pointer;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">${img}<div style="min-width:0;"><div class="ru-ptile-name" style="font-size:13px;font-weight:500;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">${p.label}</div>${price}</div></a>`
+        const price = p.price != null ? `<span class="ru-ptile-price" style="font-size:11px;color:#6b7280;${fontCss(data.megaProductPriceFont, data.fontFamily)}">$${Number(p.price).toFixed(2)}</span>` : ''
+        return `<a href="/shop/${p.id}" class="ru-ptile" data-img="${p.image ?? ''}" style="display:flex;align-items:center;gap:10px;padding:7px 14px;text-decoration:none;cursor:pointer;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">${img}<div style="min-width:0;"><div class="ru-ptile-name" style="font-size:13px;font-weight:500;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;${fontCss(data.megaProductNameFont, data.fontFamily)}">${p.label}</div>${price}</div></a>`
       }).join('')
       const divider = gi > 0 ? '<div style="height:1px;background:#f3f4f6;margin:4px 0;"></div>' : ''
-      return `${divider}<div><a href="${g.href}" style="display:block;padding:8px 14px 4px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;">${g.label}</a>${productsHtml || '<div style="padding:4px 14px 8px;font-size:12px;color:#9ca3af;font-style:italic;">No products selected</div>'}</div>`
+      return `${divider}<div><a href="${g.href}" style="display:block;padding:8px 14px 4px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;${fontCss(data.megaGroupLabelFont, data.fontFamily)}">${g.label}</a>${productsHtml || '<div style="padding:4px 14px 8px;font-size:12px;color:#9ca3af;font-style:italic;">No products selected</div>'}</div>`
     }).join('')
   }
 
@@ -243,7 +270,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     ? `<nav style='display:flex;align-items:center;gap:1.5rem;'>${staticLinks}${dynamicPlaceholder}</nav>`
     : ''
 
-  const signInBtnStyle = `display:inline-flex;align-items:center;padding:0.4375rem 1rem;border-radius:${data.buttonBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:500;white-space:nowrap;border:1.5px solid ${data.textColor};color:${data.textColor};background:transparent;`
+  const signInBtnStyle = `display:inline-flex;align-items:center;padding:0.4375rem 1rem;border-radius:${data.buttonBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:500;white-space:nowrap;border:1.5px solid ${data.textColor};color:${data.textColor};background:transparent;${fontCss(data.buttonFont, data.fontFamily)}`
   const signInEl = data.showSignIn
     ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="${signInBtnStyle}">${data.signInLabel}</a><span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" style="position:relative;display:none;align-items:center;"></span>`
     : ''
@@ -252,7 +279,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     : ''
   const ctaEl = data.ctaButtons.length
     ? data.ctaButtons.map(btn => {
-        const base = `display:inline-block;padding:0.4375rem 1rem;border-radius:${data.buttonBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:500;white-space:nowrap;`
+        const base = `display:inline-block;padding:0.4375rem 1rem;border-radius:${data.buttonBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:500;white-space:nowrap;${fontCss(data.buttonFont, data.fontFamily)}`
         const bg = btn.style === 'outline' ? (btn.bgColor || 'transparent') : btn.bgColor
         return `<a href="${btn.href}" style="${base}background:${bg};color:${btn.textColor};border:1.5px solid ${btn.borderColor};">${btn.label}</a>`
       }).join('')
@@ -285,18 +312,18 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
   const hasMegaMenu = data.navLinks.some(l => l.megaMenu && l.megaMenu.length > 0)
 
   const mobileDrawerLinks = data.navLinks.map(l =>
-    `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;">${l.label}</a>`
+    `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;${fontCss(data.linkFont, data.fontFamily)}">${l.label}</a>`
   ).join('')
 
   const mobileSearchEl = data.showSearch
     ? `<div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0 0.5rem;gap:0.5rem;background:#fff;margin-bottom:1rem;">
         ${icon('magnifyingGlass', { size: 20, stroke: '#1e40af', style: 'flex-shrink:0;' })}
-        <input type="text" placeholder="${data.searchPlaceholder}" style="border:none;outline:none;background:#fff;font-size:0.875rem;width:100%;color:#3b82f6;padding:0.5rem 0;" />
+        <input type="text" placeholder="${data.searchPlaceholder}" style="border:none;outline:none;background:#fff;font-size:0.875rem;width:100%;color:#3b82f6;padding:0.5rem 0;${fontCss(data.searchFont, data.fontFamily)}" />
       </div>`
     : ''
 
   const mobileCTAButtons = data.ctaButtons.map(btn =>
-    `<a href="${btn.href}" style="display:flex;align-items:center;justify-content:center;border:1.5px solid ${btn.borderColor};border-radius:${data.buttonBorderRadius}px;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${btn.textColor};background:${btn.bgColor};text-decoration:none;">${btn.label}</a>`
+    `<a href="${btn.href}" style="display:flex;align-items:center;justify-content:center;border:1.5px solid ${btn.borderColor};border-radius:${data.buttonBorderRadius}px;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${btn.textColor};background:${btn.bgColor};text-decoration:none;${fontCss(data.buttonFont, data.fontFamily)}">${btn.label}</a>`
   ).join('')
 
   const mobileNav = `
@@ -347,7 +374,8 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     ? `<script>(function(){function wireTiles(sec){sec.querySelectorAll('.ru-ptile').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var panel=sec.querySelector('.ru-pd');if(!panel)return;var imgEl=a.querySelector('img');var imgSrc=imgEl?imgEl.src:'';var name=(a.querySelector('.ru-ptile-name')||{}).textContent||'';var price=(a.querySelector('.ru-ptile-price')||{}).textContent||'';var imgCol=imgSrc?'<img src="'+imgSrc+'" style="width:100%;height:100%;object-fit:cover;display:block;" />':'<div style="width:100%;height:100%;background:#f3f4f6;"></div>';panel.innerHTML='<div style="display:grid;grid-template-columns:40% 60%;height:380px;position:relative;">'+  '<div style="overflow:hidden;">'+imgCol+'</div>'+  '<div style="padding:40px 48px;display:flex;flex-direction:column;justify-content:center;background:#fff;">'+    '<div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;">Featured Product</div>'+    '<div style="font-size:26px;font-weight:700;color:#111827;line-height:1.25;margin-bottom:12px;">'+name+'</div>'+    '<div style="font-size:22px;font-weight:600;color:#374151;margin-bottom:28px;">'+price+'</div>'+    '<div><a href="'+a.href+'" style="display:inline-block;padding:12px 28px;background:#111827;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:500;letter-spacing:.02em;">View Product →</a></div>'+  '</div>'+  '<button onclick="this.closest(\\'.ru-pd\\').style.display=\\'none\\'" style="position:absolute;top:12px;right:16px;background:rgba(255,255,255,.9);border:1px solid #e5e7eb;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;color:#6b7280;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>'+  '</div>';panel.style.display='block';panel.scrollIntoView({behavior:'smooth',block:'nearest'});});})}function init(){var ts=document.querySelectorAll('.ru-mega-item[data-mega-json]');if(!ts.length)return;var allIds=[];ts.forEach(function(t){try{JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"')).forEach(function(g){(g.ids||[]).forEach(function(id){if(allIds.indexOf(id)<0)allIds.push(id);});});}catch(e){}});ts.forEach(function(t){var sec=t.closest('section');if(sec)wireTiles(sec);});if(!allIds.length)return;fetch('/api/products?ids='+allIds.join(',')).then(function(r){return r.json();}).then(function(prods){var map={};prods.forEach(function(p){map[p.id]=p;});ts.forEach(function(t){var groups;try{groups=JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"'));}catch(e){return;}var drop=t.querySelector('.ru-mega-drop');if(!drop)return;var html=groups.map(function(g){var items=(g.ids||[]).map(function(id){var p=map[id];if(!p)return'';var img=p.image?'<img src="data:image/png;base64,'+p.image+'" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;"/>':'<div style="width:44px;height:44px;background:#f3f4f6;border-radius:6px;flex-shrink:0;"></div>';var price=p.price!=null?'<span class="ru-ptile-price" style="font-size:11px;color:#6b7280;">$'+Number(p.price).toFixed(2)+'</span>':'';return'<a href="/shop/'+p.id+'" class="ru-ptile" style="display:flex;align-items:center;gap:10px;padding:7px 14px;text-decoration:none;cursor:pointer;" onmouseover="this.style.background=\\'#f9fafb\\'" onmouseout="this.style.background=\\'\\''">'+img+'<div style="min-width:0;"><div class="ru-ptile-name" style="font-size:13px;font-weight:500;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">'+p.name+'</div>'+price+'</div></a>';}).join('');if(!items.trim())return'';return'<div><a href="'+(g.href||'#')+'" style="display:block;padding:8px 14px 4px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;">'+g.label+'</a>'+items+'</div>';}).filter(Boolean).join('<div style="height:1px;background:#f3f4f6;margin:4px 0;"></div>');drop.innerHTML=html;var sec=t.closest('section');if(sec)wireTiles(sec);});}).catch(function(){});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();<\/script>`
     : ''
 
-  return `<section data-component-title="Ru2-Mega-Menu-Header" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${data.sticky ? ' style="position:sticky;top:0;z-index:9999"' : ''}>
+  const sectionFontStyle = fontCss(undefined, data.fontFamily) + (data.sticky ? 'position:sticky;top:0;z-index:9999' : '')
+  return `<section data-component-title="Ru2-Mega-Menu-Header" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionFontStyle ? ` style="${sectionFontStyle}"` : ''}>
 <style>
 .ru-mega-item:hover .ru-mega-drop{display:block !important;}
 .ru-pd{display:none;width:100%;border-top:1px solid #e5e7eb;overflow:hidden;}
@@ -400,6 +428,10 @@ export interface Ru1FormData {
   showInfo: boolean
   showForm: boolean
   singleBlockAlign: string
+  fontFamily: string
+  titleFont: string
+  descriptionFont: string
+  buttonFont: string
 }
 
 export const ru1FormDefaults: Ru1FormData = {
@@ -417,11 +449,20 @@ export const ru1FormDefaults: Ru1FormData = {
   showInfo: true,
   showForm: true,
   singleBlockAlign: 'center',
+  fontFamily: '',
+  titleFont: '',
+  descriptionFont: '',
+  buttonFont: '',
 }
 
 export const ru1FormFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: 'title',       label: 'Section Title',      type: 'text',   placeholder: 'e.g. Get in touch'         },
+  fontField('titleFont', 'Title Font'),
   { key: 'description', label: 'Description',        type: 'textarea',   placeholder: 'Short intro paragraph…'   },
+  fontField('descriptionFont', 'Description Font'),
   { key: 'addressLine1',label: 'Address Line 1',     type: 'text',   placeholder: 'Street address'            },
   { key: 'addressLine2',label: 'Address Line 2',     type: 'text',   placeholder: 'City, State ZIP'           },
   { key: 'phone',       label: 'Phone Number',       type: 'text',   placeholder: 'Your phone number'         },
@@ -429,6 +470,7 @@ export const ru1FormFields: FieldConfig[] = [
   { key: 'submitLabel', label: 'Submit Button Text', type: 'text',   placeholder: 'Send message'              },
   { key: 'submitBgColor', label: 'Submit Button Colour', type: 'color'                                        },
   { key: 'submitAlign',   label: 'Submit Button Align',  type: 'select', options: ['left', 'center', 'right'] },
+  fontField('buttonFont', 'Button Font'),
   {
     key: 'socials', label: 'Social Links', type: 'list',
     listFields: [
@@ -452,9 +494,10 @@ const inputStyle = 'display:block;width:100%;box-sizing:border-box;border-radius
 export function renderRu1Form(data: Ru1FormData): string {
   const phoneHref = `tel:${data.phone.replace(/\s/g, '')}`
   const emailHref = `mailto:${data.email}`
-  const btnStyle  = `display:inline-block;border-radius:6px;padding:0.625rem 0.875rem;font-size:0.875rem;font-weight:600;color:#fff;background:${data.submitBgColor};border:none;cursor:pointer;`
+  const btnStyle  = `display:inline-block;border-radius:6px;padding:0.625rem 0.875rem;font-size:0.875rem;font-weight:600;color:#fff;background:${data.submitBgColor};border:none;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}`
   const alignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
   const btnJustify = alignMap[data.submitAlign ?? 'right'] ?? 'flex-end'
+  const sectionFontStyle = fontCss(undefined, data.fontFamily)
 
   // Build social icons row — auto-detect platform & brand colour from URL
   const socialIcons = (data.socials ?? []).map(s => socialIconHtml(s.href)).filter(Boolean)
@@ -463,8 +506,8 @@ export function renderRu1Form(data: Ru1FormData): string {
     : ''
 
   const infoCol = `<div style="position:relative;padding:6rem 2rem 5rem;overflow:hidden;background:#f3f4f6;">
-      <h2 style="font-size:2.25rem;font-weight:600;color:#111827;margin:0 0 1.5rem;">${data.title}</h2>
-      <p style="font-size:1.125rem;line-height:2;color:#4b5563;margin:0 0 2.5rem;">${data.description}</p>
+      <h2 style="font-size:2.25rem;font-weight:600;color:#111827;margin:0 0 1.5rem;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+      <p style="font-size:1.125rem;line-height:2;color:#4b5563;margin:0 0 2.5rem;${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>
       <dl style="display:flex;flex-direction:column;gap:1rem;font-size:1rem;line-height:1.75;color:#4b5563;">
         <div style="display:flex;gap:1rem;align-items:flex-start;">
           <dt style="flex:none;">${iconBuilding}</dt>
@@ -519,7 +562,7 @@ export function renderRu1Form(data: Ru1FormData): string {
     const colMap: Record<string, string> = { info: infoCol, form: formCol }
     const order = data.columnOrder ?? ['info', 'form']
     const orderedCols = order.map(k => colMap[k] ?? '').join('\n    ')
-    return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;background:#fff;">
+    return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;background:#fff;${sectionFontStyle}">
   <div style="margin:0 auto;max-width:80rem;display:grid;grid-template-columns:1fr 1fr;">
     ${orderedCols}
   </div>
@@ -530,14 +573,14 @@ export function renderRu1Form(data: Ru1FormData): string {
     const singleCol = showInfo ? infoCol : formCol
     const alignMap: Record<string, string> = { left: '0 auto 0 0', center: '0 auto', right: '0 0 0 auto' }
     const margin = alignMap[data.singleBlockAlign ?? 'center'] ?? '0 auto'
-    return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;background:#fff;">
+    return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;background:#fff;${sectionFontStyle}">
   <div style="margin:0 auto;max-width:80rem;">
     <div style="max-width:50%;margin:${margin};">${singleCol}</div>
   </div>
 </section>`
   }
 
-  return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;background:#fff;min-height:4rem;"></section>`
+  return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;background:#fff;min-height:4rem;${sectionFontStyle}"></section>`
 }
 
 // ─── Ru2-Form ─────────────────────────────────────────────────────────────────
@@ -597,6 +640,15 @@ export interface Ru2FormData {
   labelColor: string
   paddingY: number
   paddingX: number
+  fontFamily: string
+  eyebrowFont: string
+  titleFont: string
+  descriptionFont: string
+  infoLabelFont: string
+  infoValueFont: string
+  formTitleFont: string
+  formSubtitleFont: string
+  buttonFont: string
 }
 
 export const ru2FormDefaults: Ru2FormData = {
@@ -629,16 +681,31 @@ export const ru2FormDefaults: Ru2FormData = {
   labelColor: '#374151',
   paddingY: 64,
   paddingX: 48,
+  fontFamily: '',
+  eyebrowFont: '',
+  titleFont: '',
+  descriptionFont: '',
+  infoLabelFont: '',
+  infoValueFont: '',
+  formTitleFont: '',
+  formSubtitleFont: '',
+  buttonFont: '',
 }
 
 export const ru2FormFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_panel', label: 'Info Panel', type: 'header' },
   { key: 'panelBgColor', label: 'Panel Background', type: 'color' },
   { key: 'panelTextColor', label: 'Panel Text Colour', type: 'color' },
   { key: 'accentColor', label: 'Accent Colour', type: 'color' },
   { key: 'eyebrow', label: 'Eyebrow Text', type: 'text', placeholder: 'e.g. Get in Touch' },
+  fontField('eyebrowFont', 'Eyebrow Font'),
   { key: 'title', label: 'Title', type: 'text', placeholder: "e.g. Let's Start a Conversation" },
+  fontField('titleFont', 'Title Font'),
   { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Short intro paragraph' },
+  fontField('descriptionFont', 'Description Font'),
   {
     key: 'infoItems', label: 'Info Items', type: 'list',
     listFields: [
@@ -647,6 +714,8 @@ export const ru2FormFields: FieldConfig[] = [
       { key: 'value', label: 'Value', type: 'text', placeholder: 'e.g. support@yourstore.com' },
     ],
   },
+  fontField('infoLabelFont', 'Info Label Font'),
+  fontField('infoValueFont', 'Info Value Font'),
   { key: 'showSocials', label: 'Show Social Links', type: 'toggle' },
   {
     key: 'socials', label: 'Social Links', type: 'list',
@@ -658,13 +727,16 @@ export const ru2FormFields: FieldConfig[] = [
   { key: '_h_form', label: 'Form', type: 'header' },
   { key: 'formBgColor', label: 'Form Background', type: 'color' },
   { key: 'formTitle', label: 'Form Title', type: 'text', placeholder: 'e.g. Send us a message' },
+  fontField('formTitleFont', 'Form Title Font'),
   { key: 'formSubtitle', label: 'Form Subtitle', type: 'text', placeholder: "e.g. We'll get back to you within 24 hours." },
+  fontField('formSubtitleFont', 'Form Subtitle Font'),
   { key: 'showSubjectField', label: 'Show Subject Dropdown', type: 'toggle' },
   { key: 'subjectOptions', label: 'Subject Options (comma separated)', type: 'textarea', placeholder: 'Order Inquiry,Product Question,Other' },
   { key: 'submitLabel', label: 'Submit Button Text', type: 'text', placeholder: 'Send Message' },
   { key: 'submitBgColor', label: 'Submit Button Background', type: 'color' },
   { key: 'submitTextColor', label: 'Submit Button Text Colour', type: 'color' },
   { key: 'submitAlign', label: 'Submit Button Align', type: 'select', options: ['left', 'center', 'right'] },
+  fontField('buttonFont', 'Button Font'),
   { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
   { key: 'labelColor', label: 'Label Colour', type: 'color' },
 
@@ -681,6 +753,7 @@ export function renderRu2Form(data: Ru2FormData): string {
   const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:8px;background:#fff;padding:10px 14px;font-size:14px;color:#111827;border:1.5px solid ${data.inputBorderColor};outline:none;`
   const alignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
   const btnJustify = alignMap[data.submitAlign ?? 'right'] ?? 'flex-end'
+  const sectionFontStyle = fontCss(undefined, data.fontFamily)
 
   const socialIcons = (data.socials ?? []).map(s => socialIconHtml(s.href)).filter(Boolean)
   const socialRow = data.showSocials && socialIcons.length
@@ -691,16 +764,16 @@ export function renderRu2Form(data: Ru2FormData): string {
     <div style="display:flex;align-items:flex-start;gap:14px;">
       <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${item.icon}</div>
       <div>
-        <div style="font-size:11px;font-weight:600;color:${data.accentColor};text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px;">${item.label}</div>
-        <div style="font-size:14px;color:rgba(255,255,255,0.8);font-weight:500;">${item.value}</div>
+        <div style="font-size:11px;font-weight:600;color:${data.accentColor};text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px;${fontCss(data.infoLabelFont, data.fontFamily)}">${item.label}</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.8);font-weight:500;${fontCss(data.infoValueFont, data.fontFamily)}">${item.value}</div>
       </div>
     </div>`).join('')
 
   const infoPanel = `<div style="background:${data.panelBgColor};padding:${data.paddingY}px ${data.paddingX}px;display:flex;flex-direction:column;justify-content:space-between;">
     <div>
-      <div style="font-size:11px;font-weight:700;color:${data.accentColor};letter-spacing:0.18em;text-transform:uppercase;margin-bottom:16px;">${data.eyebrow}</div>
-      <h2 style="font-size:32px;font-weight:800;color:${data.panelTextColor};line-height:1.15;margin:0 0 16px;letter-spacing:-0.5px;">${data.title}</h2>
-      <p style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.8;margin:0 0 40px;">${data.description}</p>
+      <div style="font-size:11px;font-weight:700;color:${data.accentColor};letter-spacing:0.18em;text-transform:uppercase;margin-bottom:16px;${fontCss(data.eyebrowFont, data.fontFamily)}">${data.eyebrow}</div>
+      <h2 style="font-size:32px;font-weight:800;color:${data.panelTextColor};line-height:1.15;margin:0 0 16px;letter-spacing:-0.5px;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+      <p style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.8;margin:0 0 40px;${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>
       <div style="display:flex;flex-direction:column;gap:20px;">${infoItemsHtml}</div>
     </div>
     ${socialRow}
@@ -717,8 +790,8 @@ export function renderRu2Form(data: Ru2FormData): string {
 
   const formPanel = `<div style="background:${data.formBgColor};padding:${data.paddingY}px ${data.paddingX}px;">
     <div style="margin-bottom:28px;">
-      <h3 style="font-size:22px;font-weight:700;color:#111827;margin:0 0 6px;">${data.formTitle}</h3>
-      <p style="font-size:14px;color:#9ca3af;margin:0;">${data.formSubtitle}</p>
+      <h3 style="font-size:22px;font-weight:700;color:#111827;margin:0 0 6px;${fontCss(data.formTitleFont, data.fontFamily)}">${data.formTitle}</h3>
+      <p style="font-size:14px;color:#9ca3af;margin:0;${fontCss(data.formSubtitleFont, data.fontFamily)}">${data.formSubtitle}</p>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
       <div>
@@ -740,7 +813,7 @@ export function renderRu2Form(data: Ru2FormData): string {
       <textarea rows="4" placeholder="Tell us how we can help..." style="${inputStyle}resize:vertical;height:120px;"></textarea>
     </div>
     <div style="display:flex;justify-content:${btnJustify};">
-      <button type="submit" style="background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.02em;">${data.submitLabel}</button>
+      <button type="submit" style="background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.02em;${fontCss(data.buttonFont, data.fontFamily)}">${data.submitLabel}</button>
     </div>
   </div>`
 
@@ -748,7 +821,7 @@ export function renderRu2Form(data: Ru2FormData): string {
   const showForm = data.showForm !== false
 
   if (showInfo && showForm) {
-    return `<section data-component-title="Ru2-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="overflow:hidden;">
+    return `<section data-component-title="Ru2-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="overflow:hidden;${sectionFontStyle}">
   <div style="display:grid;grid-template-columns:1fr 1.4fr;">
     ${infoPanel}
     ${formPanel}
@@ -760,7 +833,7 @@ export function renderRu2Form(data: Ru2FormData): string {
   const singleAlignMap: Record<string, string> = { left: '0 auto 0 0', center: '0 auto', right: '0 0 0 auto' }
   const margin = singleAlignMap[data.singleBlockAlign ?? 'center'] ?? '0 auto'
 
-  return `<section data-component-title="Ru2-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${showInfo ? data.panelBgColor : data.formBgColor};">
+  return `<section data-component-title="Ru2-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${showInfo ? data.panelBgColor : data.formBgColor};${sectionFontStyle}">
   <div style="max-width:80rem;margin:${margin};">
     ${singleCol}
   </div>
@@ -805,6 +878,10 @@ export interface Ru1FooterData {
   borderColor: string
   paddingY: number
   paddingX: number
+  fontFamily: string
+  headingFont: string
+  bodyFont: string
+  copyrightFont: string
 }
 
 export const ru1FooterDefaults: Ru1FooterData = {
@@ -829,9 +906,16 @@ export const ru1FooterDefaults: Ru1FooterData = {
   borderColor: '#e5e7eb',
   paddingY: 48,
   paddingX: 16,
+  fontFamily: '',
+  headingFont: '',
+  bodyFont: '',
+  copyrightFont: '',
 }
 
 export const ru1FooterFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_content', label: 'Content', type: 'header' },
   {
     key: 'usefulLinks', label: 'Useful Links', type: 'list',
@@ -845,6 +929,9 @@ export const ru1FooterFields: FieldConfig[] = [
   { key: 'contactPhone', label: 'Contact Phone',      type: 'text'   },
   { key: 'copyright',    label: 'Copyright',          type: 'textarea'   },
   { key: 'copyrightAlign', label: 'Align Text', type: 'select', options: ['left', 'center', 'right'] },
+  fontField('headingFont', 'Heading Font'),
+  fontField('bodyFont', 'Body Font'),
+  fontField('copyrightFont', 'Copyright Font'),
 
   { key: '_h_columns', label: 'Column Order', type: 'header' },
   { key: 'columnOrder', label: 'Column Order', type: 'column-order' },
@@ -872,9 +959,9 @@ export function renderRu1Footer(data: Ru1FooterData): string {
     ? `border-top:${data.borderWidth ?? 1}px ${data.borderStyle} ${data.borderColor || '#e5e7eb'};`
     : ''
 
-  const hStyle = `font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:${heading};margin-bottom:16px;`
-  const pStyle = `font-size:14px;color:${text};line-height:1.6;`
-  const aStyle = `font-size:14px;color:${link};text-decoration:none;`
+  const hStyle = `font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:${heading};margin-bottom:16px;${fontCss(data.headingFont, data.fontFamily)}`
+  const pStyle = `font-size:14px;color:${text};line-height:1.6;${fontCss(data.bodyFont, data.fontFamily)}`
+  const aStyle = `font-size:14px;color:${link};text-decoration:none;${fontCss(data.bodyFont, data.fontFamily)}`
 
   const linksCol = `<div style="max-width:320px;">
         <h3 style="${hStyle}">Useful Links</h3>
@@ -897,14 +984,15 @@ export function renderRu1Footer(data: Ru1FooterData): string {
   const colMap: Record<string, string> = { links: linksCol, about: aboutCol, contact: contactCol }
   const orderedCols = (data.columnOrder ?? ['links', 'about', 'contact']).map(k => colMap[k] ?? '').join('\n      ')
 
-  return `<section data-component-title="Ru1-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
+  const sectionFontStyle = fontCss(undefined, data.fontFamily)
+  return `<section data-component-title="Ru1-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionFontStyle ? ` style="${sectionFontStyle}"` : ''}>
 <footer style="background-color:${bg};color:${text};padding:${data.paddingY}px ${data.paddingX}px;${borderTop}">
   <div style="width:100%;max-width:1280px;margin:0 auto;box-sizing:border-box;">
     <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:32px;padding-bottom:40px;align-items:start;">
       ${orderedCols}
     </div>
     <div style="border-top:1px solid ${data.borderColor || '#e5e7eb'};padding-top:24px;text-align:${data.copyrightAlign || 'center'};">
-      <p data-field-key="copyright" style="font-size:14px;color:${text};opacity:0.6;">${data.copyright}</p>
+      <p data-field-key="copyright" style="font-size:14px;color:${text};opacity:0.6;${fontCss(data.copyrightFont, data.fontFamily)}">${data.copyright}</p>
     </div>
   </div>
 </footer>
@@ -930,6 +1018,8 @@ export interface Ru2FooterData {
   textColor: string
   paddingY: number
   paddingX: number
+  fontFamily: string
+  copyrightFont: string
 }
 
 export const ru2FooterDefaults: Ru2FooterData = {
@@ -940,10 +1030,16 @@ export const ru2FooterDefaults: Ru2FooterData = {
   textColor: '#000000',
   paddingY: 20,
   paddingX: 32,
+  fontFamily: '',
+  copyrightFont: '',
 }
 
 export const ru2FooterFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: 'copyright', label: 'Copyright Text', type: 'text', placeholder: '© 2026 Your Company, Inc.' },
+  fontField('copyrightFont', 'Copyright Font'),
   {
     key: 'socials', label: 'Social Links', type: 'list',
     listFields: [
@@ -964,25 +1060,27 @@ export function renderRu2Footer(data: Ru2FooterData): string {
     : ''
 
   const pos = data.iconPosition ?? 'right'
+  const copyrightStyle = `margin:0;font-size:13px;opacity:0.6;${fontCss(data.copyrightFont, data.fontFamily)}`
   let innerHtml: string
   if (pos === 'center') {
     innerHtml = `<div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;">
       ${iconsHtml}
-      <p style="margin:0;font-size:13px;opacity:0.6;">${data.copyright}</p>
+      <p style="${copyrightStyle}">${data.copyright}</p>
     </div>`
   } else if (pos === 'left') {
     innerHtml = `<div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:16px;">
       ${iconsHtml}
-      <p style="margin:0;font-size:13px;opacity:0.6;">${data.copyright}</p>
+      <p style="${copyrightStyle}">${data.copyright}</p>
     </div>`
   } else {
     innerHtml = `<div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:16px;">
-      <p style="margin:0;font-size:13px;opacity:0.6;">${data.copyright}</p>
+      <p style="${copyrightStyle}">${data.copyright}</p>
       ${iconsHtml}
     </div>`
   }
 
-  return `<section data-component-title="Ru2-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
+  const sectionFontStyle = fontCss(undefined, data.fontFamily)
+  return `<section data-component-title="Ru2-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionFontStyle ? ` style="${sectionFontStyle}"` : ''}>
 <footer style="background-color:${data.bgColor};color:${data.textColor};padding:${data.paddingY ?? 20}px ${data.paddingX ?? 32}px;box-sizing:border-box;">
   <div style="max-width:1280px;margin:0 auto;">
     ${innerHtml}
@@ -1036,6 +1134,12 @@ export interface Ru1AboutData {
   statsBgColor: string
   statsIconColor: string
   stats: Array<{ value: string; label: string }>
+  fontFamily: string
+  titleFont: string
+  descriptionFont: string
+  buttonFont: string
+  statValueFont: string
+  statLabelFont: string
 }
 
 export const ru1AboutDefaults: Ru1AboutData = {
@@ -1064,27 +1168,41 @@ export const ru1AboutDefaults: Ru1AboutData = {
     { value: '500+', label: 'Customer Reviews' },
     { value: '25', label: 'Achieve Awards' },
   ],
+  fontFamily: '',
+  titleFont: '',
+  descriptionFont: '',
+  buttonFont: '',
+  statValueFont: '',
+  statLabelFont: '',
 }
 
 export const ru1AboutFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: 'sectionBgColor',  label: 'Section Background',    type: 'color' },
   { key: 'title',           label: 'Section Title',         type: 'text',   placeholder: 'e.g. About Us' },
   { key: 'titleColor',      label: 'Title Colour',          type: 'color' },
   { key: 'titleAlign',      label: 'Title Alignment',       type: 'select', options: ['left', 'center', 'right'] },
   { key: 'titleWeight',     label: 'Title Weight',          type: 'select', options: ['Normal', 'Medium', 'Semibold', 'Bold', 'Extrabold'] },
+  fontField('titleFont', 'Title Font'),
   { key: 'description',     label: 'Description',           type: 'textarea',   placeholder: 'Short intro paragraph…' },
   { key: 'descriptionAlign',label: 'Description Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  fontField('descriptionFont', 'Description Font'),
   { key: 'ctaHref',         label: 'Button URL',            type: 'url',    placeholder: 'https://...' },
   { key: 'ctaLabel',        label: 'Button Text',           type: 'text',   placeholder: 'e.g. Contact Us' },
   { key: 'showCta',         label: 'Show Button',           type: 'toggle' },
   { key: 'ctaBgColor',        label: 'Button Colour',       type: 'color' },
   { key: 'ctaAlign',          label: 'Button Alignment',    type: 'select', options: ['left', 'center', 'right'] },
   { key: 'buttonAnimation',   label: 'Button Hover Effect', type: 'select', options: ['None', 'Lift up', 'Grow bigger', 'Glow'] },
+  fontField('buttonFont', 'Button Font'),
   { key: 'image',             label: 'Cover Image',         type: 'image' },
   { key: 'imageOpacity',     label: 'Image Opacity (0 = invisible, 100 = fully visible)', type: 'number', placeholder: '100', unit: '%' },
   { key: 'showStats',      label: 'Show Stats Cards',      type: 'toggle' },
   { key: 'statsBgColor',   label: 'Stats Card Background', type: 'color' },
   { key: 'statsIconColor', label: 'Stats Icon Colour',     type: 'color' },
+  fontField('statValueFont', 'Stat Value Font'),
+  fontField('statLabelFont', 'Stat Label Font'),
   {
     key: 'stats',
     label: 'Stats',
@@ -1131,7 +1249,7 @@ export function renderRu1About(data: Ru1AboutData): string {
   }
   const anim = animMap[data.buttonAnimation] ?? animMap['None']
   const hoverAttrs = anim.over ? ` onmouseover="${anim.over}" onmouseout="${anim.out}"` : ''
-  const btnStyle = `display:inline-block;border-radius:6px;padding:0.625rem 1.25rem;font-size:0.875rem;font-weight:600;color:#fff;background:${data.ctaBgColor};border:none;cursor:pointer;text-decoration:none;${anim.extra}`
+  const btnStyle = `display:inline-block;border-radius:6px;padding:0.625rem 1.25rem;font-size:0.875rem;font-weight:600;color:#fff;background:${data.ctaBgColor};border:none;cursor:pointer;text-decoration:none;${anim.extra}${fontCss(data.buttonFont, data.fontFamily)}`
 
   const iconColor = data.statsIconColor ?? '#7c3aed'
   const coloredIcons = statIcons.map(svg => svg.replace(/var\(--color-primary\)/g, iconColor))
@@ -1141,18 +1259,18 @@ export function renderRu1About(data: Ru1AboutData): string {
     return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
               ${icon}
               <div style="text-align:center;">
-                <div style="font-size:1.875rem;font-weight:600;color:${iconColor};">${stat.value}</div>
-                <p style="color:#6b7280;margin:0.25rem 0 0;">${stat.label}</p>
+                <div style="font-size:1.875rem;font-weight:600;color:${iconColor};${fontCss(data.statValueFont, data.fontFamily)}">${stat.value}</div>
+                <p style="color:#6b7280;margin:0.25rem 0 0;${fontCss(data.statLabelFont, data.fontFamily)}">${stat.label}</p>
               </div>
             </div>`
   }).join('\n            ')
 
-  return `<section data-component-title="Ru1-About" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.sectionBgColor};padding:4rem 0;">
+  return `<section data-component-title="Ru1-About" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.sectionBgColor};padding:4rem 0;${fontCss(undefined, data.fontFamily)}">
   <div style="margin:0 auto;max-width:80rem;padding:0 2rem;">
     <div style="display:flex;flex-direction:column;gap:4rem;">
       <div style="display:flex;flex-direction:column;gap:1rem;">
-        <h2 style="font-size:2.25rem;font-weight:${fontWeight};text-align:${data.titleAlign};color:${data.titleColor};margin:0 0 1rem;">${data.title}</h2>
-        <p style="font-size:1.125rem;line-height:1.75;text-align:${data.descriptionAlign};color:#4b5563;margin:0 0 1.5rem;">${data.description}</p>
+        <h2 style="font-size:2.25rem;font-weight:${fontWeight};text-align:${data.titleAlign};color:${data.titleColor};margin:0 0 1rem;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+        <p style="font-size:1.125rem;line-height:1.75;text-align:${data.descriptionAlign};color:#4b5563;margin:0 0 1.5rem;${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>
         ${data.showCta !== false ? `<div style='display:flex;justify-content:${ctaJustify};'>
           <a href='${data.ctaHref}' style='${btnStyle}'${hoverAttrs}>${data.ctaLabel ?? 'Contact Us'}</a>
         </div>` : ''}
@@ -1244,6 +1362,20 @@ export interface Ru2AboutData {
   teamMembers: Ru2AboutTeamMember[]
   paddingY: number
   paddingX: number
+  fontFamily: string
+  eyebrowFont: string
+  titleFont: string
+  descriptionFont: string
+  statValueFont: string
+  statLabelFont: string
+  buttonFont: string
+  valueTitleFont: string
+  valueDescFont: string
+  imageTagFont: string
+  teamEyebrowFont: string
+  teamTitleFont: string
+  teamNameFont: string
+  teamRoleFont: string
 }
 
 export const ru2AboutDefaults: Ru2AboutData = {
@@ -1298,9 +1430,26 @@ export const ru2AboutDefaults: Ru2AboutData = {
   ],
   paddingY: 64,
   paddingX: 48,
+  fontFamily: '',
+  eyebrowFont: '',
+  titleFont: '',
+  descriptionFont: '',
+  statValueFont: '',
+  statLabelFont: '',
+  buttonFont: '',
+  valueTitleFont: '',
+  valueDescFont: '',
+  imageTagFont: '',
+  teamEyebrowFont: '',
+  teamTitleFont: '',
+  teamNameFont: '',
+  teamRoleFont: '',
 }
 
 export const ru2AboutFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_visibility', label: 'Sections', type: 'header' },
   { key: 'showHero', label: 'Show Hero', type: 'toggle' },
   { key: 'showValues', label: 'Show Values Strip', type: 'toggle' },
@@ -1314,21 +1463,27 @@ export const ru2AboutFields: FieldConfig[] = [
   { key: '_h_hero', label: 'Hero', type: 'header' },
   { key: 'eyebrow', label: 'Eyebrow Text', type: 'text', placeholder: 'e.g. Our Story' },
   { key: 'eyebrowColor', label: 'Eyebrow Colour', type: 'color' },
+  fontField('eyebrowFont', 'Eyebrow Font'),
   { key: 'title', label: 'Title', type: 'text', placeholder: 'e.g. Built by a Team That Gets It' },
   { key: 'titleColor', label: 'Title Colour', type: 'color' },
   { key: 'titleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '40' },
   { key: 'titleFontWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
+  fontField('titleFont', 'Title Font'),
   { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Short intro paragraph' },
   { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
+  fontField('descriptionFont', 'Description Font'),
   { key: 'imageSrc', label: 'Image', type: 'image' },
   { key: 'imageTag', label: 'Image Tag Text', type: 'text', placeholder: 'e.g. Since 2018' },
   { key: 'imageTagBgColor', label: 'Image Tag Background', type: 'color' },
   { key: 'imageTagTextColor', label: 'Image Tag Text Colour', type: 'color' },
+  fontField('imageTagFont', 'Image Tag Font'),
 
   { key: '_h_stats', label: 'Stats', type: 'header' },
   { key: 'statCardBgColor', label: 'Stat Card Background', type: 'color' },
   { key: 'statValueColor', label: 'Stat Value Colour', type: 'color' },
   { key: 'statLabelColor', label: 'Stat Label Colour', type: 'color' },
+  fontField('statValueFont', 'Stat Value Font'),
+  fontField('statLabelFont', 'Stat Label Font'),
   {
     key: 'stats', label: 'Stats', type: 'list',
     listFields: [
@@ -1343,11 +1498,14 @@ export const ru2AboutFields: FieldConfig[] = [
   { key: 'ctaHref', label: 'Button URL', type: 'url', placeholder: '/aboutus' },
   { key: 'ctaBgColor', label: 'Button Background', type: 'color' },
   { key: 'ctaTextColor', label: 'Button Text Colour', type: 'color' },
+  fontField('buttonFont', 'Button Font'),
 
   { key: '_h_values', label: 'Values Strip', type: 'header' },
   { key: 'valuesBgColor', label: 'Values Background', type: 'color' },
   { key: 'valueTitleColor', label: 'Value Title Colour', type: 'color' },
   { key: 'valueDescColor', label: 'Value Description Colour', type: 'color' },
+  fontField('valueTitleFont', 'Value Title Font'),
+  fontField('valueDescFont', 'Value Description Font'),
   {
     key: 'values', label: 'Values', type: 'list',
     listFields: [
@@ -1362,8 +1520,12 @@ export const ru2AboutFields: FieldConfig[] = [
   { key: 'teamBgColor', label: 'Team Background', type: 'color' },
   { key: 'teamEyebrow', label: 'Team Eyebrow', type: 'text', placeholder: 'e.g. The People Behind It' },
   { key: 'teamEyebrowColor', label: 'Team Eyebrow Colour', type: 'color' },
+  fontField('teamEyebrowFont', 'Team Eyebrow Font'),
   { key: 'teamTitle', label: 'Team Title', type: 'text', placeholder: 'e.g. Meet the Team' },
   { key: 'teamTitleColor', label: 'Team Title Colour', type: 'color' },
+  fontField('teamTitleFont', 'Team Title Font'),
+  fontField('teamNameFont', 'Team Member Name Font'),
+  fontField('teamRoleFont', 'Team Member Role Font'),
   {
     key: 'teamMembers', label: 'Team Members', type: 'list',
     listFields: [
@@ -1377,8 +1539,8 @@ export const ru2AboutFields: FieldConfig[] = [
 export function renderRu2About(data: Ru2AboutData): string {
   const statsHtml = (data.stats ?? []).map(stat => `
     <div style="padding:20px;background:${data.statCardBgColor};border-radius:12px;border:1px solid #e5e7eb;">
-      <div style="font-size:32px;font-weight:900;color:${data.statValueColor};letter-spacing:-1px;margin-bottom:4px;">${stat.value}</div>
-      <div style="font-size:12px;color:${data.statLabelColor};font-weight:500;">${stat.label}</div>
+      <div style="font-size:32px;font-weight:900;color:${data.statValueColor};letter-spacing:-1px;margin-bottom:4px;${fontCss(data.statValueFont, data.fontFamily)}">${stat.value}</div>
+      <div style="font-size:12px;color:${data.statLabelColor};font-weight:500;${fontCss(data.statLabelFont, data.fontFamily)}">${stat.label}</div>
     </div>`).join('')
 
   const valuesHtml = (data.values ?? []).map(v => {
@@ -1388,8 +1550,8 @@ export function renderRu2About(data: Ru2AboutData): string {
     return `
     <div>
       ${iconHtml}
-      <div style="font-size:16px;font-weight:700;color:${data.valueTitleColor};margin-bottom:8px;">${v.title}</div>
-      <div style="font-size:13px;color:${data.valueDescColor};line-height:1.7;">${v.description}</div>
+      <div style="font-size:16px;font-weight:700;color:${data.valueTitleColor};margin-bottom:8px;${fontCss(data.valueTitleFont, data.fontFamily)}">${v.title}</div>
+      <div style="font-size:13px;color:${data.valueDescColor};line-height:1.7;${fontCss(data.valueDescFont, data.fontFamily)}">${v.description}</div>
     </div>`
   }).join('')
 
@@ -1400,8 +1562,8 @@ export function renderRu2About(data: Ru2AboutData): string {
     return `<div style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;">
       <div style="height:180px;overflow:hidden;">${imgHtml}</div>
       <div style="padding:16px;">
-        <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:3px;">${m.name}</div>
-        <div style="font-size:12px;color:${data.teamEyebrowColor};font-weight:600;">${m.role}</div>
+        <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:3px;${fontCss(data.teamNameFont, data.fontFamily)}">${m.name}</div>
+        <div style="font-size:12px;color:${data.teamEyebrowColor};font-weight:600;${fontCss(data.teamRoleFont, data.fontFamily)}">${m.role}</div>
       </div>
     </div>`
   }).join('')
@@ -1413,14 +1575,14 @@ export function renderRu2About(data: Ru2AboutData): string {
   const heroSection = `<div style="display:grid;grid-template-columns:1fr 1fr;min-height:480px;">
     <div style="position:relative;overflow:hidden;">
       ${imageHtml}
-      ${data.imageTag ? `<div style="position:absolute;bottom:24px;left:24px;background:${data.imageTagBgColor};color:${data.imageTagTextColor};font-size:11px;font-weight:700;padding:4px 12px;border-radius:4px;letter-spacing:0.1em;text-transform:uppercase;">${data.imageTag}</div>` : ''}
+      ${data.imageTag ? `<div style="position:absolute;bottom:24px;left:24px;background:${data.imageTagBgColor};color:${data.imageTagTextColor};font-size:11px;font-weight:700;padding:4px 12px;border-radius:4px;letter-spacing:0.1em;text-transform:uppercase;${fontCss(data.imageTagFont, data.fontFamily)}">${data.imageTag}</div>` : ''}
     </div>
     <div style="padding:${data.paddingY}px ${data.paddingX}px;display:flex;flex-direction:column;justify-content:center;background:${data.bgColor};">
-      <div style="font-size:11px;font-weight:700;color:${data.eyebrowColor};letter-spacing:0.18em;text-transform:uppercase;margin-bottom:16px;">${data.eyebrow}</div>
-      <h2 style="font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.1;letter-spacing:-1px;margin:0 0 20px;">${data.title}</h2>
-      <p style="font-size:15px;color:${data.descriptionColor};line-height:1.8;margin:0 0 32px;">${data.description}</p>
+      <div style="font-size:11px;font-weight:700;color:${data.eyebrowColor};letter-spacing:0.18em;text-transform:uppercase;margin-bottom:16px;${fontCss(data.eyebrowFont, data.fontFamily)}">${data.eyebrow}</div>
+      <h2 style="font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.1;letter-spacing:-1px;margin:0 0 20px;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+      <p style="font-size:15px;color:${data.descriptionColor};line-height:1.8;margin:0 0 32px;${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;">${statsHtml}</div>
-      ${data.showCta !== false ? `<div><a href="${data.ctaHref}" style="display:inline-block;background:${data.ctaBgColor};color:${data.ctaTextColor};padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;">${data.ctaLabel}</a></div>` : ''}
+      ${data.showCta !== false ? `<div><a href="${data.ctaHref}" style="display:inline-block;background:${data.ctaBgColor};color:${data.ctaTextColor};padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaLabel}</a></div>` : ''}
     </div>
   </div>`
 
@@ -1428,15 +1590,15 @@ export function renderRu2About(data: Ru2AboutData): string {
 
   const teamSection = data.showTeam !== false ? `<div style="background:${data.teamBgColor};padding:${data.paddingY}px ${data.paddingX}px;">
     <div style="text-align:center;margin-bottom:40px;">
-      <div style="font-size:11px;font-weight:700;color:${data.teamEyebrowColor};letter-spacing:0.18em;text-transform:uppercase;margin-bottom:12px;">${data.teamEyebrow}</div>
-      <div style="font-size:32px;font-weight:800;color:${data.teamTitleColor};letter-spacing:-0.5px;">${data.teamTitle}</div>
+      <div style="font-size:11px;font-weight:700;color:${data.teamEyebrowColor};letter-spacing:0.18em;text-transform:uppercase;margin-bottom:12px;${fontCss(data.teamEyebrowFont, data.fontFamily)}">${data.teamEyebrow}</div>
+      <div style="font-size:32px;font-weight:800;color:${data.teamTitleColor};letter-spacing:-0.5px;${fontCss(data.teamTitleFont, data.fontFamily)}">${data.teamTitle}</div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(${Math.min(data.teamMembers?.length ?? 4, 4)},1fr);gap:20px;">${teamHtml}</div>
   </div>` : ''
 
   const heroHtml = data.showHero !== false ? heroSection : ''
 
-  return `<section data-component-title="Ru2-About" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="overflow:hidden;">
+  return `<section data-component-title="Ru2-About" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="overflow:hidden;${fontCss(undefined, data.fontFamily)}">
   ${heroHtml}
   ${valuesSection}
   ${teamSection}
@@ -1483,6 +1645,11 @@ export interface Ru1FaqData {
   iconColor: string
   dividerColor: string
   faqs: Array<{ question: string; answer: string }>
+  fontFamily: string
+  titleFont: string
+  subtitleFont: string
+  questionFont: string
+  answerFont: string
 }
 
 export const ru1FaqDefaults: Ru1FaqData = {
@@ -1511,14 +1678,23 @@ export const ru1FaqDefaults: Ru1FaqData = {
     { question: 'Do you offer post-launch support?',       answer: 'Absolutely. We provide ongoing support, maintenance, and updates to ensure your solution remains secure, efficient, and up to date.' },
     { question: 'How can I contact your team?',            answer: 'You can reach us through our contact form, email, or phone. Our team is available to answer questions and assist you with any inquiries.' },
   ],
+  fontFamily: '',
+  titleFont: '',
+  subtitleFont: '',
+  questionFont: '',
+  answerFont: '',
 }
 
 export const ru1FaqFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: 'sectionBgColor', label: 'Section Background',   type: 'color' },
   { key: 'title',          label: 'Section Title',        type: 'text',   placeholder: 'e.g. Frequently asked questions' },
   { key: 'titleColor',     label: 'Title Colour',         type: 'color' },
   { key: 'titleAlign',     label: 'Title Alignment',      type: 'select', options: ['left', 'center', 'right'] },
   { key: 'titleWeight',    label: 'Title Weight',         type: 'select', options: ['Normal', 'Medium', 'Semibold', 'Bold', 'Extrabold'] },
+  fontField('titleFont', 'Title Font'),
   { key: 'subtitleText',      label: 'Subtitle Text (before link)', type: 'textarea', placeholder: "Have a different question…" },
   { key: 'subtitleLinkText',  label: 'Subtitle Link Label',         type: 'text', placeholder: 'e.g. sending us an email' },
   { key: 'subtitleLinkHref',  label: 'Subtitle Link URL',           type: 'url',  placeholder: 'https://...' },
@@ -1527,8 +1703,11 @@ export const ru1FaqFields: FieldConfig[] = [
   { key: 'subtitleLinkColor', label: 'Subtitle Link Colour',        type: 'color' },
   { key: 'subtitleAlign',     label: 'Subtitle Alignment',          type: 'select', options: ['left', 'center', 'right'] },
   { key: 'subtitleWeight',    label: 'Subtitle Weight',             type: 'select', options: ['Normal', 'Medium', 'Semibold', 'Bold', 'Extrabold'] },
+  fontField('subtitleFont', 'Subtitle Font'),
   { key: 'questionColor',     label: 'Question Colour',             type: 'color' },
+  fontField('questionFont', 'Question Font'),
   { key: 'answerColor',    label: 'Answer Colour',        type: 'color' },
+  fontField('answerFont', 'Answer Font'),
   { key: 'iconColor',      label: 'Icon Colour (+/−)',    type: 'color' },
   { key: 'dividerColor',   label: 'Divider Line Colour',  type: 'color' },
   {
@@ -1565,6 +1744,10 @@ export interface BannerData {
   ctaBgColor: string
   ctaTextColor: string
   paddingY: number
+  fontFamily: string
+  titleFont: string
+  subtitleFont: string
+  buttonFont: string
 }
 
 export const bannerDefaults: BannerData = {
@@ -1583,11 +1766,20 @@ export const bannerDefaults: BannerData = {
   ctaBgColor: '#ffffff',
   ctaTextColor: '#111827',
   paddingY: 80,
+  fontFamily: '',
+  titleFont: '',
+  subtitleFont: '',
+  buttonFont: '',
 }
 
 export const bannerFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: 'title',    label: 'Title',    type: 'text',  placeholder: 'e.g. Welcome to Our Store' },
+  fontField('titleFont', 'Title Font'),
   { key: 'subtitle', label: 'Subtitle', type: 'text',  placeholder: 'Short supporting line…' },
+  fontField('subtitleFont', 'Subtitle Font'),
   { key: 'textColor',  label: 'Text Colour',       type: 'color' },
   { key: 'textAlign',  label: 'Text Alignment',    type: 'select', options: ['left', 'center', 'right'] },
   { key: 'bgColor',    label: 'Background Colour', type: 'color' },
@@ -1599,6 +1791,7 @@ export const bannerFields: FieldConfig[] = [
   { key: 'ctaHref',    label: 'Button URL',       type: 'url',  placeholder: '/shop' },
   { key: 'ctaBgColor',   label: 'Button Background',  type: 'color' },
   { key: 'ctaTextColor', label: 'Button Text Colour', type: 'color' },
+  fontField('buttonFont', 'Button Font'),
   { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '80' },
 ]
 
@@ -1644,18 +1837,18 @@ export function renderBanner(data: BannerData): string {
     : ''
 
   const ctaHtml = data.showCta !== false
-    ? `<a href="${data.ctaHref}" style="display:inline-block;margin-top:2rem;padding:0.75rem 2rem;background:${data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:6px;font-size:1rem;font-weight:600;">${data.ctaLabel}</a>`
+    ? `<a href="${data.ctaHref}" style="display:inline-block;margin-top:2rem;padding:0.75rem 2rem;background:${data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:6px;font-size:1rem;font-weight:600;${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaLabel}</a>`
     : ''
 
   // Section uses display:flex so the inner div can flex:1 and fill the full
   // aspect-ratio height — the builder's hover/select arm fires on that div,
   // so it must cover the entire section area, not just the text content height.
-  return `<section data-component-title="Ru1-Banner" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${aspectStyle}${overlayShadow}display:flex;flex-direction:column;">
+  return `<section data-component-title="Ru1-Banner" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${aspectStyle}${overlayShadow}display:flex;flex-direction:column;${fontCss(undefined, data.fontFamily)}">
   ${autoRatioScript}
   <div style="width:100%;box-sizing:border-box;flex:1;display:flex;align-items:center;padding:${data.paddingY}px 1rem;">
     <div style="max-width:80rem;margin:0 auto;width:100%;display:flex;flex-direction:column;align-items:${itemsAlign};text-align:${textAlign};">
-      <h2 style="font-size:2.5rem;font-weight:700;color:${data.textColor};margin:0;line-height:1.2;">${data.title}</h2>
-      <p style="font-size:1.125rem;color:${data.textColor};opacity:0.85;margin:1rem 0 0;max-width:42rem;">${data.subtitle}</p>
+      <h2 style="font-size:2.5rem;font-weight:700;color:${data.textColor};margin:0;line-height:1.2;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+      <p style="font-size:1.125rem;color:${data.textColor};opacity:0.85;margin:1rem 0 0;max-width:42rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>
       ${ctaHtml}
     </div>
   </div>
@@ -1671,22 +1864,22 @@ export function renderRu1Faq(data: Ru1FaqData): string {
     <div class="ru1-faq-item" style="border-top:1px solid ${data.dividerColor};padding:1.5rem 0;">
       <dt>
         <button onclick="var p=this.closest('.ru1-faq-item');var ans=p.querySelector('.ru1-faq-ans');var icon=p.querySelector('.ru1-faq-icon');var isOpen=ans.style.display!=='none';ans.style.display=isOpen?'none':'block';icon.textContent=isOpen?'+':'−';" style="display:flex;width:100%;align-items:flex-start;justify-content:space-between;text-align:left;background:none;border:none;cursor:pointer;padding:0;">
-          <span style="font-size:1rem;font-weight:600;line-height:1.75;color:${data.questionColor};">${faq.question}</span>
+          <span style="font-size:1rem;font-weight:600;line-height:1.75;color:${data.questionColor};${fontCss(data.questionFont, data.fontFamily)}">${faq.question}</span>
           <span style="margin-left:1.5rem;display:flex;height:1.75rem;align-items:center;flex-shrink:0;">
             <span class="ru1-faq-icon" style="font-size:1.375rem;font-weight:300;color:${data.iconColor};line-height:1;user-select:none;">+</span>
           </span>
         </button>
       </dt>
       <dd class="ru1-faq-ans" style="display:none;margin-top:0.5rem;padding-right:3rem;margin-bottom:0;">
-        <p style="font-size:1rem;line-height:1.75;color:${data.answerColor};margin:0;">${faq.answer}</p>
+        <p style="font-size:1rem;line-height:1.75;color:${data.answerColor};margin:0;${fontCss(data.answerFont, data.fontFamily)}">${faq.answer}</p>
       </dd>
     </div>`).join('\n')
 
-  return `<section data-component-title="Ru1-FAQ" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.sectionBgColor};padding:6rem 0;">
+  return `<section data-component-title="Ru1-FAQ" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.sectionBgColor};padding:6rem 0;${fontCss(undefined, data.fontFamily)}">
   <div style="margin:0 auto;max-width:80rem;padding:0 2rem;">
     <div style="margin:0 auto;max-width:56rem;">
-      <h2 style="font-size:2.5rem;font-weight:${fontWeight};letter-spacing:-0.025em;color:${data.titleColor};text-align:${data.titleAlign};margin:0 0 1.5rem;">${data.title}</h2>
-      <p style="font-size:1rem;line-height:1.75;font-weight:${subtitleWeight};color:${data.subtitleColor};text-align:${data.subtitleAlign};margin:0 0 4rem;">${data.subtitleText} <a href="${data.subtitleLinkHref}" style="font-weight:600;color:${data.subtitleLinkColor};text-decoration:none;" onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">${data.subtitleLinkText}</a> ${data.subtitleAfterLink}</p>
+      <h2 style="font-size:2.5rem;font-weight:${fontWeight};letter-spacing:-0.025em;color:${data.titleColor};text-align:${data.titleAlign};margin:0 0 1.5rem;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+      <p style="font-size:1rem;line-height:1.75;font-weight:${subtitleWeight};color:${data.subtitleColor};text-align:${data.subtitleAlign};margin:0 0 4rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitleText} <a href="${data.subtitleLinkHref}" style="font-weight:600;color:${data.subtitleLinkColor};text-decoration:none;" onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">${data.subtitleLinkText}</a> ${data.subtitleAfterLink}</p>
       <dl style="border-bottom:1px solid ${data.dividerColor};margin:0;padding:0;">
         ${faqItems}
       </dl>
@@ -1747,6 +1940,11 @@ export interface Ru2SplitBannerCollageData {
   collageGap: number
   collageBorderRadius: number
   collageImages: Ru2CollageImage[]
+  fontFamily: string
+  titleFont: string
+  subtitleFont: string
+  descriptionFont: string
+  buttonFont: string
 }
 
 export const ru2SplitBannerCollageDefaults: Ru2SplitBannerCollageData = {
@@ -1786,9 +1984,17 @@ export const ru2SplitBannerCollageDefaults: Ru2SplitBannerCollageData = {
     { src: '', alt: 'Photo 6' },
     { src: '', alt: 'Photo 7' },
   ],
+  fontFamily: '',
+  titleFont: '',
+  subtitleFont: '',
+  descriptionFont: '',
+  buttonFont: '',
 }
 
 export const ru2SplitBannerCollageFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_bg',    label: 'Background', type: 'header' },
   { key: 'bgImage',  label: 'Background Image',      type: 'image', placeholder: 'Paste URL' },
   { key: 'bgColor',  label: 'Background Colour',     type: 'color' },
@@ -1801,15 +2007,18 @@ export const ru2SplitBannerCollageFields: FieldConfig[] = [
   { key: 'titleWeight',       label: 'Title Weight',      type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
   { key: 'titleColor',        label: 'Title Colour',      type: 'color' },
   { key: 'titleLetterSpacing',label: 'Letter Spacing (px)', type: 'number', placeholder: '2' },
+  fontField('titleFont', 'Title Font'),
 
   { key: '_h_subtitle',   label: 'Subtitle', type: 'header' },
   { key: 'subtitle',      label: 'Subtitle',          type: 'text',   placeholder: 'e.g. BRANDED APPAREL & GOODS' },
   { key: 'subtitleSize',  label: 'Subtitle Size (px)', type: 'number', placeholder: '13' },
   { key: 'subtitleColor', label: 'Subtitle Colour',   type: 'color' },
+  fontField('subtitleFont', 'Subtitle Font'),
 
   { key: '_h_desc',          label: 'Description', type: 'header' },
   { key: 'description',      label: 'Description',       type: 'text',  placeholder: 'Short paragraph…' },
   { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
+  fontField('descriptionFont', 'Description Font'),
 
   { key: '_h_cta',          label: 'CTA Button', type: 'header' },
   { key: 'showCta',         label: 'Show Button',        type: 'toggle' },
@@ -1818,6 +2027,7 @@ export const ru2SplitBannerCollageFields: FieldConfig[] = [
   { key: 'ctaBgColor',      label: 'Button Background',  type: 'color' },
   { key: 'ctaTextColor',    label: 'Button Text Colour', type: 'color' },
   { key: 'ctaBorderRadius', label: 'Button Radius (px)', type: 'number', placeholder: '6' },
+  fontField('buttonFont', 'Button Font'),
 
   { key: '_h_layout',  label: 'Layout', type: 'header' },
   { key: 'textSide',   label: 'Text Side',                     type: 'select', options: ['left', 'right'] },
@@ -1886,6 +2096,10 @@ export interface Ru1StatsData {
   layout: string
   textAlign: string
   items: Ru1StatItem[]
+  fontFamily: string
+  valueFont: string
+  labelFont: string
+  descriptionFont: string
 }
 
 export const ru1StatsDefaults: Ru1StatsData = {
@@ -1911,9 +2125,16 @@ export const ru1StatsDefaults: Ru1StatsData = {
     { iconUrl: '', value: '500+', label: 'Customer Reviews', description: '' },
     { iconUrl: '', value: '25', label: 'Awards Achieved', description: '' },
   ],
+  fontFamily: '',
+  valueFont: '',
+  labelFont: '',
+  descriptionFont: '',
 }
 
 export const ru1StatsFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'layout', label: 'Columns', type: 'select', options: ['2-columns', '3-columns', '4-columns'] },
   { key: 'textAlign', label: 'Text Align', type: 'select', options: ['left', 'center', 'right'] },
@@ -1933,11 +2154,14 @@ export const ru1StatsFields: FieldConfig[] = [
   { key: 'valueFontSize', label: 'Value Size (px)', type: 'number', placeholder: '36' },
   { key: 'valueFontWeight', label: 'Value Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
   { key: 'valueColor', label: 'Value Colour', type: 'color' },
+  fontField('valueFont', 'Value Font'),
 
   { key: '_h_label', label: 'Label & Description', type: 'header' },
   { key: 'labelFontSize', label: 'Label Size (px)', type: 'number', placeholder: '14' },
   { key: 'labelColor', label: 'Label Colour', type: 'color' },
+  fontField('labelFont', 'Label Font'),
   { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
+  fontField('descriptionFont', 'Description Font'),
   { key: 'iconSize', label: 'Icon Size (px)', type: 'number', placeholder: '36' },
 
   {
@@ -1969,18 +2193,18 @@ export function renderRu1Stats(data: Ru1StatsData): string {
       : ''
 
     const descHtml = item.description
-      ? `<p style="margin:4px 0 0;font-size:12px;color:${data.descriptionColor};line-height:1.5;">${item.description}</p>`
+      ? `<p style="margin:4px 0 0;font-size:12px;color:${data.descriptionColor};line-height:1.5;${fontCss(data.descriptionFont, data.fontFamily)}">${item.description}</p>`
       : ''
 
     return `<div style="background:${data.cardBgColor};${borderStyle}border-radius:${data.cardBorderRadius}px;padding:28px 24px;display:flex;flex-direction:column;align-items:${alignMap[data.textAlign ?? 'left']};text-align:${data.textAlign ?? 'left'};">
       ${iconHtml}
-      <div style="font-size:${data.valueFontSize}px;font-weight:${data.valueFontWeight};color:${data.valueColor};line-height:1.1;margin-bottom:6px;">${item.value}</div>
-      <div style="font-size:${data.labelFontSize}px;color:${data.labelColor};font-weight:500;">${item.label}</div>
+      <div style="font-size:${data.valueFontSize}px;font-weight:${data.valueFontWeight};color:${data.valueColor};line-height:1.1;margin-bottom:6px;${fontCss(data.valueFont, data.fontFamily)}">${item.value}</div>
+      <div style="font-size:${data.labelFontSize}px;color:${data.labelColor};font-weight:500;${fontCss(data.labelFont, data.fontFamily)}">${item.label}</div>
       ${descHtml}
     </div>`
   }).join('')
 
-  return `<section data-component-title="Ru1-Stats" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;">
+  return `<section data-component-title="Ru1-Stats" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
 <style>
   @media(max-width:768px){[data-ru1-stats-grid]{grid-template-columns:repeat(2,1fr)!important}}
   @media(max-width:480px){[data-ru1-stats-grid]{grid-template-columns:1fr!important;gap:12px!important}}
@@ -2041,13 +2265,13 @@ export function renderRu2SplitBannerCollage(data: Ru2SplitBannerCollageData): st
   const letterSpacing = data.titleLetterSpacing ? `letter-spacing:${data.titleLetterSpacing}px;` : ''
 
   const ctaHtml = data.showCta !== false
-    ? `<a href="${data.ctaHref}" style="display:inline-block;margin-top:2rem;padding:0.75rem 2rem;background:${data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:${data.ctaBorderRadius ?? 6}px;font-size:1rem;font-weight:600;">${data.ctaLabel}</a>`
+    ? `<a href="${data.ctaHref}" style="display:inline-block;margin-top:2rem;padding:0.75rem 2rem;background:${data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:${data.ctaBorderRadius ?? 6}px;font-size:1rem;font-weight:600;${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaLabel}</a>`
     : ''
 
   const textCol = `<div style="padding:${py}px 3rem;display:flex;flex-direction:column;align-items:${itemsAlign};text-align:${data.textAlign ?? 'left'};align-self:center;">
-    ${data.subtitle ? `<p style="font-size:${data.subtitleSize ?? 13}px;font-weight:600;color:${data.subtitleColor};letter-spacing:0.14em;text-transform:uppercase;margin:0 0 1rem;">${data.subtitle}</p>` : ''}
-    <h2 style="font-size:${data.titleSize ?? 72}px;font-weight:${data.titleWeight ?? '800'};color:${data.titleColor};margin:0 0 1.25rem;line-height:1;${letterSpacing}">${data.title}</h2>
-    ${data.description ? `<p style="font-size:1rem;line-height:1.7;color:${data.descriptionColor};margin:0;max-width:36rem;">${data.description}</p>` : ''}
+    ${data.subtitle ? `<p style="font-size:${data.subtitleSize ?? 13}px;font-weight:600;color:${data.subtitleColor};letter-spacing:0.14em;text-transform:uppercase;margin:0 0 1rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>` : ''}
+    <h2 style="font-size:${data.titleSize ?? 72}px;font-weight:${data.titleWeight ?? '800'};color:${data.titleColor};margin:0 0 1.25rem;line-height:1;${letterSpacing}${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+    ${data.description ? `<p style="font-size:1rem;line-height:1.7;color:${data.descriptionColor};margin:0;max-width:36rem;${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>` : ''}
     ${ctaHtml}
   </div>`
 
@@ -2123,7 +2347,7 @@ export function renderRu2SplitBannerCollage(data: Ru2SplitBannerCollageData): st
   const rightCol = data.textSide === 'right' ? textCol    : collageCol
 
   if (hasAspectRatio) {
-    return `<section data-component-title="Ru2-Split-Banner-Collage" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${aspectStyle}${overlayShadow}overflow:hidden;display:flex;align-items:stretch;">
+    return `<section data-component-title="Ru2-Split-Banner-Collage" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${aspectStyle}${overlayShadow}overflow:hidden;display:flex;align-items:stretch;${fontCss(undefined, data.fontFamily)}">
   <div style="width:100%;box-sizing:border-box;flex:1;min-height:0;display:flex;flex-direction:column;">
     <div style="display:grid;grid-template-columns:${gridCols};flex:1;min-height:0;align-items:stretch;">
       ${leftCol}
@@ -2133,7 +2357,7 @@ export function renderRu2SplitBannerCollage(data: Ru2SplitBannerCollageData): st
 </section>`
   }
 
-  return `<section data-component-title="Ru2-Split-Banner-Collage" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${aspectStyle}${overlayShadow}overflow:hidden;display:flex;align-items:center;">
+  return `<section data-component-title="Ru2-Split-Banner-Collage" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${aspectStyle}${overlayShadow}overflow:hidden;display:flex;align-items:center;${fontCss(undefined, data.fontFamily)}">
   <div style="width:100%;box-sizing:border-box;">
     <div style="display:grid;grid-template-columns:${gridCols};align-items:center;">
       ${leftCol}
@@ -2209,6 +2433,13 @@ export interface Ru2StatsData {
   showDividers: boolean
   layout: string
   items: Ru2StatItem[]
+  fontFamily: string
+  titleFont: string
+  subtitleFont: string
+  buttonFont: string
+  valueFont: string
+  labelFont: string
+  descriptionFont: string
 }
 
 export const ru2StatsDefaults: Ru2StatsData = {
@@ -2257,9 +2488,19 @@ export const ru2StatsDefaults: Ru2StatsData = {
     { value: '110X', label: 'Efficiency Level', description: 'Automation that scales with you.' },
     { value: '16M', label: 'Total Users', description: 'And growing every single day.' },
   ],
+  fontFamily: '',
+  titleFont: '',
+  subtitleFont: '',
+  buttonFont: '',
+  valueFont: '',
+  labelFont: '',
+  descriptionFont: '',
 }
 
 export const ru2StatsFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'layout', label: 'Columns', type: 'select', options: ['2-columns', '3-columns', '4-columns'] },
   { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '32' },
@@ -2279,8 +2520,10 @@ export const ru2StatsFields: FieldConfig[] = [
   { key: 'titleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '22' },
   { key: 'titleFontWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
   { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  fontField('titleFont', 'Title Font'),
   { key: 'subtitle', label: 'Subtitle', type: 'text', placeholder: 'Short supporting line' },
   { key: 'subtitleColor', label: 'Subtitle Colour', type: 'color' },
+  fontField('subtitleFont', 'Subtitle Font'),
 
   { key: '_h_cta', label: 'CTA Buttons', type: 'header' },
   { key: 'showCta1', label: 'Show Button 1', type: 'toggle' },
@@ -2298,16 +2541,20 @@ export const ru2StatsFields: FieldConfig[] = [
   { key: 'cta2BgColor', label: 'Button 2 Background', type: 'color' },
   { key: 'cta2BorderColor', label: 'Button 2 Border', type: 'color' },
   { key: 'ctaBorderRadius', label: 'Button Radius (px)', type: 'number', placeholder: '20' },
+  fontField('buttonFont', 'Button Font'),
 
   { key: '_h_stats', label: 'Stat Values', type: 'header' },
   { key: 'valueFontSize', label: 'Value Size (px)', type: 'number', placeholder: '40' },
   { key: 'valueFontWeight', label: 'Value Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
   { key: 'valueColor', label: 'Value Colour', type: 'color' },
+  fontField('valueFont', 'Value Font'),
   { key: 'labelFontSize', label: 'Label Size (px)', type: 'number', placeholder: '13' },
   { key: 'labelFontWeight', label: 'Label Weight', type: 'select', options: ['400', '500', '600', '700'] },
   { key: 'labelColor', label: 'Label Colour', type: 'color' },
+  fontField('labelFont', 'Label Font'),
   { key: 'descriptionFontSize', label: 'Description Size (px)', type: 'number', placeholder: '13' },
   { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
+  fontField('descriptionFont', 'Description Font'),
   { key: 'showDividers', label: 'Show Dividers', type: 'toggle' },
   { key: 'dividerColor', label: 'Divider Colour', type: 'color' },
 
@@ -2333,11 +2580,11 @@ export function renderRu2Stats(data: Ru2StatsData): string {
   const cardBorder = data.showBorder ? `border:1px solid ${data.cardBorderColor};` : ''
 
   const cta1Html = data.showCta1
-    ? `<a href="${data.cta1Href}" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:${data.ctaBorderRadius}px;font-size:14px;font-weight:500;text-decoration:none;background:${data.cta1Style === 'filled' ? data.cta1BgColor : (data.cta1BgColor || 'transparent')};color:${data.cta1TextColor};border:1.5px solid ${data.cta1BorderColor};">▷ ${data.cta1Label}</a>`
+    ? `<a href="${data.cta1Href}" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:${data.ctaBorderRadius}px;font-size:14px;font-weight:500;text-decoration:none;background:${data.cta1Style === 'filled' ? data.cta1BgColor : (data.cta1BgColor || 'transparent')};color:${data.cta1TextColor};border:1.5px solid ${data.cta1BorderColor};${fontCss(data.buttonFont, data.fontFamily)}">▷ ${data.cta1Label}</a>`
     : ''
 
   const cta2Html = data.showCta2
-    ? `<a href="${data.cta2Href}" style="display:inline-block;padding:8px 20px;border-radius:${data.ctaBorderRadius}px;font-size:14px;font-weight:500;text-decoration:none;background:${data.cta2BgColor};color:${data.cta2TextColor};border:1.5px solid ${data.cta2BorderColor};">${data.cta2Label}</a>`
+    ? `<a href="${data.cta2Href}" style="display:inline-block;padding:8px 20px;border-radius:${data.ctaBorderRadius}px;font-size:14px;font-weight:500;text-decoration:none;background:${data.cta2BgColor};color:${data.cta2TextColor};border:1.5px solid ${data.cta2BorderColor};${fontCss(data.buttonFont, data.fontFamily)}">${data.cta2Label}</a>`
     : ''
 
   const statsHtml = (data.items ?? []).map((item, i) => {
@@ -2345,16 +2592,16 @@ export function renderRu2Stats(data: Ru2StatsData): string {
       ? `border-left:1px solid ${data.dividerColor};`
       : ''
     const descHtml = item.description
-      ? `<p style="margin:6px 0 0;font-size:${data.descriptionFontSize}px;color:${data.descriptionColor};line-height:1.5;">${item.description}</p>`
+      ? `<p style="margin:6px 0 0;font-size:${data.descriptionFontSize}px;color:${data.descriptionColor};line-height:1.5;${fontCss(data.descriptionFont, data.fontFamily)}">${item.description}</p>`
       : ''
     return `<div style="${divider}padding:0 24px;">
-      <div style="font-size:${data.valueFontSize}px;font-weight:${data.valueFontWeight};color:${data.valueColor};line-height:1.1;margin-bottom:4px;">${item.value}</div>
-      <div style="font-size:${data.labelFontSize}px;font-weight:${data.labelFontWeight};color:${data.labelColor};margin-bottom:2px;">${item.label}</div>
+      <div style="font-size:${data.valueFontSize}px;font-weight:${data.valueFontWeight};color:${data.valueColor};line-height:1.1;margin-bottom:4px;${fontCss(data.valueFont, data.fontFamily)}">${item.value}</div>
+      <div style="font-size:${data.labelFontSize}px;font-weight:${data.labelFontWeight};color:${data.labelColor};margin-bottom:2px;${fontCss(data.labelFont, data.fontFamily)}">${item.label}</div>
       ${descHtml}
     </div>`
   }).join('')
 
-  return `<section data-component-title="Ru2-Stats" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;">
+  return `<section data-component-title="Ru2-Stats" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
 <style>
   @media(max-width:768px){[data-ru2-stats-grid]{grid-template-columns:repeat(2,1fr)!important;gap:20px!important}[data-ru2-stats-grid]>div{border-left:none!important}}
   @media(max-width:480px){[data-ru2-stats-grid]{grid-template-columns:1fr!important;gap:0!important}[data-ru2-stats-grid]>div{border-top:1px solid rgba(0,0,0,0.08);padding-top:20px!important}[data-ru2-stats-grid]>div:first-child{border-top:none!important;padding-top:0!important}}
@@ -2363,8 +2610,8 @@ export function renderRu2Stats(data: Ru2StatsData): string {
     <div style="background:${data.cardBgColor};${cardBorder}border-radius:${data.cardBorderRadius}px;padding:32px;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap;">
         <div>
-          <h3 style="margin:0 0 6px;font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.3;">${data.title}</h3>
-          ${data.subtitle ? `<p style="margin:0;font-size:14px;color:${data.subtitleColor};">${data.subtitle}</p>` : ''}
+          <h3 style="margin:0 0 6px;font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.3;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h3>
+          ${data.subtitle ? `<p style="margin:0;font-size:14px;color:${data.subtitleColor};${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>` : ''}
         </div>
         ${(cta1Html || cta2Html) ? `<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">${cta1Html}${cta2Html}</div>` : ''}
       </div>
@@ -2434,6 +2681,12 @@ export interface Ru3StatsData {
   descriptionFontSize: number
   descriptionColor: string
   items: Ru3StepItem[]
+  fontFamily: string
+  sectionTitleFont: string
+  sectionSubtitleFont: string
+  badgeFont: string
+  titleFont: string
+  descriptionFont: string
 }
 
 export const ru3StatsDefaults: Ru3StatsData = {
@@ -2466,9 +2719,18 @@ export const ru3StatsDefaults: Ru3StatsData = {
     { badgeType: 'number', badgeText: '2', iconUrl: '', title: 'Redeem your $50', description: 'Your launch allotment is already loaded.' },
     { badgeType: 'number', badgeText: '3', iconUrl: '', title: 'Ship it home', description: 'Fast free shipping straight to your door.' },
   ],
+  fontFamily: '',
+  sectionTitleFont: '',
+  sectionSubtitleFont: '',
+  badgeFont: '',
+  titleFont: '',
+  descriptionFont: '',
 }
 
 export const ru3StatsFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '32' },
   { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '24' },
@@ -2480,8 +2742,10 @@ export const ru3StatsFields: FieldConfig[] = [
   { key: 'sectionTitleSize', label: 'Title Size (px)', type: 'number', placeholder: '28' },
   { key: 'sectionTitleWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
   { key: 'sectionTitleColor', label: 'Title Colour', type: 'color' },
+  fontField('sectionTitleFont', 'Section Title Font'),
   { key: 'sectionSubtitle', label: 'Subtitle', type: 'text', placeholder: 'Optional supporting line' },
   { key: 'sectionSubtitleColor', label: 'Subtitle Colour', type: 'color' },
+  fontField('sectionSubtitleFont', 'Section Subtitle Font'),
 
   { key: '_h_card', label: 'Card Style', type: 'header' },
   { key: 'cardBgColor', label: 'Card Background', type: 'color' },
@@ -2493,6 +2757,7 @@ export const ru3StatsFields: FieldConfig[] = [
   { key: 'badgeBgColor', label: 'Badge Background', type: 'color' },
   { key: 'badgeTextColor', label: 'Badge Text / Icon Colour', type: 'color' },
   { key: 'badgeSize', label: 'Badge Size (px)', type: 'number', placeholder: '52' },
+  fontField('badgeFont', 'Badge Font'),
 
   { key: '_h_separator', label: 'Separator', type: 'header' },
   { key: 'showSeparator', label: 'Show Separator', type: 'toggle' },
@@ -2502,8 +2767,10 @@ export const ru3StatsFields: FieldConfig[] = [
   { key: 'titleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '16' },
   { key: 'titleFontWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
   { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  fontField('titleFont', 'Title Font'),
   { key: 'descriptionFontSize', label: 'Description Size (px)', type: 'number', placeholder: '14' },
   { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
+  fontField('descriptionFont', 'Description Font'),
 
   {
     key: 'items',
@@ -2525,8 +2792,8 @@ export function renderRu3Stats(data: Ru3StatsData): string {
 
   const sectionHeaderHtml = data.showSectionTitle
     ? `<div style="text-align:center;margin-bottom:24px;">
-        <h2 style="margin:0 0 8px;font-size:${data.sectionTitleSize}px;font-weight:${data.sectionTitleWeight};color:${data.sectionTitleColor};line-height:1.3;">${data.sectionTitle}</h2>
-        ${data.sectionSubtitle ? `<p style="margin:0;font-size:15px;color:${data.sectionSubtitleColor};">${data.sectionSubtitle}</p>` : ''}
+        <h2 style="margin:0 0 8px;font-size:${data.sectionTitleSize}px;font-weight:${data.sectionTitleWeight};color:${data.sectionTitleColor};line-height:1.3;${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h2>
+        ${data.sectionSubtitle ? `<p style="margin:0;font-size:15px;color:${data.sectionSubtitleColor};${fontCss(data.sectionSubtitleFont, data.fontFamily)}">${data.sectionSubtitle}</p>` : ''}
       </div>`
     : ''
 
@@ -2537,15 +2804,15 @@ export function renderRu3Stats(data: Ru3StatsData): string {
   const itemsHtml = (data.items ?? []).map((item, i) => {
     const badgeInner = item.badgeType === 'icon' && item.iconUrl
       ? `<img src="${item.iconUrl}" style="width:${data.badgeSize * 0.5}px;height:${data.badgeSize * 0.5}px;object-fit:contain;" />`
-      : `<span style="font-size:${data.badgeSize * 0.45}px;font-weight:700;color:${data.badgeTextColor};font-style:italic;">${item.badgeText}</span>`
+      : `<span style="font-size:${data.badgeSize * 0.45}px;font-weight:700;color:${data.badgeTextColor};font-style:italic;${fontCss(data.badgeFont, data.fontFamily)}">${item.badgeText}</span>`
 
     const stepHtml = `<div style="display:flex;align-items:flex-start;gap:16px;flex:1;min-width:0;">
       <div style="flex-shrink:0;width:${data.badgeSize}px;height:${data.badgeSize}px;border-radius:${half}px;background:${data.badgeBgColor};display:flex;align-items:center;justify-content:center;">
         ${badgeInner}
       </div>
       <div style="min-width:0;">
-        <div style="font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};margin-bottom:6px;line-height:1.3;">${item.title}</div>
-        <div style="font-size:${data.descriptionFontSize}px;color:${data.descriptionColor};line-height:1.6;">${item.description}</div>
+        <div style="font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};margin-bottom:6px;line-height:1.3;${fontCss(data.titleFont, data.fontFamily)}">${item.title}</div>
+        <div style="font-size:${data.descriptionFontSize}px;color:${data.descriptionColor};line-height:1.6;${fontCss(data.descriptionFont, data.fontFamily)}">${item.description}</div>
       </div>
     </div>`
 
@@ -2553,7 +2820,7 @@ export function renderRu3Stats(data: Ru3StatsData): string {
     return stepHtml + sep
   }).join('')
 
-  return `<section data-component-title="Ru3-Stats" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;">
+  return `<section data-component-title="Ru3-Stats" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
 <style>
   @media(max-width:768px){[data-ru3-stats-row]{flex-direction:column!important}[data-ru3-stats-sep]{display:none!important}}
 </style>
@@ -2621,6 +2888,10 @@ export interface Ru4StatsData {
   labelColor: string
   gridGap: number
   items: Ru4StatItem[]
+  fontFamily: string
+  sectionSubtitleFont: string
+  sectionDescriptionFont: string
+  labelFont: string
 }
 
 export const ru4StatsDefaults: Ru4StatsData = {
@@ -2632,14 +2903,14 @@ export const ru4StatsDefaults: Ru4StatsData = {
   sectionTitleSize: 40,
   sectionTitleWeight: '400',
   sectionTitleColor: '#2d2d2d',
-  sectionTitleFont: 'Georgia, serif',
+  sectionTitleFont: '',
   sectionSubtitle: '',
   sectionSubtitleColor: '#6b7280',
   sectionSubtitleSize: 16,
   sectionNumber: '02',
   sectionNumberSize: 80,
   sectionNumberColor: '#2d2d2d',
-  sectionNumberFont: 'Georgia, serif',
+  sectionNumberFont: '',
   sectionDescription: 'Non-coding RNA panels: MicroRNAs, lncRNAs, and circRNAs as novel biomarkers for early-stage cancer detection.',
   sectionDescriptionColor: '#6b6b5a',
   sectionDescriptionSize: 14,
@@ -2648,7 +2919,7 @@ export const ru4StatsDefaults: Ru4StatsData = {
   valueFontSize: 48,
   valueFontWeight: '400',
   valueColor: '#2d2d2d',
-  valueFont: 'Georgia, serif',
+  valueFont: '',
   labelFontSize: 13,
   labelColor: '#6b6b5a',
   gridGap: 32,
@@ -2658,9 +2929,19 @@ export const ru4StatsDefaults: Ru4StatsData = {
     { value: '33x', label: 'Splicing LLMs' },
     { value: '11B', label: 'RNA panels' },
   ],
+  // Block-wide default carries the look this block always had (Georgia) —
+  // the three fields above are now blank so they correctly fall back to it
+  // (and to whatever the user sets here) instead of always winning outright.
+  fontFamily: 'Georgia, serif',
+  sectionSubtitleFont: '',
+  sectionDescriptionFont: '',
+  labelFont: '',
 }
 
 export const ru4StatsFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '64' },
   { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '48' },
@@ -2677,27 +2958,30 @@ export const ru4StatsFields: FieldConfig[] = [
   { key: 'sectionTitleSize', label: 'Title Size (px)', type: 'number', placeholder: '40' },
   { key: 'sectionTitleWeight', label: 'Title Weight', type: 'select', options: ['300', '400', '500', '600', '700'] },
   { key: 'sectionTitleColor', label: 'Title Colour', type: 'color' },
-  { key: 'sectionTitleFont', label: 'Title Font', type: 'text', placeholder: 'e.g. Georgia, serif' },
+  fontField('sectionTitleFont', 'Title Font'),
   { key: 'sectionSubtitle', label: 'Subtitle', type: 'text', placeholder: 'Optional subtitle' },
   { key: 'sectionSubtitleSize', label: 'Subtitle Size (px)', type: 'number', placeholder: '16' },
   { key: 'sectionSubtitleColor', label: 'Subtitle Colour', type: 'color' },
+  fontField('sectionSubtitleFont', 'Subtitle Font'),
 
   { key: '_h_number', label: 'Section Number / Label', type: 'header' },
   { key: 'sectionNumber', label: 'Number / Label', type: 'text', placeholder: 'e.g. 02' },
   { key: 'sectionNumberSize', label: 'Number Size (px)', type: 'number', placeholder: '80' },
   { key: 'sectionNumberColor', label: 'Number Colour', type: 'color' },
-  { key: 'sectionNumberFont', label: 'Number Font', type: 'text', placeholder: 'e.g. Georgia, serif' },
+  fontField('sectionNumberFont', 'Number Font'),
   { key: 'sectionDescription', label: 'Description', type: 'textarea', placeholder: 'Supporting description text' },
   { key: 'sectionDescriptionSize', label: 'Description Size (px)', type: 'number', placeholder: '14' },
   { key: 'sectionDescriptionColor', label: 'Description Colour', type: 'color' },
+  fontField('sectionDescriptionFont', 'Description Font'),
 
   { key: '_h_stats', label: 'Stat Values', type: 'header' },
   { key: 'valueFontSize', label: 'Value Size (px)', type: 'number', placeholder: '48' },
   { key: 'valueFontWeight', label: 'Value Weight', type: 'select', options: ['300', '400', '500', '600', '700'] },
   { key: 'valueColor', label: 'Value Colour', type: 'color' },
-  { key: 'valueFont', label: 'Value Font', type: 'text', placeholder: 'e.g. Georgia, serif' },
+  fontField('valueFont', 'Value Font'),
   { key: 'labelFontSize', label: 'Label Size (px)', type: 'number', placeholder: '13' },
   { key: 'labelColor', label: 'Label Colour', type: 'color' },
+  fontField('labelFont', 'Label Font'),
 
   {
     key: 'items',
@@ -2717,19 +3001,19 @@ export function renderRu4Stats(data: Ru4StatsData): string {
 
   const titleHtml = data.showSectionTitle
     ? `<div style="text-align:center;margin-bottom:${data.gridGap}px;max-width:700px;margin-left:auto;margin-right:auto;">
-        <h2 style="margin:0 0 12px;font-size:${data.sectionTitleSize}px;font-weight:${data.sectionTitleWeight};color:${data.sectionTitleColor};font-family:${data.sectionTitleFont};line-height:1.25;">${data.sectionTitle}</h2>
-        ${data.sectionSubtitle ? `<p style="margin:0;font-size:${data.sectionSubtitleSize}px;color:${data.sectionSubtitleColor};">${data.sectionSubtitle}</p>` : ''}
+        <h2 style="margin:0 0 12px;font-size:${data.sectionTitleSize}px;font-weight:${data.sectionTitleWeight};color:${data.sectionTitleColor};line-height:1.25;${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h2>
+        ${data.sectionSubtitle ? `<p style="margin:0;font-size:${data.sectionSubtitleSize}px;color:${data.sectionSubtitleColor};${fontCss(data.sectionSubtitleFont, data.fontFamily)}">${data.sectionSubtitle}</p>` : ''}
       </div>`
     : ''
 
   const statsGrid = (data.items ?? []).map(item => `
     <div>
-      <div style="font-size:${data.valueFontSize}px;font-weight:${data.valueFontWeight};color:${data.valueColor};font-family:${data.valueFont};line-height:1.1;margin-bottom:6px;">${item.value}</div>
-      <div style="font-size:${data.labelFontSize}px;color:${data.labelColor};line-height:1.4;">${item.label}</div>
+      <div style="font-size:${data.valueFontSize}px;font-weight:${data.valueFontWeight};color:${data.valueColor};line-height:1.1;margin-bottom:6px;${fontCss(data.valueFont, data.fontFamily)}">${item.value}</div>
+      <div style="font-size:${data.labelFontSize}px;color:${data.labelColor};line-height:1.4;${fontCss(data.labelFont, data.fontFamily)}">${item.label}</div>
     </div>`
   ).join('')
 
-  return `<section data-component-title="Ru4-Stats" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;">
+  return `<section data-component-title="Ru4-Stats" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
 <style>
   @media(max-width:768px){[data-ru4-stats-outer]{grid-template-columns:1fr!important}}
   @media(max-width:480px){[data-ru4-stats-inner]{grid-template-columns:1fr!important}}
@@ -2739,8 +3023,8 @@ export function renderRu4Stats(data: Ru4StatsData): string {
     ${dividerHtml}
     <div data-ru4-stats-outer="true" style="display:grid;grid-template-columns:1fr 2fr;gap:${data.gridGap}px;align-items:start;">
       <div>
-        <div style="font-size:${data.sectionNumberSize}px;font-weight:${data.sectionTitleWeight};color:${data.sectionNumberColor};font-family:${data.sectionNumberFont};line-height:1;margin-bottom:16px;">${data.sectionNumber}</div>
-        <p style="margin:0;font-size:${data.sectionDescriptionSize}px;color:${data.sectionDescriptionColor};line-height:1.7;max-width:280px;">${data.sectionDescription}</p>
+        <div style="font-size:${data.sectionNumberSize}px;font-weight:${data.sectionTitleWeight};color:${data.sectionNumberColor};line-height:1;margin-bottom:16px;${fontCss(data.sectionNumberFont, data.fontFamily)}">${data.sectionNumber}</div>
+        <p style="margin:0;font-size:${data.sectionDescriptionSize}px;color:${data.sectionDescriptionColor};line-height:1.7;max-width:280px;${fontCss(data.sectionDescriptionFont, data.fontFamily)}">${data.sectionDescription}</p>
       </div>
       <div data-ru4-stats-inner="true" style="display:grid;grid-template-columns:1fr 1fr;gap:${data.gridGap}px;">
         ${statsGrid}
@@ -2803,6 +3087,11 @@ export interface Ru5ImageCarouselData {
   textAlign: string
   textPosition: string
   slides: Ru5CarouselSlide[]
+  fontFamily: string
+  titleFont: string
+  subtitleFont: string
+  descriptionFont: string
+  buttonFont: string
 }
 
 export const ru5ImageCarouselDefaults: Ru5ImageCarouselData = {
@@ -2866,9 +3155,17 @@ export const ru5ImageCarouselDefaults: Ru5ImageCarouselData = {
       ctaTextColor: '#111827',
     },
   ],
+  fontFamily: '',
+  titleFont: '',
+  subtitleFont: '',
+  descriptionFont: '',
+  buttonFont: '',
 }
 
 export const ru5ImageCarouselFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'height', label: 'Slider Height (px)', type: 'number', placeholder: '560' },
   { key: 'textAlign', label: 'Text Alignment', type: 'select', options: ['left', 'center', 'right'] },
@@ -2892,11 +3189,15 @@ export const ru5ImageCarouselFields: FieldConfig[] = [
   { key: 'titleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '48' },
   { key: 'titleFontWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
   { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  fontField('titleFont', 'Title Font'),
   { key: 'subtitleFontSize', label: 'Subtitle Size (px)', type: 'number', placeholder: '14' },
   { key: 'subtitleColor', label: 'Subtitle Colour', type: 'color' },
+  fontField('subtitleFont', 'Subtitle Font'),
   { key: 'descriptionFontSize', label: 'Description Size (px)', type: 'number', placeholder: '16' },
   { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
+  fontField('descriptionFont', 'Description Font'),
   { key: 'ctaBorderRadius', label: 'CTA Button Radius (px)', type: 'number', placeholder: '6' },
+  fontField('buttonFont', 'Button Font'),
 
   {
     key: 'slides',
@@ -2937,15 +3238,15 @@ export function renderRu5ImageCarousel(data: Ru5ImageCarouselData): string {
       : `background-color:#1f2937;`
     const overlayStyle = `position:absolute;inset:0;background:${slide.overlayColor ?? '#000'};opacity:${overlayOpacity};pointer-events:none;`
     const ctaHtml = slide.showCta !== false
-      ? `<a href="${slide.ctaHref}" style="display:inline-block;margin-top:1.5rem;padding:0.75rem 2rem;background:${slide.ctaBgColor};color:${slide.ctaTextColor};text-decoration:none;border-radius:${data.ctaBorderRadius}px;font-size:1rem;font-weight:600;">${slide.ctaLabel}</a>`
+      ? `<a href="${slide.ctaHref}" style="display:inline-block;margin-top:1.5rem;padding:0.75rem 2rem;background:${slide.ctaBgColor};color:${slide.ctaTextColor};text-decoration:none;border-radius:${data.ctaBorderRadius}px;font-size:1rem;font-weight:600;${fontCss(data.buttonFont, data.fontFamily)}">${slide.ctaLabel}</a>`
       : ''
     return `<div data-slide="${i}" style="position:absolute;inset:0;${bgStyle}opacity:${i === 0 ? '1' : '0'};transition:opacity 0.6s ease;pointer-events:${i === 0 ? 'auto' : 'none'};">
       <div style="${overlayStyle}"></div>
       <div style="position:relative;z-index:1;height:100%;display:flex;${posStyle}padding:3rem 5rem;">
         <div style="max-width:600px;text-align:${data.textAlign ?? 'left'};">
-          ${slide.subtitle ? `<p style="margin:0 0 0.75rem;font-size:${data.subtitleFontSize}px;font-weight:600;color:${data.subtitleColor};letter-spacing:0.12em;text-transform:uppercase;">${slide.subtitle}</p>` : ''}
-          <h2 style="margin:0 0 1rem;font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.15;">${slide.title}</h2>
-          ${slide.description ? `<p style="margin:0;font-size:${data.descriptionFontSize}px;color:${data.descriptionColor};line-height:1.6;">${slide.description}</p>` : ''}
+          ${slide.subtitle ? `<p style="margin:0 0 0.75rem;font-size:${data.subtitleFontSize}px;font-weight:600;color:${data.subtitleColor};letter-spacing:0.12em;text-transform:uppercase;${fontCss(data.subtitleFont, data.fontFamily)}">${slide.subtitle}</p>` : ''}
+          <h2 style="margin:0 0 1rem;font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.15;${fontCss(data.titleFont, data.fontFamily)}">${slide.title}</h2>
+          ${slide.description ? `<p style="margin:0;font-size:${data.descriptionFontSize}px;color:${data.descriptionColor};line-height:1.6;${fontCss(data.descriptionFont, data.fontFamily)}">${slide.description}</p>` : ''}
           ${ctaHtml}
         </div>
       </div>
@@ -2961,7 +3262,7 @@ export function renderRu5ImageCarousel(data: Ru5ImageCarouselData): string {
       ${(data.slides ?? []).map((_, i) => `<button data-dot="${i}" data-active-color="${data.dotActiveColor}" data-inactive-color="${data.dotColor}" style="width:${i === 0 ? '24px' : '8px'};height:8px;border-radius:4px;background:${i === 0 ? data.dotActiveColor : data.dotColor};border:none;cursor:pointer;padding:0;transition:all 0.3s;"></button>`).join('')}
     </div>` : ''
 
-  return `<section data-component-title="Ru5-Image-Carousel" style="position:relative;overflow:hidden;">
+  return `<section data-component-title="Ru5-Image-Carousel" style="position:relative;overflow:hidden;${fontCss(undefined, data.fontFamily)}">
   <div data-rubikx-component="HeroSlider" data-on-mount="loadSlider" data-autoplay="${data.autoPlay !== false ? 'true' : 'false'}" data-interval="${(data.autoPlayInterval ?? 4) * 1000}" style="position:relative;height:${data.height}px;overflow:hidden;">
     ${slidesHtml}
     ${arrowsHtml}
@@ -3020,6 +3321,11 @@ export interface Ru3TextImageHeroData {
   ctaBorderWidth: number
   ctaBorderColor: string
   ctaStyle: string
+  fontFamily: string
+  headingFont: string
+  subheadingFont: string
+  descriptionFont: string
+  buttonFont: string
 }
 
 export const ru3TextImageHeroDefaults: Ru3TextImageHeroData = {
@@ -3057,9 +3363,17 @@ export const ru3TextImageHeroDefaults: Ru3TextImageHeroData = {
   ctaBorderWidth: 2,
   ctaBorderColor: '#a855f7',
   ctaStyle: 'filled',
+  fontFamily: '',
+  headingFont: '',
+  subheadingFont: '',
+  descriptionFont: '',
+  buttonFont: '',
 }
 
 export const ru3TextImageHeroFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_section_bg', label: 'Background', type: 'header' },
   { key: 'bgColor',   label: 'Background Color',   type: 'color' },
   { key: 'bgOpacity', label: 'Background Opacity', type: 'number', unit: '%', step: 5, placeholder: '100' },
@@ -3076,6 +3390,7 @@ export const ru3TextImageHeroFields: FieldConfig[] = [
   { key: 'ctaBorderRadius', label: 'Button Radius',     type: 'number', unit: 'px', step: 2, placeholder: '50' },
   { key: 'ctaBorderWidth',  label: 'Border Width',      type: 'number', unit: 'px', step: 1, placeholder: '2' },
   { key: 'ctaBorderColor',  label: 'Border Color',      type: 'color' },
+  fontField('buttonFont', 'Button Font'),
   { key: '_h_image', label: 'Image', type: 'header' },
   { key: 'imageUrl',          label: 'Hero Image',   type: 'image', noAspectRatio: true },
   { key: 'imageAlt',          label: 'Alt Text',     type: 'text', placeholder: 'Hero image' },
@@ -3098,10 +3413,13 @@ export const ru3TextImageHeroFields: FieldConfig[] = [
   { key: 'headingColor',    label: 'Heading Color',    type: 'color' },
   { key: 'headingSize',     label: 'Heading Size',     type: 'number', unit: 'px', step: 2, placeholder: '48' },
   { key: 'headingWeight',   label: 'Heading Weight',   type: 'select', options: ['Normal', 'Medium', 'Semibold', 'Bold', 'Extrabold'] },
+  fontField('headingFont', 'Heading Font'),
   { key: 'subheadingColor', label: 'Subheading Color', type: 'color' },
   { key: 'subheadingSize',  label: 'Subheading Size',  type: 'number', unit: 'px', step: 1, placeholder: '22' },
+  fontField('subheadingFont', 'Subheading Font'),
   { key: 'descriptionColor', label: 'Description Color', type: 'color' },
   { key: 'descriptionSize',  label: 'Description Size',  type: 'number', unit: 'px', step: 1, placeholder: '16' },
+  fontField('descriptionFont', 'Description Font'),
 ]
 
 export function renderRu3TextImageHero(data: Ru3TextImageHeroData): string {
@@ -3147,13 +3465,13 @@ export function renderRu3TextImageHero(data: Ru3TextImageHeroData): string {
   }
 
   const ctaHtml = data.ctaText
-    ? `<a href="${data.ctaUrl ?? '#'}" style="display:inline-block;margin-top:1.75rem;padding:0.75rem 1.75rem;${ctaBtnStyle}border-radius:${data.ctaBorderRadius ?? 50}px;text-decoration:none;font-size:1rem;font-weight:600;">${data.ctaText}</a>`
+    ? `<a href="${data.ctaUrl ?? '#'}" style="display:inline-block;margin-top:1.75rem;padding:0.75rem 1.75rem;${ctaBtnStyle}border-radius:${data.ctaBorderRadius ?? 50}px;text-decoration:none;font-size:1rem;font-weight:600;${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaText}</a>`
     : ''
 
   const textCol = `<div style="display:flex;flex-direction:column;align-items:${contentAlignFlex};text-align:${data.contentAlign ?? 'left'};align-self:${vertAlign};">
-    <h2 style="font-size:${data.headingSize ?? 48}px;font-weight:${fontWeight};color:${data.headingColor};margin:0;line-height:1.1;">${data.heading}</h2>
-    ${data.subheading ? `<p style="font-size:${data.subheadingSize ?? 22}px;font-weight:700;color:${data.subheadingColor};margin:1.25rem 0 0;line-height:1.4;">${data.subheading}</p>` : ''}
-    ${data.description ? `<p style="font-size:${data.descriptionSize ?? 16}px;line-height:1.7;color:${data.descriptionColor};margin:0.75rem 0 0;max-width:36rem;">${data.description}</p>` : ''}
+    <h2 style="font-size:${data.headingSize ?? 48}px;font-weight:${fontWeight};color:${data.headingColor};margin:0;line-height:1.1;${fontCss(data.headingFont, data.fontFamily)}">${data.heading}</h2>
+    ${data.subheading ? `<p style="font-size:${data.subheadingSize ?? 22}px;font-weight:700;color:${data.subheadingColor};margin:1.25rem 0 0;line-height:1.4;${fontCss(data.subheadingFont, data.fontFamily)}">${data.subheading}</p>` : ''}
+    ${data.description ? `<p style="font-size:${data.descriptionSize ?? 16}px;line-height:1.7;color:${data.descriptionColor};margin:0.75rem 0 0;max-width:36rem;${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>` : ''}
     ${ctaHtml}
   </div>`
 
@@ -3182,7 +3500,7 @@ export function renderRu3TextImageHero(data: Ru3TextImageHeroData): string {
   const bgOpacityVal = Math.min(100, Math.max(0, data.bgOpacity ?? 100)) / 100
   const sectionBg = bgOpacityVal < 1 ? hexToRgba(data.bgColor, bgOpacityVal) : data.bgColor
 
-  return `<section data-component-title="Ru3-Text + Image Hero" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${sectionBg};${heightStyle}">
+  return `<section data-component-title="Ru3-Text + Image Hero" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${sectionBg};${heightStyle}${fontCss(undefined, data.fontFamily)}">
   <style>@media(max-width:767px){.ru3-tih-grid{grid-template-columns:1fr!important;gap:2rem!important;}}</style>
   <div style="max-width:80rem;margin:0 auto;padding:${data.paddingY ?? 64}px ${data.paddingX ?? 48}px;box-sizing:border-box;">
     <div class="ru3-tih-grid" style="display:grid;grid-template-columns:${gridCols};gap:${data.columnGap ?? 48}px;align-items:${vertAlign};">
@@ -3249,6 +3567,12 @@ export interface Ru6SplitHeroData {
   cardShowBorder: boolean
   textAlign: string
   verticalAlign: string
+  fontFamily: string
+  eyebrowFont: string
+  titleFont: string
+  descriptionFont: string
+  buttonFont: string
+  secondaryButtonFont: string
 }
 
 export const ru6SplitHeroDefaults: Ru6SplitHeroData = {
@@ -3293,9 +3617,18 @@ export const ru6SplitHeroDefaults: Ru6SplitHeroData = {
   cardShowBorder: false,
   textAlign: 'left',
   verticalAlign: 'center',
+  fontFamily: '',
+  eyebrowFont: '',
+  titleFont: '',
+  descriptionFont: '',
+  buttonFont: '',
+  secondaryButtonFont: '',
 }
 
 export const ru6SplitHeroFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'textSide', label: 'Text Side', type: 'select', options: ['left', 'right'] },
   { key: 'splitRatio', label: 'Split Ratio', type: 'select', options: ['50/50', '55/45', '60/40', '40/60', '45/55'] },
@@ -3312,14 +3645,17 @@ export const ru6SplitHeroFields: FieldConfig[] = [
   { key: 'eyebrow', label: 'Eyebrow Text', type: 'text', placeholder: 'e.g. NEW COLLECTION' },
   { key: 'eyebrowFontSize', label: 'Eyebrow Size (px)', type: 'number', placeholder: '13' },
   { key: 'eyebrowColor', label: 'Eyebrow Colour', type: 'color' },
+  fontField('eyebrowFont', 'Eyebrow Font'),
   { key: 'title', label: 'Title', type: 'textarea', placeholder: 'e.g. Gear Up\nPower Onward' },
   { key: 'titleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '48' },
   { key: 'titleFontWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
   { key: 'titleColor', label: 'Title Colour', type: 'color' },
   { key: 'titleLineHeight', label: 'Title Line Height', type: 'number', placeholder: '1.15' },
+  fontField('titleFont', 'Title Font'),
   { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Supporting description text' },
   { key: 'descriptionFontSize', label: 'Description Size (px)', type: 'number', placeholder: '16' },
   { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
+  fontField('descriptionFont', 'Description Font'),
 
   { key: '_h_cta', label: 'CTA Button', type: 'header' },
   { key: 'showCta', label: 'Show Primary CTA', type: 'toggle' },
@@ -3330,10 +3666,12 @@ export const ru6SplitHeroFields: FieldConfig[] = [
   { key: 'ctaTextColor', label: 'Primary CTA Text', type: 'color' },
   { key: 'ctaBorderColor', label: 'Primary CTA Border', type: 'color' },
   { key: 'ctaBorderRadius', label: 'CTA Border Radius (px)', type: 'number', placeholder: '24' },
+  fontField('buttonFont', 'Primary CTA Font'),
   { key: 'showSecondaryCta', label: 'Show Secondary CTA', type: 'toggle' },
   { key: 'secondaryCtaLabel', label: 'Secondary CTA Label', type: 'text', placeholder: 'e.g. Learn More' },
   { key: 'secondaryCtaHref', label: 'Secondary CTA URL', type: 'url', placeholder: '/aboutus' },
   { key: 'secondaryCtaColor', label: 'Secondary CTA Colour', type: 'color' },
+  fontField('secondaryButtonFont', 'Secondary CTA Font'),
 
   { key: '_h_image', label: 'Image', type: 'header' },
   { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
@@ -3367,23 +3705,23 @@ export function renderRu6SplitHero(data: Ru6SplitHeroData): string {
   const vAlign = vAlignMap[data.verticalAlign ?? 'center'] ?? 'center'
 
   const eyebrowHtml = data.eyebrow
-    ? `<p style="margin:0 0 12px;font-size:${data.eyebrowFontSize}px;font-weight:600;color:${data.eyebrowColor};letter-spacing:0.1em;text-transform:uppercase;">${data.eyebrow}</p>`
+    ? `<p style="margin:0 0 12px;font-size:${data.eyebrowFontSize}px;font-weight:600;color:${data.eyebrowColor};letter-spacing:0.1em;text-transform:uppercase;${fontCss(data.eyebrowFont, data.fontFamily)}">${data.eyebrow}</p>`
     : ''
 
   const titleHtml = data.title
-    ? `<h2 style="margin:0 0 16px;font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:${data.titleLineHeight};white-space:pre-line;">${data.title}</h2>`
+    ? `<h2 style="margin:0 0 16px;font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:${data.titleLineHeight};white-space:pre-line;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>`
     : ''
 
   const descHtml = data.description
-    ? `<p style="margin:0 0 28px;font-size:${data.descriptionFontSize}px;color:${data.descriptionColor};line-height:1.7;">${data.description}</p>`
+    ? `<p style="margin:0 0 28px;font-size:${data.descriptionFontSize}px;color:${data.descriptionColor};line-height:1.7;${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>`
     : ''
 
   const primaryCtaHtml = data.showCta !== false
-    ? `<a href="${data.ctaHref}" style="display:inline-block;padding:0.75rem 1.75rem;background:${data.ctaStyle === 'outline' ? 'transparent' : data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:${data.ctaBorderRadius}px;font-size:0.9rem;font-weight:600;border:2px solid ${data.ctaBorderColor};letter-spacing:0.04em;">${data.ctaLabel}</a>`
+    ? `<a href="${data.ctaHref}" style="display:inline-block;padding:0.75rem 1.75rem;background:${data.ctaStyle === 'outline' ? 'transparent' : data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:${data.ctaBorderRadius}px;font-size:0.9rem;font-weight:600;border:2px solid ${data.ctaBorderColor};letter-spacing:0.04em;${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaLabel}</a>`
     : ''
 
   const secondaryCtaHtml = data.showSecondaryCta
-    ? `<a href="${data.secondaryCtaHref}" style="display:inline-block;padding:0.75rem 1.25rem;color:${data.secondaryCtaColor};text-decoration:none;font-size:0.9rem;font-weight:500;">→ ${data.secondaryCtaLabel}</a>`
+    ? `<a href="${data.secondaryCtaHref}" style="display:inline-block;padding:0.75rem 1.25rem;color:${data.secondaryCtaColor};text-decoration:none;font-size:0.9rem;font-weight:500;${fontCss(data.secondaryButtonFont, data.fontFamily)}">→ ${data.secondaryCtaLabel}</a>`
     : ''
 
   const ctasHtml = (primaryCtaHtml || secondaryCtaHtml)
@@ -3412,7 +3750,7 @@ export function renderRu6SplitHero(data: Ru6SplitHeroData): string {
   const leftCol = data.textSide === 'left' ? textCol : imageCol
   const rightCol = data.textSide === 'left' ? imageCol : textCol
 
-  return `<section data-component-title="Ru6-Split-Hero" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;">
+  return `<section data-component-title="Ru6-Split-Hero" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
   <div style="max-width:1280px;margin:0 auto;">
     <div style="display:grid;grid-template-columns:${gridCols};gap:${data.gap}px;align-items:${vAlign};">
       ${leftCol}
@@ -3471,6 +3809,10 @@ export interface Ru4OverlayPanelData {
   ctaBorderRadius: number
   ctaBorderWidth: number
   ctaBorderColor: string
+  fontFamily: string
+  headingFont: string
+  descriptionFont: string
+  buttonFont: string
 }
 
 export const ru4OverlayPanelDefaults: Ru4OverlayPanelData = {
@@ -3509,9 +3851,16 @@ export const ru4OverlayPanelDefaults: Ru4OverlayPanelData = {
   ctaBorderRadius: 6,
   ctaBorderWidth: 2,
   ctaBorderColor: '#dc2626',
+  fontFamily: '',
+  headingFont: '',
+  descriptionFont: '',
+  buttonFont: '',
 }
 
 export const ru4OverlayPanelFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_bg', label: 'Background', type: 'header' },
   { key: 'bgImage', label: 'Background Image', type: 'image' },
   { key: 'bgImageAspectRatio', label: 'Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
@@ -3546,8 +3895,10 @@ export const ru4OverlayPanelFields: FieldConfig[] = [
   { key: 'headingColor', label: 'Heading Color', type: 'color' },
   { key: 'headingSize', label: 'Heading Size (px)', type: 'number', placeholder: '32' },
   { key: 'headingWeight', label: 'Heading Weight', type: 'select', options: ['Light', 'Regular', 'Medium', 'Semibold', 'Bold', 'Extrabold', 'Black'] },
+  fontField('headingFont', 'Heading Font'),
   { key: 'descriptionColor', label: 'Description Color', type: 'color' },
   { key: 'descriptionSize', label: 'Description Size (px)', type: 'number', placeholder: '15' },
+  fontField('descriptionFont', 'Description Font'),
 
   { key: '_h_cta', label: 'CTA Button', type: 'header' },
   { key: 'ctaText', label: 'Button Text', type: 'text', placeholder: 'e.g. Celebrate Now' },
@@ -3558,6 +3909,7 @@ export const ru4OverlayPanelFields: FieldConfig[] = [
   { key: 'ctaBorderRadius', label: 'Button Radius (px)', type: 'number', placeholder: '6' },
   { key: 'ctaBorderWidth', label: 'Button Border Width (px)', type: 'number', placeholder: '2' },
   { key: 'ctaBorderColor', label: 'Button Border Color', type: 'color' },
+  fontField('buttonFont', 'Button Font'),
 ]
 
 export function renderRu4OverlayPanel(data: Ru4OverlayPanelData): string {
@@ -3628,7 +3980,7 @@ export function renderRu4OverlayPanel(data: Ru4OverlayPanelData): string {
     : `background:${data.ctaBgColor};color:${data.ctaTextColor};border:${data.ctaBorderWidth ?? 2}px solid ${data.ctaBorderColor};`
 
   const ctaHtml = data.ctaText
-    ? `<a href="${data.ctaUrl}" style="display:inline-block;margin-top:1.5rem;padding:0.75rem 2rem;text-decoration:none;border-radius:${data.ctaBorderRadius ?? 6}px;font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;${ctaBtnStyle}">${data.ctaText}</a>`
+    ? `<a href="${data.ctaUrl}" style="display:inline-block;margin-top:1.5rem;padding:0.75rem 2rem;text-decoration:none;border-radius:${data.ctaBorderRadius ?? 6}px;font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;${ctaBtnStyle}${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaText}</a>`
     : ''
 
   const panelBg = (data.panelBgOpacity ?? 100) < 100
@@ -3636,13 +3988,13 @@ export function renderRu4OverlayPanel(data: Ru4OverlayPanelData): string {
     : data.panelBgColor
   const panelStyle = `background:${panelBg};${borderRadiusStyle}${shadowStyle}${clipStyle}padding:${data.panelPaddingY ?? 48}px ${data.panelPaddingX ?? 40}px;box-sizing:border-box;`
 
-  return `<section data-component-title="Ru4-Overlay Panel" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${overlayStyle}${aspectStyle}${heightStyle}position:relative;display:flex;align-items:center;overflow:hidden;">
+  return `<section data-component-title="Ru4-Overlay Panel" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${overlayStyle}${aspectStyle}${heightStyle}position:relative;display:flex;align-items:center;overflow:hidden;${fontCss(undefined, data.fontFamily)}">
   <style>@media(max-width:767px){.ru4-op-panel{width:100%!important;clip-path:none!important;}}</style>
   <div style="width:100%;padding:40px ${data.sectionPaddingX ?? 48}px;box-sizing:border-box;display:flex;justify-content:${justifyContent};">
     <div class="ru4-op-panel" style="width:${data.panelWidth ?? '45%'};max-width:100%;${panelStyle}">
       <div style="display:flex;flex-direction:column;align-items:${contentAlignFlex};text-align:${data.contentAlign ?? 'left'};">
-        <h2 style="font-size:${data.headingSize ?? 32}px;font-weight:${fontWeight};color:${data.headingColor};margin:0;line-height:1.2;">${data.heading}</h2>
-        ${data.description ? `<p style="font-size:${data.descriptionSize ?? 15}px;line-height:1.7;color:${data.descriptionColor};margin:1rem 0 0;max-width:42rem;">${data.description}</p>` : ''}
+        <h2 style="font-size:${data.headingSize ?? 32}px;font-weight:${fontWeight};color:${data.headingColor};margin:0;line-height:1.2;${fontCss(data.headingFont, data.fontFamily)}">${data.heading}</h2>
+        ${data.description ? `<p style="font-size:${data.descriptionSize ?? 15}px;line-height:1.7;color:${data.descriptionColor};margin:1rem 0 0;max-width:42rem;${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>` : ''}
         ${ctaHtml}
       </div>
     </div>
@@ -3730,11 +4082,17 @@ export interface Ru1ProductDetailData {
   priceModifierColor: string
   priceModifierFontWeight: string
   priceModifierFontSize: number
+  productNameFont?: string
+  priceModifierFont?: string
   thumbSize: number
   thumbBorderRadius: number
   bgColor: string
   paddingY: number
   paddingX: number
+  fontFamily: string
+  descriptionFont?: string
+  descriptionTitleFont?: string
+  buttonFont?: string
   /** Gallery layout selector */
   galleryLayout?: 'layout1' | 'layout2' | 'layout3'
   /** Layout 1 — vertical thumb strip left + main image right */
@@ -3748,9 +4106,11 @@ export interface Ru1ProductDetailData {
   l1ProductNameColor?: string
   l1ProductNameFontWeight?: string
   l1ProductNameFontSize?: number
+  l1ProductNameFont?: string
   l1PriceModifierColor?: string
   l1PriceModifierFontWeight?: string
   l1PriceModifierFontSize?: number
+  l1PriceModifierFont?: string
   l1PaddingY?: number
   l1PaddingX?: number
   /** Layout 2 — main image top + horizontal thumb row below */
@@ -3764,9 +4124,11 @@ export interface Ru1ProductDetailData {
   l2ProductNameColor?: string
   l2ProductNameFontWeight?: string
   l2ProductNameFontSize?: number
+  l2ProductNameFont?: string
   l2PriceModifierColor?: string
   l2PriceModifierFontWeight?: string
   l2PriceModifierFontSize?: number
+  l2PriceModifierFont?: string
   l2PaddingY?: number
   l2PaddingX?: number
   /** Layout 3 — vertical thumb strip with scroll arrows + carousel with dots + auto-slide */
@@ -3781,9 +4143,11 @@ export interface Ru1ProductDetailData {
   l3ProductNameColor?: string
   l3ProductNameFontWeight?: string
   l3ProductNameFontSize?: number
+  l3ProductNameFont?: string
   l3PriceModifierColor?: string
   l3PriceModifierFontWeight?: string
   l3PriceModifierFontSize?: number
+  l3PriceModifierFont?: string
   l3PaddingY?: number
   l3PaddingX?: number
 }
@@ -3816,11 +4180,17 @@ export const ru1ProductDetailDefaults: Ru1ProductDetailData = {
   priceModifierColor: '#6b7280',
   priceModifierFontWeight: '400',
   priceModifierFontSize: 10,
+  productNameFont: '',
+  priceModifierFont: '',
   thumbSize: 64,
   thumbBorderRadius: 4,
   bgColor: '#ffffff',
   paddingY: 48,
   paddingX: 16,
+  fontFamily: '',
+  descriptionFont: '',
+  descriptionTitleFont: '',
+  buttonFont: '',
   // Gallery layout
   galleryLayout: 'layout1',
   // Layout 1 defaults
@@ -3834,9 +4204,11 @@ export const ru1ProductDetailDefaults: Ru1ProductDetailData = {
   l1ProductNameColor: '#111827',
   l1ProductNameFontWeight: '700',
   l1ProductNameFontSize: 22,
+  l1ProductNameFont: '',
   l1PriceModifierColor: '#6b7280',
   l1PriceModifierFontWeight: '400',
   l1PriceModifierFontSize: 10,
+  l1PriceModifierFont: '',
   l1PaddingY: 48,
   l1PaddingX: 16,
   // Layout 2 defaults
@@ -3850,9 +4222,11 @@ export const ru1ProductDetailDefaults: Ru1ProductDetailData = {
   l2ProductNameColor: '#111827',
   l2ProductNameFontWeight: '700',
   l2ProductNameFontSize: 22,
+  l2ProductNameFont: '',
   l2PriceModifierColor: '#6b7280',
   l2PriceModifierFontWeight: '400',
   l2PriceModifierFontSize: 10,
+  l2PriceModifierFont: '',
   l2PaddingY: 48,
   l2PaddingX: 16,
   // Layout 3 defaults
@@ -3867,9 +4241,11 @@ export const ru1ProductDetailDefaults: Ru1ProductDetailData = {
   l3ProductNameColor: '#111827',
   l3ProductNameFontWeight: '700',
   l3ProductNameFontSize: 22,
+  l3ProductNameFont: '',
   l3PriceModifierColor: '#6b7280',
   l3PriceModifierFontWeight: '400',
   l3PriceModifierFontSize: 10,
+  l3PriceModifierFont: '',
   l3PaddingY: 48,
   l3PaddingX: 16,
 }
@@ -3879,6 +4255,9 @@ const _l2 = (d: Record<string, any>) => d.galleryLayout === 'layout2'
 const _l3 = (d: Record<string, any>) => d.galleryLayout === 'layout3'
 
 export const ru1ProductDetailFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   // ── Gallery layout selector (always visible) ───────────────────────────────
   { key: 'galleryLayout', label: 'Gallery Layout', type: 'select', options: ['layout1', 'layout2', 'layout3'] },
 
@@ -3888,8 +4267,11 @@ export const ru1ProductDetailFields: FieldConfig[] = [
   { key: 'unitPriceBadge', label: 'Unit Price Badge', type: 'text', placeholder: '1+' },
   { key: 'unitPriceNote', label: 'Price Note', type: 'text', placeholder: '* some sizes may vary' },
   { key: 'descriptionTitle', label: 'Description Section Title', type: 'text', placeholder: 'Description' },
+  fontField('descriptionTitleFont', 'Description Title Font'),
   { key: 'description', label: 'Description (one bullet per line)', type: 'textarea', placeholder: 'Enter each bullet point on a new line...' },
   { key: 'descriptionColor', label: 'Description Text Color', type: 'color' },
+  fontField('descriptionFont', 'Description Font'),
+  fontField('buttonFont', 'Add to Cart Button Font'),
   { key: 'sizes', label: 'Sizes (applies to all products)', type: 'list', listFields: [
     { key: 'label', label: 'Size Label', type: 'text', placeholder: 'XL' },
     { key: 'priceModifier', label: 'Price Modifier', type: 'text', placeholder: '+$5.16' },
@@ -3908,9 +4290,11 @@ export const ru1ProductDetailFields: FieldConfig[] = [
   { key: 'l1ProductNameColor', label: 'Product Name Color', type: 'color', visibleIf: _l1 },
   { key: 'l1ProductNameFontWeight', label: 'Product Name Weight', type: 'select', options: ['400', '500', '600', '700', '800'], visibleIf: _l1 },
   { key: 'l1ProductNameFontSize', label: 'Product Name Size', type: 'number', unit: 'px', step: 1, visibleIf: _l1 },
+  { ...fontField('l1ProductNameFont', 'Product Name Font'), visibleIf: _l1 },
   { key: 'l1PriceModifierColor', label: 'Price Modifier Color', type: 'color', visibleIf: _l1 },
   { key: 'l1PriceModifierFontWeight', label: 'Price Modifier Weight', type: 'select', options: ['400', '500', '600', '700'], visibleIf: _l1 },
   { key: 'l1PriceModifierFontSize', label: 'Price Modifier Size', type: 'number', unit: 'px', step: 1, visibleIf: _l1 },
+  { ...fontField('l1PriceModifierFont', 'Price Modifier Font'), visibleIf: _l1 },
   { key: '_h_l1_spacing', label: 'Layout 1 — Spacing', type: 'header', visibleIf: _l1 },
   { key: 'l1PaddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, visibleIf: _l1 },
   { key: 'l1PaddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, visibleIf: _l1 },
@@ -3928,9 +4312,11 @@ export const ru1ProductDetailFields: FieldConfig[] = [
   { key: 'l2ProductNameColor', label: 'Product Name Color', type: 'color', visibleIf: _l2 },
   { key: 'l2ProductNameFontWeight', label: 'Product Name Weight', type: 'select', options: ['400', '500', '600', '700', '800'], visibleIf: _l2 },
   { key: 'l2ProductNameFontSize', label: 'Product Name Size', type: 'number', unit: 'px', step: 1, visibleIf: _l2 },
+  { ...fontField('l2ProductNameFont', 'Product Name Font'), visibleIf: _l2 },
   { key: 'l2PriceModifierColor', label: 'Price Modifier Color', type: 'color', visibleIf: _l2 },
   { key: 'l2PriceModifierFontWeight', label: 'Price Modifier Weight', type: 'select', options: ['400', '500', '600', '700'], visibleIf: _l2 },
   { key: 'l2PriceModifierFontSize', label: 'Price Modifier Size', type: 'number', unit: 'px', step: 1, visibleIf: _l2 },
+  { ...fontField('l2PriceModifierFont', 'Price Modifier Font'), visibleIf: _l2 },
   { key: '_h_l2_spacing', label: 'Layout 2 — Spacing', type: 'header', visibleIf: _l2 },
   { key: 'l2PaddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, visibleIf: _l2 },
   { key: 'l2PaddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, visibleIf: _l2 },
@@ -3949,9 +4335,11 @@ export const ru1ProductDetailFields: FieldConfig[] = [
   { key: 'l3ProductNameColor', label: 'Product Name Color', type: 'color', visibleIf: _l3 },
   { key: 'l3ProductNameFontWeight', label: 'Product Name Weight', type: 'select', options: ['400', '500', '600', '700', '800'], visibleIf: _l3 },
   { key: 'l3ProductNameFontSize', label: 'Product Name Size', type: 'number', unit: 'px', step: 1, visibleIf: _l3 },
+  { ...fontField('l3ProductNameFont', 'Product Name Font'), visibleIf: _l3 },
   { key: 'l3PriceModifierColor', label: 'Price Modifier Color', type: 'color', visibleIf: _l3 },
   { key: 'l3PriceModifierFontWeight', label: 'Price Modifier Weight', type: 'select', options: ['400', '500', '600', '700'], visibleIf: _l3 },
   { key: 'l3PriceModifierFontSize', label: 'Price Modifier Size', type: 'number', unit: 'px', step: 1, visibleIf: _l3 },
+  { ...fontField('l3PriceModifierFont', 'Price Modifier Font'), visibleIf: _l3 },
   { key: '_h_l3_spacing', label: 'Layout 3 — Spacing', type: 'header', visibleIf: _l3 },
   { key: 'l3PaddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, visibleIf: _l3 },
   { key: 'l3PaddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, visibleIf: _l3 },
@@ -4069,6 +4457,15 @@ export interface Ru2ProductDetailData {
   relatedAddToCartLabel: string
   paddingY: number
   paddingX: number
+  fontFamily: string
+  productNameFont: string
+  priceFont: string
+  buttonFont: string
+  descriptionFont: string
+  accordionTitleFont: string
+  relatedTitleFont: string
+  relatedCardFont: string
+  relatedButtonFont: string
 }
 
 export const ru2ProductDetailDefaults: Ru2ProductDetailData = {
@@ -4116,9 +4513,21 @@ export const ru2ProductDetailDefaults: Ru2ProductDetailData = {
   relatedAddToCartLabel: 'Add to bag',
   paddingY: 48,
   paddingX: 16,
+  fontFamily: '',
+  productNameFont: '',
+  priceFont: '',
+  buttonFont: '',
+  descriptionFont: '',
+  accordionTitleFont: '',
+  relatedTitleFont: '',
+  relatedCardFont: '',
+  relatedButtonFont: '',
 }
 
 export const ru2ProductDetailFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_appearance', label: 'Appearance', type: 'header' },
   { key: 'bgColor',             label: 'Background Color',      type: 'color' },
   { key: 'accentColor',         label: 'Accent Color',          type: 'color' },
@@ -4128,22 +4537,27 @@ export const ru2ProductDetailFields: FieldConfig[] = [
   { key: 'buttonTextColor',     label: 'Button Text Color',     type: 'color' },
   { key: 'buttonBorderRadius',  label: 'Button Radius',         type: 'number', unit: 'px', step: 2 },
   { key: 'addToCartLabel',      label: 'Add to Cart Label',     type: 'text',  placeholder: 'Add to bag' },
+  fontField('buttonFont', 'Button Font'),
 
   { key: '_h_name', label: 'Product Name', type: 'header' },
   { key: 'productNameColor',       label: 'Name Color',  type: 'color' },
   { key: 'productNameFontWeight',  label: 'Name Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
   { key: 'productNameFontSize',    label: 'Name Size',   type: 'number', unit: 'px', step: 1 },
+  fontField('productNameFont', 'Name Font'),
 
   { key: '_h_price', label: 'Price', type: 'header' },
   { key: 'priceColor',       label: 'Price Color',  type: 'color' },
   { key: 'priceFontWeight',  label: 'Price Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
   { key: 'priceFontSize',    label: 'Price Size',   type: 'number', unit: 'px', step: 1 },
+  fontField('priceFont', 'Price Font'),
   { key: 'currency',         label: 'Currency Symbol', type: 'text', placeholder: '$' },
 
   { key: '_h_thumb', label: 'Thumbnails', type: 'header' },
   { key: 'thumbBorderRadius', label: 'Thumbnail Radius', type: 'number', unit: 'px', step: 2 },
 
   { key: '_h_details', label: 'Details Accordion', type: 'header' },
+  fontField('descriptionFont', 'Description Font'),
+  fontField('accordionTitleFont', 'Accordion Title Font'),
   {
     key: 'productDetails', label: 'Detail Sections', type: 'list',
     listFields: [
@@ -4155,8 +4569,11 @@ export const ru2ProductDetailFields: FieldConfig[] = [
   { key: '_h_related', label: 'Related Products', type: 'header' },
   { key: 'showRelatedProducts', label: 'Show Related Products', type: 'toggle' },
   { key: 'relatedTitle',        label: 'Section Title',         type: 'text', placeholder: 'Customers also bought' },
+  fontField('relatedTitleFont', 'Section Title Font'),
   { key: 'relatedColumns',      label: 'Columns',               type: 'number', step: 1 },
   { key: 'relatedRows',         label: 'Rows',                  type: 'number', step: 1 },
+  fontField('relatedCardFont', 'Related Card Font'),
+  fontField('relatedButtonFont', 'Related Card Button Font'),
 
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'paddingY', label: 'Vertical Padding',   type: 'number', unit: 'px', step: 4 },
@@ -4210,7 +4627,7 @@ export function renderRu2ProductDetail(data: Ru2ProductDetailData): string {
     const isFirst = i === 0
     const lines = (detail.items || '').split('\n').map(s => s.trim()).filter(Boolean)
     const listHtml = lines.map(line =>
-      `<li style="display:flex;align-items:baseline;gap:10px;padding:5px 0;font-size:14px;color:#374151;line-height:1.6;">
+      `<li style="display:flex;align-items:baseline;gap:10px;padding:5px 0;font-size:14px;color:#374151;line-height:1.6;${fontCss(data.descriptionFont, data.fontFamily)}">
         <span style="width:6px;height:6px;border-radius:50%;background:${accent};flex-shrink:0;margin-top:7px;display:inline-block;"></span>
         ${line}
       </li>`
@@ -4218,7 +4635,7 @@ export function renderRu2ProductDetail(data: Ru2ProductDetailData): string {
 
     return `<div style="border-bottom:1px solid #e5e7eb;">
       <button data-rb-pd2-acc-btn style="width:100%;display:flex;justify-content:space-between;align-items:center;padding:20px 0;background:none;border:none;cursor:pointer;" data-open="${isFirst ? '1' : '0'}">
-        <span style="font-size:16px;font-weight:600;color:${isFirst ? accent : '#111827'};">${detail.name}</span>
+        <span style="font-size:16px;font-weight:600;color:${isFirst ? accent : '#111827'};${fontCss(data.accordionTitleFont, data.fontFamily)}">${detail.name}</span>
         <span style="font-size:22px;font-weight:300;color:${isFirst ? accent : '#9ca3af'};line-height:1;user-select:none;">${isFirst ? '−' : '+'}</span>
       </button>
       <div data-rb-pd2-acc-panel style="display:${isFirst ? 'block' : 'none'};padding-bottom:20px;">
@@ -4269,7 +4686,7 @@ export function renderRu2ProductDetail(data: Ru2ProductDetailData): string {
     const subtitleHtml = relSubtitle
       ? `<div style="font-size:11px;color:#6b7280;margin-bottom:6px;text-align:${relTextAlign};">${relSubtitle}</div>`
       : ''
-    const btnHtml = `<button style="width:100%;padding:10px;background:${relBtnBg};color:${relBtnColor};border:none;border-radius:${relBtnRadius}px;font-size:${relFontSize}px;font-weight:500;cursor:pointer;margin-top:auto;">${data.relatedAddToCartLabel || 'Add to bag'}</button>`
+    const btnHtml = `<button style="width:100%;padding:10px;background:${relBtnBg};color:${relBtnColor};border:none;border-radius:${relBtnRadius}px;font-size:${relFontSize}px;font-weight:500;cursor:pointer;margin-top:auto;${fontCss(data.relatedButtonFont, data.fontFamily)}">${data.relatedAddToCartLabel || 'Add to bag'}</button>`
     const imgBox = `<div style="aspect-ratio:1/1;background:${p.imageUrl ? '#ffffff' : '#f3f4f6'};display:flex;align-items:center;justify-content:center;">
       ${p.imageUrl ? `<img src="${p.imageUrl}" style="width:100%;height:100%;object-fit:contain;display:block;" />` : skeletonImg}
     </div>`
@@ -4279,13 +4696,13 @@ export function renderRu2ProductDetail(data: Ru2ProductDetailData): string {
     if (relLayout === 'inline') {
       return cardWrap(`<div style="padding:${relCardPad}px;display:flex;flex-direction:column;flex:1;">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;">
-          <span style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${relTextColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">${p.name}</span>
-          <span style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${accent};white-space:nowrap;flex-shrink:0;">${p.price}</span>
+          <span style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${relTextColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;${fontCss(data.relatedCardFont, data.fontFamily)}">${p.name}</span>
+          <span style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${accent};white-space:nowrap;flex-shrink:0;${fontCss(data.relatedCardFont, data.fontFamily)}">${p.price}</span>
         </div>${swatchesHtml}${subtitleHtml}${btnHtml}</div>`)
     }
     return cardWrap(`<div style="padding:${relCardPad}px;text-align:${relTextAlign};display:flex;flex-direction:column;flex:1;">
-      <div style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${relTextColor};margin-bottom:4px;${relLayout !== 'centered' ? 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;' : ''}">${p.name}</div>
-      <div style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${accent};margin-bottom:6px;">${p.price}</div>
+      <div style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${relTextColor};margin-bottom:4px;${relLayout !== 'centered' ? 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;' : ''}${fontCss(data.relatedCardFont, data.fontFamily)}">${p.name}</div>
+      <div style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${accent};margin-bottom:6px;${fontCss(data.relatedCardFont, data.fontFamily)}">${p.price}</div>
       ${swatchesHtml}${subtitleHtml}${btnHtml}</div>`)
   }
 
@@ -4304,12 +4721,12 @@ export function renderRu2ProductDetail(data: Ru2ProductDetailData): string {
 
   const relatedSection = data.showRelatedProducts !== false
     ? `<div style="border-top:1px solid #e5e7eb;padding-top:64px;margin-top:64px;">
-        <h2 style="font-size:20px;font-weight:700;color:#111827;margin:0 0 32px;">${data.relatedTitle || 'Customers also bought'}</h2>
+        <h2 style="font-size:20px;font-weight:700;color:#111827;margin:0 0 32px;${fontCss(data.relatedTitleFont, data.fontFamily)}">${data.relatedTitle || 'Customers also bought'}</h2>
         <div style="${relGridStyle}">${relatedCardsHtml}</div>
       </div>`
     : ''
 
-  return `<section data-component-title="Ru2-Product Detail" data-component-props="${encodeURIComponent(JSON.stringify(persistable))}" style="background:${data.bgColor};padding:${data.paddingY ?? 48}px ${data.paddingX ?? 16}px;">
+  return `<section data-component-title="Ru2-Product Detail" data-component-props="${encodeURIComponent(JSON.stringify(persistable))}" style="background:${data.bgColor};padding:${data.paddingY ?? 48}px ${data.paddingX ?? 16}px;${fontCss(undefined, data.fontFamily)}">
   <div style="max-width:80rem;margin:0 auto;">
     <div
       data-rubikx-component="ProductDetail2"
@@ -4342,10 +4759,10 @@ export function renderRu2ProductDetail(data: Ru2ProductDetailData): string {
 
         <!-- Right: product info -->
         <div>
-          <h1 data-rb-pd2-name style="font-size:${data.productNameFontSize ?? 30}px;font-weight:${data.productNameFontWeight ?? '700'};color:${data.productNameColor ?? '#111827'};margin:0 0 12px;line-height:1.2;">${nameHtml}</h1>
-          <p data-rb-pd2-price style="font-size:${data.priceFontSize ?? 30}px;font-weight:${data.priceFontWeight ?? '400'};color:${data.priceColor ?? '#111827'};margin:0 0 20px;">${priceHtml}</p>
+          <h1 data-rb-pd2-name style="font-size:${data.productNameFontSize ?? 30}px;font-weight:${data.productNameFontWeight ?? '700'};color:${data.productNameColor ?? '#111827'};margin:0 0 12px;line-height:1.2;${fontCss(data.productNameFont, data.fontFamily)}">${nameHtml}</h1>
+          <p data-rb-pd2-price style="font-size:${data.priceFontSize ?? 30}px;font-weight:${data.priceFontWeight ?? '400'};color:${data.priceColor ?? '#111827'};margin:0 0 20px;${fontCss(data.priceFont, data.fontFamily)}">${priceHtml}</p>
 
-          <div data-rb-pd2-desc style="font-size:15px;color:#374151;line-height:1.75;margin-bottom:28px;"></div>
+          <div data-rb-pd2-desc style="font-size:15px;color:#374151;line-height:1.75;margin-bottom:28px;${fontCss(data.descriptionFont, data.fontFamily)}"></div>
 
           <div style="margin-bottom:32px;">
             <div style="font-size:14px;font-weight:500;color:#374151;margin-bottom:12px;">Color</div>
@@ -4353,7 +4770,7 @@ export function renderRu2ProductDetail(data: Ru2ProductDetailData): string {
           </div>
 
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:36px;">
-            <button style="flex:1;padding:16px 24px;background:${data.buttonBgColor};color:${data.buttonTextColor};border:none;border-radius:${data.buttonBorderRadius ?? 8}px;font-size:16px;font-weight:600;cursor:pointer;">${data.addToCartLabel || 'Add to bag'}</button>
+            <button style="flex:1;padding:16px 24px;background:${data.buttonBgColor};color:${data.buttonTextColor};border:none;border-radius:${data.buttonBorderRadius ?? 8}px;font-size:16px;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.addToCartLabel || 'Add to bag'}</button>
             <button style="width:44px;height:44px;border:1px solid #e5e7eb;border-radius:50%;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -4445,6 +4862,8 @@ export function renderRu1ProductDetail(data: Ru1ProductDetailData): string {
   const pmColor      = layout === 'layout3' ? (data.l3PriceModifierColor ?? data.priceModifierColor) : layout === 'layout2' ? (data.l2PriceModifierColor ?? data.priceModifierColor) : (data.l1PriceModifierColor ?? data.priceModifierColor)
   const pmWeight     = layout === 'layout3' ? (data.l3PriceModifierFontWeight ?? data.priceModifierFontWeight) : layout === 'layout2' ? (data.l2PriceModifierFontWeight ?? data.priceModifierFontWeight) : (data.l1PriceModifierFontWeight ?? data.priceModifierFontWeight)
   const pmSize       = layout === 'layout3' ? (data.l3PriceModifierFontSize ?? data.priceModifierFontSize) : layout === 'layout2' ? (data.l2PriceModifierFontSize ?? data.priceModifierFontSize) : (data.l1PriceModifierFontSize ?? data.priceModifierFontSize)
+  const nameFont     = layout === 'layout3' ? (data.l3ProductNameFont ?? data.productNameFont) : layout === 'layout2' ? (data.l2ProductNameFont ?? data.productNameFont) : (data.l1ProductNameFont ?? data.productNameFont)
+  const pmFont       = layout === 'layout3' ? (data.l3PriceModifierFont ?? data.priceModifierFont) : layout === 'layout2' ? (data.l2PriceModifierFont ?? data.priceModifierFont) : (data.l1PriceModifierFont ?? data.priceModifierFont)
   const tSize        = layout === 'layout3' ? (data.l3ThumbSize ?? data.thumbSize) : layout === 'layout2' ? (data.l2ThumbSize ?? data.thumbSize) : (data.l1ThumbSize ?? data.thumbSize)
   const tRadius      = layout === 'layout3' ? (data.l3ThumbBorderRadius ?? data.thumbBorderRadius) : layout === 'layout2' ? (data.l2ThumbBorderRadius ?? data.thumbBorderRadius) : (data.l1ThumbBorderRadius ?? data.thumbBorderRadius)
   const thumbCount   = Number(layout === 'layout3' ? (data.l3ThumbCount ?? 3) : layout === 'layout2' ? (data.l2ThumbCount ?? 2) : (data.l1ThumbCount ?? 1))
@@ -4490,13 +4909,13 @@ export function renderRu1ProductDetail(data: Ru1ProductDetailData): string {
     `<div style="text-align:center;">
       <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">${s.label}</div>
       <input type="text" placeholder="Qty" style="width:100%;box-sizing:border-box;border:1px solid #d1d5db;border-radius:4px;padding:6px 4px;font-size:12px;text-align:center;outline:none;background:#fff;" />
-      ${s.priceModifier ? `<div data-rb-pd-size-pm style="font-size:${pmSize}px;font-weight:${pmWeight};color:${pmColor};margin-top:3px;">${s.priceModifier}</div>` : `<div style="height:16px;"></div>`}
+      ${s.priceModifier ? `<div data-rb-pd-size-pm style="font-size:${pmSize}px;font-weight:${pmWeight};color:${pmColor};margin-top:3px;${fontCss(pmFont, data.fontFamily)}">${s.priceModifier}</div>` : `<div style="height:16px;"></div>`}
     </div>`
   ).join('')
 
   const autoSlideSecs = data.l3AutoSlideSeconds ?? 3
 
-  return `<section data-component-title="Ru1-Product Detail" data-component-props="${encodeURIComponent(JSON.stringify(persistable))}" style="background:${bgColor};padding:${paddingY ?? 48}px ${paddingX ?? 16}px;">
+  return `<section data-component-title="Ru1-Product Detail" data-component-props="${encodeURIComponent(JSON.stringify(persistable))}" style="background:${bgColor};padding:${paddingY ?? 48}px ${paddingX ?? 16}px;${fontCss(undefined, data.fontFamily)}">
   <div style="max-width:80rem;margin:0 auto;">
     <div
       data-rubikx-component="ProductDetail"
@@ -4528,7 +4947,7 @@ export function renderRu1ProductDetail(data: Ru1ProductDetailData): string {
     >
       ${galleryHtml}
       <div>
-        <h2 data-rb-pd-name style="font-size:${nameSize ?? 22}px;font-weight:${nameWeight ?? '700'};color:${nameColor ?? '#111827'};margin:0 0 20px;line-height:1.3;">${nameContent}</h2>
+        <h2 data-rb-pd-name style="font-size:${nameSize ?? 22}px;font-weight:${nameWeight ?? '700'};color:${nameColor ?? '#111827'};margin:0 0 20px;line-height:1.3;${fontCss(nameFont, data.fontFamily)}">${nameContent}</h2>
         <div style="margin-bottom:20px;">
           <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:10px;">Color</div>
           <div data-rb-pd-colors style="display:flex;gap:10px;flex-wrap:wrap;">${colorsContent}</div>
@@ -4544,7 +4963,7 @@ export function renderRu1ProductDetail(data: Ru1ProductDetailData): string {
           <span style="font-size:12px;color:#6b7280;font-style:italic;">${data.unitPriceNote}</span>
         </div>
         <div data-rb-pd-total style="font-size:18px;font-weight:700;color:#111827;margin-bottom:20px;">${totalDisplay}</div>
-        <button style="width:100%;padding:14px;background:${btnBg};color:${btnColor};border:none;border-radius:4px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:20px;">${data.addToCartLabel}</button>
+        <button style="width:100%;padding:14px;background:${btnBg};color:${btnColor};border:none;border-radius:4px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:20px;${fontCss(data.buttonFont, data.fontFamily)}">${data.addToCartLabel}</button>
         <table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:13px;">
           <tr>
             <td style="border:1px solid #e5e7eb;padding:10px 14px;color:#374151;font-weight:500;">Quantity</td>
@@ -4556,17 +4975,18 @@ export function renderRu1ProductDetail(data: Ru1ProductDetailData): string {
           </tr>
         </table>
         <div>
-          <div style="font-size:15px;font-weight:700;color:${accentColor};margin-bottom:10px;">${data.descriptionTitle}</div>
+          <div style="font-size:15px;font-weight:700;color:${accentColor};margin-bottom:10px;${fontCss(data.descriptionTitleFont, data.fontFamily)}">${data.descriptionTitle}</div>
           <ul data-rb-pd-desc style="margin:0;padding-left:20px;list-style:disc;">${
             (() => {
               const descColor = data.descriptionColor || '#374151'
+              const descFontStyle = fontCss(data.descriptionFont, data.fontFamily)
               const lines = (data.description || '').split('\n').map((s: string) => s.trim()).filter(Boolean)
-              if (lines.length > 0) return lines.map((l: string) => `<li style="margin-bottom:6px;font-size:14px;color:${descColor};">${l}</li>`).join('')
+              if (lines.length > 0) return lines.map((l: string) => `<li style="margin-bottom:6px;font-size:14px;color:${descColor};${descFontStyle}">${l}</li>`).join('')
               if (!data.productIds) return [
                 'Center front hand warmer pocket',
                 'Moisture wicking',
                 'Center front coil zipper with rubber pull',
-              ].map((l: string) => `<li style="margin-bottom:6px;font-size:14px;color:${descColor};">${l}</li>`).join('')
+              ].map((l: string) => `<li style="margin-bottom:6px;font-size:14px;color:${descColor};${descFontStyle}">${l}</li>`).join('')
               return ''
             })()
           }</ul>
@@ -4729,6 +5149,21 @@ export interface Ru3ProductDetailData {
   relatedAddToCartLabel: string
   paddingY: number
   paddingX: number
+  fontFamily: string
+  productNameFont: string
+  priceFont: string
+  buttonFont: string
+  ratingFont: string
+  descriptionTitleFont: string
+  descriptionFont: string
+  fabricCareTitleFont: string
+  fabricCareItemFont: string
+  policyFont: string
+  reviewsTitleFont: string
+  reviewFont: string
+  relatedTitleFont: string
+  relatedCardFont: string
+  relatedButtonFont: string
 }
 
 export const ru3ProductDetailDefaults: Ru3ProductDetailData = {
@@ -4814,9 +5249,27 @@ export const ru3ProductDetailDefaults: Ru3ProductDetailData = {
   relatedAddToCartLabel: 'Add to cart',
   paddingY: 32,
   paddingX: 16,
+  fontFamily: '',
+  productNameFont: '',
+  priceFont: '',
+  buttonFont: '',
+  ratingFont: '',
+  descriptionTitleFont: '',
+  descriptionFont: '',
+  fabricCareTitleFont: '',
+  fabricCareItemFont: '',
+  policyFont: '',
+  reviewsTitleFont: '',
+  reviewFont: '',
+  relatedTitleFont: '',
+  relatedCardFont: '',
+  relatedButtonFont: '',
 }
 
 export const ru3ProductDetailFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
   { key: '_h_appearance', label: 'Appearance', type: 'header' },
   { key: 'bgColor',    label: 'Background Color', type: 'color' },
   { key: 'accentColor', label: 'Accent Color',    type: 'color' },
@@ -4825,11 +5278,13 @@ export const ru3ProductDetailFields: FieldConfig[] = [
   { key: 'productNameColor',       label: 'Name Color',  type: 'color' },
   { key: 'productNameFontWeight',  label: 'Name Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
   { key: 'productNameFontSize',    label: 'Name Size',   type: 'number', unit: 'px', step: 1 },
+  fontField('productNameFont', 'Name Font'),
 
   { key: '_h_price', label: 'Price', type: 'header' },
   { key: 'priceColor',      label: 'Price Color',     type: 'color' },
   { key: 'priceFontWeight', label: 'Price Weight',    type: 'select', options: ['400', '500', '600', '700', '800'] },
   { key: 'priceFontSize',   label: 'Price Size',      type: 'number', unit: 'px', step: 1 },
+  fontField('priceFont', 'Price Font'),
   { key: 'currency',        label: 'Currency Symbol', type: 'text', placeholder: '$' },
 
   { key: '_h_btn', label: 'Button', type: 'header' },
@@ -4837,12 +5292,14 @@ export const ru3ProductDetailFields: FieldConfig[] = [
   { key: 'buttonTextColor',   label: 'Button Text Color', type: 'color' },
   { key: 'buttonBorderRadius', label: 'Button Radius',    type: 'number', unit: 'px', step: 2 },
   { key: 'addToCartLabel',    label: 'Button Label',      type: 'text', placeholder: 'Add to cart' },
+  fontField('buttonFont', 'Button Font'),
 
   { key: '_h_rating', label: 'Rating', type: 'header' },
   { key: 'showRating',     label: 'Show Rating',      type: 'toggle' },
   { key: 'ratingValue',    label: 'Rating (out of 5)', type: 'number', step: 0.1 },
   { key: 'reviewCount',    label: 'Review Count',      type: 'number', step: 1 },
   { key: 'reviewsLinkText', label: 'Reviews Link Text', type: 'text', placeholder: 'See all reviews' },
+  fontField('ratingFont', 'Rating Link Font'),
 
   { key: '_h_sizes', label: 'Sizes', type: 'header' },
   { key: 'showSizes',      label: 'Show Sizes',   type: 'toggle' },
@@ -4854,15 +5311,20 @@ export const ru3ProductDetailFields: FieldConfig[] = [
 
   { key: '_h_desc', label: 'Description', type: 'header' },
   { key: 'descriptionTitle', label: 'Section Title',   type: 'text',     placeholder: 'Description' },
+  fontField('descriptionTitleFont', 'Section Title Font'),
   { key: 'description',      label: 'Description Text', type: 'textarea', placeholder: 'Product description...' },
+  fontField('descriptionFont', 'Description Font'),
 
   { key: '_h_fabric', label: 'Fabric & Care', type: 'header' },
   { key: 'showFabricCare',  label: 'Show Section',       type: 'toggle' },
   { key: 'fabricCareTitle', label: 'Section Title',      type: 'text',     placeholder: 'Fabric & Care' },
+  fontField('fabricCareTitleFont', 'Section Title Font'),
   { key: 'fabricCareItems', label: 'Items (one per line)', type: 'textarea', placeholder: 'Only the best materials\nEthically and locally made' },
+  fontField('fabricCareItemFont', 'Items Font'),
 
   { key: '_h_policies', label: 'Policies', type: 'header' },
   { key: 'showPolicies', label: 'Show Policies', type: 'toggle' },
+  fontField('policyFont', 'Policy Font'),
   { key: 'policies', label: 'Policy Cards', type: 'list', listFields: [
     { key: 'title',       label: 'Title',       type: 'text', placeholder: 'International delivery' },
     { key: 'description', label: 'Description', type: 'text', placeholder: 'Get your order in 2 years' },
@@ -4871,6 +5333,8 @@ export const ru3ProductDetailFields: FieldConfig[] = [
   { key: '_h_reviews', label: 'Reviews', type: 'header' },
   { key: 'showReviews',  label: 'Show Reviews',  type: 'toggle' },
   { key: 'reviewsTitle', label: 'Section Title', type: 'text', placeholder: 'Recent reviews' },
+  fontField('reviewsTitleFont', 'Section Title Font'),
+  fontField('reviewFont', 'Review Text Font'),
   { key: 'reviews', label: 'Reviews', type: 'list', listFields: [
     { key: 'author',  label: 'Author',           type: 'text',     placeholder: 'John D.' },
     { key: 'date',    label: 'Date',             type: 'text',     placeholder: 'May 16, 2021' },
@@ -4885,8 +5349,11 @@ export const ru3ProductDetailFields: FieldConfig[] = [
   { key: 'relatedTitleColor',    label: 'Title Color',           type: 'color' },
   { key: 'relatedTitleFontWeight', label: 'Title Weight',        type: 'select', options: ['400', '500', '600', '700', '800'] },
   { key: 'relatedTitleAlign',    label: 'Title Align',           type: 'select', options: ['left', 'center', 'right'] },
+  fontField('relatedTitleFont', 'Title Font'),
   { key: 'relatedColumns',       label: 'Columns',               type: 'number', step: 1 },
   { key: 'relatedRows',          label: 'Rows',                  type: 'number', step: 1 },
+  fontField('relatedCardFont', 'Related Card Font'),
+  fontField('relatedButtonFont', 'Related Card Button Font'),
 
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'paddingY', label: 'Vertical Padding',   type: 'number', unit: 'px', step: 4 },
@@ -4951,7 +5418,7 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
         <p style="font-size:14px;color:#374151;margin:0;">${ratingVal}</p>
         <div style="display:flex;align-items:center;gap:1px;">${starsHtml}</div>
         <span style="display:inline-block;width:1px;height:16px;background:#e5e7eb;margin:0 4px;"></span>
-        <a href="#ru3-reviews" style="font-size:14px;font-weight:500;color:${accent};text-decoration:none;">${data.reviewsLinkText || 'See all reviews'} (${data.reviewCount ?? 512})</a>
+        <a href="#ru3-reviews" style="font-size:14px;font-weight:500;color:${accent};text-decoration:none;${fontCss(data.ratingFont, data.fontFamily)}">${data.reviewsLinkText || 'See all reviews'} (${data.reviewCount ?? 512})</a>
       </div>`
     : ''
 
@@ -4997,15 +5464,15 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
     : ''
 
   // ── Button ────────────────────────────────────────────────────────────────
-  const buttonHtml = `<button style="margin-top:24px;width:100%;padding:14px 24px;background:${data.buttonBgColor || accent};color:${data.buttonTextColor || '#fff'};border:none;border-radius:${data.buttonBorderRadius ?? 6}px;font-size:16px;font-weight:500;cursor:pointer;">
+  const buttonHtml = `<button style="margin-top:24px;width:100%;padding:14px 24px;background:${data.buttonBgColor || accent};color:${data.buttonTextColor || '#fff'};border:none;border-radius:${data.buttonBorderRadius ?? 6}px;font-size:16px;font-weight:500;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">
     ${data.addToCartLabel || 'Add to cart'}
   </button>`
 
   // ── Description ───────────────────────────────────────────────────────────
   const descParagraphs = (data.description || '').split('\n').filter(l => l.trim())
-    .map(line => `<p style="margin:0 0 16px;font-size:14px;line-height:1.75;color:#6b7280;">${line}</p>`).join('')
+    .map(line => `<p style="margin:0 0 16px;font-size:14px;line-height:1.75;color:#6b7280;${fontCss(data.descriptionFont, data.fontFamily)}">${line}</p>`).join('')
   const descriptionHtml = `<div style="margin-top:32px;">
-    <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 16px;">${data.descriptionTitle || 'Description'}</h2>
+    <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 16px;${fontCss(data.descriptionTitleFont, data.fontFamily)}">${data.descriptionTitle || 'Description'}</h2>
     ${descParagraphs}
   </div>`
 
@@ -5013,9 +5480,9 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
   const fabricLines = (data.fabricCareItems || '').split('\n').map(s => s.trim()).filter(Boolean)
   const fabricCareHtml = data.showFabricCare !== false
     ? `<div style="margin-top:32px;border-top:1px solid #e5e7eb;padding-top:32px;">
-        <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 16px;">${data.fabricCareTitle || 'Fabric & Care'}</h2>
+        <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 16px;${fontCss(data.fabricCareTitleFont, data.fontFamily)}">${data.fabricCareTitle || 'Fabric & Care'}</h2>
         <ul style="margin:0;padding-left:24px;display:flex;flex-direction:column;gap:4px;">
-          ${fabricLines.map(item => `<li style="font-size:14px;line-height:1.75;color:#6b7280;">${item}</li>`).join('')}
+          ${fabricLines.map(item => `<li style="font-size:14px;line-height:1.75;color:#6b7280;${fontCss(data.fabricCareItemFont, data.fontFamily)}">${item}</li>`).join('')}
         </ul>
       </div>`
     : ''
@@ -5025,8 +5492,8 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
   const policyCards = (data.policies || []).map(p =>
     `<div style="border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;padding:24px;text-align:center;">
       ${infoIcon}
-      <span style="font-size:14px;font-weight:500;color:#111827;display:block;">${p.title}</span>
-      <span style="font-size:14px;color:#6b7280;display:block;margin-top:4px;">${p.description}</span>
+      <span style="font-size:14px;font-weight:500;color:#111827;display:block;${fontCss(data.policyFont, data.fontFamily)}">${p.title}</span>
+      <span style="font-size:14px;color:#6b7280;display:block;margin-top:4px;${fontCss(data.policyFont, data.fontFamily)}">${p.description}</span>
     </div>`
   ).join('')
   const policiesHtml = data.showPolicies !== false && (data.policies || []).length
@@ -5041,18 +5508,18 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
   const reviewStars = (rating: number) => [0,1,2,3,4].map(i => starSvg(rating > i)).join('')
   const reviewItems = (data.reviews || []).map(r => {
     const paragraphs = (r.content || '').split('\n').filter(l => l.trim())
-      .map(line => `<p style="margin:0 0 16px;font-size:14px;color:#6b7280;line-height:1.75;">${line}</p>`).join('')
+      .map(line => `<p style="margin:0 0 16px;font-size:14px;color:#6b7280;line-height:1.75;${fontCss(data.reviewFont, data.fontFamily)}">${line}</p>`).join('')
     return `<div style="padding:40px 0;border-top:1px solid #e5e7eb;display:grid;grid-template-columns:4fr 8fr;gap:32px;">
       <div>
-        <p style="font-weight:500;color:#111827;font-size:14px;margin:0 0 4px;">${r.author || ''}</p>
-        <time style="font-size:14px;color:#6b7280;">${r.date || ''}</time>
+        <p style="font-weight:500;color:#111827;font-size:14px;margin:0 0 4px;${fontCss(data.reviewFont, data.fontFamily)}">${r.author || ''}</p>
+        <time style="font-size:14px;color:#6b7280;${fontCss(data.reviewFont, data.fontFamily)}">${r.date || ''}</time>
       </div>
       <div>
         <div style="display:flex;align-items:center;gap:4px;margin-bottom:8px;">
           ${reviewStars(r.rating ?? 5)}
           <span style="font-size:14px;color:#374151;margin-left:8px;">${r.rating ?? 5}</span>
         </div>
-        <h3 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 12px;">${r.title || ''}</h3>
+        <h3 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 12px;${fontCss(data.reviewFont, data.fontFamily)}">${r.title || ''}</h3>
         ${paragraphs}
       </div>
     </div>`
@@ -5060,7 +5527,7 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
 
   const reviewsSection = data.showReviews !== false && (data.reviews || []).length
     ? `<div style="margin-top:64px;border-top:1px solid #e5e7eb;padding-top:64px;" id="ru3-reviews">
-        <h2 style="font-size:18px;font-weight:500;color:#111827;margin:0 0 24px;">${data.reviewsTitle || 'Recent reviews'}</h2>
+        <h2 style="font-size:18px;font-weight:500;color:#111827;margin:0 0 24px;${fontCss(data.reviewsTitleFont, data.fontFamily)}">${data.reviewsTitle || 'Recent reviews'}</h2>
         <div style="border-top:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;">${reviewItems}</div>
       </div>`
     : ''
@@ -5105,7 +5572,7 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
         }</div>`
       : ''
     const subtitleHtml = relSubtitle ? `<div style="font-size:11px;color:#6b7280;margin-bottom:6px;text-align:${relTextAlign};">${relSubtitle}</div>` : ''
-    const btnHtml  = `<button style="width:100%;padding:10px;background:${relBtnBg};color:${relBtnColor};border:none;border-radius:${relBtnRadius}px;font-size:${relFontSize}px;font-weight:500;cursor:pointer;margin-top:auto;">${data.relatedAddToCartLabel || 'Add to cart'}</button>`
+    const btnHtml  = `<button style="width:100%;padding:10px;background:${relBtnBg};color:${relBtnColor};border:none;border-radius:${relBtnRadius}px;font-size:${relFontSize}px;font-weight:500;cursor:pointer;margin-top:auto;${fontCss(data.relatedButtonFont, data.fontFamily)}">${data.relatedAddToCartLabel || 'Add to cart'}</button>`
     const imgBox   = `<div style="aspect-ratio:4/3;background:${p.imageUrl ? '#ffffff' : '#f3f4f6'};display:flex;align-items:center;justify-content:center;overflow:hidden;">${p.imageUrl ? `<img src="${p.imageUrl}" style="width:100%;height:100%;object-fit:contain;display:block;" />` : skeletonImg}</div>`
     const cardWrap = (inner: string) =>
       `<div style="background:${relCardBg};border-radius:${relCardRadius}px;overflow:hidden;box-shadow:${relShadow};margin:${relCardMar}px;display:flex;flex-direction:column;">${imgBox}${inner}</div>`
@@ -5113,13 +5580,13 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
     if (relLayout === 'inline') {
       return cardWrap(`<div style="padding:${relCardPad}px;display:flex;flex-direction:column;flex:1;">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;">
-          <span style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${relTextColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">${p.name}</span>
-          <span style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${accent};white-space:nowrap;flex-shrink:0;">${p.price}</span>
+          <span style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${relTextColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;${fontCss(data.relatedCardFont, data.fontFamily)}">${p.name}</span>
+          <span style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${accent};white-space:nowrap;flex-shrink:0;${fontCss(data.relatedCardFont, data.fontFamily)}">${p.price}</span>
         </div>${swatchesHtml}${subtitleHtml}${btnHtml}</div>`)
     }
     return cardWrap(`<div style="padding:${relCardPad}px;text-align:${relTextAlign};display:flex;flex-direction:column;flex:1;">
-      <div style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${relTextColor};margin-bottom:4px;${relLayout !== 'centered' ? 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;' : ''}">${p.name}</div>
-      <div style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${accent};margin-bottom:6px;">${p.price}</div>
+      <div style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${relTextColor};margin-bottom:4px;${relLayout !== 'centered' ? 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;' : ''}${fontCss(data.relatedCardFont, data.fontFamily)}">${p.name}</div>
+      <div style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${accent};margin-bottom:6px;${fontCss(data.relatedCardFont, data.fontFamily)}">${p.price}</div>
       ${swatchesHtml}${subtitleHtml}${btnHtml}</div>`)
   }
 
@@ -5131,19 +5598,19 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
           <div style="padding:${relCardPad}px;">
             <div style="height:14px;background:#f3f4f6;border-radius:4px;width:68%;margin-bottom:6px;"></div>
             <div style="height:13px;background:#f3f4f6;border-radius:4px;width:48%;margin-bottom:12px;"></div>
-            <button style="width:100%;padding:10px;background:${relBtnBg};color:${relBtnColor};border:none;border-radius:${relBtnRadius}px;font-size:${relFontSize}px;font-weight:500;cursor:pointer;">${data.relatedAddToCartLabel || 'Add to cart'}</button>
+            <button style="width:100%;padding:10px;background:${relBtnBg};color:${relBtnColor};border:none;border-radius:${relBtnRadius}px;font-size:${relFontSize}px;font-weight:500;cursor:pointer;${fontCss(data.relatedButtonFont, data.fontFamily)}">${data.relatedAddToCartLabel || 'Add to cart'}</button>
           </div>
         </div>`
       ).join('')
 
   const relatedSection = data.showRelatedProducts !== false
     ? `<div style="margin-top:64px;border-top:1px solid #e5e7eb;padding-top:64px;">
-        <h2 style="font-size:20px;font-weight:${data.relatedTitleFontWeight || '500'};color:${data.relatedTitleColor || '#111827'};text-align:${data.relatedTitleAlign || 'left'};margin:0 0 32px;">${data.relatedTitle || 'Customers also purchased'}</h2>
+        <h2 style="font-size:20px;font-weight:${data.relatedTitleFontWeight || '500'};color:${data.relatedTitleColor || '#111827'};text-align:${data.relatedTitleAlign || 'left'};margin:0 0 32px;${fontCss(data.relatedTitleFont, data.fontFamily)}">${data.relatedTitle || 'Customers also purchased'}</h2>
         <div style="${relGridStyle}">${relatedCardsHtml}</div>
       </div>`
     : ''
 
-  return `<section data-component-title="Ru3-Product Detail" data-component-props="${encodeURIComponent(JSON.stringify(persistable))}" style="background:${data.bgColor || '#ffffff'};padding:${data.paddingY ?? 32}px ${data.paddingX ?? 16}px;">
+  return `<section data-component-title="Ru3-Product Detail" data-component-props="${encodeURIComponent(JSON.stringify(persistable))}" style="background:${data.bgColor || '#ffffff'};padding:${data.paddingY ?? 32}px ${data.paddingX ?? 16}px;${fontCss(undefined, data.fontFamily)}">
   <div style="max-width:80rem;margin:0 auto;">
     <div style="display:grid;grid-template-columns:7fr 5fr;gap:4rem;align-items:flex-start;">
 
@@ -5153,8 +5620,8 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
       <!-- Right: product info -->
       <div>
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
-          <h1 style="font-size:${data.productNameFontSize ?? 24}px;font-weight:${data.productNameFontWeight ?? '500'};color:${data.productNameColor ?? '#111827'};margin:0;line-height:1.3;">${nameHtml}</h1>
-          <p style="font-size:${data.priceFontSize ?? 24}px;font-weight:${data.priceFontWeight ?? '500'};color:${data.priceColor ?? '#111827'};margin:0;white-space:nowrap;">${priceHtml}</p>
+          <h1 style="font-size:${data.productNameFontSize ?? 24}px;font-weight:${data.productNameFontWeight ?? '500'};color:${data.productNameColor ?? '#111827'};margin:0;line-height:1.3;${fontCss(data.productNameFont, data.fontFamily)}">${nameHtml}</h1>
+          <p style="font-size:${data.priceFontSize ?? 24}px;font-weight:${data.priceFontWeight ?? '500'};color:${data.priceColor ?? '#111827'};margin:0;white-space:nowrap;${fontCss(data.priceFont, data.fontFamily)}">${priceHtml}</p>
         </div>
         ${ratingHtml}
         ${colorsHtml}
