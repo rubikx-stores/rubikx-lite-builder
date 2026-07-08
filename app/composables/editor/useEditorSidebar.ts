@@ -57,8 +57,16 @@ export function useEditorSidebar() {
         if (!registry.hasConfig(title)) return
 
         if (!registry.getData(componentId)) {
-          // New block dropped by the user — register it with defaults
-          registry.registerInstance(componentId, title)
+          // Register from this section's live data-component-props (the block's
+          // actual saved field values) so blocks loaded from a saved/published
+          // page keep their real data instead of being seeded with blank
+          // defaults — registerInstance() no-ops on every later registration
+          // attempt for this componentId once it's been called once, so
+          // whichever call wins first must carry the real props.
+          const rawProps = sec.getAttribute('data-component-props')
+          let props: Record<string, any> | undefined
+          try { if (rawProps) props = JSON.parse(decodeURIComponent(rawProps)) } catch {}
+          registry.registerInstance(componentId, title, props)
           return
         }
 
@@ -348,6 +356,35 @@ export function useEditorSidebar() {
     await builder.globalPageStyles()
   }
 
+  // Sets the block-level `fontFamily` default on every registered block
+  // currently on the canvas. Blocks that haven't adopted a `fontFamily`
+  // field are safely skipped. Never touches per-field font overrides.
+  async function applyFontToAllBlocks(value: string) {
+    if (typeof document === 'undefined') return
+    const ids: string[] = []
+    document.querySelectorAll<HTMLElement>('section[data-component-title][data-componentid]').forEach((sec) => {
+      const id = sec.getAttribute('data-componentid')
+      const title = sec.getAttribute('data-component-title')
+      if (!id || !title || !registry.hasConfig(title)) return
+      // Blocks the user hasn't clicked/selected yet (e.g. on a freshly opened
+      // page) are never registered, so getData() would be null and this block
+      // would silently be skipped. Register it here from its current DOM
+      // state — same lazy-registration pattern used by the selectedEl watch
+      // above — so "whole page" really means the whole page.
+      if (!registry.getData(id)) {
+        const rawProps = sec.getAttribute('data-component-props')
+        let props: Record<string, any> | undefined
+        try { if (rawProps) props = JSON.parse(decodeURIComponent(rawProps)) } catch {}
+        registry.registerInstance(id, title, props)
+      }
+      ids.push(id)
+    })
+    for (const id of ids) {
+      registry.setData(id, 'fontFamily', value)
+      await _applyBlockRender(id)
+    }
+  }
+
   return {
     selectedEl,
     selectedBlockId,
@@ -357,6 +394,7 @@ export function useEditorSidebar() {
     blockData,
     selectedTag,
     applyBlockRender: _applyBlockRender,
+    applyFontToAllBlocks,
     updateBlockField,
     updateBlockListItem,
     addBlockListItem,

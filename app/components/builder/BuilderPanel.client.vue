@@ -6,19 +6,54 @@ import themesData from '#lib/themes'
 import { getPageBuilder, usePageBuilderModal, usePageBuilderStateStore } from '@myissue/vue-website-page-builder'
 import { NAVBAR_TITLES, FOOTER_TITLES } from '~/composables/useGlobalSections'
 import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
+import { FONT_FAMILY_OPTIONS } from '~/composables/editor/fontFields'
 
 const selectedCompanyId = useState<number | null>('selectedCompanyId')
 
 const { themeRegistry, applyTheme } = useThemes()
 const { layoutComponentRegistry } = useLayouts()
 const { closeAddComponentModal } = usePageBuilderModal()
-const { applyBlockRender } = useEditorSidebar()
+const { applyBlockRender, applyFontToAllBlocks } = useEditorSidebar()
 const blockRegistry = useBlockRegistry()
 
 const isLoading = ref(false)
-const selectedTab = ref<'Components' | 'Themes'>('Components')
+const selectedTab = ref<'Components' | 'Themes' | 'Settings'>('Components')
 const selectedCategory = ref('All')
 const selectedThemeCategory = ref('All')
+// Not a hydrated ref — derived from each block's own fontFamily field so it
+// stays correct across modal close/reopen and page reload without a second,
+// separately-persisted "page font" value that could drift out of sync.
+const globalFont = computed<string>({
+  get() {
+    if (typeof document === 'undefined') return ''
+    let value: string | null = null
+    let mixed = false
+    document.querySelectorAll<HTMLElement>('section[data-component-title][data-componentid]').forEach((sec) => {
+      if (mixed) return
+      const id = sec.getAttribute('data-componentid')
+      const title = sec.getAttribute('data-component-title')
+      if (!id || !title || !blockRegistry.hasConfig(title)) return
+      // Don't assume something else has already registered this block — on a
+      // freshly opened/published page nothing may have read it yet, and
+      // treating "unregistered" as blank is what made this dropdown show
+      // Default even though the real value is sitting right on the section's
+      // data-component-props. Register it from there on the spot if needed.
+      if (!blockRegistry.getData(id)) {
+        const rawProps = sec.getAttribute('data-component-props')
+        let props: Record<string, any> | undefined
+        try { if (rawProps) props = JSON.parse(decodeURIComponent(rawProps)) } catch {}
+        blockRegistry.registerInstance(id, title, props)
+      }
+      const font = (blockRegistry.getData(id)?.fontFamily as string) ?? ''
+      if (value === null) value = font
+      else if (value !== font) mixed = true
+    })
+    return mixed ? '' : (value ?? '')
+  },
+  set(value: string) {
+    applyFontToAllBlocks(value)
+  },
+})
 
 const categories = computed(() => {
   const libCats = componentData[0]?.components?.data?.map((c) => c.category) ?? []
@@ -240,7 +275,7 @@ async function handleApplyTheme(themeId: string) {
         class="mb-4 flex jusitify-left items-center gap-2 border-0 border-solid border-b border-gray-200 pb-4 overflow-auto"
       >
         <button
-          v-for="tab in ['Components', 'Themes']"
+          v-for="tab in ['Components', 'Themes', 'Settings']"
           :key="tab"
           class="inline-flex min-h-[3rem] cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-full border border-transparent py-3 font-medium shadow-sm text-xs px-4"
           :class="[
@@ -248,7 +283,7 @@ async function handleApplyTheme(themeId: string) {
               ? 'bg-myPrimaryLinkColor text-white hover:bg-myPrimaryLinkColor hover:text-white'
               : 'bg-[#dee6f0] text-gray-900 hover:bg-myPrimaryLinkColor hover:text-white',
           ]"
-          @click="selectedTab = tab as 'Components' | 'Themes'"
+          @click="selectedTab = tab as 'Components' | 'Themes' | 'Settings'"
         >
           <span>
             <svg fill="currentColor" height="22" viewBox="0 0 22 22" width="22" xmlns="http://www.w3.org/2000/svg">
@@ -258,6 +293,23 @@ async function handleApplyTheme(themeId: string) {
           <span>{{ tab }}</span>
         </button>
       </div>
+
+      <!-- ── Settings Tab ── -->
+      <template v-if="selectedTab === 'Settings'">
+        <div class="mb-8 px-2">
+          <h3 class="break-words text-base font-medium text-gray-900 md:text-lg lg:text-xl mb-4">Settings</h3>
+          <label class="block text-sm font-medium text-gray-900 mb-2">Set Font For Whole Page</label>
+          <select
+            v-model="globalFont"
+            class="w-full max-w-sm rounded-md border border-gray-300 py-2 px-3 text-sm"
+          >
+            <option v-for="opt in FONT_FAMILY_OPTIONS" :key="opt" :value="opt">{{ opt || 'Default' }}</option>
+          </select>
+          <p class="text-xs text-gray-500 mt-2 max-w-sm">
+            Applies to every block on this page. A block (or a single field within it) that already has its own font set is left unchanged.
+          </p>
+        </div>
+      </template>
 
       <!-- ── Themes Tab ── -->
       <template v-if="selectedTab === 'Themes'">
