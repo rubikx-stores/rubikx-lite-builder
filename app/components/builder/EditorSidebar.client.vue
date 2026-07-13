@@ -79,7 +79,7 @@ function toHex(v: string | undefined | null): string {
 
 // ── Product block flag ────────────────────────────────────────────────────────
 // Legacy blocks that pre-date the block registry
-const _LEGACY_PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 6 Products Minimal', 'Show 4 Products Centered']
+const _LEGACY_PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 4 Products Centered']
 
 const _blockRegistry = useBlockRegistry()
 

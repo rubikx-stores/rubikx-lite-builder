@@ -87,6 +87,22 @@ import {
   ru3ProductDetailFields,
   ru3ProductDetailSvg,
   renderRu3ProductDetail,
+  showSingleProductDefaults,
+  showSingleProductFields,
+  showSingleProductSvg,
+  renderShowSingleProduct,
+  showMultipleProductsDefaults,
+  showMultipleProductsFields,
+  showMultipleProductsSvg,
+  renderShowMultipleProducts,
+  show6ProductsDefaults,
+  show6ProductsFields,
+  show6ProductsSvg,
+  renderShow6Products,
+  show4ProductsCenteredDefaults,
+  show4ProductsCenteredFields,
+  show4ProductsCenteredSvg,
+  renderShow4ProductsCentered,
 } from './components'
 
 export interface LayoutComponentItem {
@@ -94,6 +110,28 @@ export interface LayoutComponentItem {
   category: string
   cover_image: string
   html_code: string
+}
+
+// Generate placeholder image data URL from Single Image SVG
+const getPlaceholderImageDataUrl = (): string => {
+  const singleImageSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150">
+      <defs>
+        <style>
+          .bg { fill: #384152; }
+          .fg { fill: #718096; }
+        </style>
+      </defs>
+      <rect class="bg" width="200" height="150"/>
+      <polygon class="fg" points="65 90.01 90 60.01 115 90.01"/>
+      <polygon class="fg" points="110 90.01 122.5 75.01 135 90.01"/>
+      <circle class="fg" cx="122.5" cy="64.15" r="4.16"/>
+    </svg>
+  `
+
+  // Convert SVG to data URL
+  const encodedSvg = encodeURIComponent(singleImageSvg.trim())
+  return `data:image/svg+xml,${encodedSvg}`
 }
 
 export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
@@ -245,6 +283,32 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       html_code: renderRu3ProductDetail(ru3ProductDetailDefaults),
     },
   ],
+  Products: [
+    {
+      title: 'Show Single Product',
+      category: 'Products',
+      cover_image: showSingleProductSvg,
+      html_code: renderShowSingleProduct(showSingleProductDefaults),
+    },
+    {
+      title: 'Show Multiple Products',
+      category: 'Products',
+      cover_image: showMultipleProductsSvg,
+      html_code: renderShowMultipleProducts(showMultipleProductsDefaults),
+    },
+    {
+      title: 'Show 6 Products',
+      category: 'Products',
+      cover_image: show6ProductsSvg,
+      html_code: renderShow6Products(show6ProductsDefaults),
+    },
+    {
+      title: 'Show 4 Products Centered',
+      category: 'Products',
+      cover_image: show4ProductsCenteredSvg,
+      html_code: renderShow4ProductsCentered(show4ProductsCenteredDefaults),
+    },
+  ],
 }
 
 export function useLayouts() {
@@ -374,6 +438,30 @@ export function useLayouts() {
     defaults: ru4StatsDefaults,
     fields: ru4StatsFields,
     render: renderRu4Stats,
+  })
+
+  blockRegistry.register('Show Single Product', {
+    defaults: showSingleProductDefaults,
+    fields: showSingleProductFields,
+    render: renderShowSingleProduct,
+  })
+
+  blockRegistry.register('Show Multiple Products', {
+    defaults: showMultipleProductsDefaults,
+    fields: showMultipleProductsFields,
+    render: renderShowMultipleProducts,
+  })
+
+  blockRegistry.register('Show 6 Products', {
+    defaults: show6ProductsDefaults,
+    fields: show6ProductsFields,
+    render: renderShow6Products,
+  })
+
+  blockRegistry.register('Show 4 Products Centered', {
+    defaults: show4ProductsCenteredDefaults,
+    fields: show4ProductsCenteredFields,
+    render: renderShow4ProductsCentered,
   })
 
   return { layoutComponentRegistry }
