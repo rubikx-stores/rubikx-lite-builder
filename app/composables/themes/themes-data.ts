@@ -1061,6 +1061,8 @@ export interface Ru2ShopHeroData {
   paddingX: number
   borderBottom: boolean
   borderColor: string
+  fontFamily: string
+  titleFont: string
 }
 
 export const ru2ShopHeroDefaults: Ru2ShopHeroData = {
@@ -1079,6 +1081,8 @@ export const ru2ShopHeroDefaults: Ru2ShopHeroData = {
   paddingX: 16,
   borderBottom: true,
   borderColor: '#e5e7eb',
+  fontFamily: '',
+  titleFont: '',
 }
 
 export const ru2ShopHeroFields: FieldConfig[] = [
@@ -1101,6 +1105,10 @@ export const ru2ShopHeroFields: FieldConfig[] = [
   { key: 'bgImageUrl', label: 'Background Image', type: 'image' },
   { key: 'textColor', label: 'Title Color', type: 'color' },
   { key: 'breadcrumbColor', label: 'Breadcrumb Color', type: 'color' },
+
+  { key: '_h_fonts', label: 'Fonts', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+  fontField('titleFont', 'Title Font'),
 
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '24' },
@@ -1125,8 +1133,8 @@ export function renderRu2ShopHero(data: Ru2ShopHeroData): string {
           return `<li style="display:flex;align-items:center;gap:0.25rem">
             ${i > 0 ? `<span style="color:${data.breadcrumbColor};font-size:0.8125rem;margin-right:0.25rem">/</span>` : ''}
             ${isLast
-              ? `<span style="font-size:0.8125rem;color:${data.breadcrumbColor}">${crumb.label}</span>`
-              : `<a href="${crumb.url}" style="font-size:0.8125rem;color:${data.breadcrumbColor};text-decoration:none;hover:text-decoration:underline">${crumb.label}</a>`
+              ? `<span style="font-size:0.8125rem;color:${data.breadcrumbColor};${fontCss(undefined, data.fontFamily)}">${crumb.label}</span>`
+              : `<a href="${crumb.url}" style="font-size:0.8125rem;color:${data.breadcrumbColor};text-decoration:none;hover:text-decoration:underline;${fontCss(undefined, data.fontFamily)}">${crumb.label}</a>`
             }
           </li>`
         }).join('')}
@@ -1137,7 +1145,7 @@ export function renderRu2ShopHero(data: Ru2ShopHeroData): string {
 <div style="${bgStyles}">
   <div style="max-width:80rem;margin:0 auto;text-align:${data.textAlign}">
     ${breadcrumbsHtml}
-    <h1 data-field-key="pageTitle" style="font-size:1.75rem;font-weight:700;color:${data.textColor};margin:0.5rem 0 0;line-height:1.2">${data.pageTitle}</h1>
+    <h1 data-field-key="pageTitle" style="font-size:1.75rem;font-weight:700;color:${data.textColor};margin:0.5rem 0 0;line-height:1.2;${fontCss(data.titleFont, data.fontFamily)}">${data.pageTitle}</h1>
   </div>
 </div>
 </section>`
