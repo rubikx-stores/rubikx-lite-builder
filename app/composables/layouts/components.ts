@@ -3,6 +3,7 @@ import { productImageSrc } from '../useProductImageSrc'
 import { socialIconHtml } from '../useSocialIcons'
 import { icon } from '../useIconSvg'
 import { fontField, fontCss } from '../editor/fontFields'
+import type { Product } from '../themes/themes-data'
 
 
 export const megaMenuHeaderSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 32">
@@ -176,9 +177,6 @@ export const megaMenuHeaderFields: FieldConfig[] = [
   },
   { key: 'buttonsAlign',    label: 'Buttons Position',      type: 'select',
     options: ['left', 'center', 'right']                                    },
-  { key: 'showSignIn',  label: 'Show Sign In',    type: 'toggle' },
-  { key: 'signInLabel', label: 'Sign In Label',   type: 'text',  placeholder: 'Sign In' },
-  { key: 'signInUrl',   label: 'Sign In URL',     type: 'url'    },
   { key: 'showCart',    label: 'Show Cart Icon',  type: 'toggle' },
   { key: 'cartUrl',     label: 'Cart URL',        type: 'url'    },
   { key: 'buttonBorderRadius', label: 'Button Radius (px)', type: 'number',
@@ -5635,6 +5633,756 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
 
     ${reviewsSection}
     ${relatedSection}
+  </div>
+</section>`
+}
+
+// ─── Shared card styling helpers (Show Single/Multiple/6/4 Products) ─────────
+
+const CARD_SHADOW_PRESETS: Record<string, string> = {
+  'none':       '0 0 #0000',
+  'shadow-2xs': '0 1px rgb(0 0 0 / 0.05)',
+  'shadow-xs':  '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+  'shadow-sm':  '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+  'shadow-md':  '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+  'shadow-lg':  '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+  'shadow-xl':  '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+  'shadow-2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
+}
+
+// Shared fields used by all four "Show * Products" components.
+const productCardStyleFields: FieldConfig[] = [
+  { key: '_h_card', label: 'Card Style', type: 'header' },
+  { key: 'cardLayout', label: 'Layout', type: 'select', options: ['default', 'inline', 'centered'] },
+  { key: 'cardBg', label: 'Card Background', type: 'color' },
+  { key: 'cardTextColor', label: 'Text Color', type: 'color' },
+  { key: 'cardFontSize', label: 'Font Size', type: 'number', unit: 'px', step: 1, placeholder: '14' },
+  { key: 'cardBorderRadius', label: 'Corner Radius', type: 'number', unit: 'px', step: 2, placeholder: '8' },
+  { key: 'cardShadow', label: 'Shadow', type: 'select', options: Object.keys(CARD_SHADOW_PRESETS) },
+  { key: 'cardMargin', label: 'Margin', type: 'number', unit: 'px', step: 2, placeholder: '0' },
+  { key: 'cardPadding', label: 'Padding', type: 'number', unit: 'px', step: 2, placeholder: '0' },
+
+  { key: '_h_button', label: 'Button', type: 'header' },
+  { key: 'showButton', label: 'Show Button', type: 'toggle' },
+  { key: 'buttonBgColor', label: 'Button Background', type: 'color' },
+  { key: 'buttonTextColor', label: 'Button Text Color', type: 'color' },
+]
+
+interface ProductCardStyleData {
+  cardLayout: string
+  cardBg: string
+  cardTextColor: string
+  cardFontSize: number
+  cardBorderRadius: number
+  cardShadow: string
+  cardMargin: number
+  cardPadding: number
+  showButton: boolean
+  buttonBgColor: string
+  buttonTextColor: string
+}
+
+const productCardStyleDefaults: ProductCardStyleData = {
+  cardLayout: 'default',
+  cardBg: '#ffffff',
+  cardTextColor: '#111827',
+  cardFontSize: 14,
+  cardBorderRadius: 8,
+  cardShadow: 'none',
+  cardMargin: 0,
+  cardPadding: 0,
+  showButton: true,
+  buttonBgColor: '#111827',
+  buttonTextColor: '#ffffff',
+}
+
+// Renders name + price + (optional extra line, e.g. a description) + color
+// swatches + button for one product, honoring the shared card-style fields.
+// Used by the grid components so the layout/swatch/button logic isn't
+// duplicated across each one.
+function renderProductCardBody(
+  product: Product,
+  data: ProductCardStyleData,
+  nameFontCss: string,
+  priceFontCss: string,
+  extraHtml: string = '',
+): string {
+  const centered = data.cardLayout === 'centered'
+  const inline = data.cardLayout === 'inline'
+  const fontSize = data.cardFontSize ?? 14
+
+  const cs = Array.isArray(product.colors) ? '' : String(product.colors ?? '').trim()
+  const allColors = cs ? cs.split(',').map((c: string) => c.trim()).filter(Boolean) : []
+  const shownColors = allColors.slice(0, 12)
+  const extraColors = allColors.length - 12
+  const colorsHtml = allColors.length
+    ? `<div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;justify-content:${centered ? 'center' : 'flex-start'};margin-top:6px">${shownColors.map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.15);flex-shrink:0"></span>`).join('')}${extraColors > 0 ? `<span style="font-size:10px;color:#6b7280;line-height:14px;flex-shrink:0">+${extraColors}</span>` : ''}</div>`
+    : ''
+
+  // Clamp the name to 2 lines with a fixed reserved height, so a long name on
+  // one card doesn't grow that card taller than its neighbors — every card in
+  // the row stays the same height regardless of how much text each name has.
+  const nameLineHeight = 1.3
+  const nameMinHeight = Math.round(fontSize * nameLineHeight * 2)
+  const nameHtml = `<p style="font-size:${fontSize}px;line-height:${nameLineHeight};font-weight:500;margin:0;color:${data.cardTextColor};min-height:${nameMinHeight}px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;${nameFontCss}">${product.name}</p>`
+  const priceHtml = `<p style="font-size:${fontSize}px;font-weight:600;margin:0;color:${data.cardTextColor};${priceFontCss}">${product.price}</p>`
+  const nameRow = inline
+    ? `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">${nameHtml}${priceHtml}</div>`
+    : `${nameHtml}${priceHtml}`
+
+  const buttonHtml = data.showButton !== false
+    ? `<a href="${product.buttonUrl}" style="display:inline-block;padding:0.5rem 1rem;background:${data.buttonBgColor};color:${data.buttonTextColor};text-decoration:none;border-radius:6px;font-weight:600;font-size:0.8125rem;margin-top:8px;">${product.buttonLabel}</a>`
+    : ''
+
+  return `<div style="display:flex;flex-direction:column;gap:4px;text-align:${centered ? 'center' : 'left'};">${nameRow}${extraHtml}${colorsHtml}${buttonHtml}</div>`
+}
+
+function productCardWrapperStyle(data: ProductCardStyleData): string {
+  return `background:${data.cardBg};border-radius:${data.cardBorderRadius}px;box-shadow:${CARD_SHADOW_PRESETS[data.cardShadow] ?? CARD_SHADOW_PRESETS.none};margin:${data.cardMargin}px;padding:${data.cardPadding}px;`
+}
+
+// ─── Show Single Product ─────────────────────────────────────────────────────
+
+export const showSingleProductSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="122.319 300.3 122.364 160.763" width="122.364px" height="160.763px">
+  <rect class="bg" width="122.364" height="122.364" style="fill: rgb(56, 65, 82); stroke-width: 1;" x="122.319" y="300.3"/>
+  <polygon class="fg" points="140.928 379.728 171.337 343.237 201.747 379.728" style="fill: rgb(113, 128, 150); stroke-width: 1;"/>
+  <polygon class="fg" points="195.665 379.728 210.87 361.483 226.052 379.728" style="fill: rgb(113, 128, 150); stroke-width: 1;"/>
+  <circle class="fg" cx="210.87" cy="348.297" r="5.061" style="fill: rgb(113, 128, 150); stroke-width: 1;"/>
+  <rect class="bg" y="436.28" width="122.364" height="6.65" style="fill: rgb(56, 65, 82); stroke-width: 1;" x="122.319"/>
+  <rect class="bg" y="445.335" width="122.364" height="6.65" style="fill: rgb(56, 65, 82); stroke-width: 1;" x="122.319"/>
+  <rect class="bg" y="454.413" width="122.364" height="6.65" style="fill: rgb(56, 65, 82); stroke-width: 1;" x="122.319"/>
+</svg>`
+
+export interface ShowSingleProductData extends ProductCardStyleData {
+  products: Product[]
+  bgColor: string
+  paddingY: number
+  paddingX: number
+  fontFamily: string
+  sectionTitleFont: string
+  productNameFont: string
+  priceFont: string
+  descriptionFont: string
+}
+
+export const showSingleProductDefaults: ShowSingleProductData = {
+  products: [
+    {
+      imageUrl: '',
+      name: 'Product Name',
+      price: '$99.99',
+      oldPrice: '',
+      buttonLabel: 'Shop Now',
+      buttonUrl: '/cart',
+      colors: '',
+    },
+  ],
+  bgColor: '#ffffff',
+  paddingY: 32,
+  paddingX: 16,
+  fontFamily: '',
+  sectionTitleFont: '',
+  productNameFont: '',
+  priceFont: '',
+  descriptionFont: '',
+  ...productCardStyleDefaults,
+}
+
+export const showSingleProductFields: FieldConfig[] = [
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'bgColor', label: 'Background Colour', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '64' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '16' },
+
+  ...productCardStyleFields,
+
+  { key: '_h_font', label: 'Fonts', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+  fontField('sectionTitleFont', 'Section Title Font'),
+  fontField('productNameFont', 'Product Name Font'),
+  fontField('priceFont', 'Price Font'),
+  fontField('descriptionFont', 'Description Font'),
+
+  { key: '_h_products', label: 'Products', type: 'header' },
+  {
+    key: 'products', label: 'Products', type: 'list',
+    listFields: [
+      { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
+      { key: 'name', label: 'Product Name', type: 'text' },
+      { key: 'price', label: 'Price', type: 'text' },
+      { key: 'oldPrice', label: 'Old Price (optional)', type: 'text' },
+      { key: 'buttonLabel', label: 'Button Text', type: 'text' },
+      { key: 'buttonUrl', label: 'Button URL', type: 'url' },
+      { key: 'colors', label: 'Color Swatches', type: 'text', placeholder: 'blue, black, #ff0000' },
+    ],
+  },
+]
+
+export function renderShowSingleProduct(data: ShowSingleProductData): string {
+  const product = (data.products ?? [])[0]
+
+  if (!product) {
+    return `<section data-component-title="Show Single Product" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  <div style="max-width:80rem;margin:0 auto;">
+    <p style="color:#999;text-align:center;">No products added</p>
+  </div>
+</section>`
+  }
+
+  const imageSrc = productImageSrc(product.imageUrl)
+  const fontSize = data.cardFontSize ?? 14
+  const inline = data.cardLayout === 'inline'
+
+  const cs = Array.isArray(product.colors) ? '' : String(product.colors ?? '').trim()
+  const allColors = cs ? cs.split(',').map((c: string) => c.trim()).filter(Boolean) : []
+  const shownColors = allColors.slice(0, 12)
+  const extraColors = allColors.length - 12
+  const colorsHtml = allColors.length
+    ? `<div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;justify-content:center;">${shownColors.map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.15);flex-shrink:0"></span>`).join('')}${extraColors > 0 ? `<span style="font-size:10px;color:#6b7280;line-height:14px;flex-shrink:0">+${extraColors}</span>` : ''}</div>`
+    : ''
+
+  const nameHtml = `<h2 style="font-size:${fontSize + 2}px;font-weight:700;color:${data.cardTextColor};margin:0;line-height:1.3;${fontCss(data.productNameFont, data.fontFamily)}">${product.name}</h2>`
+  const priceHtml = `<p style="font-size:${fontSize}px;font-weight:600;color:${data.cardTextColor};margin:0;${fontCss(data.priceFont, data.fontFamily)}">${product.price}${product.oldPrice ? ` <span style="font-size:${fontSize - 2}px;color:#999;text-decoration:line-through;margin-left:0.5rem;">${product.oldPrice}</span>` : ''}</p>`
+  const nameRow = inline
+    ? `<div style="display:flex;justify-content:center;align-items:center;gap:0.75rem;">${nameHtml}${priceHtml}</div>`
+    : `${nameHtml}${priceHtml}`
+
+  const buttonHtml = data.showButton !== false
+    ? `<a href="${product.buttonUrl}" style="display:inline-block;padding:0.5rem 1.25rem;background:${data.buttonBgColor};color:${data.buttonTextColor};text-decoration:none;border-radius:6px;font-weight:600;font-size:0.8125rem;">${product.buttonLabel}</a>`
+    : ''
+
+  return `<section data-component-title="Show Single Product" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  <div style="max-width:16rem;margin:0 auto;${productCardWrapperStyle(data)}">
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.5rem;">
+      <div style="width:100%;aspect-ratio:1/1;overflow:hidden;border-radius:${data.cardBorderRadius}px;">
+        <img src="${imageSrc}" alt="${product.name}" style="width:100%;height:100%;object-fit:cover;display:block;" />
+      </div>
+      ${nameRow}
+      ${colorsHtml}
+      ${buttonHtml}
+    </div>
+  </div>
+</section>`
+}
+
+// ─── Show 6 Products ─────────────────────────────────────────────────────────
+
+export const show6ProductsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 177.28 146">
+  <defs>
+    <style>
+      .bg { fill: #384152; }
+      .fg { fill: #718096; }
+    </style>
+  </defs>
+  <rect class="bg" width="53.92" height="53.92"/>
+  <rect class="bg" x="62.15" width="53.92" height="53.92"/>
+  <rect class="bg" x="123.37" width="53.92" height="53.92"/>
+  <polygon class="fg" points="8.2 35 21.6 18.92 35 35"/>
+  <polygon class="fg" points="32.32 35 39.02 26.96 45.71 35"/>
+  <circle class="fg" cx="39.02" cy="21.15" r="2.23"/>
+  <polygon class="fg" points="70.36 35 83.75 18.92 97.15 35"/>
+  <polygon class="fg" points="94.47 35 101.17 26.96 107.87 35"/>
+  <circle class="fg" cx="101.17" cy="21.15" r="2.23"/>
+  <polygon class="fg" points="131.57 35 144.96 18.92 158.36 35"/>
+  <polygon class="fg" points="155.68 35 162.38 26.96 169.08 35"/>
+  <circle class="fg" cx="162.38" cy="21.15" r="2.23"/>
+  <rect class="bg" y="59.92" width="53.92" height="2.93"/>
+  <rect class="bg" y="63.91" width="53.92" height="2.93"/>
+  <rect class="bg" y="67.91" width="53.92" height="2.93"/>
+  <rect class="bg" x="62.15" y="59.92" width="53.92" height="2.93"/>
+  <rect class="bg" x="62.15" y="63.91" width="53.92" height="2.93"/>
+  <rect class="bg" x="62.15" y="67.91" width="53.92" height="2.93"/>
+  <rect class="bg" x="123.37" y="59.92" width="53.92" height="2.93"/>
+  <rect class="bg" x="123.37" y="63.91" width="53.92" height="2.93"/>
+  <rect class="bg" x="123.37" y="67.91" width="53.92" height="2.93"/>
+  <rect class="bg" y="75" width="53.92" height="53.92"/>
+  <rect class="bg" x="62.15" y="75" width="53.92" height="53.92"/>
+  <rect class="bg" x="123.37" y="75" width="53.92" height="53.92"/>
+  <polygon class="fg" points="8.2 110 21.6 93.92 35 110"/>
+  <polygon class="fg" points="32.32 110 39.02 101.96 45.71 110"/>
+  <circle class="fg" cx="39.02" cy="96.15" r="2.23"/>
+  <polygon class="fg" points="70.36 110 83.75 93.92 97.15 110"/>
+  <polygon class="fg" points="94.47 110 101.17 101.96 107.87 110"/>
+  <circle class="fg" cx="101.17" cy="96.15" r="2.23"/>
+  <polygon class="fg" points="131.57 110 144.96 93.92 158.36 110"/>
+  <polygon class="fg" points="155.68 110 162.38 101.96 169.08 110"/>
+  <circle class="fg" cx="162.38" cy="96.15" r="2.23"/>
+  <rect class="bg" y="134.92" width="53.92" height="2.93"/>
+  <rect class="bg" y="138.91" width="53.92" height="2.93"/>
+  <rect class="bg" y="142.90" width="53.92" height="2.93"/>
+  <rect class="bg" x="62.15" y="134.92" width="53.92" height="2.93"/>
+  <rect class="bg" x="62.15" y="138.91" width="53.92" height="2.93"/>
+  <rect class="bg" x="62.15" y="142.90" width="53.92" height="2.93"/>
+  <rect class="bg" x="123.37" y="134.92" width="53.92" height="2.93"/>
+  <rect class="bg" x="123.37" y="138.91" width="53.92" height="2.93"/>
+  <rect class="bg" x="123.37" y="142.90" width="53.92" height="2.93"/>
+</svg>`
+
+export interface Show6ProductsData extends ProductCardStyleData {
+  products: Product[]
+  columns: number
+  rows: number
+  bgColor: string
+  paddingY: number
+  paddingX: number
+  fontFamily: string
+  sectionTitleFont: string
+  productNameFont: string
+  priceFont: string
+  descriptionFont: string
+}
+
+export const show6ProductsDefaults: Show6ProductsData = {
+  products: [
+    {
+      imageUrl: '',
+      name: 'Layouts and visual.',
+      price: '$0.00',
+      oldPrice: '',
+      buttonLabel: 'Add to Cart',
+      buttonUrl: '#',
+      colors: '',
+    },
+    {
+      imageUrl: '',
+      name: 'Layouts and visual.',
+      price: '$0.00',
+      oldPrice: '',
+      buttonLabel: 'Add to Cart',
+      buttonUrl: '#',
+      colors: '',
+    },
+    {
+      imageUrl: '',
+      name: 'Layouts and visual.',
+      price: '$0.00',
+      oldPrice: '',
+      buttonLabel: 'Add to Cart',
+      buttonUrl: '#',
+      colors: '',
+    },
+    {
+      imageUrl: '',
+      name: 'Layouts and visual.',
+      price: '$0.00',
+      oldPrice: '',
+      buttonLabel: 'Add to Cart',
+      buttonUrl: '#',
+      colors: '',
+    },
+    {
+      imageUrl: '',
+      name: 'Layouts and visual.',
+      price: '$0.00',
+      oldPrice: '',
+      buttonLabel: 'Add to Cart',
+      buttonUrl: '#',
+      colors: '',
+    },
+    {
+      imageUrl: '',
+      name: 'Layouts and visual.',
+      price: '$0.00',
+      oldPrice: '',
+      buttonLabel: 'Add to Cart',
+      buttonUrl: '#',
+      colors: '',
+    },
+  ],
+  columns: 3,
+  rows: 2,
+  bgColor: '#ffffff',
+  paddingY: 32,
+  paddingX: 16,
+  fontFamily: '',
+  sectionTitleFont: '',
+  productNameFont: '',
+  priceFont: '',
+  descriptionFont: '',
+  ...productCardStyleDefaults,
+}
+
+export const show6ProductsFields: FieldConfig[] = [
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'bgColor', label: 'Background Colour', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '32' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '16' },
+  { key: 'columns', label: 'Columns', type: 'select', options: ['2', '3', '4'] },
+  { key: 'rows', label: 'Rows', type: 'select', options: ['1', '2', '3'] },
+
+  ...productCardStyleFields,
+
+  { key: '_h_font', label: 'Fonts', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+  fontField('sectionTitleFont', 'Section Title Font'),
+  fontField('productNameFont', 'Product Name Font'),
+  fontField('priceFont', 'Price Font'),
+  fontField('descriptionFont', 'Description Font'),
+
+  { key: '_h_products', label: 'Products', type: 'header' },
+  {
+    key: 'products', label: 'Products', type: 'list',
+    listFields: [
+      { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
+      { key: 'name', label: 'Product Name', type: 'text' },
+      { key: 'price', label: 'Price', type: 'text' },
+      { key: 'oldPrice', label: 'Old Price (optional)', type: 'text' },
+      { key: 'buttonLabel', label: 'Button Text', type: 'text' },
+      { key: 'buttonUrl', label: 'Button URL', type: 'url' },
+      { key: 'colors', label: 'Color Swatches', type: 'text', placeholder: 'blue, black, #ff0000' },
+    ],
+  },
+]
+
+export function renderShow6Products(data: Show6ProductsData): string {
+  const cols = Math.min(Math.max(data.columns ?? 3, 1), 6)
+  const rows = Math.min(Math.max(data.rows ?? 2, 1), 3)
+  const limit = cols * rows
+  const products = (data.products ?? []).slice(0, limit)
+
+  if (!products.length) {
+    return `<section data-component-title="Show 6 Products" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  <div style="max-width:80rem;margin:0 auto;">
+    <p style="color:#999;text-align:center;">No products added</p>
+  </div>
+</section>`
+  }
+
+  const gridStyle = `display:grid;gap:2rem;grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${rows},auto);grid-auto-flow:column;`
+  const wrapperStyle = productCardWrapperStyle(data)
+
+  const cardsHtml = products.map(product => {
+    const imageSrc = productImageSrc(product.imageUrl)
+    const body = renderProductCardBody(
+      product, data,
+      fontCss(data.productNameFont, data.fontFamily),
+      fontCss(data.priceFont, data.fontFamily),
+    )
+    return `<div style="display:flex;flex-direction:column;${wrapperStyle}">
+      <img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:${data.cardBorderRadius}px;display:block;margin-bottom:0.75rem;" />
+      ${body}
+    </div>`
+  }).join('')
+
+  return `<section data-component-title="Show 6 Products" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  <div style="max-width:80rem;margin:0 auto;">
+    <div style="${gridStyle}">
+      ${cardsHtml}
+    </div>
+  </div>
+</section>`
+}
+
+export const show4ProductsCenteredSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 177.28 70">
+  <defs>
+    <style>
+      .bg { fill: #384152; }
+      .fg { fill: #718096; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="38" height="38"/>
+  <polygon class="fg" points="4 24 14 12 24 24"/>
+  <polygon class="fg" points="22 24 29 15 36 24"/>
+  <circle class="fg" cx="29" cy="9.5" r="2.5"/>
+  <rect class="bg" x="0" y="42" width="38" height="3"/>
+  <rect class="bg" x="0" y="47" width="38" height="3"/>
+  <rect class="bg" x="0" y="52" width="38" height="3"/>
+  <rect class="bg" x="46" y="0" width="38" height="38"/>
+  <polygon class="fg" points="50 24 60 12 70 24"/>
+  <polygon class="fg" points="68 24 75 15 82 24"/>
+  <circle class="fg" cx="75" cy="9.5" r="2.5"/>
+  <rect class="bg" x="46" y="42" width="38" height="3"/>
+  <rect class="bg" x="46" y="47" width="38" height="3"/>
+  <rect class="bg" x="46" y="52" width="38" height="3"/>
+  <rect class="bg" x="92" y="0" width="38" height="38"/>
+  <polygon class="fg" points="96 24 106 12 116 24"/>
+  <polygon class="fg" points="114 24 121 15 128 24"/>
+  <circle class="fg" cx="121" cy="9.5" r="2.5"/>
+  <rect class="bg" x="92" y="42" width="38" height="3"/>
+  <rect class="bg" x="92" y="47" width="38" height="3"/>
+  <rect class="bg" x="92" y="52" width="38" height="3"/>
+  <rect class="bg" x="138" y="0" width="38" height="38"/>
+  <polygon class="fg" points="142 24 152 12 162 24"/>
+  <polygon class="fg" points="160 24 167 15 174 24"/>
+  <circle class="fg" cx="167" cy="9.5" r="2.5"/>
+  <rect class="bg" x="138" y="42" width="38" height="3"/>
+  <rect class="bg" x="138" y="47" width="38" height="3"/>
+  <rect class="bg" x="138" y="52" width="38" height="3"/>
+</svg>`
+
+export interface Show4ProductsCenteredData extends ProductCardStyleData {
+  products: Product[]
+  bgColor: string
+  paddingY: number
+  paddingX: number
+  fontFamily: string
+  sectionTitleFont: string
+  productNameFont: string
+  priceFont: string
+}
+
+export const show4ProductsCenteredDefaults: Show4ProductsCenteredData = {
+  products: [
+    {
+      imageUrl: '',
+      name: 'Product 1',
+      price: '$99.99',
+      oldPrice: '',
+      buttonLabel: 'Add to Cart',
+      buttonUrl: '/cart',
+      colors: '',
+    },
+    {
+      imageUrl: '',
+      name: 'Product 2',
+      price: '$99.99',
+      oldPrice: '',
+      buttonLabel: 'Add to Cart',
+      buttonUrl: '/cart',
+      colors: '',
+    },
+    {
+      imageUrl: '',
+      name: 'Product 3',
+      price: '$99.99',
+      oldPrice: '',
+      buttonLabel: 'Add to Cart',
+      buttonUrl: '/cart',
+      colors: '',
+    },
+    {
+      imageUrl: '',
+      name: 'Product 4',
+      price: '$99.99',
+      oldPrice: '',
+      buttonLabel: 'Add to Cart',
+      buttonUrl: '/cart',
+      colors: '',
+    },
+  ],
+  bgColor: '#ffffff',
+  paddingY: 64,
+  paddingX: 16,
+  fontFamily: '',
+  sectionTitleFont: '',
+  productNameFont: '',
+  priceFont: '',
+  ...productCardStyleDefaults,
+}
+
+export const show4ProductsCenteredFields: FieldConfig[] = [
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'bgColor', label: 'Background Colour', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '64' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '16' },
+
+  ...productCardStyleFields,
+
+  { key: '_h_font', label: 'Fonts', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+  fontField('sectionTitleFont', 'Section Title Font'),
+  fontField('productNameFont', 'Product Name Font'),
+  fontField('priceFont', 'Price Font'),
+
+  { key: '_h_products', label: 'Products', type: 'header' },
+  {
+    key: 'products', label: 'Products', type: 'list',
+    listFields: [
+      { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
+      { key: 'name', label: 'Product Name', type: 'text' },
+      { key: 'price', label: 'Price', type: 'text' },
+      { key: 'oldPrice', label: 'Old Price (optional)', type: 'text' },
+      { key: 'buttonLabel', label: 'Button Text', type: 'text' },
+      { key: 'buttonUrl', label: 'Button URL', type: 'url' },
+      { key: 'colors', label: 'Color Swatches', type: 'text', placeholder: 'blue, black, #ff0000' },
+    ],
+  },
+]
+
+export function renderShow4ProductsCentered(data: Show4ProductsCenteredData): string {
+  if (!data.products || data.products.length === 0) {
+    return `<section data-component-title="Show 4 Products Centered" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  <div style="max-width:80rem;margin:0 auto;">
+    <p style="color:#999;text-align:center;">No products added</p>
+  </div>
+</section>`
+  }
+
+  const wrapperStyle = productCardWrapperStyle(data)
+
+  const productsHtml = data.products.slice(0, 4).map(product => {
+    const imageSrc = productImageSrc(product.imageUrl)
+    const imageEl = imageSrc
+      ? `<img style="object-fit:cover;width:100%;aspect-ratio:1/1;border-radius:${data.cardBorderRadius}px;object-position:center;display:block;" src="${imageSrc}" alt="${product.name}" />`
+      : `<div style="width:100%;aspect-ratio:1/1;border-radius:${data.cardBorderRadius}px;background:#f3f4f6;display:block;"></div>`
+    const body = renderProductCardBody(
+      product, data,
+      fontCss(data.productNameFont, data.fontFamily),
+      fontCss(data.priceFont, data.fontFamily),
+    )
+
+    return `<div style="display:flex;flex-direction:column;flex:1;${wrapperStyle}">
+      ${imageEl}
+      ${body}
+    </div>`
+  }).join('')
+
+  return `<section data-component-title="Show 4 Products Centered" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  <div style="max-width:80rem;margin:0 auto;width:100%;">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;">
+      ${productsHtml}
+    </div>
+  </div>
+</section>`
+}
+
+// ─── Show Multiple Products ──────────────────────────────────────────────────
+
+export const showMultipleProductsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 177.28 70.84">
+  <defs>
+    <style>
+      .bg { fill: #384152; }
+      .fg { fill: #718096; }
+    </style>
+  </defs>
+  <rect class="bg" width="53.92" height="53.92"/>
+  <rect class="bg" x="62.15" width="53.92" height="53.92"/>
+  <rect class="bg" x="123.37" width="53.92" height="53.92"/>
+  <polygon class="fg" points="8.2 35 21.6 18.92 35 35"/>
+  <polygon class="fg" points="32.32 35 39.02 26.96 45.71 35"/>
+  <circle class="fg" cx="39.02" cy="21.15" r="2.23"/>
+  <polygon class="fg" points="70.36 35 83.75 18.92 97.15 35"/>
+  <polygon class="fg" points="94.47 35 101.17 26.96 107.87 35"/>
+  <circle class="fg" cx="101.17" cy="21.15" r="2.23"/>
+  <polygon class="fg" points="131.57 35 144.96 18.92 158.36 35"/>
+  <polygon class="fg" points="155.68 35 162.38 26.96 169.08 35"/>
+  <circle class="fg" cx="162.38" cy="21.15" r="2.23"/>
+  <rect class="bg" y="59.92" width="53.92" height="2.93"/>
+  <rect class="bg" y="63.91" width="53.92" height="2.93"/>
+  <rect class="bg" y="67.91" width="53.92" height="2.93"/>
+  <rect class="bg" x="62.15" y="59.92" width="53.92" height="2.93"/>
+  <rect class="bg" x="62.15" y="63.91" width="53.92" height="2.93"/>
+  <rect class="bg" x="62.15" y="67.91" width="53.92" height="2.93"/>
+  <rect class="bg" x="123.37" y="59.92" width="53.92" height="2.93"/>
+  <rect class="bg" x="123.37" y="63.91" width="53.92" height="2.93"/>
+  <rect class="bg" x="123.37" y="67.91" width="53.92" height="2.93"/>
+</svg>`
+
+export interface ShowMultipleProductsData extends ProductCardStyleData {
+  products: Product[]
+  columns: number
+  bgColor: string
+  paddingY: number
+  paddingX: number
+  fontFamily: string
+  sectionTitleFont: string
+  productNameFont: string
+  priceFont: string
+}
+
+export const showMultipleProductsDefaults: ShowMultipleProductsData = {
+  products: [
+    {
+      imageUrl: '',
+      name: 'Layouts and visual.',
+      price: '$0.00',
+      oldPrice: '',
+      buttonLabel: 'Add to Cart',
+      buttonUrl: '#',
+      colors: '',
+    },
+    {
+      imageUrl: '',
+      name: 'Layouts and visual.',
+      price: '$0.00',
+      oldPrice: '',
+      buttonLabel: 'Add to Cart',
+      buttonUrl: '#',
+      colors: '',
+    },
+    {
+      imageUrl: '',
+      name: 'Layouts and visual.',
+      price: '$0.00',
+      oldPrice: '',
+      buttonLabel: 'Add to Cart',
+      buttonUrl: '#',
+      colors: '',
+    },
+  ],
+  columns: 3,
+  bgColor: '#ffffff',
+  paddingY: 64,
+  paddingX: 16,
+  fontFamily: '',
+  sectionTitleFont: '',
+  productNameFont: '',
+  priceFont: '',
+  ...productCardStyleDefaults,
+}
+
+export const showMultipleProductsFields: FieldConfig[] = [
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'bgColor', label: 'Background Colour', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '64' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '16' },
+  { key: 'columns', label: 'Columns', type: 'select', options: ['1', '2', '3', '4'] },
+
+  ...productCardStyleFields,
+
+  { key: '_h_font', label: 'Fonts', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+  fontField('sectionTitleFont', 'Section Title Font'),
+  fontField('productNameFont', 'Product Name Font'),
+  fontField('priceFont', 'Price Font'),
+
+  { key: '_h_products', label: 'Products', type: 'header' },
+  {
+    key: 'products', label: 'Products', type: 'list',
+    listFields: [
+      { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
+      { key: 'name', label: 'Product Name', type: 'text' },
+      { key: 'price', label: 'Price', type: 'text' },
+      { key: 'oldPrice', label: 'Old Price (optional)', type: 'text' },
+      { key: 'buttonLabel', label: 'Button Text', type: 'text' },
+      { key: 'buttonUrl', label: 'Button URL', type: 'url' },
+      { key: 'colors', label: 'Color Swatches', type: 'text', placeholder: 'blue, black, #ff0000' },
+    ],
+  },
+]
+
+export function renderShowMultipleProducts(data: ShowMultipleProductsData): string {
+  const cols = Math.min(Math.max(data.columns ?? 3, 1), 4)
+  const products = (data.products ?? []).slice(0, cols)
+
+  if (!products.length) {
+    return `<section data-component-title="Show Multiple Products" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  <div style="max-width:80rem;margin:0 auto;">
+    <p style="color:#999;text-align:center;">No products added</p>
+  </div>
+</section>`
+  }
+
+  const wrapperStyle = productCardWrapperStyle(data)
+
+  const productsHtml = products.map(product => {
+    const imageSrc = productImageSrc(product.imageUrl)
+    const body = renderProductCardBody(
+      product, data,
+      fontCss(data.productNameFont, data.fontFamily),
+      fontCss(data.priceFont, data.fontFamily),
+    )
+    return `<div style="display:flex;flex-direction:column;flex:1;${wrapperStyle}">
+      <img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:${data.cardBorderRadius}px;display:block;margin-bottom:0.75rem;" />
+      ${body}
+    </div>`
+  }).join('')
+
+  return `<section data-component-title="Show Multiple Products" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  <div style="max-width:80rem;margin:0 auto;width:100%;">
+    <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:1.5rem;">
+      ${productsHtml}
+    </div>
   </div>
 </section>`
 }
