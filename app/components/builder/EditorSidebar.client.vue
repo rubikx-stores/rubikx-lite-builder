@@ -188,14 +188,105 @@ function debouncedUpdateBlockListItem(listKey: string, idx: number, itemKey: str
 
 // ── Block image upload ────────────────────────────────────────────────────────
 const uploadError = ref<Record<string, string>>({})
+const uploading = ref<Record<string, boolean>>({})
 
-function onUploadImage(fieldKey: string, file: File) {
-  if (!file.type.startsWith('image/')) { uploadError.value[fieldKey] = 'Please select an image file.'; return }
+// Picking an image goes through a native OS file dialog. While it's open (and
+// for the brief upload/re-render afterward), the canvas and/or sidebar scroll
+// position can get pushed around by things outside our control (the OS
+// delivering stray scroll input to this window while the dialog has focus,
+// the browser restoring focus to the hidden file input, the block's
+// re-render). Rather than chase every individual cause, pin every relevant
+// scroll container to where it was right before the dialog opens, and
+// forcibly hold that position (every animation frame) until the upload
+// settles — or, if the dialog was cancelled, shortly after focus returns.
+let _scrollLockRAF = 0
+let _unlockTimer = 0
+function _scrollLockTargets(ev: Event): HTMLElement[] {
+  const sidebar = (ev.currentTarget as HTMLElement)?.closest('.overflow-y-scroll') as HTMLElement | null
+  const canvas = document.querySelector('#page-builder-wrapper') as HTMLElement | null
+  const doc = document.scrollingElement as HTMLElement | null
+  return [sidebar, canvas, doc].filter((el): el is HTMLElement => !!el)
+}
+function _lockScroll(ev: Event) {
+  clearTimeout(_unlockTimer)
+  const anchors = _scrollLockTargets(ev).map(el => ({ el, top: el.scrollTop }))
+  cancelAnimationFrame(_scrollLockRAF)
+  const tick = () => {
+    for (const a of anchors) {
+      if (a.el.isConnected && a.el.scrollTop !== a.top) a.el.scrollTop = a.top
+    }
+    _scrollLockRAF = requestAnimationFrame(tick)
+  }
+  tick()
+}
+function _unlockScroll() {
+  cancelAnimationFrame(_scrollLockRAF)
+  _scrollLockRAF = 0
+}
+function _cancelPendingUnlock() {
+  clearTimeout(_unlockTimer)
+}
+function _onUploadInputFocus() {
+  // The OS dialog just closed. If a file was picked, `change` fires next and
+  // clears this timer — the upload's own `finally` releases the lock instead.
+  // If the dialog was cancelled, nothing else fires, so release shortly after.
+  clearTimeout(_unlockTimer)
+  _unlockTimer = window.setTimeout(_unlockScroll, 500)
+}
+
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024 // 10MB — matches the server-side cap
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
+}
+
+// Uploads a file through our own server (base64 → S3 PutObject) and returns
+// the resulting CDN URL to store on the field. The bucket only grants read
+// access to its CloudFront distribution, not the public, so the URL must
+// come from the server (which knows the CDN domain) rather than being built
+// client-side. Throws with a user-facing message on failure.
+async function uploadImageToS3(file: File): Promise<string> {
+  if (file.size > MAX_UPLOAD_BYTES) throw new Error('Image is too large (max 10MB)')
+
+  const dataUrl = await readFileAsDataUrl(file)
+  const { url } = await $fetch<{ url: string }>('/api/uploads/image', {
+    method: 'POST',
+    body: {
+      dataUrl,
+      fileName: file.name,
+      companyId: selectedCompanyId.value ?? undefined,
+    },
+  })
+
+  return url
+}
+
+// Surfaces the specific size-limit message (thrown client-side, before any
+// network call) and falls back to a generic message for network/server errors.
+function uploadErrorMessage(err: unknown): string {
+  return err instanceof Error && err.message.includes('too large')
+    ? err.message
+    : 'Upload failed. Try again or paste a URL.'
+}
+
+async function onUploadImage(fieldKey: string, file: File) {
+  if (!file.type.startsWith('image/')) { uploadError.value[fieldKey] = 'Please select an image file.'; _unlockScroll(); return }
   uploadError.value[fieldKey] = ''
-  const reader = new FileReader()
-  reader.onload = () => updateBlockField(fieldKey, reader.result as string)
-  reader.onerror = () => { uploadError.value[fieldKey] = 'File could not be read. Try again or paste a URL.' }
-  reader.readAsDataURL(file)
+  uploading.value[fieldKey] = true
+  try {
+    const url = await uploadImageToS3(file)
+    updateBlockField(fieldKey, url)
+  } catch (err) {
+    uploadError.value[fieldKey] = uploadErrorMessage(err)
+  } finally {
+    uploading.value[fieldKey] = false
+    _unlockScroll()
+  }
 }
 
 // ── List reorder helpers ──────────────────────────────────────────────────────
@@ -209,10 +300,22 @@ function moveListItemDown(listKey: string, idx: number) {
   const arr = [...(src[listKey] as any[])]; const [item] = arr.splice(idx, 1); arr.splice(idx + 1, 0, item)
   updateBlockField(listKey, arr)
 }
-function onUploadSubImage(listKey: string, idx: number, subKey: string, file: File) {
-  const reader = new FileReader()
-  reader.onload = () => updateBlockListItem(listKey, idx, subKey, reader.result as string)
-  reader.readAsDataURL(file)
+const subUploadKey = (listKey: string, idx: number, subKey: string) => `${listKey}.${idx}.${subKey}`
+
+async function onUploadSubImage(listKey: string, idx: number, subKey: string, file: File) {
+  const key = subUploadKey(listKey, idx, subKey)
+  if (!file.type.startsWith('image/')) { uploadError.value[key] = 'Please select an image file.'; _unlockScroll(); return }
+  uploadError.value[key] = ''
+  uploading.value[key] = true
+  try {
+    const url = await uploadImageToS3(file)
+    updateBlockListItem(listKey, idx, subKey, url)
+  } catch (err) {
+    uploadError.value[key] = uploadErrorMessage(err)
+  } finally {
+    uploading.value[key] = false
+    _unlockScroll()
+  }
 }
 
 function updateColumnOrder(fieldKey: string, index: number, newVal: string) {
@@ -463,10 +566,17 @@ onUnmounted(() => {
                   class="flex-1 border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400"
                   @change="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value.trim()); uploadError[field.key] = ''"
                   @input="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value.trim()); uploadError[field.key] = ''" />
-                <label class="shrink-0 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 rounded-md px-2 py-1.5 cursor-pointer">
-                  ↑ Upload
-                  <input type="file" accept="image/*" class="sr-only"
-                    @change="{ const f=($event.target as HTMLInputElement).files; if(f?.length) onUploadImage(field.key, f[0]) }" />
+                <label
+                  class="shrink-0 text-xs border rounded-md px-2 py-1.5"
+                  :class="uploading[field.key]
+                    ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-wait'
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600 border-gray-200 cursor-pointer'"
+                  @mousedown="_lockScroll($event)"
+                >
+                  {{ uploading[field.key] ? 'Uploading…' : '↑ Upload' }}
+                  <input type="file" accept="image/*" class="sr-only" :disabled="uploading[field.key]"
+                    @focus="_onUploadInputFocus()"
+                    @change="{ _cancelPendingUnlock(); const f=($event.target as HTMLInputElement).files; if(f?.length) onUploadImage(field.key, f[0]); else _unlockScroll() }" />
                 </label>
               </div>
               <img v-if="blockData[field.key]" :src="blockData[field.key]"
@@ -631,12 +741,21 @@ onUnmounted(() => {
                             class="flex-1 border border-gray-200 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-blue-400"
                             @change="debouncedUpdateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value.trim())"
                             @input="debouncedUpdateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value.trim())" />
-                          <label class="shrink-0 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 rounded px-1.5 py-0.5 cursor-pointer">
-                            ↑ <input type="file" accept="image/*" class="sr-only"
-                              @change="{ const f=($event.target as HTMLInputElement).files; if(f?.length) onUploadSubImage(field.key,idx,subField.key,f[0]) }" />
+                          <label
+                            class="shrink-0 text-xs border rounded px-1.5 py-0.5"
+                            :class="uploading[subUploadKey(field.key, idx, subField.key)]
+                              ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-wait'
+                              : 'bg-gray-100 hover:bg-gray-200 text-gray-600 border-gray-200 cursor-pointer'"
+                            @mousedown="_lockScroll($event)"
+                          >
+                            {{ uploading[subUploadKey(field.key, idx, subField.key)] ? '…' : '↑' }}
+                            <input type="file" accept="image/*" class="sr-only" :disabled="uploading[subUploadKey(field.key, idx, subField.key)]"
+                              @focus="_onUploadInputFocus()"
+                              @change="{ _cancelPendingUnlock(); const f=($event.target as HTMLInputElement).files; if(f?.length) onUploadSubImage(field.key,idx,subField.key,f[0]); else _unlockScroll() }" />
                           </label>
                         </div>
                         <img v-if="item[subField.key]" :src="item[subField.key]" class="w-full aspect-square object-cover rounded border border-gray-200 bg-gray-50" alt="preview" />
+                        <p v-if="uploadError[subUploadKey(field.key, idx, subField.key)]" class="text-xs text-red-500">{{ uploadError[subUploadKey(field.key, idx, subField.key)] }}</p>
                       </template>
                       <template v-else-if="subField.type === 'toggle'">
                         <button type="button"

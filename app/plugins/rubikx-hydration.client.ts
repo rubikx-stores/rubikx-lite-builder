@@ -97,6 +97,9 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
 }
 
 function loadSlider(el: HTMLElement) {
+  if (el.dataset.hydrated === 'true') return
+  el.dataset.hydrated = 'true'
+
   const slides = Array.from(el.querySelectorAll<HTMLElement>('[data-slide]'))
   const dots = Array.from(el.querySelectorAll<HTMLElement>('[data-dot]'))
   const prevBtn = el.querySelector<HTMLElement>('[data-prev]')

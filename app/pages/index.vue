@@ -22,6 +22,7 @@ interface Page {
   status: string
   updatedAt: string
   versions: PageVersion[]
+  isDefault?: boolean
 }
 
 const { data: websites } = await useFetch<Website[]>('/api/websites')
@@ -102,6 +103,7 @@ async function publishPage(page: Page) {
 }
 
 function confirmDeletePage(page: Page) {
+  if (page.isDefault) return // nothing persisted yet — no-op until the page is saved
   pageToDelete.value = page
   showDeleteModal.value = true
 }
@@ -308,6 +310,7 @@ function handleModalKeydown(e: KeyboardEvent) {
                 </option>
               </select>
               <button
+                v-if="!page.isDefault"
                 :disabled="deleting[page.id]"
                 class="p-1.5 rounded-lg border border-red-200 text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 @click.stop="confirmDeletePage(page)"

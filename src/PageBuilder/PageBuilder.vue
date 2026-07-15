@@ -616,7 +616,7 @@ onMounted(async () => {
     </ModalBuilder>
 
     <DynamicModalBuilder
-      :showDynamicModalBuilder="showModalResumeEditing"
+      :showDynamicModalBuilder="false"
       :isLoading="getIsLoadingResumeEditing"
       :type="typeModal"
       :gridColumnAmount="gridColumnModalResumeEditing"
