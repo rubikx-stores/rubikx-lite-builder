@@ -164,20 +164,18 @@ function loadSlider(el: HTMLElement) {
 async function loadCartCount(el: HTMLElement, companyId?: number) {
   // TODO: replace with real Odoo cart API call on live storefront
   // Demo: hardcoded count for local testing
-  const count = 3
+  const count = 0
 
   // Remove existing badge if any
   const existing = el.querySelector('[data-cart-badge]')
   if (existing) existing.remove()
 
-  if (count > 0) {
-    const badge = document.createElement('span')
-    badge.setAttribute('data-cart-badge', 'true')
-    badge.textContent = String(count)
-    badge.style.cssText =
-      'position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none;'
-    el.appendChild(badge)
-  }
+  const badge = document.createElement('span')
+  badge.setAttribute('data-cart-badge', 'true')
+  badge.textContent = String(count)
+  badge.style.cssText =
+    'position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none;'
+  el.appendChild(badge)
 }
 
 async function loadAuthState(el: HTMLElement, companyId?: number) {
