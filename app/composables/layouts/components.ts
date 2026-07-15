@@ -2202,7 +2202,7 @@ export function renderRu1Stats(data: Ru1StatsData): string {
     </div>`
   }).join('')
 
-  return `<section data-component-title="Ru1-Stats" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru1-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
 <style>
   @media(max-width:768px){[data-ru1-stats-grid]{grid-template-columns:repeat(2,1fr)!important}}
   @media(max-width:480px){[data-ru1-stats-grid]{grid-template-columns:1fr!important;gap:12px!important}}
@@ -2599,7 +2599,7 @@ export function renderRu2Stats(data: Ru2StatsData): string {
     </div>`
   }).join('')
 
-  return `<section data-component-title="Ru2-Stats" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru2-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
 <style>
   @media(max-width:768px){[data-ru2-stats-grid]{grid-template-columns:repeat(2,1fr)!important;gap:20px!important}[data-ru2-stats-grid]>div{border-left:none!important}}
   @media(max-width:480px){[data-ru2-stats-grid]{grid-template-columns:1fr!important;gap:0!important}[data-ru2-stats-grid]>div{border-top:1px solid rgba(0,0,0,0.08);padding-top:20px!important}[data-ru2-stats-grid]>div:first-child{border-top:none!important;padding-top:0!important}}
@@ -2818,7 +2818,7 @@ export function renderRu3Stats(data: Ru3StatsData): string {
     return stepHtml + sep
   }).join('')
 
-  return `<section data-component-title="Ru3-Stats" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru3-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
 <style>
   @media(max-width:768px){[data-ru3-stats-row]{flex-direction:column!important}[data-ru3-stats-sep]{display:none!important}}
 </style>
@@ -3011,7 +3011,7 @@ export function renderRu4Stats(data: Ru4StatsData): string {
     </div>`
   ).join('')
 
-  return `<section data-component-title="Ru4-Stats" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru4-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
 <style>
   @media(max-width:768px){[data-ru4-stats-outer]{grid-template-columns:1fr!important}}
   @media(max-width:480px){[data-ru4-stats-inner]{grid-template-columns:1fr!important}}
@@ -3260,7 +3260,7 @@ export function renderRu5ImageCarousel(data: Ru5ImageCarouselData): string {
       ${(data.slides ?? []).map((_, i) => `<button data-dot="${i}" data-active-color="${data.dotActiveColor}" data-inactive-color="${data.dotColor}" style="width:${i === 0 ? '24px' : '8px'};height:8px;border-radius:4px;background:${i === 0 ? data.dotActiveColor : data.dotColor};border:none;cursor:pointer;padding:0;transition:all 0.3s;"></button>`).join('')}
     </div>` : ''
 
-  return `<section data-component-title="Ru5-Image-Carousel" style="position:relative;overflow:hidden;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru5-Image-Carousel" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;overflow:hidden;${fontCss(undefined, data.fontFamily)}">
   <div data-rubikx-component="HeroSlider" data-on-mount="loadSlider" data-autoplay="${data.autoPlay !== false ? 'true' : 'false'}" data-interval="${(data.autoPlayInterval ?? 4) * 1000}" style="position:relative;height:${data.height}px;overflow:hidden;">
     ${slidesHtml}
     ${arrowsHtml}
@@ -3748,7 +3748,7 @@ export function renderRu6SplitHero(data: Ru6SplitHeroData): string {
   const leftCol = data.textSide === 'left' ? textCol : imageCol
   const rightCol = data.textSide === 'left' ? imageCol : textCol
 
-  return `<section data-component-title="Ru6-Split-Hero" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru6-Split-Hero" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
   <div style="max-width:1280px;margin:0 auto;">
     <div style="display:grid;grid-template-columns:${gridCols};gap:${data.gap}px;align-items:${vAlign};">
       ${leftCol}
@@ -5731,10 +5731,10 @@ function renderProductCardBody(
     : `${nameHtml}${priceHtml}`
 
   const buttonHtml = data.showButton !== false
-    ? `<a href="${product.buttonUrl}" style="display:inline-block;padding:0.5rem 1rem;background:${data.buttonBgColor};color:${data.buttonTextColor};text-decoration:none;border-radius:6px;font-weight:600;font-size:0.8125rem;margin-top:8px;">${product.buttonLabel}</a>`
+    ? `<a href="${product.buttonUrl}" style="display:inline-block;padding:0.5rem 1rem;background:${data.buttonBgColor};color:${data.buttonTextColor};text-decoration:none;border-radius:6px;font-weight:600;font-size:0.8125rem;margin-top:auto;">${product.buttonLabel}</a>`
     : ''
 
-  return `<div style="display:flex;flex-direction:column;gap:4px;text-align:${centered ? 'center' : 'left'};">${nameRow}${extraHtml}${colorsHtml}${buttonHtml}</div>`
+  return `<div style="display:flex;flex-direction:column;flex:1;gap:4px;text-align:${centered ? 'center' : 'left'};">${nameRow}${extraHtml}${colorsHtml}${buttonHtml}</div>`
 }
 
 function productCardWrapperStyle(data: ProductCardStyleData): string {

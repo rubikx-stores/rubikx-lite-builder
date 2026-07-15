@@ -1,4 +1,10 @@
 import { getCookie, getQuery } from 'h3'
+import {
+  renderRu1Navbar, ru1NavbarDefaults,
+  renderRu1Hero, ru1HeroDefaults,
+  renderRu1Products, ru1ProductsDefaults,
+  renderRu1Footer, ru1FooterDefaults,
+} from '../../../composables/themes/themes-data'
 
 const GRAPHQL_QUERY = `query MyQuery { RubikxCms { key version state updatedBy updatedOn value } }`
 
@@ -68,19 +74,6 @@ export default defineEventHandler(async (event) => {
 
   console.log('[CMS GET] companyId:', companyId, 'records:', items.length, items.map(i => ({ key: i.key, version: i.version, state: i.state, valueLength: i.value?.length })))
 
-  if (items.length === 0) {
-    return [
-      {
-        id: 'home',
-        name: 'home',
-        slug: '/home',
-        status: 'draft',
-        updatedAt: new Date().toISOString(),
-        versions: [{ version: 1, updatedAt: new Date().toISOString(), status: 'draft', value: '' }],
-      },
-    ]
-  }
-
   const grouped = new Map<string, typeof items>()
   for (const item of items) {
     if (!grouped.has(item.key)) grouped.set(item.key, [])
@@ -94,7 +87,7 @@ export default defineEventHandler(async (event) => {
     )
   }
 
-  return Array.from(grouped.entries()).map(([key, versions]) => {
+  const pages = Array.from(grouped.entries()).map(([key, versions]) => {
     versions.sort((a, b) => {
       if (b.version !== a.version) return b.version - a.version
       // Same version: published beats draft
@@ -120,4 +113,37 @@ export default defineEventHandler(async (event) => {
       })),
     }
   })
+
+  // No saved "home" page — show a default Home pre-loaded with the
+  // Ru1-HomePage theme so the builder isn't a blank canvas. This is computed
+  // fresh on every request, not persisted, until the user actually saves the
+  // page (at which point it becomes a real record like any other).
+  //
+  // Triggered on "no home key" rather than "zero records total": saving Home
+  // also creates global-header/global-footer records, and those two keys are
+  // permanently protected from deletion (see [key].delete.ts) — so after a
+  // save+delete cycle the store never truly returns to zero records again.
+  // Checking for "home" specifically means the default keeps reappearing
+  // after Home is deleted, and only the genuinely-missing keys are
+  // synthesized — an existing global-header/global-footer a user already
+  // customized is left untouched rather than reset to the theme default.
+  if (!grouped.has('home')) {
+    const now = new Date().toISOString()
+    const defaultPage = (key: string, value: string) => ({
+      id: key,
+      name: key,
+      slug: `/${key}`,
+      status: 'draft',
+      updatedAt: now,
+      updatedBy: '',
+      isDefault: true,
+      versions: [{ version: 1, updatedAt: now, updatedBy: '', status: 'draft', value }],
+    })
+
+    pages.push(defaultPage('home', renderRu1Hero(ru1HeroDefaults) + renderRu1Products(ru1ProductsDefaults)))
+    if (!grouped.has('global-header')) pages.push(defaultPage('global-header', renderRu1Navbar(ru1NavbarDefaults)))
+    if (!grouped.has('global-footer')) pages.push(defaultPage('global-footer', renderRu1Footer(ru1FooterDefaults)))
+  }
+
+  return pages
 })

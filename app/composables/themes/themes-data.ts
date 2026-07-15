@@ -1881,7 +1881,7 @@ export function renderRu3ShopProducts(data: Ru3ShopProductsData): string {
   ]
   const cards = visibleProducts.map(p => `
       <div style="border-radius:${data.cardBorderRadius}px;overflow:hidden;display:flex;flex-direction:column;border:1px solid #e5e7eb"${cardAttr}>
-        <img style="width:100%;height:auto;display:block" src="${p.imageUrl || placeholderSvg}" alt="${p.name}" />
+        <img style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block" src="${p.imageUrl || placeholderSvg}" alt="${p.name}" />
         <div style="display:flex;flex-direction:column;gap:0.25rem;padding:0.75rem;flex:1">
           <p style="font-weight:600;font-size:0.875rem;${fontCss(data.productNameFont, data.fontFamily)}">${p.name}</p>
           <div style="display:flex;align-items:center;gap:0.5rem">

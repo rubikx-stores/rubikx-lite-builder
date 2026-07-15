@@ -10,6 +10,7 @@ import { sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
 import { useBlockRegistry } from '~/composables/editor/useBlockRegistry'
 import { usePageHtmlCache } from '~/composables/usePageHtmlCache'
 import { GOOGLE_FONTS_STYLESHEET_URL } from '~/composables/editor/fontFields'
+import { SLIDER_SCRIPT } from '~/composables/useHydrationScript'
 
 // Register all block configs eagerly on builder mount so the editor opens
 // correctly even on page reload with saved canvas data (before the user opens
@@ -112,8 +113,12 @@ async function confirmSave() {
     // itself — an @import in a <style> tag works regardless of where Odoo
     // drops it in the DOM, unlike <link rel="stylesheet"> which is only
     // reliably honored inside <head>.
+    //
+    // Same reasoning for the carousel: this app's Nuxt plugin
+    // (rubikx-hydration.client.ts) never loads on Odoo's page, so the
+    // slider's own JS has to travel inside the fragment too.
     const toHtml = (secs: Element[]) =>
-      `<style>@import url('${GOOGLE_FONTS_STYLESHEET_URL}');</style>\n` + secs.map(s => s.outerHTML).join('\n')
+      `<style>@import url('${GOOGLE_FONTS_STYLESHEET_URL}');</style>\n<script>${SLIDER_SCRIPT}<\/script>\n` + secs.map(s => s.outerHTML).join('\n')
     const version = String(selectedVersion.value)
     const commonBody = { updatedBy: 'editor', updatedOn: new Date().toISOString(), version, ...(props.companyId ? { companyId: props.companyId } : {}) }
     const globalBody = { ...commonBody, state: 'published' as const }

@@ -160,6 +160,14 @@ export function useEditorSidebar() {
     const { getPageBuilder } = await import('@myissue/vue-website-page-builder')
     const builder = getPageBuilder() as any
 
+    // syncDomToStoreOnly()'s components=[] / set-back cycle (below) briefly
+    // tears down and rebuilds every canvas section, which can perturb
+    // #page-builder-wrapper's scroll position as a side effect. Capture it here
+    // and restore it once the rebuild has settled, so editing a field never
+    // moves the canvas out from under the user.
+    const canvas = document.querySelector('#page-builder-wrapper') as HTMLElement | null
+    const savedScrollTop = canvas?.scrollTop
+
     // ORDER IS CRITICAL.
     // syncDomToStoreOnly() calls store.setComponents(...) which internally does
     // `this.components = []` then re-assigns on the next tick. That clears and
@@ -175,6 +183,7 @@ export function useEditorSidebar() {
     // re-render the canvas sections, THEN attach click listeners to the fresh DOM.
     await Promise.resolve()
     await Promise.resolve()
+    if (canvas && savedScrollTop != null) canvas.scrollTop = savedScrollTop
     await builder.addListenersToEditableElements()
   }
 
