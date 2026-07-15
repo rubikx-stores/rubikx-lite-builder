@@ -33,14 +33,14 @@ export default defineEventHandler(async (event) => {
   }
 
   const config = useRuntimeConfig(event)
-  if (!config.awsRegion) {
-    throw createError({ statusCode: 500, message: 'AWS_REGION is not configured' })
+  if (!config.s3Region) {
+    throw createError({ statusCode: 500, message: 'NUXT_S3_REGION is not configured' })
   }
-  if (!config.awsS3Bucket) {
-    throw createError({ statusCode: 500, message: 'AWS_S3_BUCKET_NAME is not configured' })
+  if (!config.s3BucketName) {
+    throw createError({ statusCode: 500, message: 'NUXT_S3_BUCKET_NAME is not configured' })
   }
   if (!config.s3CdnUrl) {
-    throw createError({ statusCode: 500, message: 'S3_CDN_URL is not configured' })
+    throw createError({ statusCode: 500, message: 'NUXT_S3_CDN_URL is not configured' })
   }
 
   const body = await readBody<ImageUploadBody>(event)
@@ -66,22 +66,22 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 413, message: 'Image is too large (max 10MB)' })
   }
 
-  const region = config.awsRegion as string
-  const bucket = config.awsS3Bucket as string
+  const region = config.s3Region as string
+  const bucket = config.s3BucketName as string
 
   const client = new S3Client({
     region,
-    ...(config.awsAccessKeyId && config.awsSecretAccessKey
+    ...(config.s3AccessKeyId && config.s3SecretAccessKey
       ? {
           credentials: {
-            accessKeyId: config.awsAccessKeyId as string,
-            secretAccessKey: config.awsSecretAccessKey as string,
+            accessKeyId: config.s3AccessKeyId as string,
+            secretAccessKey: config.s3SecretAccessKey as string,
           },
         }
       : {}),
   })
 
-  const key = `uploads/${body.companyId ?? 'shared'}/${crypto.randomUUID()}-${sanitizeFileName(body.fileName)}`
+  const key = `upload-logo/${body.companyId ?? 'shared'}/${crypto.randomUUID()}-${sanitizeFileName(body.fileName)}`
 
   await client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: buffer, ContentType: contentType }))
 
