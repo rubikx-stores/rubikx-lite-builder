@@ -250,7 +250,7 @@ function readFileAsDataUrl(file: File): Promise<string> {
 // access to its CloudFront distribution, not the public, so the URL must
 // come from the server (which knows the CDN domain) rather than being built
 // client-side. Throws with a user-facing message on failure.
-async function uploadImageToS3(file: File): Promise<string> {
+async function uploadImageToS3(file: File, fieldKey: string): Promise<string> {
   if (file.size > MAX_UPLOAD_BYTES) throw new Error('Image is too large (max 10MB)')
 
   const dataUrl = await readFileAsDataUrl(file)
@@ -260,6 +260,7 @@ async function uploadImageToS3(file: File): Promise<string> {
       dataUrl,
       fileName: file.name,
       companyId: selectedCompanyId.value ?? undefined,
+      fieldKey,
     },
   })
 
@@ -279,7 +280,7 @@ async function onUploadImage(fieldKey: string, file: File) {
   uploadError.value[fieldKey] = ''
   uploading.value[fieldKey] = true
   try {
-    const url = await uploadImageToS3(file)
+    const url = await uploadImageToS3(file, fieldKey)
     updateBlockField(fieldKey, url)
   } catch (err) {
     uploadError.value[fieldKey] = uploadErrorMessage(err)
@@ -308,7 +309,7 @@ async function onUploadSubImage(listKey: string, idx: number, subKey: string, fi
   uploadError.value[key] = ''
   uploading.value[key] = true
   try {
-    const url = await uploadImageToS3(file)
+    const url = await uploadImageToS3(file, subKey)
     updateBlockListItem(listKey, idx, subKey, url)
   } catch (err) {
     uploadError.value[key] = uploadErrorMessage(err)

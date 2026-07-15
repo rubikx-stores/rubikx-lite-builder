@@ -1,5 +1,7 @@
 import { getCookie } from 'h3'
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { createHash } from 'node:crypto'
+import { uploadUrlCache } from '~/server/services/uploads/lruCache'
+import { buildKey, uploadImage } from '~/server/services/uploads/s3Client'
 
 // POST /api/uploads/image
 // Uploads an image server-side to S3 and returns a CDN URL. The bucket's
@@ -7,7 +9,14 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 // not the public — so the returned URL must be built from the CDN domain,
 // not the raw S3 domain (a direct S3 URL 403s for anyone but that OAI).
 //
-// Body: { dataUrl: string, fileName: string, companyId?: number }
+// Images are routed into one of two prefixes based on the field they came
+// from: logo fields go to upload-logo/, everything else to
+// headless-lite-images/. The S3 key is derived from the image's content hash
+// rather than a random id, so re-uploading identical bytes reuses the
+// existing object (via the LRU cache below) instead of duplicating storage,
+// and concurrent uploads of the same bytes coalesce into one PutObject call.
+//
+// Body: { dataUrl: string, fileName: string, companyId?: number, fieldKey?: string }
 
 const MAX_BYTES = 10 * 1024 * 1024 // 10MB — keeps well under Amplify/Lambda payload limits
 
@@ -15,16 +24,11 @@ interface ImageUploadBody {
   dataUrl: string
   fileName: string
   companyId?: number
+  fieldKey?: string
 }
 
-function sanitizeFileName(name: string): string {
-  return name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9.\-]+/g, '-')
-    .replace(/-+/g, '-')
-    .slice(-100)
-}
+// Single-flight map: S3 key → in-progress upload promise.
+const inFlight = new Map<string, Promise<string>>()
 
 export default defineEventHandler(async (event) => {
   const token = getCookie(event, 'rb_auth_token')
@@ -66,25 +70,39 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 413, message: 'Image is too large (max 10MB)' })
   }
 
-  const region = config.s3Region as string
-  const bucket = config.s3BucketName as string
+  const folder = body.fieldKey?.toLowerCase().includes('logo') ? 'upload-logo' : 'headless-lite-images'
+  const contentHash = createHash('sha256').update(buffer).digest('hex').slice(0, 20)
+  const key = buildKey({ folder, companyId: body.companyId, contentHash, fileName: body.fileName })
 
-  const client = new S3Client({
-    region,
-    ...(config.s3AccessKeyId && config.s3SecretAccessKey
-      ? {
-          credentials: {
-            accessKeyId: config.s3AccessKeyId as string,
-            secretAccessKey: config.s3SecretAccessKey as string,
-          },
+  const cached = uploadUrlCache.get(key)
+  if (cached) return { url: cached }
+
+  const s3Cfg = {
+    region: config.s3Region as string,
+    bucketName: config.s3BucketName as string,
+    cdnUrl: config.s3CdnUrl as string,
+    accessKeyId: config.s3AccessKeyId as string | undefined,
+    secretAccessKey: config.s3SecretAccessKey as string | undefined,
+  }
+
+  try {
+    let uploadPromise = inFlight.get(key)
+    if (!uploadPromise) {
+      uploadPromise = (async () => {
+        try {
+          const url = await uploadImage(s3Cfg, key, buffer, contentType)
+          uploadUrlCache.set(key, url)
+          return url
+        } finally {
+          inFlight.delete(key)
         }
-      : {}),
-  })
+      })()
+      inFlight.set(key, uploadPromise)
+    }
 
-  const key = `upload-logo/${body.companyId ?? 'shared'}/${crypto.randomUUID()}-${sanitizeFileName(body.fileName)}`
-
-  await client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: buffer, ContentType: contentType }))
-
-  const cdnBase = (config.s3CdnUrl as string).replace(/\/+$/, '')
-  return { url: `${cdnBase}/${key}` }
+    return { url: await uploadPromise }
+  } catch (err) {
+    console.error('[uploads/image] S3 PutObject failed:', err)
+    throw createError({ statusCode: 500, message: 'Upload failed' })
+  }
 })
