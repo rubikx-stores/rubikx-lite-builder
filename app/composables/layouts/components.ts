@@ -5839,7 +5839,7 @@ export function renderShowSingleProduct(data: ShowSingleProductData): string {
   <div style="max-width:16rem;margin:0 auto;${productCardWrapperStyle(data)}">
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.5rem;">
       <div style="width:100%;aspect-ratio:1/1;overflow:hidden;border-radius:${data.cardBorderRadius}px;">
-        <img src="${imageSrc}" alt="${product.name}" style="width:100%;height:100%;object-fit:cover;display:block;" />
+        <img src="${imageSrc}" alt="${product.name}" style="width:100%;height:100%;object-fit:contain;display:block;" />
       </div>
       ${nameRow}
       ${colorsHtml}
@@ -6043,7 +6043,7 @@ export function renderShow6Products(data: Show6ProductsData): string {
       fontCss(data.priceFont, data.fontFamily),
     )
     return `<div style="display:flex;flex-direction:column;${wrapperStyle}">
-      <img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:${data.cardBorderRadius}px;display:block;margin-bottom:0.75rem;" />
+      <img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:${data.cardBorderRadius}px;display:block;margin-bottom:0.75rem;" />
       ${body}
     </div>`
   }).join('')
@@ -6197,7 +6197,7 @@ export function renderShow4ProductsCentered(data: Show4ProductsCenteredData): st
   const productsHtml = data.products.slice(0, 4).map(product => {
     const imageSrc = productImageSrc(product.imageUrl)
     const imageEl = imageSrc
-      ? `<img style="object-fit:cover;width:100%;aspect-ratio:1/1;border-radius:${data.cardBorderRadius}px;object-position:center;display:block;" src="${imageSrc}" alt="${product.name}" />`
+      ? `<img style="object-fit:contain;width:100%;aspect-ratio:1/1;border-radius:${data.cardBorderRadius}px;object-position:center;display:block;" src="${imageSrc}" alt="${product.name}" />`
       : `<div style="width:100%;aspect-ratio:1/1;border-radius:${data.cardBorderRadius}px;background:#f3f4f6;display:block;"></div>`
     const body = renderProductCardBody(
       product, data,
@@ -6357,7 +6357,7 @@ export function renderShowMultipleProducts(data: ShowMultipleProductsData): stri
       fontCss(data.priceFont, data.fontFamily),
     )
     return `<div style="display:flex;flex-direction:column;flex:1;${wrapperStyle}">
-      <img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:${data.cardBorderRadius}px;display:block;margin-bottom:0.75rem;" />
+      <img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:${data.cardBorderRadius}px;display:block;margin-bottom:0.75rem;" />
       ${body}
     </div>`
   }).join('')
