@@ -162,10 +162,20 @@ export function renderHelperYoutube(data: HelperYoutubeData): string {
   const percent = helperYoutubeRatioPercent(data.aspectRatio)
   const boxHeight = data.extraHeight ? `calc(${percent}% + ${data.extraHeight}px)` : `${percent}%`
   const src = helperYoutubeEmbedSrc(data.videoUrl)
+  // The builder never attaches click/selection listeners to <iframe> (it's on
+  // the library's blacklist) and the iframe visually covers the div behind
+  // it, so an interactive embed silently swallows every click and the block
+  // can never be selected. [data-rb-yt-frame] is targeted by a CSS rule
+  // (rubikx-hydration.client.ts) that sets pointer-events:none on its iframe
+  // so that first click reaches this div instead — but once the builder marks
+  // this div [selected] (the exact attribute it sets on click), the iframe
+  // becomes interactive again so the video is actually playable while
+  // selected. That CSS only ever loads inside this admin app, never on the
+  // published page, where the iframe stays fully interactive by default.
   return `<section data-component-title="YouTube Video" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="padding:${data.paddingY}px 16px;">
   <div style="max-width:80rem;margin:0 auto;">
-    <div style="position:relative;width:100%;height:0;padding-top:${boxHeight};background:#f3f4f6;">
-      ${src ? `<iframe src="${src}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" allowfullscreen></iframe>` : ''}
+    <div data-rb-yt-frame style="position:relative;width:100%;height:0;padding-top:${boxHeight};background:#f3f4f6;">
+      ${src ? `<iframe src="${src}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" allowfullscreen></iframe>` : ''}
     </div>
   </div>
 </section>`
@@ -195,8 +205,12 @@ export const helperDividerFields: FieldConfig[] = [
 ]
 
 export function renderHelperDivider(data: HelperDividerData): string {
-  return `<section data-component-title="Break Divider" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="padding:${data.spacing}px 16px;">
-  <div style="max-width:80rem;margin:0 auto;display:flex;justify-content:center;">
+  // The section itself never receives builder click/hover listeners (the
+  // library only wires up `section`'s descendants) — so the vertical spacing
+  // must live on this wrapping div's own padding, not the section's, or the
+  // block collapses to an unclickable ~1px sliver (just the line itself).
+  return `<section data-component-title="Break Divider" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
+  <div style="max-width:80rem;margin:0 auto;padding:${data.spacing}px 16px;box-sizing:border-box;display:flex;justify-content:center;">
     <div style="width:${data.width}%;border-top:${data.thickness}px solid ${data.color};"></div>
   </div>
 </section>`

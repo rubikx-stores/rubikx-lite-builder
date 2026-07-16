@@ -422,6 +422,25 @@ export function hydrateComponents(companyId?: number) {
 `
     document.head.appendChild(style)
   }
+
+  // This script only ever loads inside this admin app (builder/dashboard) —
+  // the published page gets a bare HTML fragment and never runs it, so this
+  // rule never applies there and the iframe stays fully interactive by
+  // default. Here in the builder, the library never attaches click/select
+  // listeners to <iframe> and it visually covers the div behind it, so
+  // pointer-events:none lets that first click reach the div and select the
+  // block. [selected] is the exact attribute the library sets on whatever
+  // element you clicked — once selected, the iframe becomes interactive again
+  // so the video is actually playable while you're editing it.
+  if (!document.getElementById('rubikx-yt-styles')) {
+    const yt = document.createElement('style')
+    yt.id = 'rubikx-yt-styles'
+    yt.textContent = `
+  [data-rb-yt-frame] iframe { pointer-events: none; }
+  [data-rb-yt-frame][selected] iframe { pointer-events: auto; }
+`
+    document.head.appendChild(yt)
+  }
   document
     .querySelectorAll<HTMLElement>('[data-rubikx-component]')
     .forEach((el) => hydrateElement(el, companyId))
