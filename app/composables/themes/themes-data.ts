@@ -537,6 +537,7 @@ export interface Ru1ProductsData {
   paddingX: number
   cardBorderRadius: number
   hoverBorderColor: string
+  imageBgColor: string
   buttonBgColor: string
   buttonTextColor: string
   oldPriceColor: string
@@ -591,6 +592,7 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   paddingX: 16,
   cardBorderRadius: 8,
   hoverBorderColor: '',
+  imageBgColor: '#ffffff',
   buttonBgColor: '#111827',
   buttonTextColor: '#ffffff',
   oldPriceColor: '#9ca3af',
@@ -639,6 +641,7 @@ export const ru1ProductsFields: FieldConfig[] = [
   { key: '_h_card', label: 'Card Style', type: 'header' },
   { key: 'cardBorderRadius', label: 'Corner Radius', type: 'number', unit: 'px', step: 2, placeholder: '8' },
   { key: 'hoverBorderColor', label: 'Hover Border Color', type: 'color' },
+  { key: 'imageBgColor', label: 'Image Background Color', type: 'color' },
   { key: 'cardAnimation', label: 'Hover Animation', type: 'toggle' },
   { key: 'hoverEffect', label: 'Animation Type', type: 'select', options: ['Lift Up', 'Drop Down', 'Slide Left', 'Slide Right', 'Pop Out', 'Zoom In', 'Glow', 'Tilt Left', 'Tilt Right'] },
   { key: 'hoverAmount', label: 'Animation Amount', type: 'number', unit: 'px', step: 1, placeholder: '8' },
@@ -772,11 +775,11 @@ export function renderRu1Products(data: Ru1ProductsData): string {
     return `
       <div data-fp-card="1" style="border-radius:${data.cardBorderRadius}px;overflow:hidden;display:flex;flex-direction:column;border:1px solid #e5e7eb">
         <div style="position:relative;overflow:hidden">
-          <img style="width:100%;aspect-ratio:1/1;object-fit:contain;display:block;background:#f9fafb" src="${p.imageUrl}" alt="${p.name}" />
+          <img style="width:100%;aspect-ratio:1/1;object-fit:contain;display:block;background:${data.imageBgColor || '#ffffff'}" src="${p.imageUrl}" alt="${p.name}" />
           ${overlayHtml}
         </div>
         <div style="display:flex;flex-direction:column;gap:0.25rem;padding:0.75rem;flex:1">
-          <p title="${p.name}" style="font-weight:600;font-size:0.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;${fontCss(data.productNameFont, data.fontFamily)}">${p.name}</p>
+          <p title="${p.name}" style="font-weight:600;font-size:0.875rem;line-height:1.3;min-height:36px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all;overflow-wrap:anywhere;${fontCss(data.productNameFont, data.fontFamily)}">${p.name}</p>
           ${priceRow}
           ${colorsHtml}
           ${data.showAddToCart !== false ? `<a href="${p.buttonUrl}" class="shop-btn" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.addToCartRadius ?? 6}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block;${fontCss(data.buttonFont, data.fontFamily)}">${p.buttonLabel}</a>` : ''}
