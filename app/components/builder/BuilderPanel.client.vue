@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { nextTick, ref, computed } from 'vue'
-import componentHelpers from '#lib/componentHelpers'
 import componentData from '#lib/component'
 import themesData from '#lib/themes'
 import { getPageBuilder, usePageBuilderModal, usePageBuilderStateStore } from '@myissue/vue-website-page-builder'
@@ -12,6 +11,7 @@ const selectedCompanyId = useState<number | null>('selectedCompanyId')
 
 const { themeRegistry, applyTheme } = useThemes()
 const { layoutComponentRegistry } = useLayouts()
+const { helperComponentBlocks } = useHelperBlocks()
 const { closeAddComponentModal } = usePageBuilderModal()
 const { applyBlockRender, applyFontToAllBlocks } = useEditorSidebar()
 const blockRegistry = useBlockRegistry()
@@ -325,7 +325,7 @@ async function handleApplyTheme(themeId: string) {
           <h3 class="break-words text-base font-medium text-gray-900 md:text-lg lg:text-xl mb-4">Helper Components</h3>
           <div class="px-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <div
-              v-for="helper in componentHelpers"
+              v-for="helper in helperComponentBlocks"
               :key="helper.title"
               class="border-solid border border-gray-400 overflow-hidden hover:border-myPrimaryLinkColor duration-100 cursor-pointer max-h-96 p-4"
               @click="handleDropComponent({ id: null, html_code: helper.html_code, title: helper.title })"
