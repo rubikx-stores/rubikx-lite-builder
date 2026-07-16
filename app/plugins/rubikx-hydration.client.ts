@@ -352,7 +352,24 @@ const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> =
     loadAuthState,
   }
 
+// Tracks the companyId passed to the most recent hydrateComponents() call so
+// the MutationObserver below (which lives for the page's lifetime) can hydrate
+// late-arriving elements with the right context instead of a stale closure value.
+let _lastCompanyId: number | undefined
+
+function hydrateElement(el: HTMLElement, companyId?: number) {
+  const onMount = el.dataset.onMount
+  if (!onMount) return
+  const handler = HANDLERS[onMount]
+  if (!handler) {
+    console.warn(`[Rubikx] No handler registered for: ${onMount}`)
+    return
+  }
+  handler(el, companyId)
+}
+
 export function hydrateComponents(companyId?: number) {
+  _lastCompanyId = companyId
   // Inject responsive navbar CSS for the live Odoo site (where main.css is not loaded).
   // main.css covers the builder; this covers the live site. Same selectors, same rules.
   if (!document.getElementById('rubikx-nav-styles')) {
@@ -407,40 +424,29 @@ export function hydrateComponents(companyId?: number) {
   }
   document
     .querySelectorAll<HTMLElement>('[data-rubikx-component]')
-    .forEach((el) => {
-      const onMount = el.dataset.onMount
-      if (!onMount) return
-      const handler = HANDLERS[onMount]
-      if (!handler) {
-        console.warn(`[Rubikx] No handler registered for: ${onMount}`)
-        return
-      }
-      handler(el, companyId)
-    })
+    .forEach((el) => hydrateElement(el, companyId))
 
-  // Watch for dynamically added slider elements
-  if (!(window as any).__rbxSliderObserver) {
+  // Watch for components whose markup lands in the DOM after this pass — the
+  // builder's async render/insert (e.g. adding the first block to an empty
+  // canvas) can land slightly later than the nextTick() callers await before
+  // calling hydrateComponents(), which otherwise leaves that element's
+  // data-on-mount handler (CartBadge, AuthState, CategoryNav, HeroSlider) never
+  // invoked at all — no retry, so it silently never hydrates.
+  if (!(window as any).__rbxHydrationObserver) {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
           if (node.nodeType !== 1) return
           const el = node as HTMLElement
-          // Check if the added node itself is a slider
-          if (el.dataset?.rubikxComponent === 'HeroSlider') {
-            loadSlider(el)
-            return
-          }
-          // Check children of added node
-          el.querySelectorAll?.('[data-rubikx-component="HeroSlider"]').forEach(
-            (child) => {
-              loadSlider(child as HTMLElement)
-            }
+          if (el.dataset?.rubikxComponent) hydrateElement(el, _lastCompanyId)
+          el.querySelectorAll?.<HTMLElement>('[data-rubikx-component]').forEach(
+            (child) => hydrateElement(child, _lastCompanyId)
           )
         })
       })
     })
     observer.observe(document.body, { childList: true, subtree: true })
-    ;(window as any).__rbxSliderObserver = observer
+    ;(window as any).__rbxHydrationObserver = observer
   }
 }
 
