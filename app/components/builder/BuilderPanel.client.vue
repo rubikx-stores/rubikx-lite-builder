@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { nextTick, ref, computed } from 'vue'
-import componentHelpers from '#lib/componentHelpers'
 import componentData from '#lib/component'
 import themesData from '#lib/themes'
 import { getPageBuilder, usePageBuilderModal, usePageBuilderStateStore } from '@myissue/vue-website-page-builder'
@@ -12,6 +11,7 @@ const selectedCompanyId = useState<number | null>('selectedCompanyId')
 
 const { themeRegistry, applyTheme } = useThemes()
 const { layoutComponentRegistry } = useLayouts()
+const { helperComponentBlocks } = useHelperBlocks()
 const { closeAddComponentModal } = usePageBuilderModal()
 const { applyBlockRender, applyFontToAllBlocks } = useEditorSidebar()
 const blockRegistry = useBlockRegistry()
@@ -89,72 +89,6 @@ const filteredLibThemes = computed(() => {
   if (selectedThemeCategory.value === 'All') return data
   return data.filter((t) => t.category === selectedThemeCategory.value)
 })
-
-const _PRODUCT_IDS_BLOCK_TITLES = new Set(['Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail'])
-const _PRODUCT_BLOCK_TITLES = new Set([
-  'Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail',
-  'Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products',
-])
-
-function _pdImgSrc(image: any): string {
-  if (!image) return ''
-  if (typeof image === 'string') {
-    if (image.startsWith('data:') || image.startsWith('http') || image.startsWith('/')) return image
-    const mime = image.startsWith('/9j/') ? 'image/jpeg' : 'image/png'
-    return `data:${mime};base64,${image}`
-  }
-  if (image?.file_data) return `data:${image.type || 'image/png'};base64,${image.file_data}`
-  return ''
-}
-
-async function _autoLoadProductsOnAdd(title: string, companyId: number | null) {
-  const res = await fetch(`/api/products${companyId ? `?companyId=${companyId}` : ''}`)
-  if (!res.ok) return
-  const prods: any[] = await res.json()
-  if (!prods?.length) return
-
-  await nextTick()
-  const sectionEl = document.querySelector(`section[data-component-title="${CSS.escape(title)}"]`) as HTMLElement | null
-  const compId = sectionEl?.getAttribute('data-componentid')
-  if (!compId) return
-
-  const curr = (blockRegistry.getData(compId) as any)?.currency || '$'
-
-  if (_PRODUCT_IDS_BLOCK_TITLES.has(title)) {
-    const first = prods[0]
-    const img = _pdImgSrc(first.image)
-    blockRegistry.setData(compId, 'mainImageSrc', img)
-    blockRegistry.setData(compId, 'thumbImageSrcs', img ? [img] : [])
-    blockRegistry.setData(compId, '_productName', first.name ?? '')
-    blockRegistry.setData(compId, '_productPriceNum', Number(first.price) || 0)
-    blockRegistry.setData(compId, '_productColors',
-      Array.isArray(first.colors) && first.colors.length
-        ? first.colors.map((c: any) => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
-        : []
-    )
-    blockRegistry.setData(compId, '_autoLoadProductId', String(first.id))
-  } else {
-    const defaultCount = ((blockRegistry.getData(compId) as any)?.products?.length) || 4
-    const mapped = prods.slice(0, defaultCount).map((p: any, i: number) => ({
-      id: p.id,
-      imageUrl: _pdImgSrc(p.image),
-      name: p.name ?? `Product ${i + 1}`,
-      price: `${curr}${Number(p.price || 0).toFixed(2)}`,
-      oldPrice: '',
-      buttonLabel: 'Add to Cart',
-      buttonUrl: '/shop',
-      colors: Array.isArray(p.colors) && p.colors.length
-        ? p.colors.map((c: any) => c.htmlColor || '').filter(Boolean).join(', ')
-        : '#FF0000, #0000FF',
-    }))
-    blockRegistry.setData(compId, 'products', mapped)
-  }
-
-  await nextTick()
-  await applyBlockRender(title)
-  await nextTick()
-  hydrateComponents(selectedCompanyId.value ?? undefined)
-}
 
 async function handleDropComponent(comp: { id: string | number | null; html_code: string; title: string }) {
   isLoading.value = true
@@ -243,11 +177,6 @@ async function handleApplyTheme(themeId: string) {
       }
     }
   }
-  // Hydrate dynamic components (CartBadge, AuthState, CategoryNav, etc.)
-  // after all theme sections are in the DOM — same as handleAddComponent does.
-  await nextTick()
-  hydrateComponents(selectedCompanyId.value ?? 3)
-
   closeAddComponentModal()
   isLoading.value = false
 }
@@ -396,7 +325,7 @@ async function handleApplyTheme(themeId: string) {
           <h3 class="break-words text-base font-medium text-gray-900 md:text-lg lg:text-xl mb-4">Helper Components</h3>
           <div class="px-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <div
-              v-for="helper in componentHelpers"
+              v-for="helper in helperComponentBlocks"
               :key="helper.title"
               class="border-solid border border-gray-400 overflow-hidden hover:border-myPrimaryLinkColor duration-100 cursor-pointer max-h-96 p-4"
               @click="handleDropComponent({ id: null, html_code: helper.html_code, title: helper.title })"

@@ -4607,18 +4607,17 @@ export function renderRu2ProductDetail(data: Ru2ProductDetailData): string {
 
   const nameHtml = _productName
     ? _productName
-    : 'Product One'
+    : '<span style="display:inline-block;height:28px;width:65%;background:#f3f4f6;border-radius:4px;"></span>'
 
   const priceHtml = _productPriceNum != null
     ? `${curr}${_productPriceNum.toFixed(0)}`
-    : `${curr}0`
+    : '<span style="display:inline-block;height:28px;width:25%;background:#f3f4f6;border-radius:4px;"></span>'
 
   const colorsHtml = (_productColors && _productColors.length)
     ? _productColors.map((c, i) =>
         `<div style="width:32px;height:32px;border-radius:50%;background:${c.htmlColor};border:2px solid ${i === 0 ? accent : 'transparent'};outline:2px solid ${i === 0 ? accent : '#e5e7eb'};outline-offset:2px;cursor:pointer;transition:outline-color .15s;" title="${c.name}"></div>`
       ).join('')
-    : `<div style="width:32px;height:32px;border-radius:50%;background:#FF0000;border:2px solid ${accent};outline:2px solid ${accent};outline-offset:2px;cursor:pointer;transition:outline-color .15s;" title="Red"></div>
-       <div style="width:32px;height:32px;border-radius:50%;background:#0000FF;border:2px solid transparent;outline:2px solid #e5e7eb;outline-offset:2px;cursor:pointer;transition:outline-color .15s;" title="Blue"></div>`
+    : '<div style="height:32px;width:100px;background:#f3f4f6;border-radius:16px;"></div>'
 
   // Accordion — first section open, rest closed
   const accordionHtml = (data.productDetails || []).map((detail, i) => {
@@ -5373,36 +5372,28 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
 
   // ── Image gallery ─────────────────────────────────────────────────────────
   const mainImgHtml = _m
-    ? `<img src="${_m}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+    ? `<img src="${_m}" style="width:100%;height:100%;object-fit:cover;display:block;" />`
     : skeletonImg
-  // _t[0] is the selected product — shown as the active (highlighted) thumbnail
-  const thumb1Html = _t?.[0]
-    ? `<img src="${_t[0]}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+  const small1Html = _t?.[1]
+    ? `<img src="${_t[1]}" style="width:100%;height:100%;object-fit:cover;display:block;" />`
     : skeletonImg
-  const thumb2Html = _t?.[1]
-    ? `<img src="${_t[1]}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
-    : skeletonImg
-  const thumb3Html = _t?.[2]
-    ? `<img src="${_t[2]}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+  const small2Html = _t?.[2]
+    ? `<img src="${_t[2]}" style="width:100%;height:100%;object-fit:cover;display:block;" />`
     : skeletonImg
 
-  // Gallery image = large main view; Thumbnails = small selectable strip below
-  const imageGalleryHtml = `<div style="display:flex;flex-direction:column;gap:8px;">
-    <div style="border-radius:8px;overflow:hidden;background:${_m ? '#ffffff' : '#f3f4f6'};aspect-ratio:1/1;">${mainImgHtml}</div>
-    <div style="display:flex;gap:8px;">
-      <div style="width:72px;height:72px;flex-shrink:0;border-radius:6px;overflow:hidden;background:${_t?.[0] ? '#ffffff' : '#f3f4f6'};border:2px solid ${accent};">${thumb1Html}</div>
-      <div style="width:72px;height:72px;flex-shrink:0;border-radius:6px;overflow:hidden;background:${_t?.[1] ? '#ffffff' : '#f3f4f6'};border:2px solid #e5e7eb;">${thumb2Html}</div>
-      <div style="width:72px;height:72px;flex-shrink:0;border-radius:6px;overflow:hidden;background:${_t?.[2] ? '#ffffff' : '#f3f4f6'};border:2px solid #e5e7eb;">${thumb3Html}</div>
-    </div>
+  const imageGalleryHtml = `<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+    <div style="grid-column:1/3;border-radius:8px;overflow:hidden;background:${_m ? '#fff' : '#f3f4f6'};aspect-ratio:1/1;">${mainImgHtml}</div>
+    <div style="border-radius:8px;overflow:hidden;background:${_t?.[1] ? '#fff' : '#f3f4f6'};aspect-ratio:1/1;">${small1Html}</div>
+    <div style="border-radius:8px;overflow:hidden;background:${_t?.[2] ? '#fff' : '#f3f4f6'};aspect-ratio:1/1;">${small2Html}</div>
   </div>`
 
   // ── Name + Price ──────────────────────────────────────────────────────────
   const nameHtml = _productName
     ? _productName
-    : 'Product One'
+    : '<span style="display:inline-block;height:24px;width:65%;background:#f3f4f6;border-radius:4px;vertical-align:middle;"></span>'
   const priceHtml = _productPriceNum != null
     ? `${curr}${_productPriceNum.toFixed(0)}`
-    : `${curr}0`
+    : '<span style="display:inline-block;height:24px;width:20%;background:#f3f4f6;border-radius:4px;vertical-align:middle;"></span>'
 
   // ── Stars ─────────────────────────────────────────────────────────────────
   const ratingVal = Number(data.ratingValue ?? 3.9)
@@ -5434,14 +5425,7 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
       </div>`
     : `<div style="margin-top:16px;">
         <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 8px;">Color</h2>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <div style="border-radius:50%;outline:2px solid ${accent};outline-offset:2px;cursor:pointer;" title="Red">
-            <div style="width:32px;height:32px;border-radius:50%;background:#FF0000;border:1px solid rgba(0,0,0,0.1);"></div>
-          </div>
-          <div style="border-radius:50%;outline:2px solid transparent;outline-offset:2px;cursor:pointer;" title="Blue">
-            <div style="width:32px;height:32px;border-radius:50%;background:#0000FF;border:1px solid rgba(0,0,0,0.1);"></div>
-          </div>
-        </div>
+        <div style="height:32px;width:120px;background:#f3f4f6;border-radius:16px;"></div>
       </div>`
 
   // ── Sizes ─────────────────────────────────────────────────────────────────
@@ -5592,7 +5576,7 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
     ? data.relatedProducts.map(relCardItem).join('')
     : Array(relCount).fill(0).map(() =>
         `<div style="background:${relCardBg};border-radius:${relCardRadius}px;overflow:hidden;box-shadow:${relShadow};margin:${relCardMar}px;">
-          <div style="aspect-ratio:4/3;background:#f3f4f6;display:flex;align-items:center;justify-content:center;">${skeletonImg}</div>
+          <div style="aspect-ratio:1/1;background:#f3f4f6;">${skeletonImg}</div>
           <div style="padding:${relCardPad}px;">
             <div style="height:14px;background:#f3f4f6;border-radius:4px;width:68%;margin-bottom:6px;"></div>
             <div style="height:13px;background:#f3f4f6;border-radius:4px;width:48%;margin-bottom:12px;"></div>
@@ -5855,7 +5839,7 @@ export function renderShowSingleProduct(data: ShowSingleProductData): string {
   <div style="max-width:16rem;margin:0 auto;${productCardWrapperStyle(data)}">
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.5rem;">
       <div style="width:100%;aspect-ratio:1/1;overflow:hidden;border-radius:${data.cardBorderRadius}px;">
-        <img src="${imageSrc}" alt="${product.name}" style="width:100%;height:100%;object-fit:cover;display:block;" />
+        <img src="${imageSrc}" alt="${product.name}" style="width:100%;height:100%;object-fit:contain;display:block;" />
       </div>
       ${nameRow}
       ${colorsHtml}
@@ -6059,7 +6043,7 @@ export function renderShow6Products(data: Show6ProductsData): string {
       fontCss(data.priceFont, data.fontFamily),
     )
     return `<div style="display:flex;flex-direction:column;${wrapperStyle}">
-      <img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:${data.cardBorderRadius}px;display:block;margin-bottom:0.75rem;" />
+      <img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:${data.cardBorderRadius}px;display:block;margin-bottom:0.75rem;" />
       ${body}
     </div>`
   }).join('')
@@ -6213,7 +6197,7 @@ export function renderShow4ProductsCentered(data: Show4ProductsCenteredData): st
   const productsHtml = data.products.slice(0, 4).map(product => {
     const imageSrc = productImageSrc(product.imageUrl)
     const imageEl = imageSrc
-      ? `<img style="object-fit:cover;width:100%;aspect-ratio:1/1;border-radius:${data.cardBorderRadius}px;object-position:center;display:block;" src="${imageSrc}" alt="${product.name}" />`
+      ? `<img style="object-fit:contain;width:100%;aspect-ratio:1/1;border-radius:${data.cardBorderRadius}px;object-position:center;display:block;" src="${imageSrc}" alt="${product.name}" />`
       : `<div style="width:100%;aspect-ratio:1/1;border-radius:${data.cardBorderRadius}px;background:#f3f4f6;display:block;"></div>`
     const body = renderProductCardBody(
       product, data,
@@ -6373,7 +6357,7 @@ export function renderShowMultipleProducts(data: ShowMultipleProductsData): stri
       fontCss(data.priceFont, data.fontFamily),
     )
     return `<div style="display:flex;flex-direction:column;flex:1;${wrapperStyle}">
-      <img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:${data.cardBorderRadius}px;display:block;margin-bottom:0.75rem;" />
+      <img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:${data.cardBorderRadius}px;display:block;margin-bottom:0.75rem;" />
       ${body}
     </div>`
   }).join('')

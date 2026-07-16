@@ -7,7 +7,7 @@ interface Website {
   domain: string
 }
 
-const { data: websites } = await useFetch<Website[]>('/api/websites')
+const { data: websites } = useFetch<Website[]>('/api/websites')
 const primaryDomain = computed(() => websites.value?.[0]?.domain)
 </script>
 

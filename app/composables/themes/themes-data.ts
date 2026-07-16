@@ -776,7 +776,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
           ${overlayHtml}
         </div>
         <div style="display:flex;flex-direction:column;gap:0.25rem;padding:0.75rem;flex:1">
-          <p style="font-weight:600;font-size:0.875rem;${fontCss(data.productNameFont, data.fontFamily)}">${p.name}</p>
+          <p title="${p.name}" style="font-weight:600;font-size:0.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;${fontCss(data.productNameFont, data.fontFamily)}">${p.name}</p>
           ${priceRow}
           ${colorsHtml}
           ${data.showAddToCart !== false ? `<a href="${p.buttonUrl}" class="shop-btn" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.addToCartRadius ?? 6}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block;${fontCss(data.buttonFont, data.fontFamily)}">${p.buttonLabel}</a>` : ''}

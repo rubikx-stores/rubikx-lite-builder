@@ -40,7 +40,7 @@ export default defineNuxtConfig({
   imports: {
     // Explicit subdirectory list ensures all composable folders are auto-imported.
     // Add new layout composable dirs here as the library grows.
-    dirs: ['composables', 'composables/editor', 'composables/themes', 'composables/layouts', 'stores'],
+    dirs: ['composables', 'composables/editor', 'composables/themes', 'composables/layouts', 'composables/helpers', 'stores'],
     autoImport: true,
   },
 
@@ -50,6 +50,12 @@ export default defineNuxtConfig({
   },
 
   devtools: { enabled: true },
+
+  vite: {
+    resolve: {
+      dedupe: ['vue'],
+    },
+  },
 
   experimental: {
     payloadExtraction: true,
