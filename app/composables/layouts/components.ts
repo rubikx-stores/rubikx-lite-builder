@@ -284,6 +284,64 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
 
   const hasMegaMenu = data.navLinks.some(l => l.megaMenu && l.megaMenu.length > 0)
 
+  const mobileDrawerLinks = data.navLinks.map(l =>
+    `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;">${l.label}</a>`
+  ).join('')
+
+  const mobileSearchEl = data.showSearch
+    ? `<div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0 0.5rem;gap:0.5rem;background:#fff;margin-bottom:1rem;">
+        ${icon('magnifyingGlass', { size: 20, stroke: '#1e40af', style: 'flex-shrink:0;' })}
+        <input type="text" placeholder="${data.searchPlaceholder}" style="border:none;outline:none;background:#fff;font-size:0.875rem;width:100%;color:#3b82f6;padding:0.5rem 0;" />
+      </div>`
+    : ''
+
+  const mobileCTAButtons = data.ctaButtons.map(btn =>
+    `<a href="${btn.href}" style="display:flex;align-items:center;justify-content:center;border:1.5px solid ${btn.borderColor};border-radius:${data.buttonBorderRadius}px;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${btn.textColor};background:${btn.bgColor};text-decoration:none;">${btn.label}</a>`
+  ).join('')
+
+  const mobileNav = `
+<style>
+  [data-nav-mobile] { display: none; }
+  [data-nav-desktop] { display: grid; }
+  [data-nav-desktop-lower] { display: block; }
+  @media (max-width: 1024px) {
+    [data-nav-mobile] { display: flex !important; }
+    [data-nav-desktop] { display: none !important; }
+    [data-nav-desktop-lower] { display: none !important; }
+  }
+</style>
+<!-- Mobile header -->
+<div data-nav-mobile="true" style="display:none;align-items:center;justify-content:space-between;padding:1.25rem ${data.paddingX}px;${data.showBottomBorder ? `border-bottom:1px solid ${data.bottomBorderColor};` : ''}">
+  ${logoEl}
+  <div style="display:flex;align-items:center;gap:1rem;">
+    ${data.showCart ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>` : ''}
+    <button onclick="(function(btn){var s=btn.closest('section');var d=s&&s.querySelector('[data-mobile-drawer]');var o=s&&s.querySelector('[data-mobile-overlay]');if(d){d.style.transform='translateX(0)';}if(o){o.style.display='block';}document.body.style.overflow='hidden';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.textColor}" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+</div>
+<!-- Drawer -->
+<div data-mobile-drawer="true" style="position:fixed;top:0;left:0;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transform:translateX(-100%);transition:transform 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+    ${logoEl}
+    <button onclick="(function(btn){var d=document.querySelector('[data-mobile-drawer]');var o=document.querySelector('[data-mobile-overlay]');if(d){d.style.transform='translateX(-100%)';}if(o){o.style.display='none';}document.body.style.overflow='';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0.25rem;display:flex;align-items:center;">
+      ${icon('xMark', { size: 24, stroke: data.textColor })}
+    </button>
+  </div>
+  ${mobileSearchEl}
+  <div style="display:flex;flex-direction:column;">
+    ${mobileDrawerLinks}
+    ${data.dynamicCategories ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;cursor:pointer;">Categories</a>` : ''}
+  </div>
+  <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
+    ${mobileCTAButtons}
+    ${data.showCart ? `<a href="${data.cartUrl}" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:${data.buttonBorderRadius}px;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;">Cart</a>` : ''}
+  </div>
+</div>
+<!-- Overlay -->
+<div data-mobile-overlay="true" onclick="(function(el){var d=document.querySelector('[data-mobile-drawer]');if(d){d.style.transform='translateX(-100%)';}el.style.display='none';document.body.style.overflow='';})(this);" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;"></div>`
+
+
   // Refresh dropdowns with live Odoo data + wire product-tile click → detail panel
   const megaScript = hasMegaMenu
     ? `<script>(function(){function wireTiles(sec){sec.querySelectorAll('.ru-ptile').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var panel=sec.querySelector('.ru-pd');if(!panel)return;var imgEl=a.querySelector('img');var imgSrc=imgEl?imgEl.src:'';var name=(a.querySelector('.ru-ptile-name')||{}).textContent||'';var price=(a.querySelector('.ru-ptile-price')||{}).textContent||'';var imgCol=imgSrc?'<img src="'+imgSrc+'" style="width:100%;height:100%;object-fit:cover;display:block;" />':'<div style="width:100%;height:100%;background:#f3f4f6;"></div>';panel.innerHTML='<div style="display:grid;grid-template-columns:40% 60%;height:380px;position:relative;">'+  '<div style="overflow:hidden;">'+imgCol+'</div>'+  '<div style="padding:40px 48px;display:flex;flex-direction:column;justify-content:center;background:#fff;">'+    '<div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;">Featured Product</div>'+    '<div style="font-size:26px;font-weight:700;color:#111827;line-height:1.25;margin-bottom:12px;">'+name+'</div>'+    '<div style="font-size:22px;font-weight:600;color:#374151;margin-bottom:28px;">'+price+'</div>'+    '<div><a href="'+a.href+'" style="display:inline-block;padding:12px 28px;background:#111827;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:500;letter-spacing:.02em;">View Product →</a></div>'+  '</div>'+  '<button onclick="this.closest(\\'.ru-pd\\').style.display=\\'none\\'" style="position:absolute;top:12px;right:16px;background:rgba(255,255,255,.9);border:1px solid #e5e7eb;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;color:#6b7280;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>'+  '</div>';panel.style.display='block';panel.scrollIntoView({behavior:'smooth',block:'nearest'});});})}function init(){var ts=document.querySelectorAll('.ru-mega-item[data-mega-json]');if(!ts.length)return;var allIds=[];ts.forEach(function(t){try{JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"')).forEach(function(g){(g.ids||[]).forEach(function(id){if(allIds.indexOf(id)<0)allIds.push(id);});});}catch(e){}});ts.forEach(function(t){var sec=t.closest('section');if(sec)wireTiles(sec);});if(!allIds.length)return;fetch('/api/products?ids='+allIds.join(',')).then(function(r){return r.json();}).then(function(prods){var map={};prods.forEach(function(p){map[p.id]=p;});ts.forEach(function(t){var groups;try{groups=JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"'));}catch(e){return;}var drop=t.querySelector('.ru-mega-drop');if(!drop)return;var html=groups.map(function(g){var items=(g.ids||[]).map(function(id){var p=map[id];if(!p)return'';var img=p.image?'<img src="data:image/png;base64,'+p.image+'" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;"/>':'<div style="width:44px;height:44px;background:#f3f4f6;border-radius:6px;flex-shrink:0;"></div>';var price=p.price!=null?'<span class="ru-ptile-price" style="font-size:11px;color:#6b7280;">$'+Number(p.price).toFixed(2)+'</span>':'';return'<a href="/shop/'+p.id+'" class="ru-ptile" style="display:flex;align-items:center;gap:10px;padding:7px 14px;text-decoration:none;cursor:pointer;" onmouseover="this.style.background=\\'#f9fafb\\'" onmouseout="this.style.background=\\'\\''">'+img+'<div style="min-width:0;"><div class="ru-ptile-name" style="font-size:13px;font-weight:500;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">'+p.name+'</div>'+price+'</div></a>';}).join('');if(!items.trim())return'';return'<div><a href="'+(g.href||'#')+'" style="display:block;padding:8px 14px 4px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;">'+g.label+'</a>'+items+'</div>';}).filter(Boolean).join('<div style="height:1px;background:#f3f4f6;margin:4px 0;"></div>');drop.innerHTML=html;var sec=t.closest('section');if(sec)wireTiles(sec);});}).catch(function(){});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();<\/script>`
@@ -295,12 +353,13 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
 .ru-pd{display:none;width:100%;border-top:1px solid #e5e7eb;overflow:hidden;}
 </style>
 <nav style="${navStyle}">
-  <div style="max-width:80rem;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
+  ${mobileNav}
+  <div data-nav-desktop="true" style="max-width:80rem;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
     ${zone(cols.left,   'flex-start')}
     ${zone(cols.center, 'center')}
     ${zone(cols.right,  'flex-end')}
   </div>
-  ${lowerRow}
+  <div data-nav-desktop-lower="true">${lowerRow}</div>
 </nav>
 ${hasMegaMenu ? '<div class="ru-pd"></div>' : ''}
 ${megaScript}</section>`
@@ -4210,6 +4269,577 @@ export function renderRu1ProductDetail(data: Ru1ProductDetailData): string {
         </div>
       </div>
     </div>
+  </div>
+</section>`
+}
+
+// ─── Ru3-Product Detail ───────────────────────────────────────────────────────
+
+export const ru3ProductDetailSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
+  <!-- Left: large main image spanning 2 cols -->
+  <rect fill="#394152" x="8" y="8" width="126" height="100" rx="3"/>
+  <polygon fill="#718096" points="28 102 58 74 88 102 28 102"/>
+  <polygon fill="#718096" points="78 102 96 84 114 102 78 102"/>
+  <circle fill="#718096" cx="96" cy="76" r="7"/>
+  <!-- Left: 2 small images below main -->
+  <rect fill="#718096" x="8" y="116" width="60" height="50" rx="2"/>
+  <rect fill="#718096" x="74" y="116" width="60" height="50" rx="2"/>
+  <!-- Right: product name + price -->
+  <rect fill="#394152" x="150" y="8"  width="90" height="10" rx="2"/>
+  <rect fill="#394152" x="244" y="8"  width="28" height="10" rx="2"/>
+  <!-- Right: stars row -->
+  <rect fill="#394152" x="150" y="26" width="7" height="7" rx="1"/>
+  <rect fill="#394152" x="160" y="26" width="7" height="7" rx="1"/>
+  <rect fill="#394152" x="170" y="26" width="7" height="7" rx="1"/>
+  <rect fill="#394152" x="180" y="26" width="7" height="7" rx="1"/>
+  <rect fill="#718096" x="190" y="26" width="7" height="7" rx="1"/>
+  <rect fill="#718096" x="200" y="28" width="42" height="4" rx="1"/>
+  <!-- Right: color label + swatches -->
+  <rect fill="#718096" x="150" y="42" width="22" height="4" rx="1"/>
+  <circle fill="#394152" cx="160" cy="56" r="8"/>
+  <circle fill="#718096" cx="180" cy="56" r="8"/>
+  <!-- Right: size label + grid -->
+  <rect fill="#718096" x="150" y="72" width="18" height="4" rx="1"/>
+  <rect fill="#394152" x="150" y="80" width="18" height="12" rx="2"/>
+  <rect fill="#394152" x="172" y="80" width="18" height="12" rx="2"/>
+  <rect fill="#394152" x="194" y="80" width="18" height="12" rx="2"/>
+  <rect fill="#394152" x="216" y="80" width="18" height="12" rx="2"/>
+  <rect fill="#394152" x="238" y="80" width="18" height="12" rx="2"/>
+  <!-- Right: add to cart button -->
+  <rect fill="#394152" x="150" y="100" width="120" height="16" rx="3"/>
+  <!-- Right: description title + lines -->
+  <rect fill="#394152" x="150" y="124" width="52" height="5" rx="1"/>
+  <rect fill="#718096" x="150" y="134" width="120" height="3" rx="1"/>
+  <rect fill="#718096" x="150" y="141" width="95"  height="3" rx="1"/>
+  <!-- Right: fabric & care -->
+  <rect fill="#394152" x="150" y="156" width="52" height="5" rx="1"/>
+  <rect fill="#718096" x="154" y="166" width="85" height="3" rx="1"/>
+  <rect fill="#718096" x="154" y="173" width="70" height="3" rx="1"/>
+  <rect fill="#718096" x="154" y="180" width="78" height="3" rx="1"/>
+  <!-- Right: policy cards -->
+  <rect fill="#718096" x="150" y="192" width="55" height="32" rx="3"/>
+  <rect fill="#394152" x="152" y="209" width="51" height="4" rx="1"/>
+  <rect fill="#718096" x="215" y="192" width="55" height="32" rx="3"/>
+  <rect fill="#394152" x="217" y="209" width="51" height="4" rx="1"/>
+  <!-- Bottom: reviews section title -->
+  <rect fill="#394152" x="8" y="182" width="80" height="6" rx="1"/>
+  <rect fill="#718096" x="8" y="196" width="130" height="1"/>
+  <rect fill="#394152" x="8" y="204" width="55" height="4" rx="1"/>
+  <rect fill="#718096" x="8" y="212" width="130" height="3" rx="1"/>
+  <rect fill="#718096" x="8" y="219" width="110" height="3" rx="1"/>
+  <!-- Bottom: related products title + 4 cards -->
+  <rect fill="#394152" x="8" y="236" width="100" height="6" rx="1"/>
+  <rect fill="#394152" x="8"   y="250" width="56" height="48" rx="3"/>
+  <rect fill="#394152" x="72"  y="250" width="56" height="48" rx="3"/>
+  <rect fill="#394152" x="136" y="250" width="56" height="48" rx="3"/>
+  <rect fill="#394152" x="200" y="250" width="56" height="48" rx="3"/>
+  <rect fill="#718096" x="8"   y="304" width="38" height="4" rx="1"/>
+  <rect fill="#718096" x="72"  y="304" width="38" height="4" rx="1"/>
+  <rect fill="#718096" x="136" y="304" width="38" height="4" rx="1"/>
+  <rect fill="#718096" x="200" y="304" width="38" height="4" rx="1"/>
+  <rect fill="#718096" x="8"   y="312" width="28" height="4" rx="1"/>
+  <rect fill="#718096" x="72"  y="312" width="28" height="4" rx="1"/>
+  <rect fill="#718096" x="136" y="312" width="28" height="4" rx="1"/>
+  <rect fill="#718096" x="200" y="312" width="28" height="4" rx="1"/>
+</svg>`
+
+export interface Ru3ProductDetailReview {
+  author: string
+  date: string
+  title: string
+  rating: number
+  content: string
+}
+
+export interface Ru3ProductDetailPolicy {
+  title: string
+  description: string
+}
+
+export interface Ru3ProductDetailSize {
+  label: string
+  inStock: boolean
+}
+
+export interface Ru3ProductDetailData {
+  productIds: string
+  /** Builder-only runtime fields — stripped from saved HTML */
+  mainImageSrc?: string
+  thumbImageSrcs?: string[]
+  _productName?: string
+  _productPriceNum?: number
+  _productColors?: { htmlColor: string; name: string }[]
+  bgColor: string
+  accentColor: string
+  productNameColor: string
+  productNameFontWeight: string
+  productNameFontSize: number
+  priceColor: string
+  priceFontWeight: string
+  priceFontSize: number
+  currency: string
+  buttonBgColor: string
+  buttonTextColor: string
+  buttonBorderRadius: number
+  addToCartLabel: string
+  showRating: boolean
+  ratingValue: number
+  reviewCount: number
+  reviewsLinkText: string
+  showSizes: boolean
+  sizingChartUrl: string
+  sizes: Ru3ProductDetailSize[]
+  descriptionTitle: string
+  description: string
+  showFabricCare: boolean
+  fabricCareTitle: string
+  fabricCareItems: string
+  showPolicies: boolean
+  policies: Ru3ProductDetailPolicy[]
+  showReviews: boolean
+  reviewsTitle: string
+  reviews: Ru3ProductDetailReview[]
+  showRelatedProducts: boolean
+  relatedTitle: string
+  relatedProducts: { id: number; imageUrl: string; name: string; price: string; colors?: { htmlColor: string; name: string }[] }[]
+  relatedColumns: number
+  relatedRows: number
+  relatedCardBg: string
+  relatedCardTextColor: string
+  relatedCardFontSize: number
+  relatedCardBorderRadius: number
+  relatedCardShadow: string
+  relatedCardLayout: string
+  relatedCardMargin: number
+  relatedCardPadding: number
+  relatedCardFontWeight: string
+  relatedCardTextAlign: string
+  relatedCardSubtitle: string
+  relatedCardSubtitleEnabled: boolean
+  relatedButtonBgColor: string
+  relatedButtonTextColor: string
+  relatedButtonBorderRadius: number
+  relatedAddToCartLabel: string
+  paddingY: number
+  paddingX: number
+}
+
+export const ru3ProductDetailDefaults: Ru3ProductDetailData = {
+  productIds: '',
+  bgColor: '#ffffff',
+  accentColor: '#4f46e5',
+  productNameColor: '#111827',
+  productNameFontWeight: '500',
+  productNameFontSize: 24,
+  priceColor: '#111827',
+  priceFontWeight: '500',
+  priceFontSize: 24,
+  currency: '$',
+  buttonBgColor: '#4f46e5',
+  buttonTextColor: '#ffffff',
+  buttonBorderRadius: 6,
+  addToCartLabel: 'Add to cart',
+  showRating: true,
+  ratingValue: 3.9,
+  reviewCount: 512,
+  reviewsLinkText: 'See all reviews',
+  showSizes: true,
+  sizingChartUrl: '#',
+  sizes: [
+    { label: 'XXS', inStock: true },
+    { label: 'XS',  inStock: true },
+    { label: 'S',   inStock: true },
+    { label: 'M',   inStock: true },
+    { label: 'L',   inStock: true },
+    { label: 'XL',  inStock: false },
+  ],
+  descriptionTitle: 'Description',
+  description: "The Basic tee is an honest new take on a classic. The tee uses super soft, pre-shrunk cotton for true comfort and a dependable fit. They are hand cut and sewn locally, with a special dye technique that gives each tee its own look.\n\nLooking to stock your closet? The Basic tee also comes in a 3-pack or 5-pack at a bundle discount.",
+  showFabricCare: true,
+  fabricCareTitle: 'Fabric & Care',
+  fabricCareItems: 'Only the best materials\nEthically and locally made\nPre-washed and pre-shrunk\nMachine wash cold with similar colors',
+  showPolicies: true,
+  policies: [
+    { title: 'International delivery', description: 'Get your order in 2 years' },
+    { title: 'Loyalty rewards',        description: "Don't look at other tees" },
+  ],
+  showReviews: true,
+  reviewsTitle: 'Recent reviews',
+  reviews: [
+    {
+      author: 'Risako M',
+      date: 'May 16, 2021',
+      title: "Can't say enough good things",
+      rating: 5,
+      content: "I was really pleased with the overall shopping experience. My order even included a little personal, handwritten note, which delighted me!\n\nThe product quality is amazing, it looks and feel even better than I had anticipated. Brilliant stuff!",
+    },
+    {
+      author: 'Jackie H',
+      date: 'April 6, 2021',
+      title: 'Very comfy and looks the part',
+      rating: 5,
+      content: "After a quick chat with customer support, I had a good feeling about this shirt and ordered three of them.\n\nLess than 48 hours later, my delivery arrived. I haven't worn anything else since that day!",
+    },
+  ],
+  showRelatedProducts: true,
+  relatedTitle: 'Customers also purchased',
+  relatedProducts: [],
+  relatedColumns: 4,
+  relatedRows: 1,
+  relatedCardBg: '#ffffff',
+  relatedCardTextColor: '#111827',
+  relatedCardFontSize: 14,
+  relatedCardBorderRadius: 8,
+  relatedCardShadow: 'none',
+  relatedCardLayout: 'default',
+  relatedCardMargin: 0,
+  relatedCardPadding: 0,
+  relatedCardFontWeight: '400',
+  relatedCardTextAlign: 'left',
+  relatedCardSubtitle: '',
+  relatedCardSubtitleEnabled: true,
+  relatedButtonBgColor: '#111827',
+  relatedButtonTextColor: '#ffffff',
+  relatedButtonBorderRadius: 6,
+  relatedAddToCartLabel: 'Add to cart',
+  paddingY: 32,
+  paddingX: 16,
+}
+
+export const ru3ProductDetailFields: FieldConfig[] = [
+  { key: '_h_appearance', label: 'Appearance', type: 'header' },
+  { key: 'bgColor',    label: 'Background Color', type: 'color' },
+  { key: 'accentColor', label: 'Accent Color',    type: 'color' },
+
+  { key: '_h_name', label: 'Product Name', type: 'header' },
+  { key: 'productNameColor',       label: 'Name Color',  type: 'color' },
+  { key: 'productNameFontWeight',  label: 'Name Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  { key: 'productNameFontSize',    label: 'Name Size',   type: 'number', unit: 'px', step: 1 },
+
+  { key: '_h_price', label: 'Price', type: 'header' },
+  { key: 'priceColor',      label: 'Price Color',     type: 'color' },
+  { key: 'priceFontWeight', label: 'Price Weight',    type: 'select', options: ['400', '500', '600', '700', '800'] },
+  { key: 'priceFontSize',   label: 'Price Size',      type: 'number', unit: 'px', step: 1 },
+  { key: 'currency',        label: 'Currency Symbol', type: 'text', placeholder: '$' },
+
+  { key: '_h_btn', label: 'Button', type: 'header' },
+  { key: 'buttonBgColor',     label: 'Button Color',      type: 'color' },
+  { key: 'buttonTextColor',   label: 'Button Text Color', type: 'color' },
+  { key: 'buttonBorderRadius', label: 'Button Radius',    type: 'number', unit: 'px', step: 2 },
+  { key: 'addToCartLabel',    label: 'Button Label',      type: 'text', placeholder: 'Add to cart' },
+
+  { key: '_h_rating', label: 'Rating', type: 'header' },
+  { key: 'showRating',     label: 'Show Rating',      type: 'toggle' },
+  { key: 'ratingValue',    label: 'Rating (out of 5)', type: 'number', step: 0.1 },
+  { key: 'reviewCount',    label: 'Review Count',      type: 'number', step: 1 },
+  { key: 'reviewsLinkText', label: 'Reviews Link Text', type: 'text', placeholder: 'See all reviews' },
+
+  { key: '_h_sizes', label: 'Sizes', type: 'header' },
+  { key: 'showSizes',      label: 'Show Sizes',   type: 'toggle' },
+  { key: 'sizingChartUrl', label: 'Sizing Chart URL', type: 'url', placeholder: '#' },
+  { key: 'sizes', label: 'Size Options', type: 'list', listFields: [
+    { key: 'label',   label: 'Size Label', type: 'text',   placeholder: 'M' },
+    { key: 'inStock', label: 'In Stock',   type: 'toggle' },
+  ]},
+
+  { key: '_h_desc', label: 'Description', type: 'header' },
+  { key: 'descriptionTitle', label: 'Section Title',   type: 'text',     placeholder: 'Description' },
+  { key: 'description',      label: 'Description Text', type: 'textarea', placeholder: 'Product description...' },
+
+  { key: '_h_fabric', label: 'Fabric & Care', type: 'header' },
+  { key: 'showFabricCare',  label: 'Show Section',       type: 'toggle' },
+  { key: 'fabricCareTitle', label: 'Section Title',      type: 'text',     placeholder: 'Fabric & Care' },
+  { key: 'fabricCareItems', label: 'Items (one per line)', type: 'textarea', placeholder: 'Only the best materials\nEthically and locally made' },
+
+  { key: '_h_policies', label: 'Policies', type: 'header' },
+  { key: 'showPolicies', label: 'Show Policies', type: 'toggle' },
+  { key: 'policies', label: 'Policy Cards', type: 'list', listFields: [
+    { key: 'title',       label: 'Title',       type: 'text', placeholder: 'International delivery' },
+    { key: 'description', label: 'Description', type: 'text', placeholder: 'Get your order in 2 years' },
+  ]},
+
+  { key: '_h_reviews', label: 'Reviews', type: 'header' },
+  { key: 'showReviews',  label: 'Show Reviews',  type: 'toggle' },
+  { key: 'reviewsTitle', label: 'Section Title', type: 'text', placeholder: 'Recent reviews' },
+  { key: 'reviews', label: 'Reviews', type: 'list', listFields: [
+    { key: 'author',  label: 'Author',           type: 'text',     placeholder: 'John D.' },
+    { key: 'date',    label: 'Date',             type: 'text',     placeholder: 'May 16, 2021' },
+    { key: 'title',   label: 'Review Title',     type: 'text',     placeholder: 'Great product!' },
+    { key: 'rating',  label: 'Rating (1–5)',     type: 'number',   step: 1 },
+    { key: 'content', label: 'Content',          type: 'textarea', placeholder: 'Review text...' },
+  ]},
+
+  { key: '_h_related', label: 'Related Products', type: 'header' },
+  { key: 'showRelatedProducts', label: 'Show Related Products', type: 'toggle' },
+  { key: 'relatedTitle',   label: 'Section Title', type: 'text',   placeholder: 'Customers also purchased' },
+  { key: 'relatedColumns', label: 'Columns',       type: 'number', step: 1 },
+  { key: 'relatedRows',    label: 'Rows',          type: 'number', step: 1 },
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'paddingY', label: 'Vertical Padding',   type: 'number', unit: 'px', step: 4 },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4 },
+]
+
+export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
+  const { mainImageSrc: _m, thumbImageSrcs: _t, _productName, _productPriceNum, _productColors, ...persistable } = data
+
+  const curr     = data.currency   || '$'
+  const accent   = data.accentColor || '#4f46e5'
+
+  const skeletonImg = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f3f4f6;">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="7" width="18" height="14" rx="2"/><circle cx="12" cy="14" r="3"/>
+      <path d="M8 7V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+    </svg>
+  </div>`
+
+  // ── Image gallery ─────────────────────────────────────────────────────────
+  const mainImgHtml = _m
+    ? `<img src="${_m}" style="width:100%;height:100%;object-fit:cover;display:block;" />`
+    : skeletonImg
+  const small1Html = _t?.[1]
+    ? `<img src="${_t[1]}" style="width:100%;height:100%;object-fit:cover;display:block;" />`
+    : skeletonImg
+  const small2Html = _t?.[2]
+    ? `<img src="${_t[2]}" style="width:100%;height:100%;object-fit:cover;display:block;" />`
+    : skeletonImg
+
+  const imageGalleryHtml = `<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+    <div style="grid-column:1/3;border-radius:8px;overflow:hidden;background:${_m ? '#fff' : '#f3f4f6'};aspect-ratio:1/1;">${mainImgHtml}</div>
+    <div style="border-radius:8px;overflow:hidden;background:${_t?.[1] ? '#fff' : '#f3f4f6'};aspect-ratio:1/1;">${small1Html}</div>
+    <div style="border-radius:8px;overflow:hidden;background:${_t?.[2] ? '#fff' : '#f3f4f6'};aspect-ratio:1/1;">${small2Html}</div>
+  </div>`
+
+  // ── Name + Price ──────────────────────────────────────────────────────────
+  const nameHtml = _productName
+    ? _productName
+    : '<span style="display:inline-block;height:24px;width:65%;background:#f3f4f6;border-radius:4px;vertical-align:middle;"></span>'
+  const priceHtml = _productPriceNum != null
+    ? `${curr}${_productPriceNum.toFixed(0)}`
+    : '<span style="display:inline-block;height:24px;width:20%;background:#f3f4f6;border-radius:4px;vertical-align:middle;"></span>'
+
+  // ── Stars ─────────────────────────────────────────────────────────────────
+  const ratingVal = Number(data.ratingValue ?? 3.9)
+  const starPath  = 'M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z'
+  const starSvg   = (filled: boolean) =>
+    `<svg width="20" height="20" viewBox="0 0 20 20" fill="${filled ? '#fbbf24' : '#e5e7eb'}" aria-hidden="true"><path d="${starPath}"/></svg>`
+  const starsHtml = [0,1,2,3,4].map(i => starSvg(ratingVal > i)).join('')
+
+  const ratingHtml = data.showRating !== false
+    ? `<div style="margin-top:12px;display:flex;align-items:center;gap:8px;">
+        <p style="font-size:14px;color:#374151;margin:0;">${ratingVal}</p>
+        <div style="display:flex;align-items:center;gap:1px;">${starsHtml}</div>
+        <span style="display:inline-block;width:1px;height:16px;background:#e5e7eb;margin:0 4px;"></span>
+        <a href="#ru3-reviews" style="font-size:14px;font-weight:500;color:${accent};text-decoration:none;">${data.reviewsLinkText || 'See all reviews'} (${data.reviewCount ?? 512})</a>
+      </div>`
+    : ''
+
+  // ── Color swatches ────────────────────────────────────────────────────────
+  const colorsHtml = (_productColors && _productColors.length)
+    ? `<div style="margin-top:16px;">
+        <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 8px;">Color</h2>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          ${_productColors.map((c, i) =>
+            `<div style="border-radius:50%;outline:2px solid ${i === 0 ? accent : 'transparent'};outline-offset:2px;cursor:pointer;" title="${c.name}">
+              <div style="width:32px;height:32px;border-radius:50%;background:${c.htmlColor};border:1px solid rgba(0,0,0,0.1);"></div>
+            </div>`
+          ).join('')}
+        </div>
+      </div>`
+    : `<div style="margin-top:16px;">
+        <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 8px;">Color</h2>
+        <div style="height:32px;width:120px;background:#f3f4f6;border-radius:16px;"></div>
+      </div>`
+
+  // ── Sizes ─────────────────────────────────────────────────────────────────
+  const sizesHtml = data.showSizes !== false
+    ? `<div style="margin-top:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0;">Size</h2>
+          <a href="${data.sizingChartUrl || '#'}" style="font-size:14px;font-weight:500;color:${accent};text-decoration:none;">See sizing chart</a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;">
+          ${(data.sizes || []).map((size, i) =>
+            `<div style="position:relative;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid ${i === 2 ? accent : '#d1d5db'};background:${i === 2 ? accent : '#fff'};padding:12px;opacity:${size.inStock ? '1' : '0.25'};">
+              <span style="font-size:14px;font-weight:500;color:${i === 2 ? '#fff' : '#111827'};text-transform:uppercase;">${size.label}</span>
+            </div>`
+          ).join('')}
+        </div>
+      </div>`
+    : ''
+
+  // ── Button ────────────────────────────────────────────────────────────────
+  const buttonHtml = `<button style="margin-top:24px;width:100%;padding:14px 24px;background:${data.buttonBgColor || accent};color:${data.buttonTextColor || '#fff'};border:none;border-radius:${data.buttonBorderRadius ?? 6}px;font-size:16px;font-weight:500;cursor:pointer;">
+    ${data.addToCartLabel || 'Add to cart'}
+  </button>`
+
+  // ── Description ───────────────────────────────────────────────────────────
+  const descParagraphs = (data.description || '').split('\n').filter(l => l.trim())
+    .map(line => `<p style="margin:0 0 16px;font-size:14px;line-height:1.75;color:#6b7280;">${line}</p>`).join('')
+  const descriptionHtml = `<div style="margin-top:32px;">
+    <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 16px;">${data.descriptionTitle || 'Description'}</h2>
+    ${descParagraphs}
+  </div>`
+
+  // ── Fabric & Care ─────────────────────────────────────────────────────────
+  const fabricLines = (data.fabricCareItems || '').split('\n').map(s => s.trim()).filter(Boolean)
+  const fabricCareHtml = data.showFabricCare !== false
+    ? `<div style="margin-top:32px;border-top:1px solid #e5e7eb;padding-top:32px;">
+        <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 16px;">${data.fabricCareTitle || 'Fabric & Care'}</h2>
+        <ul style="margin:0;padding-left:24px;display:flex;flex-direction:column;gap:4px;">
+          ${fabricLines.map(item => `<li style="font-size:14px;line-height:1.75;color:#6b7280;">${item}</li>`).join('')}
+        </ul>
+      </div>`
+    : ''
+
+  // ── Policies ──────────────────────────────────────────────────────────────
+  const infoIcon = `<svg style="margin:0 auto 12px;display:block;" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>`
+  const policyCards = (data.policies || []).map(p =>
+    `<div style="border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;padding:24px;text-align:center;">
+      ${infoIcon}
+      <span style="font-size:14px;font-weight:500;color:#111827;display:block;">${p.title}</span>
+      <span style="font-size:14px;color:#6b7280;display:block;margin-top:4px;">${p.description}</span>
+    </div>`
+  ).join('')
+  const policiesHtml = data.showPolicies !== false && (data.policies || []).length
+    ? `<div style="margin-top:32px;">
+        <div style="display:grid;grid-template-columns:repeat(${Math.min((data.policies || []).length, 2)},minmax(0,1fr));gap:24px;">
+          ${policyCards}
+        </div>
+      </div>`
+    : ''
+
+  // ── Reviews ───────────────────────────────────────────────────────────────
+  const reviewStars = (rating: number) => [0,1,2,3,4].map(i => starSvg(rating > i)).join('')
+  const reviewItems = (data.reviews || []).map(r => {
+    const paragraphs = (r.content || '').split('\n').filter(l => l.trim())
+      .map(line => `<p style="margin:0 0 16px;font-size:14px;color:#6b7280;line-height:1.75;">${line}</p>`).join('')
+    return `<div style="padding:40px 0;border-top:1px solid #e5e7eb;display:grid;grid-template-columns:4fr 8fr;gap:32px;">
+      <div>
+        <p style="font-weight:500;color:#111827;font-size:14px;margin:0 0 4px;">${r.author || ''}</p>
+        <time style="font-size:14px;color:#6b7280;">${r.date || ''}</time>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;gap:4px;margin-bottom:8px;">
+          ${reviewStars(r.rating ?? 5)}
+          <span style="font-size:14px;color:#374151;margin-left:8px;">${r.rating ?? 5}</span>
+        </div>
+        <h3 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 12px;">${r.title || ''}</h3>
+        ${paragraphs}
+      </div>
+    </div>`
+  }).join('')
+
+  const reviewsSection = data.showReviews !== false && (data.reviews || []).length
+    ? `<div style="margin-top:64px;border-top:1px solid #e5e7eb;padding-top:64px;" id="ru3-reviews">
+        <h2 style="font-size:18px;font-weight:500;color:#111827;margin:0 0 24px;">${data.reviewsTitle || 'Recent reviews'}</h2>
+        <div style="border-top:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;">${reviewItems}</div>
+      </div>`
+    : ''
+
+  // ── Related products (same pattern as Ru2) ────────────────────────────────
+  const relCols      = Math.max(1, data.relatedColumns ?? 4)
+  const relRows      = Math.max(1, data.relatedRows ?? 1)
+  const relCount     = relCols * relRows
+  const relCardRadius = data.relatedCardBorderRadius ?? 8
+  const relBtnRadius  = data.relatedButtonBorderRadius ?? 6
+  const relCardBg     = data.relatedCardBg || '#ffffff'
+  const relBtnBg      = data.relatedButtonBgColor || '#111827'
+  const relBtnColor   = data.relatedButtonTextColor || '#ffffff'
+  const shadowPresets: Record<string, string> = {
+    'none':      '0 0 #0000',
+    'shadow-sm': '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+    'shadow-md': '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+    'shadow-lg': '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+    'shadow-xl': '0 20px 25px -5px rgb(0 0 0 / 0.1)',
+  }
+  const relShadow = shadowPresets[data.relatedCardShadow ?? 'none'] ?? '0 0 #0000'
+
+  const hasRelatedProducts = Array.isArray(data.relatedProducts) && data.relatedProducts.length > 0
+  const actualRelCols  = hasRelatedProducts ? Math.min(relCols, data.relatedProducts.length) : relCols
+  const relGridStyle   = `display:grid;grid-template-columns:repeat(${actualRelCols},minmax(0,1fr));gap:24px;${actualRelCols < relCols ? 'justify-content:center;max-width:' + (actualRelCols * 300) + 'px;margin:0 auto;' : ''}`
+
+  const relFontSize  = data.relatedCardFontSize ?? 14
+  const relFontWeight = data.relatedCardFontWeight || '400'
+  const relLayout    = data.relatedCardLayout || 'default'
+  const relTextAlign = data.relatedCardTextAlign || (relLayout === 'centered' ? 'center' : 'left')
+  const relCardPad   = data.relatedCardPadding > 0 ? data.relatedCardPadding : 12
+  const relCardMar   = data.relatedCardMargin ?? 0
+  const relSubtitle  = (data.relatedCardSubtitleEnabled !== false && data.relatedCardSubtitle) ? data.relatedCardSubtitle : ''
+  const relTextColor = data.relatedCardTextColor ?? '#111827'
+
+  const relCardItem = (p: { id: number; imageUrl: string; name: string; price: string; colors?: { htmlColor: string; name: string }[] }) => {
+    const swatchesHtml = Array.isArray(p.colors) && p.colors.length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:4px;padding:4px 0;justify-content:${relLayout === 'centered' ? 'center' : 'flex-start'};">${
+          p.colors.slice(0, 12).map(c =>
+            `<span title="${c.name}" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${c.htmlColor};border:1px solid rgba(0,0,0,0.15);flex-shrink:0;"></span>`
+          ).join('')
+        }</div>`
+      : ''
+    const subtitleHtml = relSubtitle ? `<div style="font-size:11px;color:#6b7280;margin-bottom:6px;text-align:${relTextAlign};">${relSubtitle}</div>` : ''
+    const btnHtml  = `<button style="width:100%;padding:10px;background:${relBtnBg};color:${relBtnColor};border:none;border-radius:${relBtnRadius}px;font-size:${relFontSize}px;font-weight:500;cursor:pointer;margin-top:auto;">${data.relatedAddToCartLabel || 'Add to cart'}</button>`
+    const imgBox   = `<div style="aspect-ratio:1/1;background:${p.imageUrl ? '#fff' : '#f3f4f6'};display:flex;align-items:center;justify-content:center;">${p.imageUrl ? `<img src="${p.imageUrl}" style="width:100%;height:100%;object-fit:cover;display:block;" />` : skeletonImg}</div>`
+    const cardWrap = (inner: string) =>
+      `<div style="background:${relCardBg};border-radius:${relCardRadius}px;overflow:hidden;box-shadow:${relShadow};margin:${relCardMar}px;display:flex;flex-direction:column;">${imgBox}${inner}</div>`
+
+    if (relLayout === 'inline') {
+      return cardWrap(`<div style="padding:${relCardPad}px;display:flex;flex-direction:column;flex:1;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;">
+          <span style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${relTextColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">${p.name}</span>
+          <span style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${accent};white-space:nowrap;flex-shrink:0;">${p.price}</span>
+        </div>${swatchesHtml}${subtitleHtml}${btnHtml}</div>`)
+    }
+    return cardWrap(`<div style="padding:${relCardPad}px;text-align:${relTextAlign};display:flex;flex-direction:column;flex:1;">
+      <div style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${relTextColor};margin-bottom:4px;${relLayout !== 'centered' ? 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;' : ''}">${p.name}</div>
+      <div style="font-size:${relFontSize}px;font-weight:${relFontWeight};color:${accent};margin-bottom:6px;">${p.price}</div>
+      ${swatchesHtml}${subtitleHtml}${btnHtml}</div>`)
+  }
+
+  const relatedCardsHtml = hasRelatedProducts
+    ? data.relatedProducts.map(relCardItem).join('')
+    : Array(relCount).fill(0).map(() =>
+        `<div style="background:${relCardBg};border-radius:${relCardRadius}px;overflow:hidden;box-shadow:${relShadow};margin:${relCardMar}px;">
+          <div style="aspect-ratio:1/1;background:#f3f4f6;">${skeletonImg}</div>
+          <div style="padding:${relCardPad}px;">
+            <div style="height:14px;background:#f3f4f6;border-radius:4px;width:68%;margin-bottom:6px;"></div>
+            <div style="height:13px;background:#f3f4f6;border-radius:4px;width:48%;margin-bottom:12px;"></div>
+            <button style="width:100%;padding:10px;background:${relBtnBg};color:${relBtnColor};border:none;border-radius:${relBtnRadius}px;font-size:${relFontSize}px;font-weight:500;cursor:pointer;">${data.relatedAddToCartLabel || 'Add to cart'}</button>
+          </div>
+        </div>`
+      ).join('')
+
+  const relatedSection = data.showRelatedProducts !== false
+    ? `<div style="margin-top:64px;border-top:1px solid #e5e7eb;padding-top:64px;">
+        <h2 style="font-size:20px;font-weight:500;color:#111827;margin:0 0 32px;">${data.relatedTitle || 'Customers also purchased'}</h2>
+        <div style="${relGridStyle}">${relatedCardsHtml}</div>
+      </div>`
+    : ''
+
+  return `<section data-component-title="Ru3-Product Detail" data-component-props="${encodeURIComponent(JSON.stringify(persistable))}" style="background:${data.bgColor || '#ffffff'};padding:${data.paddingY ?? 32}px ${data.paddingX ?? 16}px;">
+  <div style="max-width:80rem;margin:0 auto;">
+    <div style="display:grid;grid-template-columns:7fr 5fr;gap:4rem;align-items:flex-start;">
+
+      <!-- Left: image gallery -->
+      <div>${imageGalleryHtml}</div>
+
+      <!-- Right: product info -->
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+          <h1 style="font-size:${data.productNameFontSize ?? 24}px;font-weight:${data.productNameFontWeight ?? '500'};color:${data.productNameColor ?? '#111827'};margin:0;line-height:1.3;">${nameHtml}</h1>
+          <p style="font-size:${data.priceFontSize ?? 24}px;font-weight:${data.priceFontWeight ?? '500'};color:${data.priceColor ?? '#111827'};margin:0;white-space:nowrap;">${priceHtml}</p>
+        </div>
+        ${ratingHtml}
+        ${colorsHtml}
+        ${sizesHtml}
+        ${buttonHtml}
+        ${descriptionHtml}
+        ${fabricCareHtml}
+        ${policiesHtml}
+      </div>
+    </div>
+
+    ${reviewsSection}
+    ${relatedSection}
   </div>
 </section>`
 }

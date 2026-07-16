@@ -9,9 +9,9 @@ const props = defineProps({
   blockData: { type: Object, default: null },
 })
 
-const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products', 'Ru1-Product Detail', 'Ru2-Product Detail']
+const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products', 'Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail']
 // Blocks that store selected IDs as a comma-separated productIds field (not a products array)
-const PRODUCT_IDS_BLOCKS = ['Ru1-Product Detail', 'Ru2-Product Detail']
+const PRODUCT_IDS_BLOCKS = ['Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail']
 // Blocks that support pagination — allow many products across multiple pages
 const PAGINATED_BLOCKS = ['Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products']
 
@@ -75,9 +75,10 @@ const isProductIdsBlock = computed(() => {
   return PRODUCT_IDS_BLOCKS.includes(title)
 })
 
-const isRu2ProductDetail = computed(() =>
-  (component.value?.title ?? props.selectedBlockTitle ?? '') === 'Ru2-Product Detail'
-)
+const isRu2ProductDetail = computed(() => {
+  const t = component.value?.title ?? props.selectedBlockTitle ?? ''
+  return t === 'Ru2-Product Detail' || t === 'Ru3-Product Detail'
+})
 
 // ── Related products picker state (Ru2-Product Detail only) ──────────────────
 const relatedSelected = ref([])
@@ -333,6 +334,23 @@ const filteredProducts = computed(() => {
 
 const selectedCompanyId = useState('selectedCompanyId', () => null)
 
+function _needsAutoLoad() {
+  if (isProductIdsBlock.value) {
+    const main = props.blockData?.mainImageSrc
+    const thumbs = props.blockData?.thumbImageSrcs
+    return (!main || main === '') && (!Array.isArray(thumbs) || thumbs.length === 0)
+  }
+  const prods = props.blockData?.products
+  if (!Array.isArray(prods) || prods.length === 0) return true
+  return prods.every(p => !p.imageUrl || p.imageUrl === '' || p.imageUrl.startsWith('data:image/svg+xml'))
+}
+
+function _autoLoadCount() {
+  if (isProductIdsBlock.value) return 1
+  if (isPaginatedBlock.value) return perPage.value
+  return maxSelection.value
+}
+
 onMounted(async () => {
   loading.value = true
   try {
@@ -370,6 +388,15 @@ onMounted(async () => {
     if (matched.length) selected.value = matched
   }
 
+  // Fallback for auto-loaded productIds blocks: restore from _autoLoadProductId (set without writing productIds)
+  if (!selected.value.length && isProductIdsBlock.value && props.blockData?._autoLoadProductId) {
+    const id = Number(props.blockData._autoLoadProductId)
+    if (id) {
+      const matched = products.value.filter(p => p.id === id)
+      if (matched.length) selected.value = matched
+    }
+  }
+
   // Fallback for theme blocks: match by id then name from blockData.products when no IDs stored
   if (!selected.value.length && isThemeBlock.value && !isProductIdsBlock.value && props.blockData?.products?.length) {
     const matched = props.blockData.products
@@ -382,7 +409,9 @@ onMounted(async () => {
 
   // Sync registry with restored selection and show applied state so the user
   // sees "N products applied" immediately after save/reload.
-  if (isThemeBlock.value && selected.value.length > 0) {
+  // For productIds blocks in auto-loaded state (productIds is empty), skip doApplyThemeBlock
+  // so that writing productIds doesn't clear the description placeholder.
+  if (isThemeBlock.value && selected.value.length > 0 && (!isProductIdsBlock.value || props.blockData?.productIds)) {
     await nextTick()
     doApplyThemeBlock()
     applied.value = true
@@ -397,6 +426,58 @@ onMounted(async () => {
       .map(rp => products.value.find(p => p.id === rp.id))
       .filter(Boolean)
     if (matched.length) { relatedSelected.value = matched; relatedApplied.value = true }
+  }
+
+  // Auto-load: populate cards with real Odoo product data on first add.
+  // For productIds blocks: writes runtime fields + mainImageSrc. productIds stays empty so the
+  //   description placeholder stays visible until user explicitly picks via the picker.
+  // For products-array blocks: writes full products array with real image/name/price/colors.
+  if (_needsAutoLoad() && products.value.length > 0 && props.updateBlockField) {
+    const n = _autoLoadCount()
+    const firstN = products.value.slice(0, n)
+    const curr = props.blockData?.currency || '$'
+    try {
+      if (isProductIdsBlock.value) {
+        const first = firstN[0]
+        if (first) {
+          const sectionEl = getSection()
+          const compId = sectionEl?.getAttribute('data-componentid')
+          if (compId) {
+            const reg = useBlockRegistry()
+            const img = productImageSrc(first.image)
+            reg.setData(compId, '_productName', first.name ?? '')
+            reg.setData(compId, '_productPriceNum', Number(first.price) || 0)
+            reg.setData(compId, '_productColors',
+              Array.isArray(first.colors) && first.colors.length
+                ? first.colors.map(c => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
+                : []
+            )
+            // Store for picker auto-restore without touching productIds
+            reg.setData(compId, '_autoLoadProductId', String(first.id))
+            await props.updateBlockField('mainImageSrc', img)
+            await props.updateBlockField('thumbImageSrcs', img ? [img] : [])
+          }
+        }
+        selected.value = firstN
+      } else if (isThemeBlock.value) {
+        const mapped = firstN.map((p, i) => ({
+          id: p.id,
+          imageUrl: productImageSrc(p.image),
+          name: p.name ?? `Product ${i + 1}`,
+          price: `${curr}${Number(p.price || 0).toFixed(2)}`,
+          oldPrice: '',
+          buttonLabel: 'Add to Cart',
+          buttonUrl: '/shop',
+          colors: Array.isArray(p.colors) && p.colors.length
+            ? p.colors.map(c => c.htmlColor || '').filter(Boolean).join(', ')
+            : '#FF0000, #0000FF',
+        }))
+        await props.updateBlockField('products', mapped)
+        selected.value = firstN
+      }
+    } catch {
+      // Graceful: placeholder data remains if persist fails
+    }
   }
 })
 
@@ -459,6 +540,7 @@ async function doApplyThemeBlock(confirm = false) {
       const firstProduct = selected.value[0]
       const sectionEl = getSection()
       const compId = sectionEl?.getAttribute('data-componentid')
+
       if (compId) {
         registry.setData(compId, 'mainImageSrc', firstProduct?.image ? productImageSrc(firstProduct.image) : '')
         registry.setData(compId, 'thumbImageSrcs', selected.value.map(p => p.image ? productImageSrc(p.image) : ''))

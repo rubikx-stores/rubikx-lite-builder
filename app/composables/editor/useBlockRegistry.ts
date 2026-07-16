@@ -10,6 +10,7 @@ export interface FieldConfig {
   unit?: string
   step?: number
   noAspectRatio?: boolean
+  visibleIf?: (data: Record<string, any>) => boolean
 }
 
 export interface BlockEditorConfig<T = Record<string, any>> {

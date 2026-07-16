@@ -83,6 +83,10 @@ import {
   ru2ProductDetailFields,
   ru2ProductDetailSvg,
   renderRu2ProductDetail,
+  ru3ProductDetailDefaults,
+  ru3ProductDetailFields,
+  ru3ProductDetailSvg,
+  renderRu3ProductDetail,
 } from './components'
 
 export interface LayoutComponentItem {
@@ -234,6 +238,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       cover_image: ru2ProductDetailSvg,
       html_code: renderRu2ProductDetail(ru2ProductDetailDefaults),
     },
+    {
+      title: 'Ru3-Product Detail',
+      category: 'Product Showcase',
+      cover_image: ru3ProductDetailSvg,
+      html_code: renderRu3ProductDetail(ru3ProductDetailDefaults),
+    },
   ],
 }
 
@@ -334,6 +344,12 @@ export function useLayouts() {
     defaults: ru2ProductDetailDefaults,
     fields: ru2ProductDetailFields,
     render: renderRu2ProductDetail,
+  })
+
+  blockRegistry.register('Ru3-Product Detail', {
+    defaults: ru3ProductDetailDefaults,
+    fields: ru3ProductDetailFields,
+    render: renderRu3ProductDetail,
   })
 
   blockRegistry.register('Ru1-Stats', {
