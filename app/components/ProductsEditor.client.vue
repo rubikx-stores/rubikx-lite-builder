@@ -257,6 +257,13 @@ watch(component, async (newComp) => {
             })
           if (matched.length) { selected.value = matched; applied.value = true }
         }
+
+        // Nothing to restore — this block has never had products (e.g. the
+        // user switched here from another block without a full sidebar
+        // remount, so onMounted's one-time auto-load never re-ran). Populate
+        // it with real backend products now, same as a fresh mount would.
+        // Pass newComp.id explicitly — see _autoLoadDefaultProducts() comment.
+        if (!selected.value.length) await _autoLoadDefaultProducts(newComp.id)
       }
       return
     }
@@ -355,6 +362,72 @@ function _autoLoadCount() {
   return maxSelection.value
 }
 
+// Populate an empty product block with real backend product data.
+// Called once from onMounted (first-ever selection this session) AND from the
+// `component` watcher below (every later block switch) — ProductsEditor is
+// kept alive via v-show in EditorSidebar.client.vue, so onMounted alone only
+// ever fires once and would otherwise leave every later empty selection blank.
+// _needsAutoLoad() makes repeat calls a no-op once real data exists.
+//
+// forcedId: `component` (set via the section's @mouseup handler in
+// PageBuilder.vue) updates independently of, and often faster than,
+// `selectedEl`/`selectedBlockId` (set by native listeners re-attached after
+// each render). updateBlockField() falls back to selectedBlockId when no
+// forcedId is given, so without this the write can land on the block that
+// was selected *before* this one (or no-op) — the picker still shows the
+// products as selected (selected.value is a plain local ref) even though the
+// canvas never got them. Passing the id that actually triggered this call
+// keeps the write targeted at the right block regardless of that race.
+async function _autoLoadDefaultProducts(forcedId) {
+  if (!(_needsAutoLoad() && products.value.length > 0 && props.updateBlockField)) return
+  const fieldId = forcedId ?? component.value?.id
+  const n = _autoLoadCount()
+  const firstN = products.value.slice(0, n)
+  const curr = props.blockData?.currency || '$'
+  try {
+    if (isProductIdsBlock.value) {
+      const first = firstN[0]
+      if (first) {
+        const sectionEl = getSection()
+        const compId = sectionEl?.getAttribute('data-componentid')
+        if (compId) {
+          const reg = useBlockRegistry()
+          const img = productImageSrc(first.image)
+          reg.setData(compId, '_productName', first.name ?? '')
+          reg.setData(compId, '_productPriceNum', Number(first.price) || 0)
+          reg.setData(compId, '_productColors',
+            Array.isArray(first.colors) && first.colors.length
+              ? first.colors.map(c => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
+              : []
+          )
+          // Store for picker auto-restore without touching productIds
+          reg.setData(compId, '_autoLoadProductId', String(first.id))
+          await props.updateBlockField('mainImageSrc', img, fieldId)
+          await props.updateBlockField('thumbImageSrcs', img ? [img] : [], fieldId)
+        }
+      }
+      selected.value = firstN
+    } else if (isThemeBlock.value) {
+      const mapped = firstN.map((p, i) => ({
+        id: p.id,
+        imageUrl: productImageSrc(p.image),
+        name: p.name ?? `Product ${i + 1}`,
+        price: `${curr}${Number(p.price || 0).toFixed(2)}`,
+        oldPrice: '',
+        buttonLabel: 'Add to Cart',
+        buttonUrl: '/shop',
+        colors: Array.isArray(p.colors) && p.colors.length
+          ? p.colors.map(c => c.htmlColor || '').filter(Boolean).join(', ')
+          : '#FF0000, #0000FF',
+      }))
+      await props.updateBlockField('products', mapped, fieldId)
+      selected.value = firstN
+    }
+  } catch {
+    // Graceful: placeholder data remains if persist fails
+  }
+}
+
 onMounted(async () => {
   loading.value = true
   try {
@@ -432,57 +505,7 @@ onMounted(async () => {
     if (matched.length) { relatedSelected.value = matched; relatedApplied.value = true }
   }
 
-  // Auto-load: populate cards with real Odoo product data on first add.
-  // For productIds blocks: writes runtime fields + mainImageSrc. productIds stays empty so the
-  //   description placeholder stays visible until user explicitly picks via the picker.
-  // For products-array blocks: writes full products array with real image/name/price/colors.
-  if (_needsAutoLoad() && products.value.length > 0 && props.updateBlockField) {
-    const n = _autoLoadCount()
-    const firstN = products.value.slice(0, n)
-    const curr = props.blockData?.currency || '$'
-    try {
-      if (isProductIdsBlock.value) {
-        const first = firstN[0]
-        if (first) {
-          const sectionEl = getSection()
-          const compId = sectionEl?.getAttribute('data-componentid')
-          if (compId) {
-            const reg = useBlockRegistry()
-            const img = productImageSrc(first.image)
-            reg.setData(compId, '_productName', first.name ?? '')
-            reg.setData(compId, '_productPriceNum', Number(first.price) || 0)
-            reg.setData(compId, '_productColors',
-              Array.isArray(first.colors) && first.colors.length
-                ? first.colors.map(c => ({ htmlColor: c.htmlColor || '', name: c.name || '' }))
-                : []
-            )
-            // Store for picker auto-restore without touching productIds
-            reg.setData(compId, '_autoLoadProductId', String(first.id))
-            await props.updateBlockField('mainImageSrc', img)
-            await props.updateBlockField('thumbImageSrcs', img ? [img] : [])
-          }
-        }
-        selected.value = firstN
-      } else if (isThemeBlock.value) {
-        const mapped = firstN.map((p, i) => ({
-          id: p.id,
-          imageUrl: productImageSrc(p.image),
-          name: p.name ?? `Product ${i + 1}`,
-          price: `${curr}${Number(p.price || 0).toFixed(2)}`,
-          oldPrice: '',
-          buttonLabel: 'Add to Cart',
-          buttonUrl: '/shop',
-          colors: Array.isArray(p.colors) && p.colors.length
-            ? p.colors.map(c => c.htmlColor || '').filter(Boolean).join(', ')
-            : '#FF0000, #0000FF',
-        }))
-        await props.updateBlockField('products', mapped)
-        selected.value = firstN
-      }
-    } catch {
-      // Graceful: placeholder data remains if persist fails
-    }
-  }
+  await _autoLoadDefaultProducts()
 })
 
 function getSection() {
