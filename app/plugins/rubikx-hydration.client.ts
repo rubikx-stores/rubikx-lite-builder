@@ -94,9 +94,16 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
   }
 }
 
+// In-memory guard instead of a data-hydrated attribute: the builder serializes
+// the canvas to HTML and rebuilds it on every field edit, which would bake a
+// data-hydrated attribute into the saved HTML — the rebuilt slider would then
+// be born "already hydrated" and loadSlider would skip wiring it (no autoplay/
+// arrows). A WeakSet keys off the live element, so a freshly rebuilt node is
+// never marked and always re-hydrates, and nothing persists into saved HTML.
+const _hydratedSliders = new WeakSet<HTMLElement>()
 function loadSlider(el: HTMLElement) {
-  if (el.dataset.hydrated === 'true') return
-  el.dataset.hydrated = 'true'
+  if (_hydratedSliders.has(el)) return
+  _hydratedSliders.add(el)
 
   const slides = Array.from(el.querySelectorAll<HTMLElement>('[data-slide]'))
   const dots = Array.from(el.querySelectorAll<HTMLElement>('[data-dot]'))
