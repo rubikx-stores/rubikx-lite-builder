@@ -190,49 +190,15 @@ function debouncedUpdateBlockListItem(listKey: string, idx: number, itemKey: str
 const uploadError = ref<Record<string, string>>({})
 const uploading = ref<Record<string, boolean>>({})
 
-// Picking an image goes through a native OS file dialog. While it's open (and
-// for the brief upload/re-render afterward), the canvas and/or sidebar scroll
-// position can get pushed around by things outside our control (the OS
-// delivering stray scroll input to this window while the dialog has focus,
-// the browser restoring focus to the hidden file input, the block's
-// re-render). Rather than chase every individual cause, pin every relevant
-// scroll container to where it was right before the dialog opens, and
-// forcibly hold that position (every animation frame) until the upload
-// settles — or, if the dialog was cancelled, shortly after focus returns.
-let _scrollLockRAF = 0
-let _unlockTimer = 0
-function _scrollLockTargets(ev: Event): HTMLElement[] {
-  const sidebar = (ev.currentTarget as HTMLElement)?.closest('.overflow-y-scroll') as HTMLElement | null
-  const canvas = document.querySelector('#page-builder-wrapper') as HTMLElement | null
-  const doc = document.scrollingElement as HTMLElement | null
-  return [sidebar, canvas, doc].filter((el): el is HTMLElement => !!el)
-}
-function _lockScroll(ev: Event) {
-  clearTimeout(_unlockTimer)
-  const anchors = _scrollLockTargets(ev).map(el => ({ el, top: el.scrollTop }))
-  cancelAnimationFrame(_scrollLockRAF)
-  const tick = () => {
-    for (const a of anchors) {
-      if (a.el.isConnected && a.el.scrollTop !== a.top) a.el.scrollTop = a.top
-    }
-    _scrollLockRAF = requestAnimationFrame(tick)
-  }
-  tick()
-}
-function _unlockScroll() {
-  cancelAnimationFrame(_scrollLockRAF)
-  _scrollLockRAF = 0
-}
-function _cancelPendingUnlock() {
-  clearTimeout(_unlockTimer)
-}
-function _onUploadInputFocus() {
-  // The OS dialog just closed. If a file was picked, `change` fires next and
-  // clears this timer — the upload's own `finally` releases the lock instead.
-  // If the dialog was cancelled, nothing else fires, so release shortly after.
-  clearTimeout(_unlockTimer)
-  _unlockTimer = window.setTimeout(_unlockScroll, 500)
-}
+// NOTE: this deliberately does NOT pin/lock scroll during upload. An earlier
+// version force-held the canvas + sidebar scroll to a captured position every
+// animation frame while the picker was open, which made the click jump (the
+// hidden file input grabbing focus scrolled it into view) and froze scrolling
+// during the upload ("stuck"). The file inputs are now display:none (`hidden`),
+// so clicking Upload never moves focus/scroll, and the post-upload canvas
+// rebuild is handled surgically by _syncBuilderWithListeners' rAF scroll
+// restore (canvas) plus RightSidebarEditor's same-block guard (sidebar) — no
+// per-frame pinning needed. Result: scrolling stays smooth throughout.
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024 // 10MB — matches the server-side cap
 
@@ -276,17 +242,16 @@ function uploadErrorMessage(err: unknown): string {
 }
 
 async function onUploadImage(fieldKey: string, file: File) {
-  if (!file.type.startsWith('image/')) { uploadError.value[fieldKey] = 'Please select an image file.'; _unlockScroll(); return }
+  if (!file.type.startsWith('image/')) { uploadError.value[fieldKey] = 'Please select an image file.'; return }
   uploadError.value[fieldKey] = ''
   uploading.value[fieldKey] = true
   try {
     const url = await uploadImageToS3(file, fieldKey)
-    updateBlockField(fieldKey, url)
+    await updateBlockField(fieldKey, url)
   } catch (err) {
     uploadError.value[fieldKey] = uploadErrorMessage(err)
   } finally {
     uploading.value[fieldKey] = false
-    _unlockScroll()
   }
 }
 
@@ -305,17 +270,16 @@ const subUploadKey = (listKey: string, idx: number, subKey: string) => `${listKe
 
 async function onUploadSubImage(listKey: string, idx: number, subKey: string, file: File) {
   const key = subUploadKey(listKey, idx, subKey)
-  if (!file.type.startsWith('image/')) { uploadError.value[key] = 'Please select an image file.'; _unlockScroll(); return }
+  if (!file.type.startsWith('image/')) { uploadError.value[key] = 'Please select an image file.'; return }
   uploadError.value[key] = ''
   uploading.value[key] = true
   try {
     const url = await uploadImageToS3(file, subKey)
-    updateBlockListItem(listKey, idx, subKey, url)
+    await updateBlockListItem(listKey, idx, subKey, url)
   } catch (err) {
     uploadError.value[key] = uploadErrorMessage(err)
   } finally {
     uploading.value[key] = false
-    _unlockScroll()
   }
 }
 
@@ -572,12 +536,10 @@ onUnmounted(() => {
                   :class="uploading[field.key]
                     ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-wait'
                     : 'bg-gray-100 hover:bg-gray-200 text-gray-600 border-gray-200 cursor-pointer'"
-                  @mousedown="_lockScroll($event)"
                 >
                   {{ uploading[field.key] ? 'Uploading…' : '↑ Upload' }}
-                  <input type="file" accept="image/*" class="sr-only" :disabled="uploading[field.key]"
-                    @focus="_onUploadInputFocus()"
-                    @change="{ _cancelPendingUnlock(); const f=($event.target as HTMLInputElement).files; if(f?.length) onUploadImage(field.key, f[0]); else _unlockScroll() }" />
+                  <input type="file" accept="image/*" class="hidden" :disabled="uploading[field.key]"
+                    @change="{ const f=($event.target as HTMLInputElement).files; if(f?.length) onUploadImage(field.key, f[0]) }" />
                 </label>
               </div>
               <img v-if="blockData[field.key]" :src="blockData[field.key]"
@@ -747,12 +709,10 @@ onUnmounted(() => {
                             :class="uploading[subUploadKey(field.key, idx, subField.key)]
                               ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-wait'
                               : 'bg-gray-100 hover:bg-gray-200 text-gray-600 border-gray-200 cursor-pointer'"
-                            @mousedown="_lockScroll($event)"
                           >
                             {{ uploading[subUploadKey(field.key, idx, subField.key)] ? '…' : '↑' }}
-                            <input type="file" accept="image/*" class="sr-only" :disabled="uploading[subUploadKey(field.key, idx, subField.key)]"
-                              @focus="_onUploadInputFocus()"
-                              @change="{ _cancelPendingUnlock(); const f=($event.target as HTMLInputElement).files; if(f?.length) onUploadSubImage(field.key,idx,subField.key,f[0]); else _unlockScroll() }" />
+                            <input type="file" accept="image/*" class="hidden" :disabled="uploading[subUploadKey(field.key, idx, subField.key)]"
+                              @change="{ const f=($event.target as HTMLInputElement).files; if(f?.length) onUploadSubImage(field.key,idx,subField.key,f[0]) }" />
                           </label>
                         </div>
                         <img v-if="item[subField.key]" :src="item[subField.key]" class="w-full aspect-square object-cover rounded border border-gray-200 bg-gray-50" alt="preview" />

@@ -32,18 +32,37 @@ const elementTag = computed(() => {
 
 const scrollContainer = ref(null)
 let lastScrollTop = 0
+let lastComponentId = null
 
-// Watch for changes that cause re-render (e.g. dropdown value in store)
+// getElement changes both when a field edit re-renders the SAME block's DOM
+// (where restoring scroll is correct — the user is still mid-edit) and when
+// the user clicks a DIFFERENT block to select it (where restoring an old,
+// unrelated scroll offset just looks like the panel jumping/scrolling on its
+// own). Distinguish the two via the enclosing section's data-componentid: only
+// restore when it's unchanged, otherwise this is a fresh selection and the
+// panel should simply open at the top.
+//
+// setElement() (page-builder-state.ts) always sets `element` to null first,
+// then to the real value on nextTick, purely to force this watcher to fire
+// even when the payload is the same reference as before (e.g. every debounced
+// field edit calls setElement(section) on the same still-selected section).
+// That intermediate null firing must be ignored entirely — acting on it (or
+// letting it overwrite lastComponentId) throws away the very id this guard
+// needs to recognize "still editing the same block" on the real firing that
+// follows one tick later.
 watch(
-  // or the specific value that triggers re-render
   () => pageBuilderStateStore.getElement,
-  () => {
-    // Restore scroll after DOM updates
+  (newEl) => {
+    const newComponentId =
+      newEl?.closest?.('[data-componentid]')?.getAttribute('data-componentid') ?? null
+    if (newComponentId === null) return
+    const sameBlock = newComponentId === lastComponentId
     nextTick(() => {
       if (scrollContainer.value) {
-        scrollContainer.value.scrollTop = lastScrollTop
+        scrollContainer.value.scrollTop = sameBlock ? lastScrollTop : 0
       }
     })
+    lastComponentId = newComponentId
   },
 )
 

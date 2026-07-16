@@ -183,8 +183,24 @@ export function useEditorSidebar() {
     // re-render the canvas sections, THEN attach click listeners to the fresh DOM.
     await Promise.resolve()
     await Promise.resolve()
-    if (canvas && savedScrollTop != null) canvas.scrollTop = savedScrollTop
     await builder.addListenersToEditableElements()
+
+    // Restore scroll ONLY after the rebuild has fully settled. setComponents()
+    // renders in two phases — `components = []` (canvas empties, scrollHeight
+    // collapses, browser clamps scrollTop toward 0) then, one tick later,
+    // `components = payload` (canvas repopulates). A fixed microtask count lands
+    // the restore unreliably between those two phases — onto the momentarily
+    // empty canvas, where the value is clamped to 0 and then lost. requestAnimation-
+    // Frame fires after ALL pending microtasks (both render phases) and before the
+    // browser paints, so the value always lands on the fully-rebuilt canvas and no
+    // scroll jump is ever shown. The synchronous set is a harmless best-effort; the
+    // rAF set is the guarantee (if the sync one hit the empty canvas and clamped,
+    // no paint happened in between, so only the rAF value is ever painted).
+    if (canvas && savedScrollTop != null) {
+      const target = savedScrollTop
+      canvas.scrollTop = target
+      requestAnimationFrame(() => { canvas.scrollTop = target })
+    }
   }
 
   async function _applyBlockRender(componentId: string) {
