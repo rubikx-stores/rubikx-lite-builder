@@ -9,6 +9,8 @@ import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
 import { sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
 import { useBlockRegistry } from '~/composables/editor/useBlockRegistry'
 import { usePageHtmlCache } from '~/composables/usePageHtmlCache'
+import { GOOGLE_FONTS_STYLESHEET_URL } from '~/composables/editor/fontFields'
+import { SLIDER_SCRIPT } from '~/composables/useHydrationScript'
 
 // Register all block configs eagerly on builder mount so the editor opens
 // correctly even on page reload with saved canvas data (before the user opens
@@ -104,7 +106,19 @@ async function confirmSave() {
       !navbarSections.includes(s) && !footerSections.includes(s)
     )
 
-    const toHtml = (secs: Element[]) => secs.map(s => s.outerHTML).join('\n')
+    // The published HTML is a bare fragment (no <html>/<head>) sent straight to
+    // Odoo, which renders it inside its own separate page template we don't
+    // control. A <link> in this app's nuxt.config.ts never reaches that page,
+    // so the Google Fonts font-loading has to travel inside the fragment
+    // itself — an @import in a <style> tag works regardless of where Odoo
+    // drops it in the DOM, unlike <link rel="stylesheet"> which is only
+    // reliably honored inside <head>.
+    //
+    // Same reasoning for the carousel: this app's Nuxt plugin
+    // (rubikx-hydration.client.ts) never loads on Odoo's page, so the
+    // slider's own JS has to travel inside the fragment too.
+    const toHtml = (secs: Element[]) =>
+      `<style>@import url('${GOOGLE_FONTS_STYLESHEET_URL}');</style>\n<script>${SLIDER_SCRIPT}<\/script>\n` + secs.map(s => s.outerHTML).join('\n')
     const version = String(selectedVersion.value)
     const commonBody = { updatedBy: 'editor', updatedOn: new Date().toISOString(), version, ...(props.companyId ? { companyId: props.companyId } : {}) }
     const globalBody = { ...commonBody, state: 'published' as const }

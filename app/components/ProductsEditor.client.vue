@@ -9,11 +9,13 @@ const props = defineProps({
   blockData: { type: Object, default: null },
 })
 
-const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products', 'Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail']
+const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products', 'Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail', 'Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 4 Products Centered']
 // Blocks that store selected IDs as a comma-separated productIds field (not a products array)
 const PRODUCT_IDS_BLOCKS = ['Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail']
 // Blocks that support pagination — allow many products across multiple pages
 const PAGINATED_BLOCKS = ['Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products']
+// Blocks with a fixed product count that isn't derived from columns × rows fields
+const FIXED_SELECTION_BLOCKS = { 'Show Single Product': 1, 'Show 4 Products Centered': 4 }
 
 function debounce(fn, delay) {
   let timer
@@ -318,6 +320,8 @@ const perPage = computed(() =>
 const maxSelection = computed(() => {
   if (isProductIdsBlock.value) return 1
   if (isThemeBlock.value) {
+    const title = component.value?.title ?? props.selectedBlockTitle ?? ''
+    if (title in FIXED_SELECTION_BLOCKS) return FIXED_SELECTION_BLOCKS[title]
     // Shop/paginated blocks: allow up to 10 pages worth of products
     if (isPaginatedBlock.value) return perPage.value * 10
     // Featured Products: exactly one grid — blur beyond capacity

@@ -40,3 +40,4 @@ new_release/
 .output
 .playwright-mcp
 .amplify-hosting
+.superpowers/

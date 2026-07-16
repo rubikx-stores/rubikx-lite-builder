@@ -1,4 +1,5 @@
 import { fileURLToPath, URL } from 'url'
+import { GOOGLE_FONTS_STYLESHEET_URL } from './composables/editor/fontFields'
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-21',
@@ -14,6 +15,11 @@ export default defineNuxtConfig({
       viewport: 'minimum-scale=1, initial-scale=1, width=device-width',
       title: 'RubikX Builder',
       htmlAttrs: { lang: 'en' },
+      link: [
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        { rel: 'stylesheet', href: GOOGLE_FONTS_STYLESHEET_URL },
+      ],
     },
   },
 
@@ -65,6 +71,11 @@ export default defineNuxtConfig({
     odooSessionId: process.env.ODOO_SESSION_ID,
     odooAccessToken: process.env.ODOO_ACCESS_TOKEN,
     odooCompanyId: process.env.ODOO_COMPANY_ID,
+    s3Region: process.env.NUXT_S3_REGION,
+    s3BucketName: process.env.NUXT_S3_BUCKET_NAME,
+    s3AccessKeyId: process.env.NUXT_S3_ACCESS_KEY_ID,
+    s3SecretAccessKey: process.env.NUXT_S3_SECRET_ACCESS_KEY,
+    s3CdnUrl: process.env.NUXT_S3_CDN_URL,
     public: {
       appName: process.env.NUXT_PUBLIC_APP_NAME || 'RubikX Builder',
       env: process.env.NUXT_PUBLIC_ENV || 'development',

@@ -95,6 +95,9 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
 }
 
 function loadSlider(el: HTMLElement) {
+  if (el.dataset.hydrated === 'true') return
+  el.dataset.hydrated = 'true'
+
   const slides = Array.from(el.querySelectorAll<HTMLElement>('[data-slide]'))
   const dots = Array.from(el.querySelectorAll<HTMLElement>('[data-dot]'))
   const prevBtn = el.querySelector<HTMLElement>('[data-prev]')
@@ -159,20 +162,18 @@ function loadSlider(el: HTMLElement) {
 async function loadCartCount(el: HTMLElement, companyId?: number) {
   // TODO: replace with real Odoo cart API call on live storefront
   // Demo: hardcoded count for local testing
-  const count = 3
+  const count = 0
 
   // Remove existing badge if any
   const existing = el.querySelector('[data-cart-badge]')
   if (existing) existing.remove()
 
-  if (count > 0) {
-    const badge = document.createElement('span')
-    badge.setAttribute('data-cart-badge', 'true')
-    badge.textContent = String(count)
-    badge.style.cssText =
-      'position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none;'
-    el.appendChild(badge)
-  }
+  const badge = document.createElement('span')
+  badge.setAttribute('data-cart-badge', 'true')
+  badge.textContent = String(count)
+  badge.style.cssText =
+    'position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none;'
+  el.appendChild(badge)
 }
 
 async function loadAuthState(el: HTMLElement, companyId?: number) {
@@ -366,6 +367,28 @@ export function hydrateComponents(companyId?: number) {
   [data-nav-desktop-lower]{display:none!important}
 }`
     document.head.appendChild(s)
+  }
+
+  if (!document.getElementById('rubikx-stats-styles')) {
+    const ss = document.createElement('style')
+    ss.id = 'rubikx-stats-styles'
+    ss.textContent = `
+@media(max-width:768px){
+  [data-ru1-stats-grid]{grid-template-columns:repeat(2,1fr)!important}
+  [data-ru2-stats-grid]{grid-template-columns:repeat(2,1fr)!important;gap:20px!important}
+  [data-ru2-stats-grid]>div{border-left:none!important}
+  [data-ru4-stats-outer]{grid-template-columns:1fr!important}
+  [data-ru3-stats-row]{flex-direction:column!important}
+  [data-ru3-stats-sep]{display:none!important}
+}
+@media(max-width:480px){
+  [data-ru1-stats-grid]{grid-template-columns:1fr!important;gap:12px!important}
+  [data-ru2-stats-grid]{grid-template-columns:1fr!important;gap:0!important}
+  [data-ru2-stats-grid]>div{border-top:1px solid rgba(0,0,0,0.08);padding-top:20px!important}
+  [data-ru2-stats-grid]>div:first-child{border-top:none!important;padding-top:0!important}
+  [data-ru4-stats-inner]{grid-template-columns:1fr!important}
+}`
+    document.head.appendChild(ss)
   }
 
   if (!document.getElementById('rubikx-cat-styles')) {
