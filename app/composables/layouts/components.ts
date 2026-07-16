@@ -5645,6 +5645,7 @@ const productCardStyleFields: FieldConfig[] = [
   { key: 'cardShadow', label: 'Shadow', type: 'select', options: Object.keys(CARD_SHADOW_PRESETS) },
   { key: 'cardMargin', label: 'Margin', type: 'number', unit: 'px', step: 2, placeholder: '0' },
   { key: 'cardPadding', label: 'Padding', type: 'number', unit: 'px', step: 2, placeholder: '0' },
+  { key: 'imageBgColor', label: 'Image Background Color', type: 'color' },
 
   { key: '_h_button', label: 'Button', type: 'header' },
   { key: 'showButton', label: 'Show Button', type: 'toggle' },
@@ -5661,6 +5662,7 @@ interface ProductCardStyleData {
   cardShadow: string
   cardMargin: number
   cardPadding: number
+  imageBgColor: string
   showButton: boolean
   buttonBgColor: string
   buttonTextColor: string
@@ -5675,6 +5677,7 @@ const productCardStyleDefaults: ProductCardStyleData = {
   cardShadow: 'none',
   cardMargin: 0,
   cardPadding: 0,
+  imageBgColor: '#ffffff',
   showButton: true,
   buttonBgColor: '#111827',
   buttonTextColor: '#ffffff',
@@ -5708,7 +5711,7 @@ function renderProductCardBody(
   // the row stays the same height regardless of how much text each name has.
   const nameLineHeight = 1.3
   const nameMinHeight = Math.round(fontSize * nameLineHeight * 2)
-  const nameHtml = `<p style="font-size:${fontSize}px;line-height:${nameLineHeight};font-weight:500;margin:0;color:${data.cardTextColor};min-height:${nameMinHeight}px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;${nameFontCss}">${product.name}</p>`
+  const nameHtml = `<p style="font-size:${fontSize}px;line-height:${nameLineHeight};font-weight:500;margin:0;color:${data.cardTextColor};min-height:${nameMinHeight}px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all;overflow-wrap:anywhere;${nameFontCss}">${product.name}</p>`
   const priceHtml = `<p style="font-size:${fontSize}px;font-weight:600;margin:0;color:${data.cardTextColor};${priceFontCss}">${product.price}</p>`
   const nameRow = inline
     ? `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">${nameHtml}${priceHtml}</div>`
@@ -5838,7 +5841,7 @@ export function renderShowSingleProduct(data: ShowSingleProductData): string {
   return `<section data-component-title="Show Single Product" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
   <div style="max-width:16rem;margin:0 auto;${productCardWrapperStyle(data)}">
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.5rem;">
-      <div style="width:100%;aspect-ratio:1/1;overflow:hidden;border-radius:${data.cardBorderRadius}px;">
+      <div style="width:100%;aspect-ratio:1/1;overflow:hidden;border-radius:${data.cardBorderRadius}px;background:${data.imageBgColor || '#ffffff'};">
         <img src="${imageSrc}" alt="${product.name}" style="width:100%;height:100%;object-fit:contain;display:block;" />
       </div>
       ${nameRow}
@@ -6043,7 +6046,7 @@ export function renderShow6Products(data: Show6ProductsData): string {
       fontCss(data.priceFont, data.fontFamily),
     )
     return `<div style="display:flex;flex-direction:column;${wrapperStyle}">
-      <img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:${data.cardBorderRadius}px;display:block;margin-bottom:0.75rem;" />
+      <img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:${data.cardBorderRadius}px;display:block;margin-bottom:0.75rem;background:${data.imageBgColor || '#ffffff'};" />
       ${body}
     </div>`
   }).join('')
@@ -6197,7 +6200,7 @@ export function renderShow4ProductsCentered(data: Show4ProductsCenteredData): st
   const productsHtml = data.products.slice(0, 4).map(product => {
     const imageSrc = productImageSrc(product.imageUrl)
     const imageEl = imageSrc
-      ? `<img style="object-fit:contain;width:100%;aspect-ratio:1/1;border-radius:${data.cardBorderRadius}px;object-position:center;display:block;" src="${imageSrc}" alt="${product.name}" />`
+      ? `<img style="object-fit:contain;width:100%;aspect-ratio:1/1;border-radius:${data.cardBorderRadius}px;object-position:center;display:block;background:${data.imageBgColor || '#ffffff'};" src="${imageSrc}" alt="${product.name}" />`
       : `<div style="width:100%;aspect-ratio:1/1;border-radius:${data.cardBorderRadius}px;background:#f3f4f6;display:block;"></div>`
     const body = renderProductCardBody(
       product, data,
@@ -6357,7 +6360,7 @@ export function renderShowMultipleProducts(data: ShowMultipleProductsData): stri
       fontCss(data.priceFont, data.fontFamily),
     )
     return `<div style="display:flex;flex-direction:column;flex:1;${wrapperStyle}">
-      <img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:${data.cardBorderRadius}px;display:block;margin-bottom:0.75rem;" />
+      <img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:${data.cardBorderRadius}px;display:block;margin-bottom:0.75rem;background:${data.imageBgColor || '#ffffff'};" />
       ${body}
     </div>`
   }).join('')
