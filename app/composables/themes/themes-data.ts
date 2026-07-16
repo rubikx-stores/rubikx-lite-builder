@@ -921,13 +921,13 @@ export function renderRu1Footer(data: Ru1FooterData): string {
       </div>`
   const aboutCol = `<div style="max-width:20rem;">
         <h3 style="${hStyle}">About Us</h3>
-        <p data-field-key="tagline" style="${pStyle}">${data.tagline}</p>
+        <p data-field-key="tagline" style="${pStyle}white-space:pre-line;">${data.tagline}</p>
       </div>`
   const contactCol = `<div style="max-width:20rem;">
         <h3 style="${hStyle}">Connect with Us</h3>
         <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.5rem;">
-          <li style="${pStyle}">${data.contactEmail}</li>
-          <li style="${pStyle}">${data.contactPhone}</li>
+          <li><a href="mailto:${data.contactEmail}" style="${aStyle}">${data.contactEmail}</a></li>
+          <li><a href="tel:${data.contactPhone}" style="${aStyle}">${data.contactPhone}</a></li>
         </ul>
       </div>`
   const colMap: Record<string, string> = { links: linksCol, about: aboutCol, contact: contactCol }
