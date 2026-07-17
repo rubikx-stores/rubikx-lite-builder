@@ -864,6 +864,8 @@ export interface Ru1FooterData {
   aboutText: string
   contactEmail: string
   contactPhone: string
+  showSocials: boolean
+  socials: { href: string }[]
   copyright: string
   copyrightAlign: string
   bgColor: string
@@ -900,6 +902,8 @@ export const ru1FooterDefaults: Ru1FooterData = {
   aboutText: 'This site is for employees to order branded apparel and accessories.',
   contactEmail: 'support@yourdomain.com',
   contactPhone: '+1 000-000-0000',
+  showSocials: true,
+  socials: [],
   copyright: '© Your Store. All rights reserved.',
   copyrightAlign: 'center',
   bgColor: '#ffffff',
@@ -946,6 +950,15 @@ export const ru1FooterFields: FieldConfig[] = [
   fontField('bodyFont', 'Body Font'),
   fontField('copyrightFont', 'Copyright Font'),
 
+  { key: '_h_socials', label: 'Social Icons', type: 'header' },
+  { key: 'showSocials', label: 'Show Social Icons', type: 'toggle' },
+  {
+    key: 'socials', label: 'Social Links', type: 'list',
+    listFields: [
+      { key: 'href', label: 'URL', type: 'url', placeholder: 'Paste your social media URL' },
+    ],
+  },
+
   { key: '_h_columns', label: 'Columns', type: 'header' },
   { key: 'columnOrder', label: 'Column Order', type: 'column-order' },
   { key: 'showUsefulLinks', label: 'Show Useful Links', type: 'toggle' },
@@ -989,8 +1002,8 @@ export function renderRu1Footer(data: Ru1FooterData): string {
 
   const linksCol = `<div style="max-width:320px;">
         <h3 style="${hStyle}">Useful Links</h3>
-        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">
-          ${(data.usefulLinks ?? []).map(l => `<li><a href="${l.url}" style="${aStyle}">${l.label}</a></li>`).join('\n          ')}
+        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;">
+          ${(data.usefulLinks ?? []).map(l => `<li style="list-style:none;"><a href="${l.url}" style="${aStyle}">${l.label}</a></li>`).join('\n          ')}
         </ul>
       </div>`
   const aboutCol = data.aboutMode === 'logo'
@@ -1001,12 +1014,17 @@ export function renderRu1Footer(data: Ru1FooterData): string {
         <h3 style="${hStyle}">About Us</h3>
         <p data-field-key="aboutText" style="${pStyle}white-space:pre-line;">${data.aboutText}</p>
       </div>`
+  const socialIcons = (data.socials ?? []).map(s => socialIconHtml(s.href)).filter(Boolean)
+  const socialRow = data.showSocials !== false && socialIcons.length
+    ? `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;">${socialIcons.join('')}</div>`
+    : ''
   const contactCol = `<div style="max-width:320px;">
         <h3 style="${hStyle}">Connect with Us</h3>
-        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">
-          <li><a href="mailto:${data.contactEmail}" style="${aStyle}">${data.contactEmail}</a></li>
-          <li><a href="tel:${data.contactPhone}" style="${aStyle}">${data.contactPhone}</a></li>
+        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;">
+          <li style="list-style:none;"><a href="mailto:${data.contactEmail}" style="${aStyle}">${data.contactEmail}</a></li>
+          <li style="list-style:none;"><a href="tel:${data.contactPhone}" style="${aStyle}">${data.contactPhone}</a></li>
         </ul>
+        ${socialRow}
       </div>`
 
   const colMap: Record<string, string> = {
@@ -5709,7 +5727,7 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
   const fabricCareHtml = data.showFabricCare !== false
     ? `<div style="margin-top:32px;border-top:1px solid #e5e7eb;padding-top:32px;">
         <h2 style="font-size:14px;font-weight:500;color:#111827;margin:0 0 16px;${fontCss(data.fabricCareTitleFont, data.fontFamily)}">${data.fabricCareTitle || 'Fabric & Care'}</h2>
-        <ul style="margin:0;padding-left:24px;display:flex;flex-direction:column;gap:4px;">
+        <ul style="margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;">
           ${fabricLines.map(item => `<li style="font-size:14px;line-height:1.75;color:#6b7280;${fontCss(data.fabricCareItemFont, data.fontFamily)}">${item}</li>`).join('')}
         </ul>
       </div>`

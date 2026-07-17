@@ -1,6 +1,7 @@
 ﻿import type { FieldConfig } from '../editor/useBlockRegistry'
 import { fontField, fontCss } from '../editor/fontFields'
 import { icon } from '../useIconSvg'
+import { socialIconHtml } from '../useSocialIcons'
 import {
   megaMenuHeaderDefaults, megaMenuHeaderFields, renderMegaMenuHeader,
   ru1FooterDefaults as layoutFooter1Defaults, ru1FooterFields as layoutFooter1Fields, renderRu1Footer as renderLayoutFooter1,
@@ -886,6 +887,8 @@ export interface Ru1FooterData {
   usefulLinks: { label: string; url: string }[]
   contactEmail: string
   contactPhone: string
+  showSocials: boolean
+  socials: { href: string }[]
   copyright: string
   copyrightAlign: string
   bgColor: string
@@ -922,6 +925,8 @@ export const ru1FooterDefaults: Ru1FooterData = {
   ],
   contactEmail: 'support@yourdomain.com',
   contactPhone: '+1 000-000-0000',
+  showSocials: true,
+  socials: [],
   copyright: '© Your Store. All rights reserved.',
   copyrightAlign: 'center',
   bgColor: '#f9fafb',
@@ -967,6 +972,15 @@ export const ru1FooterFields: FieldConfig[] = [
   },
   fontField('headingFont', 'Heading Font'),
   fontField('bodyFont', 'Body Font'),
+
+  { key: '_h_socials', label: 'Social Icons', type: 'header' },
+  { key: 'showSocials', label: 'Show Social Icons', type: 'toggle' },
+  {
+    key: 'socials', label: 'Social Links', type: 'list',
+    listFields: [
+      { key: 'href', label: 'URL', type: 'url', placeholder: 'Paste your social media URL' },
+    ],
+  },
 
   { key: '_h_columns', label: 'Columns', type: 'header' },
   { key: 'columnOrder', label: 'Column Order', type: 'column-order' },
@@ -1015,8 +1029,8 @@ export function renderRu1Footer(data: Ru1FooterData): string {
 
   const linksCol = `<div style="max-width:20rem;">
         <h3 style="${hStyle}">Useful Links</h3>
-        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.5rem;">
-          ${data.usefulLinks.map(l => `<li><a href="${l.url}" style="${aStyle}">${l.label}</a></li>`).join('\n          ')}
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.2rem;">
+          ${data.usefulLinks.map(l => `<li style="list-style:none;"><a href="${l.url}" style="${aStyle}">${l.label}</a></li>`).join('\n          ')}
         </ul>
       </div>`
   const aboutCol = data.aboutMode === 'logo'
@@ -1027,12 +1041,18 @@ export function renderRu1Footer(data: Ru1FooterData): string {
         <h3 style="${hStyle}">About Us</h3>
         <p data-field-key="tagline" style="${pStyle}white-space:pre-line;">${data.tagline}</p>
       </div>`
+  // Social icons row — platform + brand colour auto-detected from each URL.
+  const socialIcons = (data.socials ?? []).map(s => socialIconHtml(s.href)).filter(Boolean)
+  const socialRow = data.showSocials !== false && socialIcons.length
+    ? `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:1.25rem;">${socialIcons.join('')}</div>`
+    : ''
   const contactCol = `<div style="max-width:20rem;">
         <h3 style="${hStyle}">Connect with Us</h3>
-        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.5rem;">
-          <li><a href="mailto:${data.contactEmail}" style="${aStyle}">${data.contactEmail}</a></li>
-          <li><a href="tel:${data.contactPhone}" style="${aStyle}">${data.contactPhone}</a></li>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.2rem;">
+          <li style="list-style:none;"><a href="mailto:${data.contactEmail}" style="${aStyle}">${data.contactEmail}</a></li>
+          <li style="list-style:none;"><a href="tel:${data.contactPhone}" style="${aStyle}">${data.contactPhone}</a></li>
         </ul>
+        ${socialRow}
       </div>`
   const colMap: Record<string, string> = {
     links: data.showUsefulLinks !== false ? linksCol : '',
