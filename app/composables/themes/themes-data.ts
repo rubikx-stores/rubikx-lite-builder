@@ -824,6 +824,14 @@ export interface Ru1FooterData {
   borderWidth: number
   borderColor: string
   columnOrder: string[]
+  showUsefulLinks: boolean
+  showAboutUs: boolean
+  showConnectWithUs: boolean
+  aboutAlign: 'left' | 'center' | 'right'
+  aboutMode: 'text' | 'logo'
+  aboutLogoUrl: string
+  aboutLogoWidth: number
+  aboutLogoHeight: number
   fontFamily: string
   headingFont: string
   bodyFont: string
@@ -852,6 +860,14 @@ export const ru1FooterDefaults: Ru1FooterData = {
   borderWidth: 1,
   borderColor: '#e5e7eb',
   columnOrder: ['links', 'about', 'contact'],
+  showUsefulLinks: true,
+  showAboutUs: true,
+  showConnectWithUs: true,
+  aboutAlign: 'left',
+  aboutMode: 'text',
+  aboutLogoUrl: '',
+  aboutLogoWidth: 120,
+  aboutLogoHeight: 40,
   fontFamily: '',
   headingFont: '',
   bodyFont: '',
@@ -863,7 +879,6 @@ export const ru1FooterFields: FieldConfig[] = [
   fontField('fontFamily', 'Font Family'),
 
   { key: '_h_content', label: 'Content', type: 'header' },
-  { key: 'tagline', label: 'Tagline', type: 'textarea' },
   { key: 'contactEmail', label: 'Contact Email', type: 'text' },
   { key: 'contactPhone', label: 'Contact Phone', type: 'text' },
   { key: 'copyright', label: 'Copyright Text', type: 'textarea' },
@@ -879,8 +894,19 @@ export const ru1FooterFields: FieldConfig[] = [
   fontField('headingFont', 'Heading Font'),
   fontField('bodyFont', 'Body Font'),
 
-  { key: '_h_columns', label: 'Column Order', type: 'header' },
+  { key: '_h_columns', label: 'Columns', type: 'header' },
   { key: 'columnOrder', label: 'Column Order', type: 'column-order' },
+  { key: 'showUsefulLinks', label: 'Show Useful Links', type: 'toggle' },
+  { key: 'showAboutUs', label: 'Show About Us', type: 'toggle' },
+  { key: 'showConnectWithUs', label: 'Show Connect with Us', type: 'toggle' },
+
+  { key: '_h_about', label: 'About Us Content', type: 'header' },
+  { key: 'aboutMode', label: 'Content Type', type: 'select', options: ['text', 'logo'] },
+  { key: 'aboutAlign', label: 'About Us Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'tagline', label: 'Tagline', type: 'textarea' },
+  { key: 'aboutLogoUrl', label: 'Logo', type: 'image', noAspectRatio: true },
+  { key: 'aboutLogoWidth', label: 'Logo Width', type: 'number', unit: 'px', step: 4, placeholder: '120' },
+  { key: 'aboutLogoHeight', label: 'Logo Height', type: 'number', unit: 'px', step: 4, placeholder: '40' },
 
   { key: '_h_style', label: 'Style', type: 'header' },
   { key: 'bgColor', label: 'Background Color', type: 'color' },
@@ -919,7 +945,11 @@ export function renderRu1Footer(data: Ru1FooterData): string {
           ${data.usefulLinks.map(l => `<li><a href="${l.url}" style="${aStyle}">${l.label}</a></li>`).join('\n          ')}
         </ul>
       </div>`
-  const aboutCol = `<div style="max-width:20rem;">
+  const aboutCol = data.aboutMode === 'logo'
+    ? `<div style="max-width:20rem;text-align:${data.aboutAlign || 'left'};">
+        <img src="${data.aboutLogoUrl}" alt="Logo" style="width:${data.aboutLogoWidth}px;height:${data.aboutLogoHeight}px;object-fit:contain;display:inline-block;vertical-align:top;" />
+      </div>`
+    : `<div style="max-width:20rem;text-align:${data.aboutAlign || 'left'};">
         <h3 style="${hStyle}">About Us</h3>
         <p data-field-key="tagline" style="${pStyle}white-space:pre-line;">${data.tagline}</p>
       </div>`
@@ -930,15 +960,22 @@ export function renderRu1Footer(data: Ru1FooterData): string {
           <li><a href="tel:${data.contactPhone}" style="${aStyle}">${data.contactPhone}</a></li>
         </ul>
       </div>`
-  const colMap: Record<string, string> = { links: linksCol, about: aboutCol, contact: contactCol }
-  const orderedCols = (data.columnOrder ?? ['links', 'about', 'contact']).map(k => colMap[k] ?? '').join('\n      ')
+  const colMap: Record<string, string> = {
+    links: data.showUsefulLinks !== false ? linksCol : '',
+    about: data.showAboutUs !== false ? aboutCol : '',
+    contact: data.showConnectWithUs !== false ? contactCol : '',
+  }
+  const slotJustify = ['flex-start', 'center', 'flex-end']
+  const orderedCols = (data.columnOrder ?? ['links', 'about', 'contact'])
+    .map((k, i) => `<div style="display:flex;justify-content:${slotJustify[i] ?? 'flex-start'};">${colMap[k] ?? ''}</div>`)
+    .join('\n      ')
 
   const sectionFontStyle = fontCss(undefined, data.fontFamily)
 
   return `<section data-component-title="Ru1 Homepage Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionFontStyle ? ` style="${sectionFontStyle}"` : ''}>
 <footer style="${footerStyle}">
   <div style="max-width:80rem;margin:0 auto">
-    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:2rem;">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;">
       ${orderedCols}
     </div>
     <div style="border-top:1px solid ${data.borderColor || '#e5e7eb'};margin-top:2rem;padding-top:1.5rem;text-align:${data.copyrightAlign || 'center'};">
