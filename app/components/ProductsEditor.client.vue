@@ -9,7 +9,7 @@ const props = defineProps({
   blockData: { type: Object, default: null },
 })
 
-const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products', 'Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail', 'Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 4 Products Centered']
+const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Show Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products', 'Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail', 'Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 4 Products Centered']
 // Blocks that store selected IDs as a comma-separated productIds field (not a products array)
 const PRODUCT_IDS_BLOCKS = ['Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail']
 // Blocks that support pagination — allow many products across multiple pages
@@ -415,7 +415,7 @@ async function _autoLoadDefaultProducts(forcedId) {
         price: `${curr}${Number(p.price || 0).toFixed(2)}`,
         oldPrice: '',
         buttonLabel: 'Add to Cart',
-        buttonUrl: '/shop',
+        buttonUrl: `/product/${p.id}`,
         colors: Array.isArray(p.colors) && p.colors.length
           ? p.colors.map(c => c.htmlColor || '').filter(Boolean).join(', ')
           : '#FF0000, #0000FF',
@@ -545,7 +545,7 @@ async function doApplyThemeBlock(confirm = false) {
     price: p.price != null ? (typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : String(p.price)) : '',
     oldPrice: '',
     buttonLabel: 'Add to Cart',
-    buttonUrl: '/shop',
+    buttonUrl: `/product/${p.id}`,
     colors: Array.isArray(p.colors) && p.colors.length
       ? p.colors.map(c => c.htmlColor || c.name || '').filter(Boolean).join(', ')
       : (typeof p.colors === 'string' ? p.colors : ''),

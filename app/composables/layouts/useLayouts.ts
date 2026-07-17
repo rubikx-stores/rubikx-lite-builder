@@ -1,5 +1,11 @@
 import { useBlockRegistry } from '../editor/useBlockRegistry'
 import { ru1NavbarSvg, ru1NavbarDefaults, ru1NavbarFields, renderRu1Navbar } from '../themes/themes-data'
+import {
+  showFeaturedProductsDefaults,
+  showFeaturedProductsFields,
+  showFeaturedProductsSvg,
+  renderShowFeaturedProducts,
+} from '../themes/themes-data'
 // All layout component data (interfaces, defaults, fields, render functions)
 // lives in components.ts — add new components there, then register them below.
 import {
@@ -35,6 +41,10 @@ import {
   ru1FaqFields,
   ru1FaqSvg,
   renderRu1Faq,
+  ru2FaqBannerDefaults,
+  ru2FaqBannerFields,
+  ru2FaqBannerSvg,
+  renderRu2FaqBanner,
   ru2SplitBannerCollageDefaults,
   ru2SplitBannerCollageFields,
   ru2SplitBannerCollageSvg,
@@ -103,6 +113,10 @@ import {
   show4ProductsCenteredFields,
   show4ProductsCenteredSvg,
   renderShow4ProductsCentered,
+  ru1NoticeBarDefaults,
+  ru1NoticeBarFields,
+  ru1NoticeBarSvg,
+  renderRu1NoticeBar,
 } from './components'
 
 export interface LayoutComponentItem {
@@ -222,6 +236,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       cover_image: ru1FaqSvg,
       html_code: renderRu1Faq(ru1FaqDefaults),
     },
+    {
+      title: 'Ru2-FAQ+Banner',
+      category: 'FAQs',
+      cover_image: ru2FaqBannerSvg,
+      html_code: renderRu2FaqBanner(ru2FaqBannerDefaults),
+    },
   ],
   Stats: [
     {
@@ -285,6 +305,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
   ],
   Products: [
     {
+      title: 'Show Featured Products',
+      category: 'Products',
+      cover_image: showFeaturedProductsSvg,
+      html_code: renderShowFeaturedProducts(showFeaturedProductsDefaults),
+    },
+    {
       title: 'Show Single Product',
       category: 'Products',
       cover_image: showSingleProductSvg,
@@ -307,6 +333,14 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Products',
       cover_image: show4ProductsCenteredSvg,
       html_code: renderShow4ProductsCentered(show4ProductsCenteredDefaults),
+    },
+  ],
+  'Notice Bar': [
+    {
+      title: 'Ru1-Notice Bar',
+      category: 'Notice Bar',
+      cover_image: ru1NoticeBarSvg,
+      html_code: renderRu1NoticeBar(ru1NoticeBarDefaults),
     },
   ],
 }
@@ -354,6 +388,12 @@ export function useLayouts() {
     defaults: ru1FaqDefaults,
     fields: ru1FaqFields,
     render: renderRu1Faq,
+  })
+
+  blockRegistry.register('Ru2-FAQ+Banner', {
+    defaults: ru2FaqBannerDefaults,
+    fields: ru2FaqBannerFields,
+    render: renderRu2FaqBanner,
   })
 
   blockRegistry.register('Ru2-Split-Banner-Collage', {
@@ -440,6 +480,12 @@ export function useLayouts() {
     render: renderRu4Stats,
   })
 
+  blockRegistry.register('Show Featured Products', {
+    defaults: showFeaturedProductsDefaults,
+    fields: showFeaturedProductsFields,
+    render: renderShowFeaturedProducts,
+  })
+
   blockRegistry.register('Show Single Product', {
     defaults: showSingleProductDefaults,
     fields: showSingleProductFields,
@@ -462,6 +508,12 @@ export function useLayouts() {
     defaults: show4ProductsCenteredDefaults,
     fields: show4ProductsCenteredFields,
     render: renderShow4ProductsCentered,
+  })
+
+  blockRegistry.register('Ru1-Notice Bar', {
+    defaults: ru1NoticeBarDefaults,
+    fields: ru1NoticeBarFields,
+    render: renderRu1NoticeBar,
   })
 
   return { layoutComponentRegistry }

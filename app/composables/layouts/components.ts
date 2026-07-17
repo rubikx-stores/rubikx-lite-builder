@@ -1923,6 +1923,215 @@ export function renderRu1Faq(data: Ru1FaqData): string {
 </section>`
 }
 
+// ─── Ru2-FAQ+Banner ──────────────────────────────────────────────────────────
+// Banner (colour or background image + aspect ratio) + breadcrumb + page title
+// + a flat list of question dropdowns. Each question is a native <details>/
+// <summary> that toggles on its own on the published page. Inside the builder
+// (where the library intercepts clicks for block selection) the loadFaqAccordion
+// hydration handler drives the toggle manually so it works there too.
+
+export const ru2FaqBannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 120">
+  <rect fill="#394152" x="0" y="0" width="277.5" height="120"/>
+  <rect fill="#1c2434" x="0" y="0" width="277.5" height="34"/>
+  <rect fill="#4a5568" x="12" y="12" width="120" height="11" rx="1"/>
+  <rect fill="#5a6475" x="12" y="44" width="60" height="5" rx="1"/>
+  <rect fill="#5a6475" x="12" y="58" width="257.5" height="1"/>
+  <rect fill="#718096" x="12" y="64" width="90" height="6" rx="1"/>
+  <rect fill="#a0aec0" x="255" y="63" width="9" height="9" rx="1"/>
+  <rect fill="#5a6475" x="12" y="80" width="257.5" height="1"/>
+  <rect fill="#718096" x="12" y="86" width="120" height="6" rx="1"/>
+  <rect fill="#a0aec0" x="255" y="85" width="9" height="9" rx="1"/>
+  <rect fill="#5a6475" x="12" y="102" width="257.5" height="1"/>
+  <rect fill="#718096" x="12" y="108" width="80" height="6" rx="1"/>
+  <rect fill="#a0aec0" x="255" y="107" width="9" height="9" rx="1"/>
+</svg>`
+
+export interface Ru2FaqBannerData {
+  fontFamily: string
+  bannerBgColor: string
+  bannerImage: string
+  bannerImageAspectRatio: string
+  bannerTitle: string
+  bannerTitleColor: string
+  bannerTitleAlign: string
+  bannerHeight: number
+  bannerTitleFont: string
+  showBreadcrumb: boolean
+  breadcrumbHomeHref: string
+  breadcrumbLabel: string
+  breadcrumbColor: string
+  showPageTitle: boolean
+  pageTitle: string
+  pageTitleColor: string
+  pageTitleFont: string
+  sectionBgColor: string
+  questionColor: string
+  questionFont: string
+  answerColor: string
+  answerFont: string
+  itemBgColor: string
+  dividerColor: string
+  chevronColor: string
+  faqs: Array<{ question: string; answer: string }>
+}
+
+export const ru2FaqBannerDefaults: Ru2FaqBannerData = {
+  fontFamily: '',
+  bannerBgColor: '#0f1b2d',
+  bannerImage: '',
+  bannerImageAspectRatio: 'Auto',
+  bannerTitle: 'Frequently Asked Questions',
+  bannerTitleColor: '#ffffff',
+  bannerTitleAlign: 'left',
+  bannerHeight: 220,
+  bannerTitleFont: '',
+  showBreadcrumb: true,
+  breadcrumbHomeHref: '/',
+  breadcrumbLabel: 'Frequently Asked Questions',
+  breadcrumbColor: '#6b7280',
+  showPageTitle: true,
+  pageTitle: 'Frequently Asked Questions',
+  pageTitleColor: '#0a1e5e',
+  pageTitleFont: '',
+  sectionBgColor: '#ffffff',
+  questionColor: '#111827',
+  questionFont: '',
+  answerColor: '#374151',
+  answerFont: '',
+  itemBgColor: '#f5f6f8',
+  dividerColor: '#e5e7eb',
+  chevronColor: '#0a1e5e',
+  faqs: [
+    { question: 'What is the swag store?', answer: 'An online merchandise store for employees to purchase branded apparel and non-apparel gear, such as T-shirts, water bottles, notebooks and more.' },
+    { question: 'Who can shop here?', answer: 'The store is available to all current employees. Sign in with your work account to start shopping.' },
+    { question: 'What products are available?', answer: 'We stock a rotating range of apparel and accessories. New items are added regularly, so check back often.' },
+    { question: 'How do I access the store?', answer: 'Use your company credentials to log in. If you have trouble signing in, contact your administrator.' },
+    { question: 'How long does shipping take?', answer: 'Orders are typically processed within 2–3 business days and delivered within 5–7 business days.' },
+    { question: 'What payment methods are accepted?', answer: 'We accept major credit cards, and payroll deduction where available.' },
+  ],
+}
+
+export const ru2FaqBannerFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_banner', label: 'Banner', type: 'header' },
+  { key: 'bannerBgColor',    label: 'Banner Background', type: 'color' },
+  { key: 'bannerImage',      label: 'Banner Image (URL)', type: 'image' },
+  { key: 'bannerTitle',      label: 'Banner Title',      type: 'text', placeholder: 'e.g. Frequently Asked Questions' },
+  { key: 'bannerTitleColor', label: 'Banner Title Colour', type: 'color' },
+  { key: 'bannerTitleAlign', label: 'Banner Title Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'bannerHeight',     label: 'Banner Height', type: 'number', unit: 'px', step: 10, placeholder: '220' },
+  fontField('bannerTitleFont', 'Banner Title Font'),
+
+  { key: '_h_breadcrumb', label: 'Breadcrumb', type: 'header' },
+  { key: 'showBreadcrumb',     label: 'Show Breadcrumb',   type: 'toggle' },
+  { key: 'breadcrumbHomeHref', label: 'Home Link URL',     type: 'url', placeholder: '/' },
+  { key: 'breadcrumbLabel',    label: 'Current Page Label', type: 'text', placeholder: 'e.g. Frequently Asked Questions' },
+  { key: 'breadcrumbColor',    label: 'Breadcrumb Colour', type: 'color' },
+
+  { key: '_h_pagetitle', label: 'Page Title', type: 'header' },
+  { key: 'showPageTitle',  label: 'Show Page Title',  type: 'toggle' },
+  { key: 'pageTitle',      label: 'Page Title Text',  type: 'text', placeholder: 'e.g. Frequently Asked Questions' },
+  { key: 'pageTitleColor', label: 'Page Title Colour', type: 'color' },
+  fontField('pageTitleFont', 'Page Title Font'),
+
+  { key: '_h_section', label: 'Section', type: 'header' },
+  { key: 'sectionBgColor', label: 'Section Background', type: 'color' },
+
+  { key: '_h_accordion', label: 'Accordion & Colours', type: 'header' },
+  { key: 'questionColor', label: 'Question Colour', type: 'color' },
+  fontField('questionFont', 'Question Font'),
+  { key: 'answerColor',   label: 'Answer Colour',   type: 'color' },
+  fontField('answerFont', 'Answer Font'),
+  { key: 'itemBgColor',   label: 'Answer Background', type: 'color' },
+  { key: 'dividerColor',  label: 'Divider Line Colour', type: 'color' },
+  { key: 'chevronColor',  label: 'Chevron Colour',   type: 'color' },
+
+  { key: '_h_faqs', label: 'FAQ Items', type: 'header' },
+  {
+    key: 'faqs', label: 'FAQ Items', type: 'list',
+    listFields: [
+      { key: 'question', label: 'Question', type: 'text', placeholder: 'e.g. What is the swag store?' },
+      { key: 'answer',   label: 'Answer',   type: 'textarea', placeholder: 'e.g. An online merchandise store…' },
+    ],
+  },
+]
+
+export function renderRu2FaqBanner(data: Ru2FaqBannerData): string {
+  const bannerAlignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
+  const bannerItems = bannerAlignMap[data.bannerTitleAlign] ?? 'flex-start'
+  const bannerTextAlign = data.bannerTitleAlign ?? 'left'
+
+  // Optional banner background image + aspect ratio (Auto = height from padding).
+  const bannerImg = productImageSrc(data.bannerImage)
+  const aspectRatioMap: Record<string, string> = {
+    'Wide (16:9)':      'aspect-ratio:16/9;',
+    'Standard (4:3)':   'aspect-ratio:4/3;',
+    'Square (1:1)':     'aspect-ratio:1/1;',
+    'Tall (3:4)':       'aspect-ratio:3/4;',
+    'Cinematic (21:9)': 'aspect-ratio:21/9;',
+  }
+  const bannerAspect = (data.bannerImageAspectRatio && data.bannerImageAspectRatio !== 'Auto')
+    ? (aspectRatioMap[data.bannerImageAspectRatio] ?? '')
+    : ''
+  const bannerBg = bannerImg
+    ? `background:url('${bannerImg}') center/cover no-repeat;background-color:${data.bannerBgColor};`
+    : `background:${data.bannerBgColor};`
+
+  const breadcrumbHtml = data.showBreadcrumb !== false
+    ? `<nav style="max-width:80rem;margin:0 auto;padding:1.25rem 2rem 0;display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;color:${data.breadcrumbColor};">
+        <a href="${data.breadcrumbHomeHref}" aria-label="Home" style="display:inline-flex;color:${data.breadcrumbColor};text-decoration:none;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 3l9 7.5M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <span style="opacity:0.6;">&rsaquo;</span>
+        <span>${data.breadcrumbLabel}</span>
+      </nav>`
+    : ''
+
+  const pageTitleHtml = data.showPageTitle !== false
+    ? `<h2 style="max-width:80rem;margin:0 auto;padding:1rem 2rem 0;font-size:2rem;font-weight:700;color:${data.pageTitleColor};${fontCss(data.pageTitleFont, data.fontFamily)}">${data.pageTitle}</h2>`
+    : ''
+
+  // Native <details>/<summary> dropdown per question — the browser toggles it
+  // with zero JavaScript, so it works identically in the builder canvas and on
+  // the published page (no hydration, no click-interception issues). A small
+  // <style> block hides the default marker and rotates our chevron when open.
+  const faqStyle = `<style>
+.ru2-faqb-item>summary{list-style:none;}
+.ru2-faqb-item>summary::-webkit-details-marker{display:none;}
+.ru2-faqb-item[open] .ru2-faqb-chev{transform:rotate(180deg);}
+</style>`
+  const itemsHtml = (data.faqs ?? []).map((faq) => {
+    return `
+      <details class="ru2-faqb-item" style="border-top:1px solid ${data.dividerColor};">
+        <summary style="display:flex;align-items:center;justify-content:space-between;gap:1.5rem;cursor:pointer;padding:1.25rem 0;">
+          <span style="font-size:1rem;font-weight:700;line-height:1.5;color:${data.questionColor};${fontCss(data.questionFont, data.fontFamily)}">${faq.question}</span>
+          <svg class="ru2-faqb-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;transition:transform 200ms ease;"><path d="M6 9l6 6 6-6" stroke="${data.chevronColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div style="background:${data.itemBgColor};padding:1.25rem 1.5rem;margin-bottom:1rem;border-radius:4px;">
+          <p style="font-size:0.95rem;line-height:1.7;color:${data.answerColor};margin:0;${fontCss(data.answerFont, data.fontFamily)}">${faq.answer}</p>
+        </div>
+      </details>`
+  }).join('')
+
+  return `<section data-component-title="Ru2-FAQ+Banner" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.sectionBgColor};${fontCss(undefined, data.fontFamily)}">
+  ${faqStyle}
+  <div style="${bannerBg}${bannerAspect}min-height:${data.bannerHeight}px;padding:2.5rem 0;display:flex;flex-direction:column;justify-content:flex-end;box-sizing:border-box;">
+    <div style="max-width:80rem;margin:0 auto;padding:0 2rem;display:flex;flex-direction:column;align-items:${bannerItems};text-align:${bannerTextAlign};width:100%;box-sizing:border-box;">
+      <h1 style="font-size:2.75rem;font-weight:800;color:${data.bannerTitleColor};margin:0;line-height:1.1;${fontCss(data.bannerTitleFont, data.fontFamily)}">${data.bannerTitle}</h1>
+    </div>
+  </div>
+  ${breadcrumbHtml}
+  ${pageTitleHtml}
+  <div style="max-width:80rem;margin:0 auto;padding:1.5rem 2rem 4rem;">
+    <div data-rubikx-component="FaqAccordion" data-on-mount="loadFaqAccordion" style="border-bottom:1px solid ${data.dividerColor};">
+      ${itemsHtml}
+    </div>
+  </div>
+</section>`
+}
+
 // ─── Ru2-Split-Banner-Collage ────────────────────────────────────────────────
 
 export const ru2SplitBannerCollageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
@@ -5767,7 +5976,7 @@ function productCardWrapperStyle(data: ProductCardStyleData): string {
 
 // ─── Show Single Product ─────────────────────────────────────────────────────
 
-export const showSingleProductSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="122.319 300.3 122.364 160.763" width="122.364px" height="160.763px">
+export const showSingleProductSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="90.319 268.3 186.364 224.763">
   <rect class="bg" width="122.364" height="122.364" style="fill: rgb(56, 65, 82); stroke-width: 1;" x="122.319" y="300.3"/>
   <polygon class="fg" points="140.928 379.728 171.337 343.237 201.747 379.728" style="fill: rgb(113, 128, 150); stroke-width: 1;"/>
   <polygon class="fg" points="195.665 379.728 210.87 361.483 226.052 379.728" style="fill: rgb(113, 128, 150); stroke-width: 1;"/>
@@ -5782,6 +5991,8 @@ export interface ShowSingleProductData extends ProductCardStyleData {
   bgColor: string
   paddingY: number
   paddingX: number
+  imageAlign: string
+  imageHeight: number
   fontFamily: string
   sectionTitleFont: string
   productNameFont: string
@@ -5804,6 +6015,8 @@ export const showSingleProductDefaults: ShowSingleProductData = {
   bgColor: '#ffffff',
   paddingY: 32,
   paddingX: 16,
+  imageAlign: 'center',
+  imageHeight: 0,
   fontFamily: '',
   sectionTitleFont: '',
   productNameFont: '',
@@ -5817,6 +6030,10 @@ export const showSingleProductFields: FieldConfig[] = [
   { key: 'bgColor', label: 'Background Colour', type: 'color' },
   { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '64' },
   { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '16' },
+
+  { key: '_h_image', label: 'Image', type: 'header' },
+  { key: 'imageAlign', label: 'Image Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'imageHeight', label: 'Image Height', type: 'number', unit: 'px', step: 10, placeholder: 'auto (square)' },
 
   ...productCardStyleFields,
 
@@ -5875,15 +6092,24 @@ export function renderShowSingleProduct(data: ShowSingleProductData): string {
     ? `<a href="${product.buttonUrl}" style="display:inline-block;padding:0.5rem 1.25rem;background:${data.buttonBgColor};color:${data.buttonTextColor};text-decoration:none;border-radius:6px;font-weight:600;font-size:0.8125rem;">${product.buttonLabel}</a>`
     : ''
 
+  const justify = data.imageAlign === 'left' ? 'flex-start'
+    : data.imageAlign === 'right' ? 'flex-end'
+    : 'center'
+  const imageBoxSize = data.imageHeight && data.imageHeight > 0
+    ? `height:${data.imageHeight}px`
+    : 'aspect-ratio:1/1'
+
   return `<section data-component-title="Show Single Product" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
-  <div style="max-width:16rem;margin:0 auto;${productCardWrapperStyle(data)}">
-    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.5rem;">
-      <div style="width:100%;aspect-ratio:1/1;overflow:hidden;border-radius:${data.cardBorderRadius}px;background:${data.imageBgColor || '#ffffff'};">
-        <img src="${imageSrc}" alt="${product.name}" style="width:100%;height:100%;object-fit:contain;display:block;" />
+  <div style="display:flex;justify-content:${justify};">
+    <div style="max-width:16rem;${productCardWrapperStyle(data)}">
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.5rem;">
+        <div style="width:100%;${imageBoxSize};overflow:hidden;border-radius:${data.cardBorderRadius}px;background:${data.imageBgColor || '#ffffff'};">
+          <img src="${imageSrc}" alt="${product.name}" style="width:100%;height:100%;object-fit:contain;display:block;" />
+        </div>
+        ${nameRow}
+        ${colorsHtml}
+        ${buttonHtml}
       </div>
-      ${nameRow}
-      ${colorsHtml}
-      ${buttonHtml}
     </div>
   </div>
 </section>`
@@ -6407,6 +6633,69 @@ export function renderShowMultipleProducts(data: ShowMultipleProductsData): stri
     <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:1.5rem;">
       ${productsHtml}
     </div>
+  </div>
+</section>`
+}
+
+// ─── Ru1-Notice Bar ──────────────────────────────────────────────────────────
+// A slim full-width announcement bar with a single editable message. Colours,
+// alignment, font size/weight and padding are editable. Template is dark.
+
+export const ru1NoticeBarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 40">
+  <rect fill="#1f2430" width="277.5" height="40"/>
+  <rect fill="#aab2c5" x="84" y="17" width="46" height="6" rx="1"/>
+  <rect fill="#6b7488" x="136" y="17" width="72" height="6" rx="1"/>
+</svg>`
+
+export interface Ru1NoticeBarData {
+  fontFamily: string
+  message: string
+  textFont: string
+  bgColor: string
+  textColor: string
+  align: string
+  fontSize: number
+  fontWeight: string
+  paddingY: number
+}
+
+export const ru1NoticeBarDefaults: Ru1NoticeBarData = {
+  fontFamily: '',
+  message: 'Join us in Denver from June 7 – 9 to see what’s coming next',
+  textFont: '',
+  bgColor: '#4f46e5',
+  textColor: '#ffffff',
+  align: 'center',
+  fontSize: 15,
+  fontWeight: 'Medium',
+  paddingY: 12,
+}
+
+export const ru1NoticeBarFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_content', label: 'Content', type: 'header' },
+  { key: 'message',   label: 'Message',            type: 'text', placeholder: 'e.g. Join us in Denver…' },
+  fontField('textFont', 'Text Font'),
+
+  { key: '_h_style', label: 'Style', type: 'header' },
+  { key: 'bgColor',    label: 'Background Colour', type: 'color' },
+  { key: 'textColor',  label: 'Text Colour',       type: 'color' },
+  { key: 'align',      label: 'Alignment',         type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'fontSize',   label: 'Font Size',         type: 'number', unit: 'px', step: 1, placeholder: '15' },
+  { key: 'fontWeight', label: 'Text Weight',       type: 'select', options: ['Normal', 'Medium', 'Semibold', 'Bold'] },
+  { key: 'paddingY',   label: 'Vertical Padding',  type: 'number', unit: 'px', step: 2, placeholder: '12' },
+]
+
+export function renderRu1NoticeBar(data: Ru1NoticeBarData): string {
+  const justify = data.align === 'left' ? 'flex-start' : data.align === 'right' ? 'flex-end' : 'center'
+  const weightMap: Record<string, string> = { Normal: '400', Medium: '500', Semibold: '600', Bold: '700' }
+  const weight = weightMap[data.fontWeight] ?? '500'
+
+  return `<section data-component-title="Ru1-Notice Bar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
+  <div style="background:${data.bgColor};padding:${data.paddingY}px 1rem;display:flex;justify-content:${justify};align-items:center;text-align:center;box-sizing:border-box;">
+    <span style="color:${data.textColor};font-size:${data.fontSize}px;font-weight:${weight};line-height:1.4;${fontCss(data.textFont, data.fontFamily)}">${data.message}</span>
   </div>
 </section>`
 }
