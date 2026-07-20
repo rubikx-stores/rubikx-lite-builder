@@ -113,10 +113,10 @@ import {
   show4ProductsCenteredFields,
   show4ProductsCenteredSvg,
   renderShow4ProductsCentered,
-  ru1NoticeBarDefaults,
-  ru1NoticeBarFields,
-  ru1NoticeBarSvg,
-  renderRu1NoticeBar,
+  ru1AnnouncementBarDefaults,
+  ru1AnnouncementBarFields,
+  ru1AnnouncementBarSvg,
+  renderRu1AnnouncementBar,
 } from './components'
 
 export interface LayoutComponentItem {
@@ -335,12 +335,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       html_code: renderShow4ProductsCentered(show4ProductsCenteredDefaults),
     },
   ],
-  'Notice Bar': [
+  'Announcement Bar': [
     {
-      title: 'Ru1-Notice Bar',
-      category: 'Notice Bar',
-      cover_image: ru1NoticeBarSvg,
-      html_code: renderRu1NoticeBar(ru1NoticeBarDefaults),
+      title: 'Ru1-Announcement Bar',
+      category: 'Announcement Bar',
+      cover_image: ru1AnnouncementBarSvg,
+      html_code: renderRu1AnnouncementBar(ru1AnnouncementBarDefaults),
     },
   ],
 }
@@ -510,10 +510,10 @@ export function useLayouts() {
     render: renderShow4ProductsCentered,
   })
 
-  blockRegistry.register('Ru1-Notice Bar', {
-    defaults: ru1NoticeBarDefaults,
-    fields: ru1NoticeBarFields,
-    render: renderRu1NoticeBar,
+  blockRegistry.register('Ru1-Announcement Bar', {
+    defaults: ru1AnnouncementBarDefaults,
+    fields: ru1AnnouncementBarFields,
+    render: renderRu1AnnouncementBar,
   })
 
   return { layoutComponentRegistry }

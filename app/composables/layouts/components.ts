@@ -6655,17 +6655,17 @@ export function renderShowMultipleProducts(data: ShowMultipleProductsData): stri
 </section>`
 }
 
-// ─── Ru1-Notice Bar ──────────────────────────────────────────────────────────
+// ─── Ru1-Announcement Bar ──────────────────────────────────────────────────────────
 // A slim full-width announcement bar with a single editable message. Colours,
 // alignment, font size/weight and padding are editable. Template is dark.
 
-export const ru1NoticeBarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 40">
+export const ru1AnnouncementBarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 40">
   <rect fill="#1f2430" width="277.5" height="40"/>
   <rect fill="#aab2c5" x="84" y="17" width="46" height="6" rx="1"/>
   <rect fill="#6b7488" x="136" y="17" width="72" height="6" rx="1"/>
 </svg>`
 
-export interface Ru1NoticeBarData {
+export interface Ru1AnnouncementBarData {
   fontFamily: string
   message: string
   textFont: string
@@ -6677,7 +6677,7 @@ export interface Ru1NoticeBarData {
   paddingY: number
 }
 
-export const ru1NoticeBarDefaults: Ru1NoticeBarData = {
+export const ru1AnnouncementBarDefaults: Ru1AnnouncementBarData = {
   fontFamily: '',
   message: 'Join us in Denver from June 7 – 9 to see what’s coming next',
   textFont: '',
@@ -6689,7 +6689,7 @@ export const ru1NoticeBarDefaults: Ru1NoticeBarData = {
   paddingY: 12,
 }
 
-export const ru1NoticeBarFields: FieldConfig[] = [
+export const ru1AnnouncementBarFields: FieldConfig[] = [
   { key: '_h_font', label: 'Font', type: 'header' },
   fontField('fontFamily', 'Font Family'),
 
@@ -6706,12 +6706,12 @@ export const ru1NoticeBarFields: FieldConfig[] = [
   { key: 'paddingY',   label: 'Vertical Padding',  type: 'number', unit: 'px', step: 2, placeholder: '12' },
 ]
 
-export function renderRu1NoticeBar(data: Ru1NoticeBarData): string {
+export function renderRu1AnnouncementBar(data: Ru1AnnouncementBarData): string {
   const justify = data.align === 'left' ? 'flex-start' : data.align === 'right' ? 'flex-end' : 'center'
   const weightMap: Record<string, string> = { Normal: '400', Medium: '500', Semibold: '600', Bold: '700' }
   const weight = weightMap[data.fontWeight] ?? '500'
 
-  return `<section data-component-title="Ru1-Notice Bar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru1-Announcement Bar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
   <div style="background:${data.bgColor};padding:${data.paddingY}px 1rem;display:flex;justify-content:${justify};align-items:center;text-align:center;box-sizing:border-box;">
     <span style="color:${data.textColor};font-size:${data.fontSize}px;font-weight:${weight};line-height:1.4;${fontCss(data.textFont, data.fontFamily)}">${data.message}</span>
   </div>
