@@ -211,6 +211,47 @@ function readFileAsDataUrl(file: File): Promise<string> {
   })
 }
 
+// Fetches an external http(s) image URL through our server, uploads it to S3,
+// and returns the CDN URL. This replaces the raw third-party URL so published
+// pages don't depend on external origins.
+async function proxyExternalImageToS3(url: string, fieldKey: string): Promise<string> {
+  const { url: cdnUrl } = await $fetch<{ url: string }>('/api/proxy/image', {
+    method: 'POST',
+    body: {
+      url,
+      companyId: selectedCompanyId.value ?? undefined,
+      fieldKey,
+    },
+  })
+  return cdnUrl
+}
+
+// Called when the user finishes typing/pasting in an image URL field. If the
+// value is an external http(s) URL it is proxied through S3; otherwise the
+// value is saved as-is (handles relative paths, data: URLs, etc.).
+// URLs already on our own CDN are saved directly — no re-upload needed.
+async function onImageUrlChange(fieldKey: string, value: string) {
+  uploadError.value[fieldKey] = ''
+  const trimmed = value.trim()
+  const cdnBase = useRuntimeConfig().public.s3CdnUrl as string
+  if (
+    !trimmed.startsWith('http://') && !trimmed.startsWith('https://') ||
+    (cdnBase && trimmed.startsWith(cdnBase))
+  ) {
+    updateBlockField(fieldKey, trimmed)
+    return
+  }
+  uploading.value[fieldKey] = true
+  try {
+    const cdnUrl = await proxyExternalImageToS3(trimmed, fieldKey)
+    updateBlockField(fieldKey, cdnUrl)
+  } catch (err) {
+    uploadError.value[fieldKey] = uploadErrorMessage(err)
+  } finally {
+    uploading.value[fieldKey] = false
+  }
+}
+
 // Uploads a file through our own server (base64 → S3 PutObject) and returns
 // the resulting CDN URL to store on the field. The bucket only grants read
 // access to its CloudFront distribution, not the public, so the URL must
@@ -529,7 +570,8 @@ onUnmounted(() => {
               <div class="flex items-center gap-1 mb-1">
                 <input type="text" :value="blockData[field.key]" :placeholder="field.placeholder || 'Paste URL'"
                   class="flex-1 border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400"
-                  @change="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value.trim()); uploadError[field.key] = ''"
+                  :disabled="uploading[field.key]"
+                  @change="onImageUrlChange(field.key, ($event.target as HTMLInputElement).value)"
                   @input="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value.trim()); uploadError[field.key] = ''" />
                 <label
                   class="shrink-0 text-xs border rounded-md px-2 py-1.5"
