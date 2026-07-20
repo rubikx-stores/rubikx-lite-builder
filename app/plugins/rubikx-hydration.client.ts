@@ -351,12 +351,32 @@ function loadMobileNav(el: HTMLElement) {
   overlay.addEventListener('click', closeDrawer)
 }
 
+// Ru2-FAQ+Banner accordion. The markup is native <details>/<summary>, which
+// toggles on its own on the published page. Inside the builder the library
+// intercepts the click (block selection) and can swallow the native toggle,
+// so here we drive it manually: preventDefault stops the native toggle from
+// also firing (no double toggle) and stopPropagation stops the builder from
+// hijacking the click. Idempotent via data-faqWired so re-renders don't stack.
+function loadFaqAccordion(el: HTMLElement) {
+  el.querySelectorAll<HTMLElement>('details.ru2-faqb-item > summary').forEach((summary) => {
+    if (summary.dataset.faqWired === '1') return
+    summary.dataset.faqWired = '1'
+    summary.addEventListener('click', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      const details = summary.closest('details')
+      if (details) details.open = !details.open
+    })
+  })
+}
+
 const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> =
   {
     loadCategories,
     loadSlider,
     loadCartCount,
     loadAuthState,
+    loadFaqAccordion,
   }
 
 // Tracks the companyId passed to the most recent hydrateComponents() call so

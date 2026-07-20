@@ -1,6 +1,7 @@
 ﻿import type { FieldConfig } from '../editor/useBlockRegistry'
 import { fontField, fontCss } from '../editor/fontFields'
 import { icon } from '../useIconSvg'
+import { socialIconHtml } from '../useSocialIcons'
 import {
   megaMenuHeaderDefaults, megaMenuHeaderFields, renderMegaMenuHeader,
   ru1FooterDefaults as layoutFooter1Defaults, ru1FooterFields as layoutFooter1Fields, renderRu1Footer as renderLayoutFooter1,
@@ -529,6 +530,14 @@ export interface Ru1ProductsData {
   sectionTitle: string
   titleAlign: string
   titleColor: string
+  showBrowseAll: boolean
+  browseAllLabel: string
+  browseAllUrl: string
+  browseAllColor: string
+  browseAllWeight: string
+  browseAllSize: number
+  browseAllArrow: boolean
+  browseAllFont: string
   columns: 1 | 2 | 3 | 4 | 5 | 6
   rows: number
   products: Product[]
@@ -585,6 +594,14 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   sectionTitle: 'Featured Products',
   titleAlign: 'left',
   titleColor: '#111827',
+  showBrowseAll: true,
+  browseAllLabel: 'Browse all',
+  browseAllUrl: '/shop',
+  browseAllColor: '#2563eb',
+  browseAllWeight: '600',
+  browseAllSize: 15,
+  browseAllArrow: true,
+  browseAllFont: '',
   columns: 4,
   rows: 1,
   bgColor: '',
@@ -628,6 +645,16 @@ export const ru1ProductsFields: FieldConfig[] = [
   { key: 'titleAlign', label: 'Title Alignment', type: 'select', options: ['left', 'center', 'right'] },
   { key: 'titleColor', label: 'Title Color', type: 'color' },
   fontField('sectionTitleFont', 'Section Title Font'),
+
+  { key: '_h_browseall', label: 'Browse All Link', type: 'header' },
+  { key: 'showBrowseAll', label: 'Show Browse All', type: 'toggle' },
+  { key: 'browseAllLabel', label: 'Button Text', type: 'text' },
+  { key: 'browseAllUrl', label: 'Link URL', type: 'url' },
+  { key: 'browseAllColor', label: 'Text Color', type: 'color' },
+  { key: 'browseAllWeight', label: 'Font Weight', type: 'select', options: ['400', '500', '600', '700'] },
+  { key: 'browseAllSize', label: 'Font Size', type: 'number', unit: 'px', step: 1, placeholder: '15' },
+  { key: 'browseAllArrow', label: 'Show Arrow (→)', type: 'toggle' },
+  fontField('browseAllFont', 'Browse All Font'),
 
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'bgColor', label: 'Section Background', type: 'color' },
@@ -685,7 +712,7 @@ export const ru1ProductsFields: FieldConfig[] = [
   },
 ]
 
-export function renderRu1Products(data: Ru1ProductsData): string {
+export function renderRu1Products(data: Ru1ProductsData, title = 'Ru1 Homepage Featured Products'): string {
   const colCls = _colClass[String(data.columns)] ?? _colClass['4']
   const _hoverCSS = (effect: string, amount: number): string => {
     switch (effect) {
@@ -705,7 +732,7 @@ export function renderRu1Products(data: Ru1ProductsData): string {
   const arrowBtnPos = data.showArrowBtn !== false ? (data.arrowBtnPosition ?? 'center') : 'hidden'
   const needsOverlay = data.showViewProduct !== false || arrowBtnPos === 'top'
 
-  const gridId = 'fpg-ru1fp'
+  const gridId = 'fpg-' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
   const styleRules: string[] = []
   styleRules.push(_gridCss(`#${gridId}`, Number(data.columns) || 4))
   if (needsOverlay) styleRules.push(`[data-fp-card]:hover [data-fp-overlay]{opacity:1!important}`)
@@ -790,12 +817,20 @@ export function renderRu1Products(data: Ru1ProductsData): string {
 
   const sectionStyle = fontCss(undefined, data.fontFamily) + sectionBg
 
-  return `<section data-component-title="Ru1 Homepage Featured Products" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
+  const browseArrow = data.browseAllArrow !== false
+    ? `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><path d="M3 8h9M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+    : ''
+  const browseAllHtml = data.showBrowseAll !== false && data.browseAllLabel
+    ? `<a href="${data.browseAllUrl || '#'}" style="display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;white-space:nowrap;color:${data.browseAllColor};font-weight:${data.browseAllWeight};font-size:${data.browseAllSize}px;${fontCss(data.browseAllFont, data.fontFamily)}">${data.browseAllLabel}${browseArrow}</a>`
+    : ''
+
+  return `<section data-component-title="${title}" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 ${animStyle}
 <div style="${innerStyle}">
   <div style="max-width:80rem;margin:0 auto">
-    <div style="margin-bottom:2rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:2rem">
       <h1 data-field-key="sectionTitle" style="margin:0;font-size:2rem;font-weight:600;text-align:${data.titleAlign};color:${data.titleColor};${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h1>
+      ${browseAllHtml}
     </div>
     <div id="${gridId}">
       ${cards}
@@ -805,6 +840,46 @@ ${animStyle}
 </section>`
 }
 
+// ─── Show Featured Products (Products category) ──────────────────────────────
+// Same block as "Ru1 Homepage Featured Products" — shares its defaults, fields
+// and render — but registered under a distinct title so it can live in the
+// builder's Products category. renderRu1Products stamps the title into both the
+// section's data-component-title and its scoped grid id, so the two blocks stay
+// fully independent on the same page.
+
+export const showFeaturedProductsDefaults: Ru1ProductsData = ru1ProductsDefaults
+export const showFeaturedProductsFields: FieldConfig[] = ru1ProductsFields
+
+export function renderShowFeaturedProducts(data: Ru1ProductsData): string {
+  return renderRu1Products(data, 'Show Featured Products')
+}
+
+export const showFeaturedProductsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 233 90">
+  <defs><style>.bg{fill:#384152}.fg{fill:#718096}</style></defs>
+  <rect class="bg" width="70" height="8"/>
+  <rect class="fg" x="196" y="1.5" width="37" height="5"/>
+  <rect class="bg" y="18" width="53" height="53"/>
+  <rect class="bg" x="60" y="18" width="53" height="53"/>
+  <rect class="bg" x="120" y="18" width="53" height="53"/>
+  <rect class="bg" x="180" y="18" width="53" height="53"/>
+  <polygon class="fg" points="8 62 20 47 32 62"/>
+  <polygon class="fg" points="68 62 80 47 92 62"/>
+  <polygon class="fg" points="128 62 140 47 152 62"/>
+  <polygon class="fg" points="188 62 200 47 212 62"/>
+  <circle class="fg" cx="40" cy="30" r="4"/>
+  <circle class="fg" cx="100" cy="30" r="4"/>
+  <circle class="fg" cx="160" cy="30" r="4"/>
+  <circle class="fg" cx="220" cy="30" r="4"/>
+  <rect class="bg" y="77" width="40" height="3"/>
+  <rect class="bg" x="60" y="77" width="40" height="3"/>
+  <rect class="bg" x="120" y="77" width="40" height="3"/>
+  <rect class="bg" x="180" y="77" width="40" height="3"/>
+  <rect class="bg" y="84" width="53" height="3"/>
+  <rect class="bg" x="60" y="84" width="53" height="3"/>
+  <rect class="bg" x="120" y="84" width="53" height="3"/>
+  <rect class="bg" x="180" y="84" width="53" height="3"/>
+</svg>`
+
 // ─── Footer block editor data ────────────────────────────────────────────────
 
 export interface Ru1FooterData {
@@ -812,6 +887,8 @@ export interface Ru1FooterData {
   usefulLinks: { label: string; url: string }[]
   contactEmail: string
   contactPhone: string
+  showSocials: boolean
+  socials: { href: string }[]
   copyright: string
   copyrightAlign: string
   bgColor: string
@@ -848,6 +925,8 @@ export const ru1FooterDefaults: Ru1FooterData = {
   ],
   contactEmail: 'support@yourdomain.com',
   contactPhone: '+1 000-000-0000',
+  showSocials: true,
+  socials: [],
   copyright: '© Your Store. All rights reserved.',
   copyrightAlign: 'center',
   bgColor: '#f9fafb',
@@ -893,6 +972,15 @@ export const ru1FooterFields: FieldConfig[] = [
   },
   fontField('headingFont', 'Heading Font'),
   fontField('bodyFont', 'Body Font'),
+
+  { key: '_h_socials', label: 'Social Icons', type: 'header' },
+  { key: 'showSocials', label: 'Show Social Icons', type: 'toggle' },
+  {
+    key: 'socials', label: 'Social Links', type: 'list',
+    listFields: [
+      { key: 'href', label: 'URL', type: 'url', placeholder: 'Paste your social media URL' },
+    ],
+  },
 
   { key: '_h_columns', label: 'Columns', type: 'header' },
   { key: 'columnOrder', label: 'Column Order', type: 'column-order' },
@@ -941,8 +1029,8 @@ export function renderRu1Footer(data: Ru1FooterData): string {
 
   const linksCol = `<div style="max-width:20rem;">
         <h3 style="${hStyle}">Useful Links</h3>
-        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.5rem;">
-          ${data.usefulLinks.map(l => `<li><a href="${l.url}" style="${aStyle}">${l.label}</a></li>`).join('\n          ')}
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.2rem;">
+          ${data.usefulLinks.map(l => `<li style="list-style:none;"><a href="${l.url}" style="${aStyle}">${l.label}</a></li>`).join('\n          ')}
         </ul>
       </div>`
   const aboutCol = data.aboutMode === 'logo'
@@ -953,12 +1041,18 @@ export function renderRu1Footer(data: Ru1FooterData): string {
         <h3 style="${hStyle}">About Us</h3>
         <p data-field-key="tagline" style="${pStyle}white-space:pre-line;">${data.tagline}</p>
       </div>`
+  // Social icons row — platform + brand colour auto-detected from each URL.
+  const socialIcons = (data.socials ?? []).map(s => socialIconHtml(s.href)).filter(Boolean)
+  const socialRow = data.showSocials !== false && socialIcons.length
+    ? `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:1.25rem;">${socialIcons.join('')}</div>`
+    : ''
   const contactCol = `<div style="max-width:20rem;">
         <h3 style="${hStyle}">Connect with Us</h3>
-        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.5rem;">
-          <li><a href="mailto:${data.contactEmail}" style="${aStyle}">${data.contactEmail}</a></li>
-          <li><a href="tel:${data.contactPhone}" style="${aStyle}">${data.contactPhone}</a></li>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.2rem;">
+          <li style="list-style:none;"><a href="mailto:${data.contactEmail}" style="${aStyle}">${data.contactEmail}</a></li>
+          <li style="list-style:none;"><a href="tel:${data.contactPhone}" style="${aStyle}">${data.contactPhone}</a></li>
         </ul>
+        ${socialRow}
       </div>`
   const colMap: Record<string, string> = {
     links: data.showUsefulLinks !== false ? linksCol : '',
