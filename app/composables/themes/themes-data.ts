@@ -248,7 +248,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   const searchEl = data.showSearch
     ? `<div style="display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:8px;padding:0.5rem 0.875rem;gap:0.5rem;width:${searchW}px;max-width:100%;min-width:0;">
         ${icon('magnifyingGlass', { size: 16, stroke: '#3b82f6', style: 'flex-shrink:0;' })}
-        <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:#3b82f6;min-width:0;" />
+        <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:#3b82f6;min-width:0;" />
       </div>`
     : ''
 
@@ -316,7 +316,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   const mobileSearchEl = data.showSearch
     ? `<div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0 0.5rem;gap:0.5rem;background:#fff;margin-bottom:1rem;">
         ${icon('magnifyingGlass', { size: 20, stroke: '#1e40af', style: 'flex-shrink:0;' })}
-        <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" style="border:none;outline:none;background:#fff;font-size:0.875rem;width:100%;color:#3b82f6;padding:0.5rem 0;" />
+        <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="border:none;outline:none;background:#fff;font-size:0.875rem;width:100%;color:#3b82f6;padding:0.5rem 0;" />
       </div>`
     : ''
 

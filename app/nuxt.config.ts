@@ -79,6 +79,7 @@ export default defineNuxtConfig({
     public: {
       appName: process.env.NUXT_PUBLIC_APP_NAME || 'RubikX Builder',
       env: process.env.NUXT_PUBLIC_ENV || 'development',
+      s3CdnUrl: process.env.NUXT_S3_CDN_URL || '',
     },
   },
 

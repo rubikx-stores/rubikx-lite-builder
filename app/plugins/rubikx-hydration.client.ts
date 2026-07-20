@@ -4,6 +4,7 @@ import type {
   CategoryNode,
 } from '~/composables/categories/buildCategoryTree'
 import { icon } from '~/composables/useIconSvg'
+import { productImageSrc } from '~/composables/useProductImageSrc'
 
 // Set true to preview logged-in auth state inside the builder
 const SIMULATE_AUTH = false
@@ -370,12 +371,88 @@ function loadFaqAccordion(el: HTMLElement) {
   })
 }
 
+// Navbar search — client-side. Fetches the product list once (shared across the
+// desktop + mobile inputs), then filters by name on each keystroke and shows a
+// results dropdown; clicking a result opens /product/{id}. No per-keystroke
+// network calls. Bails out inside the builder.
+let _searchProductsPromise: Promise<any[]> | null = null
+function _fetchAllProducts(companyId?: number): Promise<any[]> {
+  if (_searchProductsPromise) return _searchProductsPromise
+  const url = companyId ? `/api/products?companyId=${companyId}` : '/api/products'
+  _searchProductsPromise = fetch(url)
+    .then((r) => (r.ok ? r.json() : []))
+    .then((list) => (Array.isArray(list) ? list : []))
+    .catch(() => [])
+  return _searchProductsPromise
+}
+
+function loadSearch(el: HTMLElement, companyId?: number) {
+  if (document.getElementById('page-builder-wrapper')) return // never in the builder
+  const input = el as HTMLInputElement
+  if (input.dataset.searchWired === '1') return
+  input.dataset.searchWired = '1'
+
+  const wrapper = input.closest('div')
+  if (!wrapper) return
+  wrapper.style.position = 'relative'
+
+  const dropdown = document.createElement('div')
+  dropdown.setAttribute('data-search-results', '1')
+  dropdown.style.cssText =
+    'position:absolute;top:calc(100% + 6px);left:0;width:100%;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);max-height:360px;overflow-y:auto;z-index:1000;display:none;'
+  wrapper.appendChild(dropdown)
+
+  let products: any[] = []
+  _fetchAllProducts(companyId).then((list) => { products = list })
+
+  function currentMatches(): any[] {
+    const q = input.value.trim().toLowerCase()
+    if (!q) return []
+    return products.filter((p) => String(p.name ?? '').toLowerCase().includes(q))
+  }
+
+  function render(items: any[]) {
+    if (!items.length) {
+      dropdown.innerHTML =
+        '<div style="padding:12px 14px;color:#6b7280;font-size:13px;">No products found</div>'
+      return
+    }
+    dropdown.innerHTML = items.slice(0, 8).map((p) => {
+      const img = productImageSrc(p.image)
+      const price = p.price != null && p.price !== '' ? `$${Number(p.price).toFixed(2)}` : ''
+      return `<a href="/product/${p.id}" style="display:flex;align-items:center;gap:10px;padding:8px 12px;text-decoration:none;color:#111827;border-bottom:1px solid #f1f5f9;">
+        ${img ? `<img src="${img}" alt="" style="width:36px;height:36px;object-fit:contain;border-radius:4px;background:#f8fafc;flex-shrink:0;" />` : ''}
+        <span style="font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name ?? ''}</span>
+        <span style="font-size:13px;color:#6b7280;flex-shrink:0;">${price}</span>
+      </a>`
+    }).join('')
+  }
+
+  input.addEventListener('input', () => {
+    if (!input.value.trim()) { dropdown.style.display = 'none'; return }
+    render(currentMatches())
+    dropdown.style.display = 'block'
+  })
+
+  input.addEventListener('keydown', (e) => {
+    if ((e as KeyboardEvent).key === 'Enter') {
+      const first = currentMatches()[0]
+      if (first) window.location.href = `/product/${first.id}`
+    }
+  })
+
+  document.addEventListener('click', (e) => {
+    if (!wrapper.contains(e.target as Node)) dropdown.style.display = 'none'
+  })
+}
+
 const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> =
   {
     loadCategories,
     loadSlider,
     loadCartCount,
     loadAuthState,
+    loadSearch,
     loadFaqAccordion,
   }
 
