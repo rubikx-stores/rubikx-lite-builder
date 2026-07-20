@@ -2933,11 +2933,11 @@ export function renderRu2Stats(data: Ru2StatsData): string {
 
   return `<section data-component-title="Ru2-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
 <style>
-  @media(max-width:768px){[data-ru2-stats-grid]{grid-template-columns:repeat(2,1fr)!important;gap:20px!important}[data-ru2-stats-grid]>div{border-left:none!important}}
-  @media(max-width:480px){[data-ru2-stats-grid]{grid-template-columns:1fr!important;gap:0!important}[data-ru2-stats-grid]>div{border-top:1px solid rgba(0,0,0,0.08);padding-top:20px!important}[data-ru2-stats-grid]>div:first-child{border-top:none!important;padding-top:0!important}}
+  @media(max-width:768px){[data-ru2-stats-grid]{grid-template-columns:repeat(2,1fr)!important;gap:20px!important}[data-ru2-stats-grid]>div{border-left:none!important;padding:0 12px!important}[data-ru2-stats-card]{padding:24px!important}}
+  @media(max-width:480px){[data-ru2-stats-grid]{grid-template-columns:1fr!important;gap:0!important}[data-ru2-stats-grid]>div{border-top:1px solid rgba(0,0,0,0.08);padding:20px 0 0!important}[data-ru2-stats-grid]>div:first-child{border-top:none!important;padding-top:0!important}[data-ru2-stats-card]{padding:20px!important}}
 </style>
   <div style="width:100%;max-width:1280px;margin:0 auto;">
-    <div style="background:${data.cardBgColor};${cardBorder}border-radius:${data.cardBorderRadius}px;padding:32px;">
+    <div data-ru2-stats-card="true" style="background:${data.cardBgColor};${cardBorder}border-radius:${data.cardBorderRadius}px;padding:32px;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap;">
         <div>
           <h3 style="margin:0 0 6px;font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.3;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h3>
@@ -3153,6 +3153,7 @@ export function renderRu3Stats(data: Ru3StatsData): string {
   return `<section data-component-title="Ru3-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
 <style>
   @media(max-width:768px){[data-ru3-stats-row]{flex-direction:column!important}[data-ru3-stats-sep]{display:none!important}}
+  @media(max-width:600px){[data-ru3-stats-row]{padding:24px 20px!important}}
 </style>
   <div style="width:100%;max-width:1280px;margin:0 auto;">
     ${sectionHeaderHtml}
@@ -3343,9 +3344,9 @@ export function renderRu4Stats(data: Ru4StatsData): string {
     </div>`
   ).join('')
 
-  return `<section data-component-title="Ru4-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru4-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px min(${data.paddingX}px,6vw);${fontCss(undefined, data.fontFamily)}">
 <style>
-  @media(max-width:768px){[data-ru4-stats-outer]{grid-template-columns:1fr!important}}
+  @media(max-width:768px){[data-ru4-stats-outer]{grid-template-columns:1fr!important;gap:24px!important}}
   @media(max-width:480px){[data-ru4-stats-inner]{grid-template-columns:1fr!important}}
 </style>
   <div style="width:100%;max-width:1280px;margin:0 auto;">
