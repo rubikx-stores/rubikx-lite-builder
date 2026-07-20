@@ -497,13 +497,26 @@ export function renderRu1Form(data: Ru1FormData): string {
   const btnJustify = alignMap[data.submitAlign ?? 'right'] ?? 'flex-end'
   const sectionFontStyle = fontCss(undefined, data.fontFamily)
 
+  const responsiveStyle = `<style>
+  @media(max-width:900px){
+    [data-ru1form-grid]{grid-template-columns:1fr!important;}
+    [data-ru1form-inner]{margin-left:0!important;}
+    [data-ru1form-single]{max-width:100%!important;}
+  }
+  @media(max-width:560px){
+    [data-ru1form-fields]{grid-template-columns:1fr!important;}
+    [data-ru1form-info]{padding-left:1.5rem!important;padding-right:1.5rem!important;}
+    [data-ru1form-formcol]{padding-left:1.5rem!important;padding-right:1.5rem!important;}
+  }
+</style>`
+
   // Build social icons row — auto-detect platform & brand colour from URL
   const socialIcons = (data.socials ?? []).map(s => socialIconHtml(s.href)).filter(Boolean)
   const socialRow = socialIcons.length
     ? `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:2rem;">${socialIcons.join('')}</div>`
     : ''
 
-  const infoCol = `<div style="position:relative;padding:6rem 2rem 5rem;overflow:hidden;background:#f3f4f6;">
+  const infoCol = `<div data-ru1form-info="true" style="position:relative;padding:6rem 2rem 5rem;overflow:hidden;background:#f3f4f6;">
       <h2 style="font-size:2.25rem;font-weight:600;color:#111827;margin:0 0 1.5rem;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
       <p style="font-size:1.125rem;line-height:2;color:#4b5563;margin:0 0 2.5rem;${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>
       <dl style="display:flex;flex-direction:column;gap:1rem;font-size:1rem;line-height:1.75;color:#4b5563;">
@@ -523,9 +536,9 @@ export function renderRu1Form(data: Ru1FormData): string {
       ${socialRow}
     </div>`
 
-  const formCol = `<div style="padding:5rem 2rem 6rem;">
-      <div style="max-width:100%;margin-left:3.5rem;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem 2rem;">
+  const formCol = `<div data-ru1form-formcol="true" style="padding:5rem 2rem 6rem;">
+      <div data-ru1form-inner="true" style="max-width:100%;margin-left:3.5rem;">
+        <div data-ru1form-fields="true" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem 2rem;">
           <div>
             <label for="ru1-first-name" style="display:block;font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:0.625rem;">First name</label>
             <input type="text" id="ru1-first-name" name="first-name" autocomplete="given-name" style="${inputStyle}" />
@@ -561,7 +574,8 @@ export function renderRu1Form(data: Ru1FormData): string {
     const order = data.columnOrder ?? ['info', 'form']
     const orderedCols = order.map(k => colMap[k] ?? '').join('\n    ')
     return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;background:#fff;${sectionFontStyle}">
-  <div style="margin:0 auto;max-width:80rem;display:grid;grid-template-columns:1fr 1fr;">
+${responsiveStyle}
+  <div data-ru1form-grid="true" style="margin:0 auto;max-width:80rem;display:grid;grid-template-columns:1fr 1fr;">
     ${orderedCols}
   </div>
 </section>`
@@ -572,8 +586,9 @@ export function renderRu1Form(data: Ru1FormData): string {
     const alignMap: Record<string, string> = { left: '0 auto 0 0', center: '0 auto', right: '0 0 0 auto' }
     const margin = alignMap[data.singleBlockAlign ?? 'center'] ?? '0 auto'
     return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;background:#fff;${sectionFontStyle}">
+${responsiveStyle}
   <div style="margin:0 auto;max-width:80rem;">
-    <div style="max-width:50%;margin:${margin};">${singleCol}</div>
+    <div data-ru1form-single="true" style="max-width:50%;margin:${margin};">${singleCol}</div>
   </div>
 </section>`
   }
@@ -753,6 +768,16 @@ export function renderRu2Form(data: Ru2FormData): string {
   const btnJustify = alignMap[data.submitAlign ?? 'right'] ?? 'flex-end'
   const sectionFontStyle = fontCss(undefined, data.fontFamily)
 
+  const responsiveStyle = `<style>
+  @media(max-width:900px){
+    [data-ru2form-grid]{grid-template-columns:1fr!important;}
+  }
+  @media(max-width:560px){
+    [data-ru2form-fields]{grid-template-columns:1fr!important;}
+    [data-ru2form-panel]{padding-left:28px!important;padding-right:28px!important;}
+  }
+</style>`
+
   const socialIcons = (data.socials ?? []).map(s => socialIconHtml(s.href)).filter(Boolean)
   const socialRow = data.showSocials && socialIcons.length
     ? `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:2rem;">${socialIcons.join('')}</div>`
@@ -767,7 +792,7 @@ export function renderRu2Form(data: Ru2FormData): string {
       </div>
     </div>`).join('')
 
-  const infoPanel = `<div style="background:${data.panelBgColor};padding:${data.paddingY}px ${data.paddingX}px;display:flex;flex-direction:column;justify-content:space-between;">
+  const infoPanel = `<div data-ru2form-panel="true" style="background:${data.panelBgColor};padding:${data.paddingY}px ${data.paddingX}px;display:flex;flex-direction:column;justify-content:space-between;">
     <div>
       <div style="font-size:11px;font-weight:700;color:${data.accentColor};letter-spacing:0.18em;text-transform:uppercase;margin-bottom:16px;${fontCss(data.eyebrowFont, data.fontFamily)}">${data.eyebrow}</div>
       <h2 style="font-size:32px;font-weight:800;color:${data.panelTextColor};line-height:1.15;margin:0 0 16px;letter-spacing:-0.5px;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
@@ -786,12 +811,12 @@ export function renderRu2Form(data: Ru2FormData): string {
       </div>`
     : ''
 
-  const formPanel = `<div style="background:${data.formBgColor};padding:${data.paddingY}px ${data.paddingX}px;">
+  const formPanel = `<div data-ru2form-panel="true" style="background:${data.formBgColor};padding:${data.paddingY}px ${data.paddingX}px;">
     <div style="margin-bottom:28px;">
       <h3 style="font-size:22px;font-weight:700;color:#111827;margin:0 0 6px;${fontCss(data.formTitleFont, data.fontFamily)}">${data.formTitle}</h3>
       <p style="font-size:14px;color:#9ca3af;margin:0;${fontCss(data.formSubtitleFont, data.fontFamily)}">${data.formSubtitle}</p>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+    <div data-ru2form-fields="true" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
       <div>
         <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">First Name</label>
         <input type="text" placeholder="John" style="${inputStyle}"/>
@@ -820,7 +845,8 @@ export function renderRu2Form(data: Ru2FormData): string {
 
   if (showInfo && showForm) {
     return `<section data-component-title="Ru2-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="overflow:hidden;${sectionFontStyle}">
-  <div style="display:grid;grid-template-columns:1fr 1.4fr;">
+${responsiveStyle}
+  <div data-ru2form-grid="true" style="display:grid;grid-template-columns:1fr 1.4fr;">
     ${infoPanel}
     ${formPanel}
   </div>
@@ -832,6 +858,7 @@ export function renderRu2Form(data: Ru2FormData): string {
   const margin = singleAlignMap[data.singleBlockAlign ?? 'center'] ?? '0 auto'
 
   return `<section data-component-title="Ru2-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${showInfo ? data.panelBgColor : data.formBgColor};${sectionFontStyle}">
+${responsiveStyle}
   <div style="max-width:80rem;margin:${margin};">
     ${singleCol}
   </div>
@@ -1039,9 +1066,19 @@ export function renderRu1Footer(data: Ru1FooterData): string {
 
   const sectionFontStyle = fontCss(undefined, data.fontFamily)
   return `<section data-component-title="Ru1-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionFontStyle ? ` style="${sectionFontStyle}"` : ''}>
-<footer style="background-color:${bg};color:${text};padding:${data.paddingY}px ${data.paddingX}px;${borderTop}">
+<style>
+  @media(max-width:768px){
+    [data-ru1l-footer]{padding-left:24px!important;padding-right:24px!important;}
+    [data-ru1l-footer-grid]{grid-template-columns:repeat(2,1fr)!important;gap:32px 24px!important;}
+  }
+  @media(max-width:480px){
+    [data-ru1l-footer-grid]{grid-template-columns:1fr!important;}
+    [data-ru1l-footer-grid]>div{justify-content:flex-start!important;}
+  }
+</style>
+<footer data-ru1l-footer="true" style="background-color:${bg};color:${text};padding:${data.paddingY}px ${data.paddingX}px;${borderTop}">
   <div style="width:100%;max-width:1280px;margin:0 auto;box-sizing:border-box;">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;padding-bottom:40px;align-items:start;">
+    <div data-ru1l-footer-grid="true" style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;padding-bottom:40px;align-items:start;">
       ${orderedCols}
     </div>
     <div style="border-top:1px solid ${data.borderColor || '#e5e7eb'};padding-top:24px;text-align:${data.copyrightAlign || 'center'};">
@@ -1319,6 +1356,12 @@ export function renderRu1About(data: Ru1AboutData): string {
   }).join('\n            ')
 
   return `<section data-component-title="Ru1-About" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.sectionBgColor};padding:4rem 0;${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:768px){
+    [data-ru1about-imgwrap]{margin-bottom:0!important;}
+    [data-ru1about-stats]{position:static!important;transform:none!important;bottom:auto!important;left:auto!important;margin-top:1.5rem!important;grid-template-columns:repeat(2,1fr)!important;white-space:normal!important;gap:1.5rem!important;padding:1.5rem!important;}
+  }
+</style>
   <div style="margin:0 auto;max-width:80rem;padding:0 2rem;">
     <div style="display:flex;flex-direction:column;gap:4rem;">
       <div style="display:flex;flex-direction:column;gap:1rem;">
@@ -1328,9 +1371,9 @@ export function renderRu1About(data: Ru1AboutData): string {
           <a href='${data.ctaHref}' style='${btnStyle}'${hoverAttrs}>${data.ctaLabel ?? 'Contact Us'}</a>
         </div>` : ''}
       </div>
-      <div style="position:relative;width:100%;${aspectStyle};border-radius:0.75rem;${data.showStats !== false ? 'margin-bottom:6rem;' : ''}">
+      <div data-ru1about-imgwrap="true" style="position:relative;width:100%;${aspectStyle};border-radius:0.75rem;${data.showStats !== false ? 'margin-bottom:6rem;' : ''}">
         <img src="${imgSrc}"${autoRatioAttr} style="width:100%;height:100%;object-fit:cover;border-radius:0.75rem;display:block;opacity:${imgOpacity};" />
-        ${data.showStats !== false ? `<div style="position:absolute;bottom:-4rem;left:50%;transform:translateX(-50%);background:${data.statsBgColor};border:1px solid #e5e7eb;border-radius:0.75rem;display:grid;grid-template-columns:repeat(4,1fr);gap:2.5rem;padding:2rem 2.5rem;white-space:nowrap;">
+        ${data.showStats !== false ? `<div data-ru1about-stats="true" style="position:absolute;bottom:-4rem;left:50%;transform:translateX(-50%);background:${data.statsBgColor};border:1px solid #e5e7eb;border-radius:0.75rem;display:grid;grid-template-columns:repeat(4,1fr);gap:2.5rem;padding:2rem 2.5rem;white-space:nowrap;">
             ${statsHtml}
         </div>` : ''}
       </div>
@@ -1625,12 +1668,12 @@ export function renderRu2About(data: Ru2AboutData): string {
     ? `<img src="${data.imageSrc}" alt="${data.title}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:0;"/>`
     : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:13px;background:#e5e7eb;">Add an image</div>`
 
-  const heroSection = `<div style="display:grid;grid-template-columns:1fr 1fr;min-height:480px;">
-    <div style="position:relative;overflow:hidden;">
+  const heroSection = `<div data-ru2about-hero="true" style="display:grid;grid-template-columns:1fr 1fr;min-height:480px;">
+    <div data-ru2about-heroimg="true" style="position:relative;overflow:hidden;">
       ${imageHtml}
       ${data.imageTag ? `<div style="position:absolute;bottom:24px;left:24px;background:${data.imageTagBgColor};color:${data.imageTagTextColor};font-size:11px;font-weight:700;padding:4px 12px;border-radius:4px;letter-spacing:0.1em;text-transform:uppercase;${fontCss(data.imageTagFont, data.fontFamily)}">${data.imageTag}</div>` : ''}
     </div>
-    <div style="padding:${data.paddingY}px ${data.paddingX}px;display:flex;flex-direction:column;justify-content:center;background:${data.bgColor};">
+    <div data-ru2about-pad="true" style="padding:${data.paddingY}px ${data.paddingX}px;display:flex;flex-direction:column;justify-content:center;background:${data.bgColor};">
       <div style="font-size:11px;font-weight:700;color:${data.eyebrowColor};letter-spacing:0.18em;text-transform:uppercase;margin-bottom:16px;${fontCss(data.eyebrowFont, data.fontFamily)}">${data.eyebrow}</div>
       <h2 style="font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.1;letter-spacing:-1px;margin:0 0 20px;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
       <p style="font-size:15px;color:${data.descriptionColor};line-height:1.8;margin:0 0 32px;${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>
@@ -1639,19 +1682,31 @@ export function renderRu2About(data: Ru2AboutData): string {
     </div>
   </div>`
 
-  const valuesSection = data.showValues !== false ? `<div style="background:${data.valuesBgColor};padding:${data.paddingY}px ${data.paddingX}px;display:grid;grid-template-columns:repeat(${Math.min(data.values?.length ?? 3, 4)},1fr);gap:32px;">${valuesHtml}</div>` : ''
+  const valuesSection = data.showValues !== false ? `<div data-ru2about-values="true" data-ru2about-pad="true" style="background:${data.valuesBgColor};padding:${data.paddingY}px ${data.paddingX}px;display:grid;grid-template-columns:repeat(${Math.min(data.values?.length ?? 3, 4)},1fr);gap:32px;">${valuesHtml}</div>` : ''
 
-  const teamSection = data.showTeam !== false ? `<div style="background:${data.teamBgColor};padding:${data.paddingY}px ${data.paddingX}px;">
+  const teamSection = data.showTeam !== false ? `<div data-ru2about-pad="true" style="background:${data.teamBgColor};padding:${data.paddingY}px ${data.paddingX}px;">
     <div style="text-align:center;margin-bottom:40px;">
       <div style="font-size:11px;font-weight:700;color:${data.teamEyebrowColor};letter-spacing:0.18em;text-transform:uppercase;margin-bottom:12px;${fontCss(data.teamEyebrowFont, data.fontFamily)}">${data.teamEyebrow}</div>
       <div style="font-size:32px;font-weight:800;color:${data.teamTitleColor};letter-spacing:-0.5px;${fontCss(data.teamTitleFont, data.fontFamily)}">${data.teamTitle}</div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(${Math.min(data.teamMembers?.length ?? 4, 4)},1fr);gap:20px;">${teamHtml}</div>
+    <div data-ru2about-team="true" style="display:grid;grid-template-columns:repeat(${Math.min(data.teamMembers?.length ?? 4, 4)},1fr);gap:20px;">${teamHtml}</div>
   </div>` : ''
 
   const heroHtml = data.showHero !== false ? heroSection : ''
 
   return `<section data-component-title="Ru2-About" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="overflow:hidden;${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:860px){
+    [data-ru2about-hero]{grid-template-columns:1fr!important;min-height:0!important;}
+    [data-ru2about-heroimg]{height:300px!important;}
+    [data-ru2about-values]{grid-template-columns:repeat(2,1fr)!important;}
+    [data-ru2about-team]{grid-template-columns:repeat(2,1fr)!important;}
+  }
+  @media(max-width:560px){
+    [data-ru2about-values]{grid-template-columns:1fr!important;}
+    [data-ru2about-pad]{padding-left:24px!important;padding-right:24px!important;}
+  }
+</style>
   ${heroHtml}
   ${valuesSection}
   ${teamSection}
@@ -1900,8 +1955,8 @@ export function renderBanner(data: BannerData): string {
   ${autoRatioScript}
   <div style="width:100%;box-sizing:border-box;flex:1;display:flex;align-items:center;padding:${data.paddingY}px 1rem;">
     <div style="max-width:80rem;margin:0 auto;width:100%;display:flex;flex-direction:column;align-items:${itemsAlign};text-align:${textAlign};">
-      <h2 style="font-size:2.5rem;font-weight:700;color:${data.textColor};margin:0;line-height:1.2;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
-      <p style="font-size:1.125rem;color:${data.textColor};opacity:0.85;margin:1rem 0 0;max-width:42rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>
+      <h2 style="font-size:min(2.5rem,8vw);font-weight:700;color:${data.textColor};margin:0;line-height:1.2;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+      <p style="font-size:min(1.125rem,4.5vw);color:${data.textColor};opacity:0.85;margin:1rem 0 0;max-width:42rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>
       ${ctaHtml}
     </div>
   </div>
@@ -1931,7 +1986,7 @@ export function renderRu1Faq(data: Ru1FaqData): string {
   return `<section data-component-title="Ru1-FAQ" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.sectionBgColor};padding:6rem 0;${fontCss(undefined, data.fontFamily)}">
   <div style="margin:0 auto;max-width:80rem;padding:0 2rem;">
     <div style="margin:0 auto;max-width:56rem;">
-      <h2 style="font-size:2.5rem;font-weight:${fontWeight};letter-spacing:-0.025em;color:${data.titleColor};text-align:${data.titleAlign};margin:0 0 1.5rem;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+      <h2 style="font-size:min(2.5rem,7vw);font-weight:${fontWeight};letter-spacing:-0.025em;color:${data.titleColor};text-align:${data.titleAlign};margin:0 0 1.5rem;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
       <p style="font-size:1rem;line-height:1.75;font-weight:${subtitleWeight};color:${data.subtitleColor};text-align:${data.subtitleAlign};margin:0 0 4rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitleText} <a href="${data.subtitleLinkHref}" style="font-weight:600;color:${data.subtitleLinkColor};text-decoration:none;" onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">${data.subtitleLinkText}</a> ${data.subtitleAfterLink}</p>
       <dl style="border-bottom:1px solid ${data.dividerColor};margin:0;padding:0;">
         ${faqItems}
@@ -2108,7 +2163,7 @@ export function renderRu2FaqBanner(data: Ru2FaqBannerData): string {
     : ''
 
   const pageTitleHtml = data.showPageTitle !== false
-    ? `<h2 style="max-width:80rem;margin:0 auto;padding:1rem 2rem 0;font-size:2rem;font-weight:700;color:${data.pageTitleColor};${fontCss(data.pageTitleFont, data.fontFamily)}">${data.pageTitle}</h2>`
+    ? `<h2 style="max-width:80rem;margin:0 auto;padding:1rem 2rem 0;font-size:min(2rem,6vw);font-weight:700;color:${data.pageTitleColor};${fontCss(data.pageTitleFont, data.fontFamily)}">${data.pageTitle}</h2>`
     : ''
 
   // Native <details>/<summary> dropdown per question — the browser toggles it
@@ -2137,7 +2192,7 @@ export function renderRu2FaqBanner(data: Ru2FaqBannerData): string {
   ${faqStyle}
   <div style="${bannerBg}${bannerAspect}min-height:${data.bannerHeight}px;padding:2.5rem 0;display:flex;flex-direction:column;justify-content:flex-end;box-sizing:border-box;">
     <div style="max-width:80rem;margin:0 auto;padding:0 2rem;display:flex;flex-direction:column;align-items:${bannerItems};text-align:${bannerTextAlign};width:100%;box-sizing:border-box;">
-      <h1 style="font-size:2.75rem;font-weight:800;color:${data.bannerTitleColor};margin:0;line-height:1.1;${fontCss(data.bannerTitleFont, data.fontFamily)}">${data.bannerTitle}</h1>
+      <h1 style="font-size:min(2.75rem,9vw);font-weight:800;color:${data.bannerTitleColor};margin:0;line-height:1.1;${fontCss(data.bannerTitleFont, data.fontFamily)}">${data.bannerTitle}</h1>
     </div>
   </div>
   ${breadcrumbHtml}
@@ -2532,7 +2587,7 @@ export function renderRu2SplitBannerCollage(data: Ru2SplitBannerCollageData): st
 
   const textCol = `<div style="padding:${py}px 3rem;display:flex;flex-direction:column;align-items:${itemsAlign};text-align:${data.textAlign ?? 'left'};align-self:center;">
     ${data.subtitle ? `<p style="font-size:${data.subtitleSize ?? 13}px;font-weight:600;color:${data.subtitleColor};letter-spacing:0.14em;text-transform:uppercase;margin:0 0 1rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>` : ''}
-    <h2 style="font-size:${data.titleSize ?? 72}px;font-weight:${data.titleWeight ?? '800'};color:${data.titleColor};margin:0 0 1.25rem;line-height:1;${letterSpacing}${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+    <h2 style="font-size:min(${data.titleSize ?? 72}px,11vw);font-weight:${data.titleWeight ?? '800'};color:${data.titleColor};margin:0 0 1.25rem;line-height:1;${letterSpacing}${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
     ${data.description ? `<p style="font-size:1rem;line-height:1.7;color:${data.descriptionColor};margin:0;max-width:36rem;${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>` : ''}
     ${ctaHtml}
   </div>`
@@ -2608,10 +2663,22 @@ export function renderRu2SplitBannerCollage(data: Ru2SplitBannerCollageData): st
   const leftCol  = data.textSide === 'right' ? collageCol : textCol
   const rightCol = data.textSide === 'right' ? textCol    : collageCol
 
+  // On mobile: stack the text/collage split, release any fixed aspect-ratio (it
+  // would clip the now-taller stacked content), and give the flex-grow collage
+  // tiles a fixed height so they don't collapse once the height cascade is gone.
+  const responsiveStyle = `<style>
+  @media(max-width:820px){
+    [data-ru2sbc-grid]{grid-template-columns:1fr!important;}
+    [data-ru2sbc-section]{aspect-ratio:auto!important;}
+    [data-ru2sbc-section] [data-rbx-idx]{flex:none!important;height:220px!important;min-height:0!important;}
+  }
+</style>`
+
   if (hasAspectRatio) {
-    return `<section data-component-title="Ru2-Split-Banner-Collage" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${aspectStyle}${overlayShadow}overflow:hidden;display:flex;align-items:stretch;${fontCss(undefined, data.fontFamily)}">
+    return `<section data-component-title="Ru2-Split-Banner-Collage" data-ru2sbc-section="true" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${aspectStyle}${overlayShadow}overflow:hidden;display:flex;align-items:stretch;${fontCss(undefined, data.fontFamily)}">
+  ${responsiveStyle}
   <div style="width:100%;box-sizing:border-box;flex:1;min-height:0;display:flex;flex-direction:column;">
-    <div style="display:grid;grid-template-columns:${gridCols};flex:1;min-height:0;align-items:stretch;">
+    <div data-ru2sbc-grid="true" style="display:grid;grid-template-columns:${gridCols};flex:1;min-height:0;align-items:stretch;">
       ${leftCol}
       ${rightCol}
     </div>
@@ -2619,9 +2686,10 @@ export function renderRu2SplitBannerCollage(data: Ru2SplitBannerCollageData): st
 </section>`
   }
 
-  return `<section data-component-title="Ru2-Split-Banner-Collage" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${aspectStyle}${overlayShadow}overflow:hidden;display:flex;align-items:center;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru2-Split-Banner-Collage" data-ru2sbc-section="true" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${aspectStyle}${overlayShadow}overflow:hidden;display:flex;align-items:center;${fontCss(undefined, data.fontFamily)}">
+  ${responsiveStyle}
   <div style="width:100%;box-sizing:border-box;">
-    <div style="display:grid;grid-template-columns:${gridCols};align-items:center;">
+    <div data-ru2sbc-grid="true" style="display:grid;grid-template-columns:${gridCols};align-items:center;">
       ${leftCol}
       ${rightCol}
     </div>
@@ -2865,11 +2933,11 @@ export function renderRu2Stats(data: Ru2StatsData): string {
 
   return `<section data-component-title="Ru2-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
 <style>
-  @media(max-width:768px){[data-ru2-stats-grid]{grid-template-columns:repeat(2,1fr)!important;gap:20px!important}[data-ru2-stats-grid]>div{border-left:none!important}}
-  @media(max-width:480px){[data-ru2-stats-grid]{grid-template-columns:1fr!important;gap:0!important}[data-ru2-stats-grid]>div{border-top:1px solid rgba(0,0,0,0.08);padding-top:20px!important}[data-ru2-stats-grid]>div:first-child{border-top:none!important;padding-top:0!important}}
+  @media(max-width:768px){[data-ru2-stats-grid]{grid-template-columns:repeat(2,1fr)!important;gap:20px!important}[data-ru2-stats-grid]>div{border-left:none!important;padding:0 12px!important}[data-ru2-stats-card]{padding:24px!important}}
+  @media(max-width:480px){[data-ru2-stats-grid]{grid-template-columns:1fr!important;gap:0!important}[data-ru2-stats-grid]>div{border-top:1px solid rgba(0,0,0,0.08);padding:20px 0 0!important}[data-ru2-stats-grid]>div:first-child{border-top:none!important;padding-top:0!important}[data-ru2-stats-card]{padding:20px!important}}
 </style>
   <div style="width:100%;max-width:1280px;margin:0 auto;">
-    <div style="background:${data.cardBgColor};${cardBorder}border-radius:${data.cardBorderRadius}px;padding:32px;">
+    <div data-ru2-stats-card="true" style="background:${data.cardBgColor};${cardBorder}border-radius:${data.cardBorderRadius}px;padding:32px;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap;">
         <div>
           <h3 style="margin:0 0 6px;font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.3;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h3>
@@ -3085,6 +3153,7 @@ export function renderRu3Stats(data: Ru3StatsData): string {
   return `<section data-component-title="Ru3-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
 <style>
   @media(max-width:768px){[data-ru3-stats-row]{flex-direction:column!important}[data-ru3-stats-sep]{display:none!important}}
+  @media(max-width:600px){[data-ru3-stats-row]{padding:24px 20px!important}}
 </style>
   <div style="width:100%;max-width:1280px;margin:0 auto;">
     ${sectionHeaderHtml}
@@ -3275,9 +3344,9 @@ export function renderRu4Stats(data: Ru4StatsData): string {
     </div>`
   ).join('')
 
-  return `<section data-component-title="Ru4-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru4-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px min(${data.paddingX}px,6vw);${fontCss(undefined, data.fontFamily)}">
 <style>
-  @media(max-width:768px){[data-ru4-stats-outer]{grid-template-columns:1fr!important}}
+  @media(max-width:768px){[data-ru4-stats-outer]{grid-template-columns:1fr!important;gap:24px!important}}
   @media(max-width:480px){[data-ru4-stats-inner]{grid-template-columns:1fr!important}}
 </style>
   <div style="width:100%;max-width:1280px;margin:0 auto;">
@@ -3504,11 +3573,11 @@ export function renderRu5ImageCarousel(data: Ru5ImageCarouselData): string {
       : ''
     return `<div data-slide="${i}" style="position:absolute;inset:0;${bgStyle}opacity:${i === 0 ? '1' : '0'};transition:opacity 0.6s ease;pointer-events:${i === 0 ? 'auto' : 'none'};">
       <div style="${overlayStyle}"></div>
-      <div style="position:relative;z-index:1;height:100%;display:flex;${posStyle}padding:3rem 5rem;">
+      <div style="position:relative;z-index:1;height:100%;display:flex;${posStyle}padding:3rem clamp(1.25rem,6vw,5rem);">
         <div style="max-width:600px;text-align:${data.textAlign ?? 'left'};">
           ${slide.subtitle ? `<p style="margin:0 0 0.75rem;font-size:${data.subtitleFontSize}px;font-weight:600;color:${data.subtitleColor};letter-spacing:0.12em;text-transform:uppercase;${fontCss(data.subtitleFont, data.fontFamily)}">${slide.subtitle}</p>` : ''}
-          <h2 style="margin:0 0 1rem;font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.15;${fontCss(data.titleFont, data.fontFamily)}">${slide.title}</h2>
-          ${slide.description ? `<p style="margin:0;font-size:${data.descriptionFontSize}px;color:${data.descriptionColor};line-height:1.6;${fontCss(data.descriptionFont, data.fontFamily)}">${slide.description}</p>` : ''}
+          <h2 style="margin:0 0 1rem;font-size:min(${data.titleFontSize}px,9vw);font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.15;${fontCss(data.titleFont, data.fontFamily)}">${slide.title}</h2>
+          ${slide.description ? `<p style="margin:0;font-size:min(${data.descriptionFontSize}px,4.5vw);color:${data.descriptionColor};line-height:1.6;${fontCss(data.descriptionFont, data.fontFamily)}">${slide.description}</p>` : ''}
           ${ctaHtml}
         </div>
       </div>
@@ -3971,7 +4040,7 @@ export function renderRu6SplitHero(data: Ru6SplitHeroData): string {
     : ''
 
   const titleHtml = data.title
-    ? `<h2 style="margin:0 0 16px;font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:${data.titleLineHeight};white-space:pre-line;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>`
+    ? `<h2 style="margin:0 0 16px;font-size:min(${data.titleFontSize}px,8vw);font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:${data.titleLineHeight};white-space:pre-line;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>`
     : ''
 
   const descHtml = data.description
@@ -4012,9 +4081,12 @@ export function renderRu6SplitHero(data: Ru6SplitHeroData): string {
   const leftCol = data.textSide === 'left' ? textCol : imageCol
   const rightCol = data.textSide === 'left' ? imageCol : textCol
 
-  return `<section data-component-title="Ru6-Split-Hero" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru6-Split-Hero" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px min(${data.paddingX}px,6vw);${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:820px){[data-ru6sh-grid]{grid-template-columns:1fr!important;}}
+</style>
   <div style="max-width:1280px;margin:0 auto;">
-    <div style="display:grid;grid-template-columns:${gridCols};gap:${data.gap}px;align-items:${vAlign};">
+    <div data-ru6sh-grid="true" style="display:grid;grid-template-columns:${gridCols};gap:${data.gap}px;align-items:${vAlign};">
       ${leftCol}
       ${rightCol}
     </div>
@@ -4983,11 +5055,15 @@ export function renderRu2ProductDetail(data: Ru2ProductDetailData): string {
   const relatedSection = data.showRelatedProducts !== false
     ? `<div style="border-top:1px solid #e5e7eb;padding-top:64px;margin-top:64px;">
         <h2 style="font-size:20px;font-weight:700;color:#111827;margin:0 0 32px;${fontCss(data.relatedTitleFont, data.fontFamily)}">${data.relatedTitle || 'Customers also bought'}</h2>
-        <div style="${relGridStyle}">${relatedCardsHtml}</div>
+        <div data-ru2pd-related="true" style="${relGridStyle}">${relatedCardsHtml}</div>
       </div>`
     : ''
 
   return `<section data-component-title="Ru2-Product Detail" data-component-props="${encodeURIComponent(JSON.stringify(persistable))}" style="background:${data.bgColor};padding:${data.paddingY ?? 48}px ${data.paddingX ?? 16}px;${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:860px){[data-ru2pd-grid]{grid-template-columns:1fr!important;gap:2.5rem!important;}}
+  @media(max-width:640px){[data-ru2pd-related]{grid-template-columns:repeat(2,minmax(0,1fr))!important;}}
+</style>
   <div style="max-width:80rem;margin:0 auto;">
     <div
       data-rubikx-component="ProductDetail2"
@@ -5010,7 +5086,7 @@ export function renderRu2ProductDetail(data: Ru2ProductDetailData): string {
       data-price-size="${data.priceFontSize ?? 30}"
       data-thumb-radius="${tRadius}"
     >
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:flex-start;">
+      <div data-ru2pd-grid="true" style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:flex-start;">
 
         <!-- Left: image gallery -->
         <div>
@@ -5177,8 +5253,13 @@ export function renderRu1ProductDetail(data: Ru1ProductDetailData): string {
   const autoSlideSecs = data.l3AutoSlideSeconds ?? 3
 
   return `<section data-component-title="Ru1-Product Detail" data-component-props="${encodeURIComponent(JSON.stringify(persistable))}" style="background:${bgColor};padding:${paddingY ?? 48}px ${paddingX ?? 16}px;${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:860px){[data-ru1pd-grid]{grid-template-columns:1fr!important;gap:2rem!important;}}
+  @media(max-width:560px){[data-ru1pd-sizes]{grid-template-columns:repeat(4,minmax(0,1fr))!important;}}
+</style>
   <div style="max-width:80rem;margin:0 auto;">
     <div
+      data-ru1pd-grid="true"
       data-rubikx-component="ProductDetail"
       data-on-mount="loadProductDetail"
       data-product-ids="${data.productIds ?? ''}"
@@ -5215,7 +5296,7 @@ export function renderRu1ProductDetail(data: Ru1ProductDetailData): string {
         </div>
         <div style="margin-bottom:20px;">
           <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:10px;">Size</div>
-          <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;">${sizesHtml}</div>
+          <div data-ru1pd-sizes="true" style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;">${sizesHtml}</div>
         </div>
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
           <span style="font-size:13px;font-weight:500;color:#374151;">Unit Price:</span>
@@ -5755,7 +5836,7 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
   const reviewItems = (data.reviews || []).map(r => {
     const paragraphs = (r.content || '').split('\n').filter(l => l.trim())
       .map(line => `<p style="margin:0 0 16px;font-size:14px;color:#6b7280;line-height:1.75;${fontCss(data.reviewFont, data.fontFamily)}">${line}</p>`).join('')
-    return `<div style="padding:40px 0;border-top:1px solid #e5e7eb;display:grid;grid-template-columns:4fr 8fr;gap:32px;">
+    return `<div data-ru3pd-review="true" style="padding:40px 0;border-top:1px solid #e5e7eb;display:grid;grid-template-columns:4fr 8fr;gap:32px;">
       <div>
         <p style="font-weight:500;color:#111827;font-size:14px;margin:0 0 4px;${fontCss(data.reviewFont, data.fontFamily)}">${r.author || ''}</p>
         <time style="font-size:14px;color:#6b7280;${fontCss(data.reviewFont, data.fontFamily)}">${r.date || ''}</time>
@@ -5852,13 +5933,20 @@ export function renderRu3ProductDetail(data: Ru3ProductDetailData): string {
   const relatedSection = data.showRelatedProducts !== false
     ? `<div style="margin-top:64px;border-top:1px solid #e5e7eb;padding-top:64px;">
         <h2 style="font-size:20px;font-weight:${data.relatedTitleFontWeight || '500'};color:${data.relatedTitleColor || '#111827'};text-align:${data.relatedTitleAlign || 'left'};margin:0 0 32px;${fontCss(data.relatedTitleFont, data.fontFamily)}">${data.relatedTitle || 'Customers also purchased'}</h2>
-        <div style="${relGridStyle}">${relatedCardsHtml}</div>
+        <div data-ru3pd-related="true" style="${relGridStyle}">${relatedCardsHtml}</div>
       </div>`
     : ''
 
   return `<section data-component-title="Ru3-Product Detail" data-component-props="${encodeURIComponent(JSON.stringify(persistable))}" style="background:${data.bgColor || '#ffffff'};padding:${data.paddingY ?? 32}px ${data.paddingX ?? 16}px;${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:860px){
+    [data-ru3pd-grid]{grid-template-columns:1fr!important;gap:2.5rem!important;}
+    [data-ru3pd-review]{grid-template-columns:1fr!important;gap:12px!important;}
+  }
+  @media(max-width:640px){[data-ru3pd-related]{grid-template-columns:repeat(2,minmax(0,1fr))!important;}}
+</style>
   <div style="max-width:80rem;margin:0 auto;">
-    <div style="display:grid;grid-template-columns:7fr 5fr;gap:4rem;align-items:flex-start;">
+    <div data-ru3pd-grid="true" style="display:grid;grid-template-columns:7fr 5fr;gap:4rem;align-items:flex-start;">
 
       <!-- Left: image gallery -->
       <div>${imageGalleryHtml}</div>
@@ -6333,8 +6421,12 @@ export function renderShow6Products(data: Show6ProductsData): string {
   }).join('')
 
   return `<section data-component-title="Show 6 Products" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:768px){[data-show6-grid]{grid-template-columns:repeat(2,1fr)!important;grid-template-rows:auto!important;grid-auto-flow:row!important;}}
+  @media(max-width:480px){[data-show6-grid]{grid-template-columns:1fr!important;}}
+</style>
   <div style="max-width:80rem;margin:0 auto;">
-    <div style="${gridStyle}">
+    <div data-show6-grid="true" style="${gridStyle}">
       ${cardsHtml}
     </div>
   </div>
@@ -6496,8 +6588,12 @@ export function renderShow4ProductsCentered(data: Show4ProductsCenteredData): st
   }).join('')
 
   return `<section data-component-title="Show 4 Products Centered" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:768px){[data-show4-grid]{grid-template-columns:repeat(2,1fr)!important;}}
+  @media(max-width:480px){[data-show4-grid]{grid-template-columns:1fr!important;}}
+</style>
   <div style="max-width:80rem;margin:0 auto;width:100%;">
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;">
+    <div data-show4-grid="true" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;">
       ${productsHtml}
     </div>
   </div>
@@ -6647,8 +6743,12 @@ export function renderShowMultipleProducts(data: ShowMultipleProductsData): stri
   }).join('')
 
   return `<section data-component-title="Show Multiple Products" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:768px){[data-showmulti-grid]{grid-template-columns:repeat(2,1fr)!important;}}
+  @media(max-width:480px){[data-showmulti-grid]{grid-template-columns:1fr!important;}}
+</style>
   <div style="max-width:80rem;margin:0 auto;width:100%;">
-    <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:1.5rem;">
+    <div data-showmulti-grid="true" style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:1.5rem;">
       ${productsHtml}
     </div>
   </div>

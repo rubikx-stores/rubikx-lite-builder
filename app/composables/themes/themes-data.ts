@@ -1067,9 +1067,19 @@ export function renderRu1Footer(data: Ru1FooterData): string {
   const sectionFontStyle = fontCss(undefined, data.fontFamily)
 
   return `<section data-component-title="Ru1 Homepage Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionFontStyle ? ` style="${sectionFontStyle}"` : ''}>
-<footer style="${footerStyle}">
+<style>
+  @media(max-width:768px){
+    [data-ru1-footer]{padding-left:24px!important;padding-right:24px!important;}
+    [data-ru1-footer-grid]{grid-template-columns:repeat(2,1fr)!important;gap:2rem 1.5rem!important;}
+  }
+  @media(max-width:480px){
+    [data-ru1-footer-grid]{grid-template-columns:1fr!important;}
+    [data-ru1-footer-grid]>div{justify-content:flex-start!important;}
+  }
+</style>
+<footer data-ru1-footer="true" style="${footerStyle}">
   <div style="max-width:80rem;margin:0 auto">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;">
+    <div data-ru1-footer-grid="true" style="display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;">
       ${orderedCols}
     </div>
     <div style="border-top:1px solid ${data.borderColor || '#e5e7eb'};margin-top:2rem;padding-top:1.5rem;text-align:${data.copyrightAlign || 'center'};">
