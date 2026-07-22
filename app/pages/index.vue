@@ -126,7 +126,7 @@ async function deletePage() {
 
 const pageHtmlCache = usePageHtmlCache()
 
-const GLOBAL_KEYS = ['global-header', 'global-footer']
+const GLOBAL_KEYS = ['global-header', 'global-footer', 'global-theme']
 const displayPages = computed(() => pages.value.filter(p => !GLOBAL_KEYS.includes(p.id)))
 
 function editPage(page: Page) {
@@ -135,12 +135,16 @@ function editPage(page: Page) {
 
   const headerPage = pages.value.find(p => p.id === 'global-header')
   const footerPage = pages.value.find(p => p.id === 'global-footer')
+  const themePage = pages.value.find(p => p.id === 'global-theme')
 
   if (headerPage) {
     pageHtmlCache.value['global-header'] = headerPage.versions[0]?.value ?? ''
   }
   if (footerPage) {
     pageHtmlCache.value['global-footer'] = footerPage.versions[0]?.value ?? ''
+  }
+  if (themePage) {
+    pageHtmlCache.value['global-theme'] = themePage.versions[0]?.value ?? ''
   }
 
   navigateTo(`/editor?pageId=${page.id}&pageName=${encodeURIComponent(page.name)}&pageVersion=${vData.version}&companyId=${selectedWebsiteId.value}`)

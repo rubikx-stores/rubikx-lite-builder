@@ -241,7 +241,7 @@ async function loadAuthState(el: HTMLElement, companyId?: number) {
       'width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;'
     if (initials) {
       avatar.style.cssText +=
-        'background:#6366f1;color:#fff;font-size:13px;font-weight:600;letter-spacing:0.025em;'
+        'background:var(--rbx-primary, #6366f1);color:#fff;font-size:13px;font-weight:600;letter-spacing:0.025em;'
       avatar.textContent = initials
     } else {
       avatar.style.cssText += 'background:#e5e7eb;'

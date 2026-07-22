@@ -1,4 +1,5 @@
 import { reactive } from 'vue'
+import { applyThemeTokens } from './useThemeColors'
 
 export interface FieldConfig {
   key: string
@@ -74,7 +75,10 @@ export function useBlockRegistry() {
     _idToTitle.set(componentId, title)
     if (_states.has(componentId)) return // already registered, keep existing state
     const config = _configs.get(title)
-    const base = config ? JSON.parse(JSON.stringify(config.defaults)) : {}
+    // Brand color defaults are rewritten to var(--rbx-primary|secondary, #hex)
+    // so an untouched block follows the site theme; a stored user-picked color
+    // (merged in below) is a literal hex that overrides it.
+    const base = config ? applyThemeTokens(JSON.parse(JSON.stringify(config.defaults)), title) : {}
     const stored = _loadStorage()[componentId]
     const merged = { ...base, ...(stored ?? {}), ...(initialState ?? {}) }
     _states.set(componentId, reactive(merged))
@@ -143,7 +147,7 @@ export function useBlockRegistry() {
     if (!config) return
     const state = _states.get(componentId)
     if (!state) return
-    const fresh = JSON.parse(JSON.stringify(config.defaults))
+    const fresh = applyThemeTokens(JSON.parse(JSON.stringify(config.defaults)), title)
     for (const k of Object.keys(state)) {
       if (!(k in fresh)) delete state[k]
     }

@@ -1,22 +1,12 @@
 import { getCookie } from 'h3'
 
-// POST /api/proxy/odoo/cms
-// Proxies to Odoo CMS webhook — keeps API key and session server-side.
-//
-// Body:
-// {
-//   "updatedOn": "2026-05-21T00:00:00.000Z",
-//   "updatedBy": "user@example.com",
-//   "key": "homepage",
-//   "value": "<html>...</html>",
-//   "version": "v1",
-//   "state": "published" | "draft"
-// }
-
 interface CmsPayload {
   updatedOn: string
   updatedBy: string
   key: string
+  // Every key uses `value` as its content field — HTML for pages/header/
+  // footer, a flat JSON string for `global-theme`. Same field, same storage,
+  // just different content.
   value: string
   version: string
   state: 'published' | 'draft'

@@ -865,6 +865,284 @@ ${responsiveStyle}
 </section>`
 }
 
+// ─── Ru3-Form + Banner ────────────────────────────────────────────────────────
+// Banner (colour or background image + aspect ratio) + breadcrumb + page title
+// — same header pattern as Ru2-FAQ+Banner — paired with a single-column
+// contact form (Name, Phone, Email, Subject, Question) and a submit button
+// whose width (full/auto) and horizontal alignment are configurable.
+
+export const ru3FormBannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 160">
+  <rect fill="#394152" width="277.5" height="160"/>
+  <rect fill="#1c2434" width="277.5" height="34"/>
+  <rect fill="#4a5568" x="12" y="12" width="110" height="11" rx="1"/>
+  <rect fill="#5a6475" x="12" y="46" width="70" height="6" rx="1"/>
+  <rect fill="#2d3648" x="12" y="56" width="253.5" height="14" rx="3"/>
+  <rect fill="#5a6475" x="12" y="76" width="55" height="6" rx="1"/>
+  <rect fill="#2d3648" x="12" y="86" width="253.5" height="14" rx="3"/>
+  <rect fill="#5a6475" x="12" y="106" width="65" height="6" rx="1"/>
+  <rect fill="#2d3648" x="12" y="116" width="253.5" height="14" rx="3"/>
+  <rect fill="#718096" x="12" y="138" width="253.5" height="14" rx="3"/>
+</svg>`
+
+export interface Ru3FormBannerFieldItem {
+  label: string
+  type: string
+  required: boolean
+  placeholder: string
+  rows: number
+}
+
+export interface Ru3FormBannerData {
+  fontFamily: string
+
+  // Banner
+  bannerBgColor: string
+  bannerImage: string
+  bannerImageAspectRatio: string
+  bannerTitle: string
+  bannerTitleColor: string
+  bannerTitleAlign: string
+  bannerHeight: number
+  bannerTitleFont: string
+
+  // Breadcrumb
+  showBreadcrumb: boolean
+  breadcrumbHomeHref: string
+  breadcrumbLabel: string
+  breadcrumbColor: string
+
+  // Page title
+  showPageTitle: boolean
+  pageTitle: string
+  pageTitleColor: string
+  pageTitleFont: string
+
+  // Section & form layout
+  sectionBgColor: string
+  paddingY: number
+  paddingX: number
+  formMaxWidth: number
+  formAlign: string
+
+  // Field style
+  labelColor: string
+  labelFont: string
+  requiredColor: string
+  inputBorderColor: string
+  inputBgColor: string
+  inputTextColor: string
+  inputRadius: number
+
+  // Submit button
+  submitLabel: string
+  submitBgColor: string
+  submitTextColor: string
+  submitWidthMode: string
+  submitAlign: string
+  submitRadius: number
+  buttonFont: string
+
+  // Fields — user-editable list, so any number of fields can be added/removed/reordered
+  fields: Ru3FormBannerFieldItem[]
+}
+
+export const ru3FormBannerDefaults: Ru3FormBannerData = {
+  fontFamily: '',
+
+  bannerBgColor: '#0f1b2d',
+  bannerImage: '',
+  bannerImageAspectRatio: 'Auto',
+  bannerTitle: 'Contact Us',
+  bannerTitleColor: '#ffffff',
+  bannerTitleAlign: 'left',
+  bannerHeight: 200,
+  bannerTitleFont: '',
+
+  showBreadcrumb: true,
+  breadcrumbHomeHref: '/',
+  breadcrumbLabel: 'Contact Us',
+  breadcrumbColor: '#6b7280',
+
+  showPageTitle: true,
+  pageTitle: 'Contact Us',
+  pageTitleColor: '#0a1e5e',
+  pageTitleFont: '',
+
+  sectionBgColor: '#ffffff',
+  paddingY: 48,
+  paddingX: 24,
+  formMaxWidth: 640,
+  formAlign: 'left',
+
+  labelColor: '#0a1e5e',
+  labelFont: '',
+  requiredColor: '#dc2626',
+  inputBorderColor: '#d1d5db',
+  inputBgColor: '#ffffff',
+  inputTextColor: '#111827',
+  inputRadius: 4,
+
+  submitLabel: 'Submit',
+  submitBgColor: '#0a1e5e',
+  submitTextColor: '#ffffff',
+  submitWidthMode: 'full',
+  submitAlign: 'center',
+  submitRadius: 4,
+  buttonFont: '',
+
+  fields: [
+    { label: 'Your Name', type: 'text', required: true, placeholder: '', rows: 4 },
+    { label: 'Phone Number', type: 'tel', required: false, placeholder: '', rows: 4 },
+    { label: 'Email', type: 'email', required: true, placeholder: '', rows: 4 },
+    { label: 'Subject', type: 'text', required: true, placeholder: '', rows: 4 },
+    { label: 'Your Question', type: 'textarea', required: true, placeholder: '', rows: 5 },
+  ],
+}
+
+export const ru3FormBannerFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_banner', label: 'Banner', type: 'header' },
+  { key: 'bannerBgColor', label: 'Banner Background', type: 'color' },
+  { key: 'bannerImage', label: 'Banner Image (URL)', type: 'image' },
+  { key: 'bannerImageAspectRatio', label: 'Banner Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
+  { key: 'bannerTitle', label: 'Banner Title', type: 'text', placeholder: 'e.g. Contact Us' },
+  { key: 'bannerTitleColor', label: 'Banner Title Colour', type: 'color' },
+  { key: 'bannerTitleAlign', label: 'Banner Title Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'bannerHeight', label: 'Banner Height', type: 'number', unit: 'px', step: 10, placeholder: '200' },
+  fontField('bannerTitleFont', 'Banner Title Font'),
+
+  { key: '_h_breadcrumb', label: 'Breadcrumb', type: 'header' },
+  { key: 'showBreadcrumb', label: 'Show Breadcrumb', type: 'toggle' },
+  { key: 'breadcrumbHomeHref', label: 'Home Link URL', type: 'url', placeholder: '/' },
+  { key: 'breadcrumbLabel', label: 'Current Page Label', type: 'text', placeholder: 'e.g. Contact Us' },
+  { key: 'breadcrumbColor', label: 'Breadcrumb Colour', type: 'color' },
+
+  { key: '_h_pagetitle', label: 'Page Title', type: 'header' },
+  { key: 'showPageTitle', label: 'Show Page Title', type: 'toggle' },
+  { key: 'pageTitle', label: 'Page Title Text', type: 'text', placeholder: 'e.g. Contact Us' },
+  { key: 'pageTitleColor', label: 'Page Title Colour', type: 'color' },
+  fontField('pageTitleFont', 'Page Title Font'),
+
+  { key: '_h_layout', label: 'Form Layout', type: 'header' },
+  { key: 'sectionBgColor', label: 'Section Background', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '48' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '24' },
+  { key: 'formMaxWidth', label: 'Form Max Width', type: 'number', unit: 'px', step: 20, placeholder: '640' },
+  { key: 'formAlign', label: 'Form Alignment', type: 'select', options: ['left', 'center', 'right'] },
+
+  { key: '_h_fieldstyle', label: 'Field Style', type: 'header' },
+  { key: 'labelColor', label: 'Label Colour', type: 'color' },
+  fontField('labelFont', 'Label Font'),
+  { key: 'requiredColor', label: 'Required Asterisk Colour', type: 'color' },
+  { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
+  { key: 'inputBgColor', label: 'Input Background', type: 'color' },
+  { key: 'inputTextColor', label: 'Input Text Colour', type: 'color' },
+  { key: 'inputRadius', label: 'Input Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '4' },
+
+  { key: '_h_submit', label: 'Submit Button', type: 'header' },
+  { key: 'submitLabel', label: 'Button Text', type: 'text', placeholder: 'e.g. Submit' },
+  { key: 'submitBgColor', label: 'Button Background', type: 'color' },
+  { key: 'submitTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'submitWidthMode', label: 'Button Width', type: 'select', options: ['full', 'auto'] },
+  { key: 'submitAlign', label: 'Button Alignment', type: 'select', options: ['left', 'center', 'right'], visibleIf: (d) => d.submitWidthMode === 'auto' },
+  { key: 'submitRadius', label: 'Button Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '4' },
+  fontField('buttonFont', 'Button Font'),
+
+  // Placed at the bottom of the panel — banner/layout/style are set up first,
+  // then the actual fields are added/edited/reordered last.
+  { key: '_h_fields', label: 'Form Fields', type: 'header' },
+  {
+    key: 'fields', label: 'Form Fields', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Field Label', type: 'text', placeholder: 'e.g. Your Name' },
+      { key: 'type', label: 'Field Type', type: 'select', options: ['text', 'email', 'tel', 'textarea'] },
+      { key: 'required', label: 'Required', type: 'toggle' },
+      { key: 'placeholder', label: 'Placeholder (optional)', type: 'text', placeholder: 'e.g. John Doe' },
+      { key: 'rows', label: 'Textarea Rows (if type = textarea)', type: 'number', step: 1, placeholder: '5' },
+    ],
+  },
+]
+
+export function renderRu3FormBanner(data: Ru3FormBannerData): string {
+  const bannerAlignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
+  const bannerItems = bannerAlignMap[data.bannerTitleAlign] ?? 'flex-start'
+  const bannerTextAlign = data.bannerTitleAlign ?? 'left'
+
+  const bannerImg = productImageSrc(data.bannerImage)
+  const aspectRatioMap: Record<string, string> = {
+    'Wide (16:9)':      'aspect-ratio:16/9;',
+    'Standard (4:3)':   'aspect-ratio:4/3;',
+    'Square (1:1)':     'aspect-ratio:1/1;',
+    'Tall (3:4)':       'aspect-ratio:3/4;',
+    'Cinematic (21:9)': 'aspect-ratio:21/9;',
+  }
+  const bannerAspect = (data.bannerImageAspectRatio && data.bannerImageAspectRatio !== 'Auto')
+    ? (aspectRatioMap[data.bannerImageAspectRatio] ?? '')
+    : ''
+  const bannerBg = bannerImg
+    ? `background:url('${bannerImg}') center/cover no-repeat;background-color:${data.bannerBgColor};`
+    : `background:${data.bannerBgColor};`
+
+  const breadcrumbHtml = data.showBreadcrumb !== false
+    ? `<nav style="max-width:80rem;margin:0 auto;padding:1.25rem 2rem 0;display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;color:${data.breadcrumbColor};">
+        <a href="${data.breadcrumbHomeHref}" aria-label="Home" style="display:inline-flex;color:${data.breadcrumbColor};text-decoration:none;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 3l9 7.5M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <span style="opacity:0.6;">&rsaquo;</span>
+        <span>${data.breadcrumbLabel}</span>
+      </nav>`
+    : ''
+
+  const pageTitleHtml = data.showPageTitle !== false
+    ? `<h1 style="max-width:80rem;margin:0 auto;padding:1rem 2rem 0;font-size:min(2.25rem,7vw);font-weight:700;color:${data.pageTitleColor};${fontCss(data.pageTitleFont, data.fontFamily)}">${data.pageTitle}</h1>`
+    : ''
+
+  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:${data.inputRadius ?? 4}px;background:${data.inputBgColor};padding:0.625rem 0.875rem;font-size:0.9375rem;color:${data.inputTextColor};border:1px solid ${data.inputBorderColor};outline:none;`
+  const labelStyle = `display:block;font-size:0.875rem;font-weight:600;color:${data.labelColor};margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
+
+  const fieldsHtml = (data.fields ?? []).map((f) => {
+    const requiredMark = f.required ? ` <span style="color:${data.requiredColor};">*</span>` : ''
+    const placeholderAttr = f.placeholder ? ` placeholder="${f.placeholder}"` : ''
+    const control = f.type === 'textarea'
+      ? `<textarea rows="${f.rows || 5}" style="${inputStyle}resize:vertical;"${placeholderAttr}></textarea>`
+      : `<input type="${f.type || 'text'}" style="${inputStyle}"${placeholderAttr} />`
+    return `<div style="margin-bottom:1.25rem;">
+      <label style="${labelStyle}">${f.label}${requiredMark}</label>
+      ${control}
+    </div>`
+  }).join('')
+
+  const isFullWidth = (data.submitWidthMode ?? 'full') === 'full'
+  const submitJustifyMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
+  const submitWrapperStyle = isFullWidth
+    ? 'display:block;'
+    : `display:flex;justify-content:${submitJustifyMap[data.submitAlign ?? 'center'] ?? 'center'};`
+  const submitBtnStyle = `background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:${data.submitRadius ?? 4}px;padding:0.75rem 1.5rem;font-size:0.9375rem;font-weight:600;cursor:pointer;${isFullWidth ? 'width:100%;' : ''}${fontCss(data.buttonFont, data.fontFamily)}`
+
+  const alignMarginMap: Record<string, string> = { left: '0 auto 0 0', center: '0 auto', right: '0 0 0 auto' }
+  const formMargin = alignMarginMap[data.formAlign ?? 'left'] ?? '0 auto 0 0'
+
+  return `<section data-component-title="Ru3-Form + Banner" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.sectionBgColor};${fontCss(undefined, data.fontFamily)}">
+  <div style="${bannerBg}${bannerAspect}min-height:${data.bannerHeight}px;padding:2.5rem 0;display:flex;flex-direction:column;justify-content:flex-end;box-sizing:border-box;">
+    <div style="max-width:80rem;margin:0 auto;padding:0 2rem;display:flex;flex-direction:column;align-items:${bannerItems};text-align:${bannerTextAlign};width:100%;box-sizing:border-box;">
+      <h2 style="font-size:min(2.75rem,9vw);font-weight:800;color:${data.bannerTitleColor};margin:0;line-height:1.1;${fontCss(data.bannerTitleFont, data.fontFamily)}">${data.bannerTitle}</h2>
+    </div>
+  </div>
+  ${breadcrumbHtml}
+  ${pageTitleHtml}
+  <div style="padding:${data.paddingY}px min(${data.paddingX}px,6vw);">
+    <div style="width:100%;max-width:${data.formMaxWidth ?? 640}px;margin:${formMargin};box-sizing:border-box;">
+      ${fieldsHtml}
+      <div style="${submitWrapperStyle}margin-top:0.5rem;">
+        <button type="submit" style="${submitBtnStyle}">${data.submitLabel}</button>
+      </div>
+    </div>
+  </div>
+</section>`
+}
+
 // ─── Ru1-Footer ───────────────────────────────────────────────────────────────
 
 export const ru1FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
@@ -1335,7 +1613,7 @@ export function renderRu1About(data: Ru1AboutData): string {
     'None':        { extra: '', over: '', out: '' },
     'Lift up':     { extra: 'transition:transform 0.2s ease,box-shadow 0.2s ease;', over: "this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 20px rgba(0,0,0,0.18)'", out: "this.style.transform='translateY(0)';this.style.boxShadow='none'" },
     'Grow bigger': { extra: 'transition:transform 0.2s ease;', over: "this.style.transform='scale(1.07)'", out: "this.style.transform='scale(1)'" },
-    'Glow':        { extra: 'transition:box-shadow 0.2s ease;', over: `this.style.boxShadow='0 0 20px 5px ${data.ctaBgColor}99'`, out: "this.style.boxShadow='none'" },
+    'Glow':        { extra: 'transition:box-shadow 0.2s ease;', over: `this.style.boxShadow='0 0 20px 5px color-mix(in srgb, ${data.ctaBgColor} 60%, transparent)'`, out: "this.style.boxShadow='none'" },
   }
   const anim = animMap[data.buttonAnimation] ?? animMap['None']
   const hoverAttrs = anim.over ? ` onmouseover="${anim.over}" onmouseout="${anim.out}"` : ''
