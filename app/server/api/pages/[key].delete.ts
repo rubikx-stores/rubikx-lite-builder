@@ -2,7 +2,7 @@ export default defineEventHandler(async (event) => {
   const key = getRouterParam(event, 'key')
   if (!key) throw createError({ statusCode: 400, message: 'key is required' })
 
-  const PROTECTED_KEYS = ['global-header', 'global-footer']
+  const PROTECTED_KEYS = ['global-header', 'global-footer', 'global-theme']
   if (PROTECTED_KEYS.includes(key)) {
     throw createError({ statusCode: 403, message: `Cannot delete protected key: ${key}` })
   }

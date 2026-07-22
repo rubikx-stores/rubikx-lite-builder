@@ -1,6 +1,7 @@
 import { computed, watch } from 'vue'
 import { usePageBuilderStateStore } from '@myissue/vue-website-page-builder'
 import { useBlockRegistry } from './useBlockRegistry'
+import { roleForKey, wrapThemeVar, isThemeColor, THEME_NESTED_LIST_ROLES } from './useThemeColors'
 
 export type SidebarMode = 'none' | 'block' | 'element'
 
@@ -410,6 +411,69 @@ export function useEditorSidebar() {
     }
   }
 
+  // Site-wide theme colors: convert every block's still-at-default brand color
+  // into a var(--rbx-primary|secondary, <original>) reference so it follows the
+  // global theme. A color the user has personally changed (differs from the
+  // block's default) is left untouched — per-block overrides still win. Already
+  // themed values are skipped, so this is safe to call on every color change.
+  // Mirrors applyFontToAllBlocks: "whole page" means every registered section.
+  async function applyThemeColorsToAllBlocks() {
+    if (typeof document === 'undefined') return
+    const jobs: string[] = []
+    document.querySelectorAll<HTMLElement>('section[data-component-title][data-componentid]').forEach((sec) => {
+      const id = sec.getAttribute('data-componentid')
+      const title = sec.getAttribute('data-component-title')
+      if (!id || !title || !registry.hasConfig(title)) return
+      if (!registry.getData(id)) {
+        const rawProps = sec.getAttribute('data-component-props')
+        let props: Record<string, any> | undefined
+        try { if (rawProps) props = JSON.parse(decodeURIComponent(rawProps)) } catch {}
+        registry.registerInstance(id, title, props)
+      }
+      const data = registry.getData(id)
+      const defaults = registry.getConfig(title)?.defaults as Record<string, any> | undefined
+      if (!data || !defaults) return
+
+      let changed = false
+      // A value converts only if it's a plain hex the user hasn't changed
+      // (equals its default) and isn't already themed — so per-block overrides
+      // are preserved. Already-themed values just cascade via the CSS variable.
+      const canConvert = (cur: any, def: any) =>
+        typeof cur === 'string' && !isThemeColor(cur) && (def === undefined || cur === def)
+
+      for (const key of Object.keys(data)) {
+        const role = roleForKey(key, title)
+        if (role) {
+          if (canConvert(data[key], defaults[key])) {
+            registry.setData(id, key, wrapThemeVar(data[key], role))
+            changed = true
+          }
+          continue
+        }
+        // Nested lists whose items carry brand colors (mega-menu ctaButtons,
+        // carousel slides, …). Resolve each item color by its own key role or
+        // the list's role map.
+        if (Array.isArray(data[key])) {
+          const listRoles = THEME_NESTED_LIST_ROLES[key]
+          const defList = Array.isArray(defaults[key]) ? defaults[key] : []
+          data[key].forEach((item: any, i: number) => {
+            if (!item || typeof item !== 'object') return
+            for (const itemKey of Object.keys(item)) {
+              const itemRole = roleForKey(itemKey, title) ?? listRoles?.[itemKey]
+              if (!itemRole) continue
+              if (canConvert(item[itemKey], defList[i]?.[itemKey])) {
+                registry.setListItem(id, key, i, itemKey, wrapThemeVar(item[itemKey], itemRole))
+                changed = true
+              }
+            }
+          })
+        }
+      }
+      if (changed) jobs.push(id)
+    })
+    for (const id of jobs) await _applyBlockRender(id)
+  }
+
   return {
     selectedEl,
     selectedBlockId,
@@ -420,6 +484,7 @@ export function useEditorSidebar() {
     selectedTag,
     applyBlockRender: _applyBlockRender,
     applyFontToAllBlocks,
+    applyThemeColorsToAllBlocks,
     updateBlockField,
     updateBlockListItem,
     addBlockListItem,

@@ -874,6 +874,11 @@ onMounted(async () => {
               </div>
             </div>
           </div>
+
+          <!-- App-owned extra toolbar buttons — e.g. the theme-colors icon.
+               Kept as a slot rather than hardcoded here so the app can add or
+               change toolbar actions without ever needing a library rebuild. -->
+          <slot name="toolbarExtra" />
         </div>
       </div>
 
@@ -1275,7 +1280,7 @@ onMounted(async () => {
   align-items: center;
 }
 #pagebuilder #addsection {
-  /* display: none; */
+  display: none;
 }
 #pagebuilder #nolocalstorage:hover #addsection {
   display: flex;

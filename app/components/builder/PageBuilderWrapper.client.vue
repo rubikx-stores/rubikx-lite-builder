@@ -3,6 +3,7 @@ import { PageBuilder, getPageBuilder } from '@myissue/vue-website-page-builder'
 import type { PageBuilderConfig } from '@myissue/vue-website-page-builder'
 import BuilderPanel from './BuilderPanel.client.vue'
 import EditorSidebar from './EditorSidebar.client.vue'
+import ThemeColorsModal from './ThemeColorsModal.client.vue'
 import { productImageSrc } from '~/composables/useProductImageSrc'
 import { NAVBAR_TITLES, FOOTER_TITLES } from '~/composables/useGlobalSections'
 import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
@@ -17,6 +18,7 @@ import { SLIDER_SCRIPT } from '~/composables/useHydrationScript'
 // the Add-Component modal where BuilderPanel would register them again).
 useThemes()
 useLayouts()
+const showThemeColorsModal = ref(false)
 
 const props = defineProps<{
   pageId?: string
@@ -117,8 +119,13 @@ async function confirmSave() {
     // Same reasoning for the carousel: this app's Nuxt plugin
     // (rubikx-hydration.client.ts) never loads on Odoo's page, so the
     // slider's own JS has to travel inside the fragment too.
+    // Site-wide theme colors travel inside the fragment as a :root block (this
+    // app can't reach Odoo's page <head>). Emitting it on every fragment is
+    // harmless — identical declarations, last one wins — and guarantees the
+    // variables are present on the live page regardless of which records render.
+    const themeStyle = useThemeColors().themeRootStyle()
     const toHtml = (secs: Element[]) =>
-      `<style>@import url('${GOOGLE_FONTS_STYLESHEET_URL}');</style>\n<script>${SLIDER_SCRIPT}<\/script>\n` + secs.map(s => s.outerHTML).join('\n')
+      `${themeStyle}\n<style>@import url('${GOOGLE_FONTS_STYLESHEET_URL}');</style>\n<script>${SLIDER_SCRIPT}<\/script>\n` + secs.map(s => s.outerHTML).join('\n')
     const version = String(selectedVersion.value)
     const commonBody = { updatedBy: 'editor', updatedOn: new Date().toISOString(), version, ...(props.companyId ? { companyId: props.companyId } : {}) }
     const globalBody = { ...commonBody, state: 'published' as const }
@@ -147,6 +154,17 @@ async function confirmSave() {
       }))
     }
 
+    // Clean, structured theme-colors record — separate from the CSS baked
+    // into global-header above. Only saved once a theme has actually been
+    // set, so nobody who never opens the color modal gets a stray record.
+    const themeJsonValue = useThemeColors().themeJson()
+    if (themeJsonValue) {
+      saves.push($fetch<any>('/api/proxy/odoo/cms', {
+        method: 'POST',
+        body: { ...globalBody, key: 'global-theme', value: themeJsonValue },
+      }))
+    }
+
     if (saves.length === 0) {
       console.warn('[CMS] Nothing to save — canvas is empty')
       showVersionModal.value = false
@@ -163,6 +181,7 @@ async function confirmSave() {
     if (navbarSections.length > 0)  pageHtmlCache.value['global-header'] = toHtml(navbarSections)
     if (contentSections.length > 0) pageHtmlCache.value[props.pageId]    = toHtml(contentSections)
     if (footerSections.length > 0)  pageHtmlCache.value['global-footer'] = toHtml(footerSections)
+    if (themeJsonValue)              pageHtmlCache.value['global-theme']  = themeJsonValue
 
     showVersionModal.value = false
   } catch (error) {
@@ -252,6 +271,16 @@ onMounted(async () => {
     let headerHtml = pageHtmlCache.value['global-header'] ?? ''
     let contentHtml = pageHtmlCache.value[props.pageId] ?? ''
     let footerHtml = pageHtmlCache.value['global-footer'] ?? ''
+    const themeJsonHtml = pageHtmlCache.value['global-theme'] ?? ''
+
+    // Restore the site-wide theme color state (saved for reference / the CMS
+    // record only — it doesn't apply itself to any block). The clean
+    // global-theme JSON record is authoritative; the header's embedded :root
+    // is only a fallback for pages saved before that record existed.
+    const themeColors = useThemeColors()
+    if (!themeColors.seedFromThemeJson(themeJsonHtml)) {
+      themeColors.seedFromHeaderHtml(headerHtml)
+    }
 
     // Strip navbar and footer from contentHtml to prevent duplication
     // Handles pages saved before the global split existed
@@ -383,8 +412,23 @@ onMounted(async () => {
 
 <template>
   <div class="relative h-full overflow-hidden">
-    <PageBuilder :CustomBuilderComponents="BuilderPanel" />
+    <PageBuilder :CustomBuilderComponents="BuilderPanel">
+      <template #toolbarExtra>
+        <div class="flex items-center justify-center ml-2">
+          <div @click="showThemeColorsModal = true">
+            <div class="flex items-center justify-center gap-2">
+              <span
+                class="h-10 w-10 cursor-pointer rounded-full flex items-center border-none justify-center bg-gray-50 aspect-square hover:bg-myPrimaryLinkColor focus-visible:ring-0 text-black hover:text-white"
+              >
+                <span class="pbx-myMediumIcon material-symbols-outlined">palette</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </template>
+    </PageBuilder>
     <EditorSidebar />
+    <ThemeColorsModal v-model="showThemeColorsModal" />
 
     <!-- Version picker modal -->
     <Teleport to="body">

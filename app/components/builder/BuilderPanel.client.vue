@@ -16,6 +16,11 @@ const { closeAddComponentModal } = usePageBuilderModal()
 const { applyBlockRender, applyFontToAllBlocks } = useEditorSidebar()
 const blockRegistry = useBlockRegistry()
 
+// Site-wide theme colors now live in the dedicated ThemeColorsModal (opened via
+// the toolbar icon next to the desktop/mobile preview buttons). They're saved
+// for reference only — they don't apply themselves to any block; per-block
+// button/text colors are set manually from each block's own editor panel.
+
 const isLoading = ref(false)
 const selectedTab = ref<'Components' | 'Themes' | 'Settings'>('Components')
 const selectedCategory = ref('All')

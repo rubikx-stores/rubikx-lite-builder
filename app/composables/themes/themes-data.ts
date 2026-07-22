@@ -243,6 +243,9 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   const logoEl = `<a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;">${logoInner}</a>`
 
   const linkStyle = `color:${data.linkColor};font-size:1rem;text-decoration:none;display:inline-flex;align-items:center;border-radius:0.375rem;padding:0.5rem 0;${fontCss(data.linkFont, data.fontFamily)}`
+  // Sign In / Contact buttons follow the site Primary color when the theme is
+  // active; otherwise the var() falls back to the block's own textColor.
+  const btnAccent = `var(--rbx-primary, ${data.textColor})`
 
   const searchW = data.searchWidth || 420
   const searchEl = data.showSearch
@@ -253,8 +256,8 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     : ''
 
   const buttonsArr = [
-    data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${data.textColor};font-size:0.875rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;${fontCss(data.buttonFont, data.fontFamily)}">${data.signInLabel}</a>` : '',
-    data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${data.textColor};font-size:0.875rem;text-decoration:none;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;${fontCss(data.buttonFont, data.fontFamily)}">${data.contactUsLabel}</a>` : '',
+    data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${btnAccent};font-size:0.875rem;text-decoration:none;border:1px solid ${btnAccent};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;${fontCss(data.buttonFont, data.fontFamily)}">${data.signInLabel}</a>` : '',
+    data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${btnAccent};font-size:0.875rem;text-decoration:none;border:1px solid ${btnAccent};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;${fontCss(data.buttonFont, data.fontFamily)}">${data.contactUsLabel}</a>` : '',
     data.showCart
       ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;flex-shrink:0;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
       : '',
@@ -356,8 +359,8 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     ${data.dynamicCategories ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;cursor:pointer;">Categories</a>` : ''}
   </div>
   <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
-    ${data.showContactUs ? `<a href="${data.contactUsUrl}" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;${fontCss(data.buttonFont, data.fontFamily)}">${data.contactUsLabel}</a>` : ''}
-    ${data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;${fontCss(data.buttonFont, data.fontFamily)}">${data.signInLabel}</a>` : ''}
+    ${data.showContactUs ? `<a href="${data.contactUsUrl}" style="display:flex;align-items:center;justify-content:center;border:1px solid ${btnAccent};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${btnAccent};text-decoration:none;${fontCss(data.buttonFont, data.fontFamily)}">${data.contactUsLabel}</a>` : ''}
+    ${data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="display:flex;align-items:center;justify-content:center;border:1px solid ${btnAccent};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${btnAccent};text-decoration:none;${fontCss(data.buttonFont, data.fontFamily)}">${data.signInLabel}</a>` : ''}
   </div>
 </div>
 
@@ -549,6 +552,8 @@ export interface Ru1ProductsData {
   imageBgColor: string
   buttonBgColor: string
   buttonTextColor: string
+  productNameColor: string
+  priceColor: string
   oldPriceColor: string
   cardAnimation: boolean
   hoverEffect: string
@@ -612,6 +617,8 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   imageBgColor: '#ffffff',
   buttonBgColor: '#111827',
   buttonTextColor: '#ffffff',
+  productNameColor: '#111827',
+  priceColor: '#111827',
   oldPriceColor: '#9ca3af',
   cardAnimation: false,
   hoverEffect: 'Lift Up',
@@ -688,6 +695,8 @@ export const ru1ProductsFields: FieldConfig[] = [
   { key: 'arrowBtnColor', label: 'Icon Color', type: 'color' },
 
   { key: '_h_pricing', label: 'Pricing & Button', type: 'header' },
+  { key: 'productNameColor', label: 'Product Name Color', type: 'color' },
+  { key: 'priceColor', label: 'Price Color', type: 'color' },
   { key: 'oldPriceColor', label: 'Old Price Color', type: 'color' },
   fontField('priceFont', 'Price Font'),
   fontField('productNameFont', 'Product Name Font'),
@@ -785,13 +794,13 @@ export function renderRu1Products(data: Ru1ProductsData, title = 'Ru1 Homepage F
     const priceRow = arrowBtnPos === 'center'
       ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:0.375rem">
           <div style="display:flex;align-items:center;gap:0.5rem">
-            <p style="font-size:0.875rem;${fontCss(data.priceFont, data.fontFamily)}">${p.price}</p>
+            <p style="font-size:0.875rem;color:${data.priceColor ?? '#111827'};${fontCss(data.priceFont, data.fontFamily)}">${p.price}</p>
             ${p.oldPrice ? `<s style="color:${data.oldPriceColor};font-size:0.875rem;${fontCss(data.priceFont, data.fontFamily)}">${p.oldPrice}</s>` : ''}
           </div>
           ${arrowBtnEl}
         </div>`
       : `<div style="display:flex;align-items:center;gap:0.5rem">
-          <p style="font-size:0.875rem;${fontCss(data.priceFont, data.fontFamily)}">${p.price}</p>
+          <p style="font-size:0.875rem;color:${data.priceColor ?? '#111827'};${fontCss(data.priceFont, data.fontFamily)}">${p.price}</p>
           ${p.oldPrice ? `<s style="color:${data.oldPriceColor};font-size:0.875rem;${fontCss(data.priceFont, data.fontFamily)}">${p.oldPrice}</s>` : ''}
         </div>`
 
@@ -806,7 +815,7 @@ export function renderRu1Products(data: Ru1ProductsData, title = 'Ru1 Homepage F
           ${overlayHtml}
         </div>
         <div style="display:flex;flex-direction:column;gap:0.25rem;padding:0.75rem;flex:1">
-          <p title="${p.name}" style="font-weight:600;font-size:0.875rem;line-height:1.3;min-height:36px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all;overflow-wrap:anywhere;${fontCss(data.productNameFont, data.fontFamily)}">${p.name}</p>
+          <p title="${p.name}" style="font-weight:600;font-size:0.875rem;line-height:1.3;min-height:36px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all;overflow-wrap:anywhere;color:${data.productNameColor ?? '#111827'};${fontCss(data.productNameFont, data.fontFamily)}">${p.name}</p>
           ${priceRow}
           ${colorsHtml}
           ${data.showAddToCart !== false ? `<a href="${p.buttonUrl}" class="shop-btn" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.addToCartRadius ?? 6}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block;${fontCss(data.buttonFont, data.fontFamily)}">${p.buttonLabel}</a>` : ''}
