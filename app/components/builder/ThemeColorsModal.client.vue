@@ -3,35 +3,45 @@
 // mobile preview buttons (rendered app-side into PageBuilder's `toolbarExtra`
 // slot in PageBuilderWrapper.client.vue).
 //
-// These 4 colors are stored and saved to the CMS (global-theme record) as
-// before, but do NOT apply themselves to any block automatically — per-block
-// button/text colors are set manually via the right-panel editor instead.
+// These 4 colors are stored and saved to the CMS (global-theme record) only —
+// they do NOT apply themselves to any block. Per-block button/text colors are
+// set manually via each block's own right-panel editor, same as always.
+//
+// Edits are a local draft: nothing is saved until "Save" is clicked. Closing
+// (X or backdrop) discards any unsaved picks and reverts to the last-saved
+// values next time the modal opens.
+import { reactive, watch } from 'vue'
+import type { ThemeColorValues } from '~/composables/editor/useThemeColors'
+
 const props = defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>()
 
-const {
-  state: themeColorsState,
-  setPrimaryButtonColor,
-  setSecondaryButtonColor,
-  setPrimaryTextColor,
-  setSecondaryTextColor,
-} = useThemeColors()
+const { state: themeColorsState, saveTheme } = useThemeColors()
+
+const draft = reactive<ThemeColorValues>({
+  primaryCtaColor: themeColorsState.primaryCtaColor,
+  primaryTextColor: themeColorsState.primaryTextColor,
+  secondaryCtaColor: themeColorsState.secondaryCtaColor,
+  secondaryTextColor: themeColorsState.secondaryTextColor,
+})
+
+// Re-sync the draft from the last-saved values every time the modal opens,
+// so a previous unsaved edit never leaks in on reopen.
+watch(() => props.modelValue, (open) => {
+  if (!open) return
+  draft.primaryCtaColor = themeColorsState.primaryCtaColor
+  draft.primaryTextColor = themeColorsState.primaryTextColor
+  draft.secondaryCtaColor = themeColorsState.secondaryCtaColor
+  draft.secondaryTextColor = themeColorsState.secondaryTextColor
+})
 
 function close() {
   emit('update:modelValue', false)
 }
 
-function onPrimaryButtonColor(v: string) {
-  setPrimaryButtonColor(v)
-}
-function onSecondaryButtonColor(v: string) {
-  setSecondaryButtonColor(v)
-}
-function onPrimaryTextColor(v: string) {
-  setPrimaryTextColor(v)
-}
-function onSecondaryTextColor(v: string) {
-  setSecondaryTextColor(v)
+function save() {
+  saveTheme({ ...draft })
+  close()
 }
 </script>
 
@@ -41,8 +51,8 @@ function onSecondaryTextColor(v: string) {
     class="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 p-4"
     @click.self="close"
   >
-    <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-      <div class="mb-4 flex items-center justify-between">
+    <div class="w-full max-w-2xl rounded-xl bg-white p-5 shadow-xl max-h-[90vh] overflow-y-auto">
+      <div class="mb-3 flex items-center justify-between">
         <h3 class="text-lg font-medium text-gray-900">Brand Colors</h3>
         <button
           type="button"
@@ -54,93 +64,84 @@ function onSecondaryTextColor(v: string) {
         </button>
       </div>
 
-      <label class="block text-sm font-medium text-gray-900 mb-2">Primary Button Color</label>
-      <div class="flex items-center gap-2 mb-4">
-        <input
-          type="color"
-          :value="themeColorsState.primaryButtonColor"
-          aria-label="Primary button color"
-          class="h-9 w-12 shrink-0 cursor-pointer rounded-md border border-gray-300 p-0.5"
-          @input="onPrimaryButtonColor(($event.target as HTMLInputElement).value)"
-        >
-        <input
-          type="text"
-          :value="themeColorsState.primaryButtonColor"
-          spellcheck="false"
-          aria-label="Primary button color hex"
-          class="w-full rounded-md border border-gray-300 py-2 px-3 text-sm font-mono lowercase"
-          @change="onPrimaryButtonColor(($event.target as HTMLInputElement).value)"
-        >
+      <!-- ── Primary Cta Button ── -->
+      <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-2">Primary Cta Button/Text</h4>
+
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-900 mb-1">Background Color</label>
+          <div class="flex items-center gap-1">
+            <input v-model="draft.primaryCtaColor" type="color" aria-label="Primary Background Color" class="h-9 w-9 shrink-0 cursor-pointer rounded-md border border-gray-300 p-0.5">
+            <input v-model="draft.primaryCtaColor" type="text" spellcheck="false" aria-label="Primary Background Color hex" class="w-full min-w-0 rounded-md border border-gray-300 py-2 px-1.5 text-xs font-mono lowercase">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-900 mb-1">Text Color</label>
+          <div class="flex items-center gap-1">
+            <input v-model="draft.primaryTextColor" type="color" aria-label="Primary Text Color" class="h-9 w-9 shrink-0 cursor-pointer rounded-md border border-gray-300 p-0.5">
+            <input v-model="draft.primaryTextColor" type="text" spellcheck="false" aria-label="Primary Text Color hex" class="w-full min-w-0 rounded-md border border-gray-300 py-2 px-1.5 text-xs font-mono lowercase">
+          </div>
+        </div>
+
+        <div>
+          <span class="block text-xs text-gray-500 mb-1">Sample</span>
+          <span
+            class="h-9 rounded-md px-3 text-xs font-medium flex items-center justify-center"
+            :style="{ background: draft.primaryCtaColor, color: draft.primaryTextColor }"
+          >Add to Cart</span>
+        </div>
       </div>
 
-      <label class="block text-sm font-medium text-gray-900 mb-2">Secondary Button Color</label>
-      <div class="flex items-center gap-2 mb-4">
-        <input
-          type="color"
-          :value="themeColorsState.secondaryButtonColor"
-          aria-label="Secondary button color"
-          class="h-9 w-12 shrink-0 cursor-pointer rounded-md border border-gray-300 p-0.5"
-          @input="onSecondaryButtonColor(($event.target as HTMLInputElement).value)"
-        >
-        <input
-          type="text"
-          :value="themeColorsState.secondaryButtonColor"
-          spellcheck="false"
-          aria-label="Secondary button color hex"
-          class="w-full rounded-md border border-gray-300 py-2 px-3 text-sm font-mono lowercase"
-          @change="onSecondaryButtonColor(($event.target as HTMLInputElement).value)"
-        >
+      <!-- ── Secondary Cta Button ── -->
+      <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-2">Secondary Cta Button/Text</h4>
+
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-900 mb-1">Background Color</label>
+          <div class="flex items-center gap-1">
+            <input v-model="draft.secondaryCtaColor" type="color" aria-label="Secondary Background Color" class="h-9 w-9 shrink-0 cursor-pointer rounded-md border border-gray-300 p-0.5">
+            <input v-model="draft.secondaryCtaColor" type="text" spellcheck="false" aria-label="Secondary Background Color hex" class="w-full min-w-0 rounded-md border border-gray-300 py-2 px-1.5 text-xs font-mono lowercase">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-900 mb-1">Text Color</label>
+          <div class="flex items-center gap-1">
+            <input v-model="draft.secondaryTextColor" type="color" aria-label="Secondary Text Color" class="h-9 w-9 shrink-0 cursor-pointer rounded-md border border-gray-300 p-0.5">
+            <input v-model="draft.secondaryTextColor" type="text" spellcheck="false" aria-label="Secondary Text Color hex" class="w-full min-w-0 rounded-md border border-gray-300 py-2 px-1.5 text-xs font-mono lowercase">
+          </div>
+        </div>
+
+        <div>
+          <span class="block text-xs text-gray-500 mb-1">Sample</span>
+          <span
+            class="h-9 rounded-md px-3 text-xs font-medium flex items-center justify-center"
+            :style="{ background: draft.secondaryCtaColor, color: draft.secondaryTextColor }"
+          >Learn More</span>
+        </div>
       </div>
 
-      <label class="block text-sm font-medium text-gray-900 mb-2">Primary Text Color</label>
-      <div class="flex items-center gap-2 mb-4">
-        <input
-          type="color"
-          :value="themeColorsState.primaryTextColor"
-          aria-label="Primary text color"
-          class="h-9 w-12 shrink-0 cursor-pointer rounded-md border border-gray-300 p-0.5"
-          @input="onPrimaryTextColor(($event.target as HTMLInputElement).value)"
-        >
-        <input
-          type="text"
-          :value="themeColorsState.primaryTextColor"
-          spellcheck="false"
-          aria-label="Primary text color hex"
-          class="w-full rounded-md border border-gray-300 py-2 px-3 text-sm font-mono lowercase"
-          @change="onPrimaryTextColor(($event.target as HTMLInputElement).value)"
-        >
-      </div>
-
-      <label class="block text-sm font-medium text-gray-900 mb-2">Secondary Text Color</label>
-      <div class="flex items-center gap-2 mb-4">
-        <input
-          type="color"
-          :value="themeColorsState.secondaryTextColor"
-          aria-label="Secondary text color"
-          class="h-9 w-12 shrink-0 cursor-pointer rounded-md border border-gray-300 p-0.5"
-          @input="onSecondaryTextColor(($event.target as HTMLInputElement).value)"
-        >
-        <input
-          type="text"
-          :value="themeColorsState.secondaryTextColor"
-          spellcheck="false"
-          aria-label="Secondary text color hex"
-          class="w-full rounded-md border border-gray-300 py-2 px-3 text-sm font-mono lowercase"
-          @change="onSecondaryTextColor(($event.target as HTMLInputElement).value)"
-        >
-      </div>
-
-      <p class="text-xs text-gray-500 mb-4">
+      <p class="text-xs text-gray-500 mb-3">
         Saved for reference only — set each block's own button/text color from its editor panel on the right.
       </p>
 
-      <button
-        type="button"
-        class="w-full rounded-md bg-gray-900 py-2 text-sm font-medium text-white hover:bg-gray-700"
-        @click="close"
-      >
-        Done
-      </button>
+      <div class="flex flex-row gap-2">
+        <button
+          type="button"
+          class="flex-1 rounded-md border border-gray-300 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          @click="close"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="flex-1 rounded-md bg-gray-900 py-2 text-sm font-medium text-white hover:bg-gray-700"
+          @click="save"
+        >
+          Save
+        </button>
+      </div>
     </div>
   </div>
 </template>

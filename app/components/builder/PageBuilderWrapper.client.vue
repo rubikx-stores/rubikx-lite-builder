@@ -119,13 +119,8 @@ async function confirmSave() {
     // Same reasoning for the carousel: this app's Nuxt plugin
     // (rubikx-hydration.client.ts) never loads on Odoo's page, so the
     // slider's own JS has to travel inside the fragment too.
-    // Site-wide theme colors travel inside the fragment as a :root block (this
-    // app can't reach Odoo's page <head>). Emitting it on every fragment is
-    // harmless — identical declarations, last one wins — and guarantees the
-    // variables are present on the live page regardless of which records render.
-    const themeStyle = useThemeColors().themeRootStyle()
     const toHtml = (secs: Element[]) =>
-      `${themeStyle}\n<style>@import url('${GOOGLE_FONTS_STYLESHEET_URL}');</style>\n<script>${SLIDER_SCRIPT}<\/script>\n` + secs.map(s => s.outerHTML).join('\n')
+      `<style>@import url('${GOOGLE_FONTS_STYLESHEET_URL}');</style>\n<script>${SLIDER_SCRIPT}<\/script>\n` + secs.map(s => s.outerHTML).join('\n')
     const version = String(selectedVersion.value)
     const commonBody = { updatedBy: 'editor', updatedOn: new Date().toISOString(), version, ...(props.companyId ? { companyId: props.companyId } : {}) }
     const globalBody = { ...commonBody, state: 'published' as const }
@@ -274,13 +269,8 @@ onMounted(async () => {
     const themeJsonHtml = pageHtmlCache.value['global-theme'] ?? ''
 
     // Restore the site-wide theme color state (saved for reference / the CMS
-    // record only — it doesn't apply itself to any block). The clean
-    // global-theme JSON record is authoritative; the header's embedded :root
-    // is only a fallback for pages saved before that record existed.
-    const themeColors = useThemeColors()
-    if (!themeColors.seedFromThemeJson(themeJsonHtml)) {
-      themeColors.seedFromHeaderHtml(headerHtml)
-    }
+    // record only — it doesn't apply itself to any block).
+    useThemeColors().seedFromThemeJson(themeJsonHtml)
 
     // Strip navbar and footer from contentHtml to prevent duplication
     // Handles pages saved before the global split existed
