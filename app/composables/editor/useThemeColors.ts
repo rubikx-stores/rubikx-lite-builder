@@ -259,25 +259,21 @@ export function useThemeColors() {
       _state.primaryButtonColor = v
       _state.activated = true
       _persist()
-      applyThemeVarsToHead()
     },
     setSecondaryButtonColor(v: string) {
       _state.secondaryButtonColor = v
       _state.activated = true
       _persist()
-      applyThemeVarsToHead()
     },
     setPrimaryTextColor(v: string) {
       _state.primaryTextColor = v
       _state.activated = true
       _persist()
-      applyThemeVarsToHead()
     },
     setSecondaryTextColor(v: string) {
       _state.secondaryTextColor = v
       _state.activated = true
       _persist()
-      applyThemeVarsToHead()
     },
     themeRootStyle,
     applyThemeVarsToHead,

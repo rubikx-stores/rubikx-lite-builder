@@ -13,14 +13,13 @@ const { themeRegistry, applyTheme } = useThemes()
 const { layoutComponentRegistry } = useLayouts()
 const { helperComponentBlocks } = useHelperBlocks()
 const { closeAddComponentModal } = usePageBuilderModal()
-const { applyBlockRender, applyFontToAllBlocks, applyThemeColorsToAllBlocks } = useEditorSidebar()
+const { applyBlockRender, applyFontToAllBlocks } = useEditorSidebar()
 const blockRegistry = useBlockRegistry()
 
 // Site-wide theme colors now live in the dedicated ThemeColorsModal (opened via
-// the toolbar icon next to the desktop/mobile preview buttons). Still needed
-// here: gating the "new block adopts theme" / "applied theme adopts theme"
-// sweeps below on whether a theme has actually been set.
-const { isActivated: isThemeActivated } = useThemeColors()
+// the toolbar icon next to the desktop/mobile preview buttons). They're saved
+// for reference only — they don't apply themselves to any block; per-block
+// button/text colors are set manually from each block's own editor panel.
 
 const isLoading = ref(false)
 const selectedTab = ref<'Components' | 'Themes' | 'Settings'>('Components')
@@ -150,8 +149,6 @@ async function handleDropComponent(comp: { id: string | number | null; html_code
     // Hydrate dynamic components after adding new component
     await nextTick()
     hydrateComponents(selectedCompanyId.value ?? undefined)
-    // If the site theme is active, the new block adopts the current colors.
-    if (isThemeActivated()) await applyThemeColorsToAllBlocks()
   } catch (e) {
     console.error('[ADD] Error:', e)
   } finally {
@@ -184,11 +181,6 @@ async function handleApplyTheme(themeId: string) {
         await applyBlockRender(section.title)
       }
     }
-  }
-  // If the site theme is active, the applied theme's blocks adopt the colors.
-  if (isThemeActivated()) {
-    await nextTick()
-    await applyThemeColorsToAllBlocks()
   }
   closeAddComponentModal()
   isLoading.value = false

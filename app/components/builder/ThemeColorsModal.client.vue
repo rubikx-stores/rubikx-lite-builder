@@ -1,8 +1,11 @@
 <script setup lang="ts">
 // Site-wide brand colors — opened via the toolbar icon next to the desktop/
 // mobile preview buttons (rendered app-side into PageBuilder's `toolbarExtra`
-// slot in PageBuilderWrapper.client.vue). Replaces the old Settings-tab
-// Primary/Secondary pickers: this is now the single place theme colors live.
+// slot in PageBuilderWrapper.client.vue).
+//
+// These 4 colors are stored and saved to the CMS (global-theme record) as
+// before, but do NOT apply themselves to any block automatically — per-block
+// button/text colors are set manually via the right-panel editor instead.
 const props = defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>()
 
@@ -13,7 +16,6 @@ const {
   setPrimaryTextColor,
   setSecondaryTextColor,
 } = useThemeColors()
-const { applyThemeColorsToAllBlocks } = useEditorSidebar()
 
 function close() {
   emit('update:modelValue', false)
@@ -21,19 +23,15 @@ function close() {
 
 function onPrimaryButtonColor(v: string) {
   setPrimaryButtonColor(v)
-  applyThemeColorsToAllBlocks()
 }
 function onSecondaryButtonColor(v: string) {
   setSecondaryButtonColor(v)
-  applyThemeColorsToAllBlocks()
 }
 function onPrimaryTextColor(v: string) {
   setPrimaryTextColor(v)
-  applyThemeColorsToAllBlocks()
 }
 function onSecondaryTextColor(v: string) {
   setSecondaryTextColor(v)
-  applyThemeColorsToAllBlocks()
 }
 </script>
 
@@ -133,7 +131,7 @@ function onSecondaryTextColor(v: string) {
       </div>
 
       <p class="text-xs text-gray-500 mb-4">
-        Applies across the whole website — buttons, accents and highlights follow these colors. A block with its own color set stays unchanged.
+        Saved for reference only — set each block's own button/text color from its editor panel on the right.
       </p>
 
       <button

@@ -18,7 +18,6 @@ import { SLIDER_SCRIPT } from '~/composables/useHydrationScript'
 // the Add-Component modal where BuilderPanel would register them again).
 useThemes()
 useLayouts()
-const { applyThemeColorsToAllBlocks } = useEditorSidebar()
 const showThemeColorsModal = ref(false)
 
 const props = defineProps<{
@@ -262,8 +261,6 @@ onUnmounted(() => {
 
 onMounted(async () => {
   const builder = getPageBuilder() as any
-  // Ensure the theme CSS variables exist on the canvas even for a blank page.
-  useThemeColors().applyThemeVarsToHead()
   let parsedComponents: any[] | undefined = undefined
   const savedProps = new Map<string, Record<string, any>>()
 
@@ -276,15 +273,14 @@ onMounted(async () => {
     let footerHtml = pageHtmlCache.value['global-footer'] ?? ''
     const themeJsonHtml = pageHtmlCache.value['global-theme'] ?? ''
 
-    // Restore the site-wide theme colors and apply them to the builder canvas
-    // so themed blocks resolve their variables. The clean global-theme JSON
-    // record is authoritative; the header's embedded :root is only a fallback
-    // for pages saved before that record existed.
+    // Restore the site-wide theme color state (saved for reference / the CMS
+    // record only — it doesn't apply itself to any block). The clean
+    // global-theme JSON record is authoritative; the header's embedded :root
+    // is only a fallback for pages saved before that record existed.
     const themeColors = useThemeColors()
     if (!themeColors.seedFromThemeJson(themeJsonHtml)) {
       themeColors.seedFromHeaderHtml(headerHtml)
     }
-    themeColors.applyThemeVarsToHead()
 
     // Strip navbar and footer from contentHtml to prevent duplication
     // Handles pages saved before the global split existed
@@ -366,13 +362,6 @@ onMounted(async () => {
     if (!componentId || !title) return
     registerInstance(componentId, title, savedProps.get(componentId))
   })
-
-  // If the site theme is active, existing blocks (incl. ones saved before the
-  // theme feature) adopt the current colors on load.
-  if (useThemeColors().isActivated()) {
-    await nextTick()
-    await applyThemeColorsToAllBlocks()
-  }
 
   const stopHydrationWatch = watch(
     () => (sharedPageBuilderStore as any).getIsLoadingGlobal,
