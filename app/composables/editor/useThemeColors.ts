@@ -1,46 +1,45 @@
 import { reactive } from 'vue'
 import { NAVBAR_TITLES } from '../useGlobalSections'
 
-// ─── Site-wide theme colors ──────────────────────────────────────────────────
-// Four explicit, user-set brand colors that every block/component can inherit,
-// exposed to rendered HTML as CSS variables. Blocks reference the variables via
-// their color field DEFAULTS (see applyThemeTokens), so a block follows the
-// theme by default while a user-picked color on that block wins.
+// ─── Site-wide brand colors ───────────────────────────────────────────────────
+// 4 colors (Primary/Secondary × CTA/Text), stored and saved to the CMS
+// (`global-theme` record) for reference only. They do NOT apply themselves to
+// any block — per-block button/text colors are still set manually from each
+// block's own right-panel editor, same as always.
 //
-// Four variables are emitted:
-//   --rbx-primary / --rbx-secondary            → button & accent backgrounds
-//   --rbx-primary-text / --rbx-secondary-text  → text sitting ON those buttons
-//                                                 (both fully user-controlled —
-//                                                 no auto contrast computation)
-//
-// Color analog of fontFields.ts (fontCss / GOOGLE_FONTS_STYLESHEET_URL).
+// Only committed to state (and persisted) when the modal's Save button is
+// clicked — picking a color alone never saves anything.
 
-// Defaults are NOT arbitrary: primary is the project's own brand green
-// (main.css --color-primary-link, used across the builder as myPrimaryLinkColor);
-// secondary is the conventional neutral (Bootstrap's standard secondary grey).
 export const RBX_PRIMARY_DEFAULT = '#16a34a'
 export const RBX_SECONDARY_DEFAULT = '#6c757d'
-export const RBX_PRIMARY_TEXT_DEFAULT = '#ffffff'
-export const RBX_SECONDARY_TEXT_DEFAULT = '#ffffff'
+export const RBX_TEXT_DEFAULT = '#ffffff'
 
-const STORAGE_KEY = 'app-theme-colors-v2'
+const STORAGE_KEY = 'app-theme-colors-v4'
 
-interface ThemeColors {
-  primaryButtonColor: string
-  secondaryButtonColor: string
+export interface ThemeColorValues {
+  primaryCtaColor: string
   primaryTextColor: string
+  secondaryCtaColor: string
   secondaryTextColor: string
-  // True once the user has set a theme color at least once. Until then the
-  // builder never rewrites block colors, so appearance is unchanged for anyone
-  // who never opens the theme controls.
+}
+
+const VALUE_KEYS = [
+  'primaryCtaColor',
+  'primaryTextColor',
+  'secondaryCtaColor',
+  'secondaryTextColor',
+] as const
+
+interface ThemeColors extends ThemeColorValues {
+  // True once Save has been clicked at least once.
   activated: boolean
 }
 
 const _state = reactive<ThemeColors>({
-  primaryButtonColor: RBX_PRIMARY_DEFAULT,
-  secondaryButtonColor: RBX_SECONDARY_DEFAULT,
-  primaryTextColor: RBX_PRIMARY_TEXT_DEFAULT,
-  secondaryTextColor: RBX_SECONDARY_TEXT_DEFAULT,
+  primaryCtaColor: RBX_PRIMARY_DEFAULT,
+  primaryTextColor: RBX_TEXT_DEFAULT,
+  secondaryCtaColor: RBX_SECONDARY_DEFAULT,
+  secondaryTextColor: RBX_TEXT_DEFAULT,
   activated: false,
 })
 let _loaded = false
@@ -53,10 +52,9 @@ function _load() {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
-      if (typeof parsed?.primaryButtonColor === 'string') _state.primaryButtonColor = parsed.primaryButtonColor
-      if (typeof parsed?.secondaryButtonColor === 'string') _state.secondaryButtonColor = parsed.secondaryButtonColor
-      if (typeof parsed?.primaryTextColor === 'string') _state.primaryTextColor = parsed.primaryTextColor
-      if (typeof parsed?.secondaryTextColor === 'string') _state.secondaryTextColor = parsed.secondaryTextColor
+      for (const key of VALUE_KEYS) {
+        if (typeof parsed?.[key] === 'string') _state[key] = parsed[key]
+      }
       if (typeof parsed?.activated === 'boolean') _state.activated = parsed.activated
     }
   } catch {}
@@ -65,19 +63,16 @@ function _load() {
 function _persist() {
   if (typeof localStorage === 'undefined') return
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      primaryButtonColor: _state.primaryButtonColor,
-      secondaryButtonColor: _state.secondaryButtonColor,
-      primaryTextColor: _state.primaryTextColor,
-      secondaryTextColor: _state.secondaryTextColor,
-      activated: _state.activated,
-    }))
+    const out: Record<string, any> = { activated: _state.activated }
+    for (const key of VALUE_KEYS) out[key] = _state[key]
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(out))
   } catch {}
 }
 
 // ─── Which color field keys map to which theme role ──────────────────────────
-// Only genuine brand/accent roles. Backgrounds, headings, body text, borders,
-// overlays, dividers and plain link colors stay literal (neutral).
+// Dead code today (nothing calls applyThemeTokens/the sweep anymore — theme
+// colors don't apply to blocks). Left in place in case that's re-enabled
+// later; harmless while unused.
 type Role = 'primary' | 'secondary' | 'primary-text' | 'secondary-text'
 
 export const THEME_PRIMARY_KEYS = new Set<string>([
@@ -88,30 +83,19 @@ export const THEME_PRIMARY_KEYS = new Set<string>([
 export const THEME_SECONDARY_KEYS = new Set<string>([
   'cta2BgColor', 'secondaryCtaColor',
 ])
-// Text that sits on a primary/secondary button — user-set, not computed.
 export const THEME_PRIMARY_TEXT_KEYS = new Set<string>([
   'ctaTextColor', 'buttonTextColor', 'submitTextColor', 'cta1TextColor',
   'viewProductTextColor', 'loadMoreTextColor', 'arrowBtnColor', 'arrowColor', 'badgeTextColor',
-  // Product name / price — same convention already used on the Product Detail
-  // blocks; theming them here also covers those blocks automatically.
   'productNameColor', 'priceColor',
 ])
 export const THEME_SECONDARY_TEXT_KEYS = new Set<string>([
   'cta2TextColor',
 ])
 
-// Brand colors that live inside list items where the item's key name is NOT
-// itself in the sets above (e.g. mega-menu ctaButtons use plain `bgColor` /
-// `textColor`). Maps: listKey → { itemColorKey → role }.
 export const THEME_NESTED_LIST_ROLES: Record<string, Record<string, Role>> = {
   ctaButtons: { bgColor: 'primary', textColor: 'primary-text' },
 }
 
-// Top-level keys whose role depends on WHICH block they're on — `linkColor`
-// means "nav link" on a navbar but "footer link" on a footer, and only the
-// former should follow the theme. Scoped by block title (not global by key
-// name) so footer links stay neutral. Built from the existing NAVBAR_TITLES
-// list so any navbar variant automatically gets themed nav links.
 export const THEME_TITLE_KEY_ROLES: Record<string, Record<string, Role>> =
   Object.fromEntries(NAVBAR_TITLES.map((title) => [title, { linkColor: 'primary-text' as Role }]))
 
@@ -134,9 +118,6 @@ export function wrapThemeVar(value: string, role: Role): string {
   return `var(--rbx-${role}, ${value})`
 }
 
-// Recursively rewrite a defaults clone's brand colors to var() references.
-// Ungated (pure defaults) — used at block seed/reset time. Mutates & returns.
-// `title` enables per-block key roles (e.g. navbar linkColor vs footer linkColor).
 export function applyThemeTokens(data: Record<string, any>, title?: string): Record<string, any> {
   _walk(data, undefined, title)
   return data
@@ -161,75 +142,15 @@ function _walk(node: any, listKey: string | undefined, title: string | undefined
   }
 }
 
-function _rootVars(
-  primary = _state.primaryButtonColor,
-  secondary = _state.secondaryButtonColor,
-  primaryText = _state.primaryTextColor,
-  secondaryText = _state.secondaryTextColor,
-): string {
-  return `--rbx-primary:${primary};--rbx-secondary:${secondary};`
-    + `--rbx-primary-text:${primaryText};--rbx-secondary-text:${secondaryText}`
-}
+// ─── Save / load ──────────────────────────────────────────────────────────────
 
-// The <style> block embedded in the saved page fragment so the live Odoo
-// storefront inherits the theme (this app can't reach that page's <head>).
-// Emitted only once the theme is active — otherwise every var(--rbx-*, <hex>)
-// falls back to its original color and the site looks exactly as before.
-export function themeRootStyle(
-  primary = _state.primaryButtonColor,
-  secondary = _state.secondaryButtonColor,
-  primaryText = _state.primaryTextColor,
-  secondaryText = _state.secondaryTextColor,
-): string {
-  if (!_state.activated) return ''
-  return `<style>:root{${_rootVars(primary, secondary, primaryText, secondaryText)}}</style>`
-}
-
-// Builder canvas: keep a <style id="rbx-theme-vars"> in <head> in sync so themed
-// blocks recolor instantly — the CSS variable change cascades on its own. When
-// the theme is inactive the vars are cleared so fallbacks (original colors) show.
-export function applyThemeVarsToHead() {
-  if (typeof document === 'undefined') return
-  let el = document.getElementById('rbx-theme-vars')
-  if (!el) {
-    el = document.createElement('style')
-    el.id = 'rbx-theme-vars'
-    document.head.appendChild(el)
-  }
-  el.textContent = _state.activated ? `:root{${_rootVars()}}` : ''
-}
-
-// Restore saved colors from a global-header fragment's :root on page load.
-// Fallback path only — kept for pages saved before the global-theme JSON
-// record existed. seedFromThemeJson (below) is the authoritative source now.
-export function seedFromHeaderHtml(headerHtml: string | undefined | null) {
-  if (!headerHtml) return
-  const p  = headerHtml.match(/--rbx-primary:\s*([^;}\s]+)/)
-  const s  = headerHtml.match(/--rbx-secondary:\s*([^;}\s]+)/)
-  const pt = headerHtml.match(/--rbx-primary-text:\s*([^;}\s]+)/)
-  const st = headerHtml.match(/--rbx-secondary-text:\s*([^;}\s]+)/)
-  if (p) _state.primaryButtonColor = p[1]
-  if (s) _state.secondaryButtonColor = s[1]
-  if (pt) _state.primaryTextColor = pt[1]
-  if (st) _state.secondaryTextColor = st[1]
-  if (p || s || pt || st) { _state.activated = true; _persist() }
-}
-
-// The clean, structured JSON record saved to the CMS as the `global-theme`
-// key — a standalone source of truth for the 4 colors, separate from the CSS
-// baked into global-header (which exists only so the live Odoo page, which
-// this app can't inject a <head> into, still gets themed visually). Emitted
-// only once the theme is active, same rule as themeRootStyle. Flat object —
-// no extra "theme" wrapper, since the CMS envelope's own field is already
-// named `theme`.
+// Clean JSON saved to the CMS as the `global-theme` record's value — a flat
+// object, only emitted once Save has been clicked at least once.
 export function themeJson(): string {
   if (!_state.activated) return ''
-  return JSON.stringify({
-    primaryButtonColor: _state.primaryButtonColor,
-    secondaryButtonColor: _state.secondaryButtonColor,
-    primaryTextColor: _state.primaryTextColor,
-    secondaryTextColor: _state.secondaryTextColor,
-  })
+  const out: Record<string, string> = {}
+  for (const key of VALUE_KEYS) out[key] = _state[key]
+  return JSON.stringify(out)
 }
 
 // Restore saved colors from a global-theme CMS record's JSON value.
@@ -238,13 +159,12 @@ export function seedFromThemeJson(json: string | undefined | null): boolean {
   try {
     const t = JSON.parse(json)
     if (!t || typeof t !== 'object') return false
-    if (typeof t.primaryButtonColor === 'string') _state.primaryButtonColor = t.primaryButtonColor
-    if (typeof t.secondaryButtonColor === 'string') _state.secondaryButtonColor = t.secondaryButtonColor
-    if (typeof t.primaryTextColor === 'string') _state.primaryTextColor = t.primaryTextColor
-    if (typeof t.secondaryTextColor === 'string') _state.secondaryTextColor = t.secondaryTextColor
-    _state.activated = true
-    _persist()
-    return true
+    let found = false
+    for (const key of VALUE_KEYS) {
+      if (typeof t[key] === 'string') { _state[key] = t[key]; found = true }
+    }
+    if (found) { _state.activated = true; _persist() }
+    return found
   } catch {
     return false
   }
@@ -255,29 +175,13 @@ export function useThemeColors() {
   return {
     state: _state,
     isActivated: () => _state.activated,
-    setPrimaryButtonColor(v: string) {
-      _state.primaryButtonColor = v
+    // Commits all 6 values at once — called only when the modal's Save
+    // button is clicked, so picking colors never persists anything by itself.
+    saveTheme(values: ThemeColorValues) {
+      Object.assign(_state, values)
       _state.activated = true
       _persist()
     },
-    setSecondaryButtonColor(v: string) {
-      _state.secondaryButtonColor = v
-      _state.activated = true
-      _persist()
-    },
-    setPrimaryTextColor(v: string) {
-      _state.primaryTextColor = v
-      _state.activated = true
-      _persist()
-    },
-    setSecondaryTextColor(v: string) {
-      _state.secondaryTextColor = v
-      _state.activated = true
-      _persist()
-    },
-    themeRootStyle,
-    applyThemeVarsToHead,
-    seedFromHeaderHtml,
     themeJson,
     seedFromThemeJson,
   }
