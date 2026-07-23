@@ -2,10 +2,11 @@ import { reactive } from 'vue'
 import { NAVBAR_TITLES } from '../useGlobalSections'
 
 // ─── Site-wide brand colors ───────────────────────────────────────────────────
-// 4 colors (Primary/Secondary × CTA/Text), stored and saved to the CMS
-// (`global-theme` record) for reference only. They do NOT apply themselves to
-// any block — per-block button/text colors are still set manually from each
-// block's own right-panel editor, same as always.
+// 6 colors (Primary/Secondary × CTA Background/CTA Text, plus Primary/Secondary
+// Heading text), stored and saved to the CMS (`global-theme` record) for
+// reference only. They do NOT apply themselves to any block — per-block
+// button/text colors are still set manually from each block's own right-panel
+// editor, same as always.
 //
 // Only committed to state (and persisted) when the modal's Save button is
 // clicked — picking a color alone never saves anything.
@@ -13,20 +14,27 @@ import { NAVBAR_TITLES } from '../useGlobalSections'
 export const RBX_PRIMARY_DEFAULT = '#16a34a'
 export const RBX_SECONDARY_DEFAULT = '#6c757d'
 export const RBX_TEXT_DEFAULT = '#ffffff'
+export const RBX_HEADING_TEXT_DEFAULT = '#000000'
+export const RBX_SUBHEADING_TEXT_DEFAULT = '#2563eb'
 
-const STORAGE_KEY = 'app-theme-colors-v4'
+const STORAGE_KEY = 'app-theme-colors-v7'
 
 export interface ThemeColorValues {
-  primaryCtaColor: string
+  primaryCtaBgColor: string
+  primaryCtaTextColor: string
+  secondaryCtaBgColor: string
+  secondaryCtaTextColor: string
+  // Heading / subheading text colors — independent of the CTA button colors above.
   primaryTextColor: string
-  secondaryCtaColor: string
   secondaryTextColor: string
 }
 
 const VALUE_KEYS = [
-  'primaryCtaColor',
+  'primaryCtaBgColor',
+  'primaryCtaTextColor',
+  'secondaryCtaBgColor',
+  'secondaryCtaTextColor',
   'primaryTextColor',
-  'secondaryCtaColor',
   'secondaryTextColor',
 ] as const
 
@@ -36,10 +44,12 @@ interface ThemeColors extends ThemeColorValues {
 }
 
 const _state = reactive<ThemeColors>({
-  primaryCtaColor: RBX_PRIMARY_DEFAULT,
-  primaryTextColor: RBX_TEXT_DEFAULT,
-  secondaryCtaColor: RBX_SECONDARY_DEFAULT,
-  secondaryTextColor: RBX_TEXT_DEFAULT,
+  primaryCtaBgColor: RBX_PRIMARY_DEFAULT,
+  primaryCtaTextColor: RBX_TEXT_DEFAULT,
+  secondaryCtaBgColor: RBX_SECONDARY_DEFAULT,
+  secondaryCtaTextColor: RBX_TEXT_DEFAULT,
+  primaryTextColor: RBX_HEADING_TEXT_DEFAULT,
+  secondaryTextColor: RBX_SUBHEADING_TEXT_DEFAULT,
   activated: false,
 })
 let _loaded = false
