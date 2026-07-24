@@ -11,8 +11,7 @@ const SIMULATE_AUTH = false
 
 function renderCategoryTree(
   categories: CategoryNode[],
-  linkStyle: string,
-  depth = 0
+  linkStyle: string
 ): string {
   return categories
     .map((cat) => {
@@ -22,12 +21,14 @@ function renderCategoryTree(
         ? cat.displayName.split(' / ').pop()!
         : cat.displayName
       if (!cat.children || cat.children.length === 0) {
-        return `<a href='/${slug}' style='display:block;padding:6px ${16 + depth * 12}px;${linkStyle}text-decoration:none;'>${label}</a>`
+        return `<a href='/${slug}' style='display:block;padding:6px 16px;${linkStyle}text-decoration:none;white-space:nowrap;'>${label}</a>`
       }
-      return `<div style='padding:4px 0;'>
-      <a href='/${slug}' style='display:block;padding:6px 16px;${linkStyle}text-decoration:none;font-weight:600;'>${label}</a>
-      <div style='padding-left:8px;border-left:2px solid #f0f0f0;margin:2px 16px;'>
-        ${renderCategoryTree(cat.children, linkStyle, depth + 1)}
+      return `<div data-cat-parent='true' style='position:relative;'>
+      <a href='/${slug}' style='display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 16px;${linkStyle}text-decoration:none;font-weight:600;white-space:nowrap;'>${label}<span style='font-size:16px;opacity:.9;'>▸</span></a>
+      <div data-cat-flyout='true' style='display:none;position:absolute;left:100%;top:0;margin-left:-10px;padding:8px 0 8px 10px;z-index:101;pointer-events:none;'>
+        <div style='background:#fff;min-width:180px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;pointer-events:auto;'>
+          ${renderCategoryTree(cat.children, linkStyle)}
+        </div>
       </div>
     </div>`
     })
@@ -80,14 +81,9 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
         })
         .join('')
     } else {
-      // Simple vertical dropdown — always expanded
+      // Simple vertical dropdown — children reveal as a flyout on hover
       el.removeAttribute('data-mega')
       dropdown.innerHTML = renderCategoryTree(tree, linkStyle)
-      dropdown
-        .querySelectorAll<HTMLElement>('.rubikx-cat-children')
-        .forEach((el) => {
-          el.style.display = 'block'
-        })
     }
   } catch (e) {
     console.error('[Rubikx] Failed to load categories:', e)
@@ -516,13 +512,14 @@ export function hydrateComponents(companyId?: number) {
     const style = document.createElement('style')
     style.id = 'rubikx-cat-styles'
     style.textContent = `
-  [data-cat-nav]:hover [data-cat-dropdown] { display: flex !important; flex-wrap: wrap; min-width: 500px; padding: 12px; gap: 0; }
-  [data-cat-nav] [data-cat-dropdown] > div { min-width: 150px; flex: 1 1 150px; padding: 4px 8px; }
-  [data-cat-nav] [data-cat-dropdown] > a { display: block; min-width: 150px; flex: 1 1 150px; padding: 4px 8px; }
+  [data-cat-nav][data-mega]:hover [data-cat-dropdown] { display: flex !important; flex-wrap: wrap; min-width: 500px; padding: 12px; gap: 0; }
+  [data-cat-nav]:not([data-mega]):hover [data-cat-dropdown] { display: block !important; min-width: 200px; padding: 8px 0; }
+  [data-cat-nav][data-mega] [data-cat-dropdown] > div { min-width: 150px; flex: 1 1 150px; padding: 4px 8px; }
+  [data-cat-nav][data-mega] [data-cat-dropdown] > div > a { font-weight: 600; font-size: 13px; padding: 4px 8px 2px; display: block; border-bottom: 1px solid #f0f0f0; margin-bottom: 4px; }
+  [data-cat-nav][data-mega] [data-cat-dropdown] > div > div a { font-size: 12px; color: #555; padding: 2px 8px; display: block; }
   [data-cat-nav] [data-cat-dropdown] a { text-decoration: none; color: #111; font-size: 13px; }
   [data-cat-nav] [data-cat-dropdown] a:hover { color: #000; opacity: 0.7; }
-  [data-cat-nav] [data-cat-dropdown] > div > a { font-weight: 600; font-size: 13px; padding: 4px 8px 2px; display: block; border-bottom: 1px solid #f0f0f0; margin-bottom: 4px; }
-  [data-cat-nav] [data-cat-dropdown] > div > div a { font-size: 12px; color: #555; padding: 2px 8px; display: block; }
+  [data-cat-parent]:hover > [data-cat-flyout] { display: block !important; }
 `
     document.head.appendChild(style)
   }
