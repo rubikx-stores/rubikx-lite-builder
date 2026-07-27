@@ -1931,32 +1931,24 @@ export class PageBuilderService {
   }
   /**
    * Checks if the selected element is a valid text container (i.e., does not contain images or divs).
-   * @returns {boolean | undefined} True if it's a valid text element, otherwise undefined.
+   * @returns {boolean} True if it's a valid text element, otherwise false.
    */
   public isSelectedElementValidText() {
-    let reachedElseStatement = false
+    const el = this.getElement.value
+    if (!el) return false
+    if (el.tagName === 'IMG' || el.firstElementChild?.tagName === 'IFRAME') return false
 
-    // Get all child elements of the parentDiv
-    const childElements = this.getElement.value?.children
-    if (
-      this.getElement.value?.tagName === 'IMG' ||
-      this.getElement.value?.firstElementChild?.tagName === 'IFRAME'
-    ) {
-      return
-    }
-    if (!childElements) {
-      return
-    }
+    // Plain text with no nested tags at all is the most common, most valid
+    // case — it must not fall through to "invalid" just because there's
+    // nothing to iterate.
+    const childElements = el.children
+    if (!childElements || childElements.length === 0) return true
 
-    Array.from(childElements).forEach((element) => {
-      if (element?.tagName === 'IMG' || element?.tagName === 'DIV') {
-        reachedElseStatement = false
-      } else {
-        reachedElseStatement = true
-      }
-    })
-
-    return reachedElseStatement
+    // Invalid only if some direct child is an image or a block-level div,
+    // regardless of where it sits among the other children.
+    return !Array.from(childElements).some(
+      (child) => child.tagName === 'IMG' || child.tagName === 'DIV',
+    )
   }
 
   /**
@@ -2453,21 +2445,7 @@ export class PageBuilderService {
 
     this.pageBuilderStateStore.setHyperlinkError(null)
 
-    // url validation
-    const urlRegex = /^https?:\/\//
-
-    const isValidURL = ref(true)
-
-    if (hyperlinkEnable === true && urlInput !== null) {
-      isValidURL.value = urlRegex.test(urlInput)
-    }
-
-    if (isValidURL.value === false) {
-      this.pageBuilderStateStore.setHyperlinkMessage(null)
-
-      this.pageBuilderStateStore.setHyperlinkError('URL is not valid')
-      return
-    }
+    // No format restriction — any URL value is accepted.
 
     if (hyperlinkEnable === true && typeof urlInput === 'string') {
       // check if element contains child hyperlink tag

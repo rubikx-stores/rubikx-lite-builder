@@ -114,21 +114,8 @@ const iframeSrc = ref('')
 const showModalIframeSrc = ref(false)
 
 const validateURL = function () {
-  // initial value
+  // No format restriction — any URL value is accepted.
   urlError.value = null
-
-  // url validation
-  const urlRegex = /^https?:\/\//
-  const isValidURL = ref(true)
-  isValidURL.value = urlRegex.test(iframeSrc.value)
-
-  // cancelled
-  if (isValidURL.value === false) {
-    urlError.value =
-      "The provided URL is invalid. Please ensure that it begins with 'https://' for proper formatting and security."
-    return true
-  }
-
   return false
 }
 

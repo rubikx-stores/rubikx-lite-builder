@@ -184,6 +184,59 @@ watch(
   { deep: true },
 )
 
+// Keep the right panel in sync with canvas edits made via the library's own
+// "Manage Content" rich-text panel (pencil icon). That panel edits a
+// data-field-key element directly on the canvas through its own internal
+// state, completely separate from this sidebar's useBlockRegistry — without
+// this watcher, the field's input here would keep showing the old value,
+// and the next unrelated field edit would re-render the block from that
+// stale value and overwrite the canvas edit.
+const { getData: getRegistryData, setData: setRegistryData, setListItem: setRegistryListItem } = useBlockRegistry()
+watch(
+  () => (store as any).getTextAreaVueModel,
+  (html) => {
+    if (typeof html !== 'string') return
+    const el = (store as any).getElement as HTMLElement | null
+    const fieldKey = el?.dataset?.fieldKey
+    if (!el || !fieldKey) return
+    const componentId = el.closest('[data-componentid]')?.getAttribute('data-componentid')
+    if (!componentId) return
+
+    const tmp = document.createElement('div')
+    tmp.innerHTML = html
+    // TipTap always wraps content in a block tag (<p>, or <h1>-<h6> if the
+    // user hit a heading button). These fields (a span/short text field)
+    // already have their own fixed styling, so nesting a block tag inside
+    // them breaks it — unwrap any single top-level block tag down to its
+    // inner HTML, keeping inline formatting (bold, links) but dropping the
+    // block wrapper itself.
+    const BLOCK_TAGS = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6']
+    const newValue = (tmp.children.length === 1 && BLOCK_TAGS.includes(tmp.firstElementChild?.tagName ?? ''))
+      ? tmp.firstElementChild!.innerHTML
+      : tmp.innerHTML
+
+    const current = getRegistryData(componentId)
+    if (!current) return
+
+    // List-item field (e.g. an FAQ question/answer) — el carries the list
+    // key + its index alongside the field key.
+    const listKey = el.dataset.listKey
+    const listIndex = el.dataset.listIndex
+    if (listKey && listIndex != null) {
+      const idx = Number(listIndex)
+      const list = current[listKey]
+      if (Array.isArray(list) && list[idx]?.[fieldKey] !== newValue) {
+        setRegistryListItem(componentId, listKey, idx, fieldKey, newValue)
+      }
+      return
+    }
+
+    if (current[fieldKey] !== newValue) {
+      setRegistryData(componentId, fieldKey, newValue)
+    }
+  },
+)
+
 // Debounced list-item updater — fires 150ms after the user stops typing so
 // every keystroke reflects in the canvas without hammering _applyBlockRender.
 let _listItemDebounceTimer = 0
