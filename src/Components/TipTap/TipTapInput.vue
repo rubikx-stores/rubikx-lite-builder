@@ -61,9 +61,15 @@ const editor = useEditor({
   content: '',
   extensions: [
     StarterKit.configure({
-      // Configure Link here if needed
+      // Bake the underline/cursor directly into every generated <a> tag's
+      // inline style, instead of relying on this app's own CSS (#pagebuilder
+      // a { ... }) — that stylesheet never ships to the published page, so
+      // an inline style is the only way the link styling survives publish.
       link: {
         openOnClick: false,
+        HTMLAttributes: {
+          style: 'text-decoration: underline; cursor: pointer;',
+        },
       },
     }),
     TextAlign.configure({
@@ -153,21 +159,7 @@ const handleURL = function () {
 //
 //
 const validateURL = function () {
-  // initial value
   urlError.value = null
-
-  // url validation
-  const urlRegex = /^https?:\/\//
-  const isValidURL = ref(true)
-  isValidURL.value = urlRegex.test(newUpdatedExistingURL.value)
-
-  // cancelled
-  if (isValidURL.value === false) {
-    urlError.value =
-      "The provided URL is invalid. Please ensure that it begins with 'https://' for proper formatting and security."
-    return true
-  }
-
   return false
 }
 const setEnteretURL = function () {

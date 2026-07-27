@@ -420,11 +420,13 @@
 #pagebuilder a {
   color: inherit;
   text-decoration: none;
+  cursor: pointer;
 }
 
 #page-builder-editor a,
 #pagebuilder a {
   text-decoration: underline;
+  cursor: pointer;
 }
 
 #linktree a {
