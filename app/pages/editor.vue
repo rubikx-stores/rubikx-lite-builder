@@ -24,7 +24,7 @@ const companyId = computed(() => Number(route.query.companyId) || undefined)
     </div>
 
     <!-- Page builder fills remaining height -->
-    <div class="flex-1 overflow-hidden">
+    <div class="flex-1 min-h-0">
       <PageBuilderWrapper :page-id="pageId" :page-name="pageName" :page-version="pageVersion" :company-id="companyId" />
     </div>
   </div>

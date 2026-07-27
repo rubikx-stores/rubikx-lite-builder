@@ -391,6 +391,337 @@ ${hasMegaMenu ? '<div class="ru-pd"></div>' : ''}
 ${megaScript}</section>`
 }
 
+export const ru3MegaHeaderSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 32">
+  <rect fill="#111827" x="0" y="0" width="277.5" height="32"/>
+  <rect fill="#718096" x="8"   y="12" width="36" height="8"/>
+  <rect fill="#718096" x="95"  y="13" width="16" height="6"/>
+  <rect fill="#718096" x="118" y="13" width="16" height="6"/>
+  <rect fill="#718096" x="141" y="13" width="16" height="6"/>
+  <rect fill="#718096" x="164" y="13" width="16" height="6"/>
+  <rect fill="#718096" x="187" y="13" width="16" height="6"/>
+  <rect fill="#718096" x="210" y="13" width="16" height="6"/>
+  <rect fill="#718096" x="240" y="12" width="30" height="8"/>
+</svg>`
+
+export interface OverflowLink { label: string; href: string }
+export interface Ru3NavLink { label: string; href: string; showDropdown: boolean }
+
+export interface Ru3MegaHeaderData {
+  logoUrl: string
+  logoText: string
+  logoWidth: number
+  brandFontSize: number
+  brandFontWeight: string
+  fontFamily: string
+  brandFont: string
+
+  navLinks: Ru3NavLink[]
+  overflowLinks: OverflowLink[]
+  linkFontSize: number
+  linkFontWeight: string
+  linkColor: string
+  linkFont: string
+
+  showSearch: boolean
+  searchBarWidth: number
+  cartUrl: string
+  showCart: boolean
+  wishlistUrl: string
+  showWishlist: boolean
+  accountUrl: string
+  showAccount: boolean
+  accountGuestLabel: string
+  accountLoginLabel: string
+  accountCartLabel: string
+  accountWishlistLabel: string
+
+  bgColor: string
+  textColor: string
+  paddingY: number
+  paddingX: number
+  containerMaxWidth: number
+  sticky: boolean
+  showBottomBorder: boolean
+  bottomBorderColor: string
+}
+
+export const ru3MegaHeaderDefaults: Ru3MegaHeaderData = {
+  logoUrl: '',
+  logoText: 'Brand',
+  logoWidth: 120,
+  brandFontSize: 20,
+  brandFontWeight: '700',
+  fontFamily: '',
+  brandFont: '',
+
+  navLinks: [
+    { label: 'Home',        href: '/',             showDropdown: false },
+    { label: 'Apparel',     href: '/apparel',      showDropdown: true  },
+    { label: 'Headwear',    href: '/headwear',     showDropdown: true  },
+    { label: 'Promo Items', href: '/promo-items',  showDropdown: true  },
+    { label: 'Collections', href: '/collections',  showDropdown: true  },
+  ],
+  overflowLinks: [
+    { label: 'Sale/Clearance', href: '/sale-clearance' },
+    { label: 'Contact us',     href: '/contactus'      },
+  ],
+  linkFontSize: 14,
+  linkFontWeight: '500',
+  linkColor: '#1f2937',
+  linkFont: '',
+
+  showSearch: true,
+  searchBarWidth: 1280,
+  cartUrl: '/cart',
+  showCart: true,
+  wishlistUrl: '/wishlist',
+  showWishlist: true,
+  accountUrl: '/login',
+  showAccount: true,
+  accountGuestLabel: 'Guest',
+  accountLoginLabel: 'Login',
+  accountCartLabel: 'My Cart',
+  accountWishlistLabel: 'Wishlist',
+
+  bgColor: '#ffffff',
+  textColor: '#1f2937',
+  paddingY: 12,
+  paddingX: 0,
+  containerMaxWidth: 1280,
+  sticky: false,
+  showBottomBorder: true,
+  bottomBorderColor: '#e5e7eb',
+}
+
+export const ru3MegaHeaderFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: 'logoUrl',         label: 'Logo Image',           type: 'image',
+    placeholder: 'https://example.com/logo.png', noAspectRatio: true       },
+  { key: 'logoText',        label: 'Brand Name',           type: 'text',
+    placeholder: 'e.g. Acme Co'                                             },
+  { key: 'logoWidth',       label: 'Logo Width (px)',      type: 'number',
+    placeholder: '120'                                                      },
+  { key: 'brandFontSize',   label: 'Brand Font Size (px)', type: 'number',
+    placeholder: '20 — size of the brand text when no logo image is set'    },
+  { key: 'brandFontWeight', label: 'Brand Font Weight',    type: 'select',
+    options: ['400', '500', '600', '700', '800']                            },
+  fontField('brandFont', 'Brand Font'),
+
+  {
+    key: 'navLinks', label: 'Nav Links (first 5 shown)', type: 'list',
+    listFields: [
+      { key: 'label',        label: 'Label',                   type: 'text', placeholder: 'e.g. Apparel'          },
+      { key: 'href',         label: 'URL',                     type: 'url',  placeholder: 'e.g. /apparel or https://…' },
+      { key: 'showDropdown', label: 'Show Categories Dropdown', type: 'toggle' },
+    ],
+  },
+  {
+    key: 'overflowLinks', label: 'Overflow Links (shown behind the + button)', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Contact us' },
+      { key: 'href',  label: 'URL',   type: 'url',  placeholder: 'e.g. /contactus' },
+    ],
+  },
+  { key: 'linkColor',       label: 'Link Colour',            type: 'color'   },
+  { key: 'linkFontSize',    label: 'Link Font Size (px)',    type: 'number',
+    placeholder: '14'                                                        },
+  { key: 'linkFontWeight',  label: 'Link Font Weight',       type: 'select',
+    options: ['400', '500', '600', '700']                                    },
+  fontField('linkFont', 'Link Font'),
+
+  { key: 'showSearch',    label: 'Show Search Icon',    type: 'toggle' },
+  { key: 'searchBarWidth', label: 'Search Bar Width (px)', type: 'number',
+    placeholder: '1280'                                                    },
+  { key: 'cartUrl',      label: 'Cart URL',           type: 'url'    },
+  { key: 'showCart',     label: 'Show Cart Icon',     type: 'toggle' },
+  { key: 'wishlistUrl',  label: 'Wishlist URL',       type: 'url'    },
+  { key: 'showWishlist', label: 'Show Wishlist Icon', type: 'toggle' },
+  { key: 'accountUrl',   label: 'Login URL',          type: 'url'    },
+  { key: 'showAccount',  label: 'Show Account Icon',  type: 'toggle' },
+  { key: 'accountGuestLabel',    label: 'Account Dropdown: Guest Label',    type: 'text', placeholder: 'Guest'    },
+  { key: 'accountLoginLabel',    label: 'Account Dropdown: Login Label',    type: 'text', placeholder: 'Login'    },
+  { key: 'accountCartLabel',     label: 'Account Dropdown: Cart Label',     type: 'text', placeholder: 'My Cart'  },
+  { key: 'accountWishlistLabel', label: 'Account Dropdown: Wishlist Label', type: 'text', placeholder: 'Wishlist' },
+
+  { key: 'bgColor',         label: 'Background Colour',       type: 'color'   },
+  { key: 'paddingY',        label: 'Vertical Padding (px)',   type: 'number',
+    placeholder: '12'                                                        },
+  { key: 'paddingX',        label: 'Horizontal Padding (px)', type: 'number',
+    placeholder: '16'                                                        },
+  { key: 'containerMaxWidth', label: 'Content Max Width (px)', type: 'number',
+    placeholder: '1280 — controls the navbar row width'                      },
+  { key: 'sticky',          label: 'Sticky Navbar (stays fixed while scrolling)', type: 'toggle' },
+  { key: 'showBottomBorder', label: 'Show Bottom Border',     type: 'toggle'  },
+  { key: 'bottomBorderColor', label: 'Bottom Border Colour',  type: 'color'   },
+]
+
+export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
+  const navStyle = [
+    `background:${data.bgColor}`,
+    `color:${data.textColor}`,
+    `padding:${data.paddingY}px ${data.paddingX}px`,
+    data.showBottomBorder ? `border-bottom:1px solid ${data.bottomBorderColor}` : '',
+  ].filter(Boolean).join(';')
+
+  const logoInner = data.logoUrl
+    ? `<img src="${data.logoUrl}" alt="${data.logoText}" style="width:${data.logoWidth}px;height:auto;display:block;" />`
+    : `<span data-field-key="logoText" style="font-size:${data.brandFontSize}px;font-weight:${data.brandFontWeight};color:inherit;${fontCss(data.brandFont, data.fontFamily)}">${data.logoText}</span>`
+  const logoEl = `<a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;">${logoInner}</a>`
+
+  const linkStyle = `color:${data.linkColor};text-decoration:none;font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}`
+
+  // Dropdown under a nav link shows the site's real category tree (same
+  // CategoryNav/loadCategories mechanism used elsewhere) — not hand-picked
+  // products. Any of the first 6 links can turn this on via its own toggle.
+  const mainLinks = data.navLinks.slice(0, 5)
+  const linksHtml = mainLinks.map(l => {
+    if (l.showDropdown) {
+      return `<div
+        data-rubikx-component='CategoryNav'
+        data-on-mount='loadCategories'
+        data-max-items='20'
+        data-link-color='${data.linkColor}'
+        data-font-size='${data.linkFontSize}'
+        data-font-weight='${data.linkFontWeight}'
+        style='position:relative;display:inline-block;' data-cat-nav='true'
+      >
+        <a href='${l.href}' style='${linkStyle}cursor:pointer;'>${l.label} ▾</a>
+        <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Loading…</span>
+        </div>
+      </div>`
+    }
+    return `<a href='${l.href}' style='${linkStyle}'>${l.label}</a>`
+  }).join('')
+
+  const overflowHtml = data.overflowLinks.length
+    ? `<div class="ru3-overflow" style="position:relative;display:inline-block;">
+        <button type="button" class="ru3-overflow-btn" onclick="(function(btn){var d=btn.nextElementSibling;var open=d.style.display==='block';document.querySelectorAll('.ru3-overflow-drop').forEach(function(x){x.style.display='none'});d.style.display=open?'none':'block';if(window.event)window.event.stopPropagation();})(this)" style="${linkStyle}cursor:pointer;background:none;border:none;padding:0;">+</button>
+        <div class="ru3-overflow-drop" style="display:none;position:absolute;top:100%;left:0;min-width:180px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100;overflow:hidden;padding:4px 0;">
+          ${data.overflowLinks.map(l => `<a href="${l.href}" style="display:block;padding:8px 14px;font-size:14px;color:#1f2937;text-decoration:none;">${l.label}</a>`).join('')}
+        </div>
+      </div>`
+    : ''
+
+  const iconLabelStyle = `display:flex;flex-direction:column;align-items:center;gap:2px;color:${data.textColor};text-decoration:none;font-size:11px;background:none;border:none;cursor:pointer;`
+
+  const searchEl = data.showSearch
+    ? `<button type="button" class="ru3-search-toggle" onclick="(function(btn){var sec=btn.closest('section');var bar=sec.querySelector('[data-ru3-search-bar]');var open=bar.style.display==='block';bar.style.display=open?'none':'block';if(!open){var inp=bar.querySelector('input');if(inp)setTimeout(function(){inp.focus()},0);}})(this)" style="${iconLabelStyle}">${icon('magnifyingGlass', { size: 20 })}<span>Search</span></button>`
+    : ''
+
+  const cartEl = data.showCart
+    ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" style="position:relative;display:inline-flex;">
+    <a href="${data.cartUrl}" style="${iconLabelStyle}">${icon('shoppingCart', { size: 20 })}<span>My Cart</span></a>
+  </span>`
+    : ''
+
+  const wishlistEl = data.showWishlist
+    ? `<span data-rubikx-component="WishlistBadge" data-on-mount="loadWishlistCount" style="position:relative;display:inline-flex;">
+    <a href="${data.wishlistUrl}" style="${iconLabelStyle}">${icon('heart', { size: 20 })}<span>Wishlist</span></a>
+  </span>`
+    : ''
+
+  // Plain inline onclick (not a data-on-mount hydration handler) — this
+  // fragment is embedded directly into Odoo's own page template on publish,
+  // where this app's Nuxt plugin (rubikx-hydration.client.ts) never loads.
+  // Same self-contained-closure convention already used by the mobile
+  // drawer, search toggle and overflow "+" button above, so it works
+  // identically in the builder preview and on the live published page.
+  const accountEl = data.showAccount
+    ? `<div style="position:relative;display:flex;flex-direction:column;align-items:center;">
+    <button type="button" onclick="(function(btn){var d=btn.nextElementSibling;var open=d.style.display==='block';document.querySelectorAll('[data-ru3-account-drop]').forEach(function(x){x.style.display='none'});d.style.display=open?'none':'block';event.stopPropagation();})(this)" style="${iconLabelStyle}">${icon('user', { size: 20 })}<span style="display:flex;align-items:center;gap:2px;">Account${icon('chevronDown', { size: 12 })}</span></button>
+    <div data-ru3-account-drop style="display:none;position:absolute;top:calc(100% + 10px);right:0;background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.12);min-width:170px;z-index:9999;padding:6px 0;">
+      <div style="padding:8px 16px;font-size:14px;font-weight:700;color:#111827;">${data.accountGuestLabel}</div>
+      <a href="${data.accountUrl}" style="display:block;padding:8px 16px;font-size:14px;font-weight:700;color:#1f2937;text-decoration:none;">${data.accountLoginLabel}</a>
+      <div style="height:1px;background:#f3f4f6;margin:4px 0;"></div>
+      <a href="${data.cartUrl}" style="display:block;padding:8px 16px;font-size:14px;font-weight:500;color:#1f2937;text-decoration:none;">${data.accountCartLabel}</a>
+      <a href="${data.wishlistUrl}" style="display:block;padding:8px 16px;font-size:14px;font-weight:500;color:#1f2937;text-decoration:none;">${data.accountWishlistLabel} (0)</a>
+    </div>
+  </div>`
+    : ''
+
+  // Flat list for the mobile drawer — the desktop categories-dropdown /
+  // overflow "+" mechanisms don't translate well to touch, so mobile just
+  // gets every link (main + overflow) as a simple stacked list, same
+  // simplification Ru2-Mega-Menu-Header's mobile drawer already uses.
+  const mobileDrawerLinks = [...mainLinks, ...data.overflowLinks].map(l =>
+    `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;">${l.label}</a>`
+  ).join('')
+
+  const mobileSearchEl = data.showSearch
+    ? `<div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0 0.5rem;gap:0.5rem;background:#fff;margin-bottom:1rem;">
+        ${icon('magnifyingGlass', { size: 20, stroke: '#6b7280', style: 'flex-shrink:0;' })}
+        <input type="text" placeholder="Search" data-rubikx-component="HeaderSearch" data-on-mount="loadSearch" style="border:none;outline:none;background:#fff;font-size:0.875rem;width:100%;padding:0.5rem 0;" />
+      </div>`
+    : ''
+
+  const mobileAccountLinks = data.showAccount
+    ? `<a href="${data.accountUrl}" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;">Login</a>`
+    : ''
+
+  const mobileNav = `
+<style>
+  [data-nav-mobile] { display: none; }
+  [data-nav-desktop] { display: grid; }
+  @media (max-width: 1024px) {
+    [data-nav-mobile] { display: flex !important; }
+    [data-nav-desktop] { display: none !important; }
+  }
+</style>
+<!-- Mobile header -->
+<div data-nav-mobile="true" style="display:none;align-items:center;justify-content:space-between;padding:1.25rem ${data.paddingX}px;${data.showBottomBorder ? `border-bottom:1px solid ${data.bottomBorderColor};` : ''}">
+  ${logoEl}
+  <div style="display:flex;align-items:center;gap:1rem;">
+    ${data.showCart ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart', { size: 22 })}</a></span>` : ''}
+    ${data.showWishlist ? `<span data-rubikx-component="WishlistBadge" data-on-mount="loadWishlistCount" style="position:relative;display:inline-flex;"><a href="${data.wishlistUrl}" style="color:${data.textColor};display:inline-flex;">${icon('heart', { size: 22 })}</a></span>` : ''}
+    <button onclick="(function(btn){var s=btn.closest('section');var d=s&&s.querySelector('[data-mobile-drawer]');var o=s&&s.querySelector('[data-mobile-overlay]');if(d){d.style.transform='translateX(0)';}if(o){o.style.display='block';}document.body.style.overflow='hidden';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.textColor}" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+</div>
+<!-- Drawer -->
+<div data-mobile-drawer="true" style="position:fixed;top:0;left:0;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transform:translateX(-100%);transition:transform 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+    ${logoEl}
+    <button onclick="(function(btn){var d=document.querySelector('[data-mobile-drawer]');var o=document.querySelector('[data-mobile-overlay]');if(d){d.style.transform='translateX(-100%)';}if(o){o.style.display='none';}document.body.style.overflow='';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0.25rem;display:flex;align-items:center;">
+      ${icon('xMark', { size: 24, stroke: data.textColor })}
+    </button>
+  </div>
+  ${mobileSearchEl}
+  <div style="display:flex;flex-direction:column;">
+    ${mobileDrawerLinks}
+  </div>
+  <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
+    ${mobileAccountLinks}
+  </div>
+</div>
+<!-- Overlay -->
+<div data-mobile-overlay="true" onclick="(function(el){var d=document.querySelector('[data-mobile-drawer]');if(d){d.style.transform='translateX(-100%)';}el.style.display='none';document.body.style.overflow='';})(this);" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;"></div>`
+
+  const sectionStyle = `${fontCss(undefined, data.fontFamily)}${data.sticky ? 'position:sticky;top:0;z-index:9999;' : ''}`
+
+  return `<section data-component-title="Ru3-Mega-Header" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
+<nav style="${navStyle}">
+  ${mobileNav}
+  <div data-nav-desktop="true" style="max-width:${data.containerMaxWidth}px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 2fr 1.3fr;align-items:center;gap:3rem;">
+    <div style="display:flex;align-items:center;">${logoEl}</div>
+    <nav style="display:flex;align-items:center;justify-content:center;gap:2rem;">${linksHtml}${overflowHtml}</nav>
+    <div style="display:flex;align-items:center;justify-content:flex-end;gap:2.5rem;">${searchEl}${cartEl}${wishlistEl}${accountEl}</div>
+  </div>
+  <div data-ru3-search-bar style="display:none;border-top:1px solid ${data.bottomBorderColor};">
+    <div style="max-width:${data.searchBarWidth}px;margin:0 auto;width:100%;padding:0.75rem ${data.paddingX}px;">
+      <div style="position:relative;display:flex;">
+        <input type="text" placeholder="Search" data-rubikx-component="HeaderSearch" data-on-mount="loadSearch" style="flex:1;border:1px solid #d1d5db;border-radius:0.375rem 0 0 0.375rem;padding:0.6rem 1rem;font-size:0.875rem;outline:none;" />
+        <button type="button" style="background:#111827;color:#fff;border:none;border-radius:0 0.375rem 0.375rem 0;padding:0 1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">${icon('magnifyingGlass', { size: 18, stroke: '#fff' })}</button>
+      </div>
+    </div>
+  </div>
+</nav>
+</section>`
+}
+
 export const ru1FormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
   <rect fill="#394152" x="0" y="10" width="88" height="7"/>
   <rect fill="#394152" x="0" y="24" width="118" height="3"/>
@@ -1312,10 +1643,10 @@ export function renderRu1Footer(data: Ru1FooterData): string {
         </ul>
       </div>`
   const aboutCol = data.aboutMode === 'logo'
-    ? `<div style="max-width:320px;text-align:${data.aboutAlign || 'left'};">
+    ? `<div style="width:100%;text-align:${data.aboutAlign || 'left'};">
         <img src="${data.aboutLogoUrl}" alt="Logo" style="width:${data.aboutLogoWidth}px;height:${data.aboutLogoHeight}px;object-fit:contain;display:inline-block;vertical-align:top;" />
       </div>`
-    : `<div style="max-width:320px;text-align:${data.aboutAlign || 'left'};">
+    : `<div style="width:100%;text-align:${data.aboutAlign || 'left'};">
         <h3 style="${hStyle}">About Us</h3>
         <p data-field-key="aboutText" style="${pStyle}white-space:pre-line;">${data.aboutText}</p>
       </div>`
@@ -1338,25 +1669,33 @@ export function renderRu1Footer(data: Ru1FooterData): string {
     contact: data.showConnectWithUs !== false ? contactCol : '',
   }
   const slotJustify = ['flex-start', 'center', 'flex-end']
-  const orderedCols = (data.columnOrder ?? ['links', 'about', 'contact'])
+  const activeColumnOrder = data.columnOrder ?? ['links', 'about', 'contact']
+  const orderedCols = activeColumnOrder
     .map((k, i) => `<div style="display:flex;justify-content:${slotJustify[i] ?? 'flex-start'};">${colMap[k] ?? ''}</div>`)
     .join('\n      ')
+  // "about" carries a full paragraph while the other two are short link lists,
+  // so it gets a wider grid track (2fr vs 1fr) — tied to which column holds
+  // the About Us content, not its position, so this still works if columns
+  // are reordered.
+  const footerGridTemplate = activeColumnOrder
+    .map(k => `minmax(0,${k === 'about' ? 2 : 1}fr)`)
+    .join(' ')
 
   const sectionFontStyle = fontCss(undefined, data.fontFamily)
   return `<section data-component-title="Ru1-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionFontStyle ? ` style="${sectionFontStyle}"` : ''}>
 <style>
   @media(max-width:768px){
     [data-ru1l-footer]{padding-left:24px!important;padding-right:24px!important;}
-    [data-ru1l-footer-grid]{grid-template-columns:repeat(2,1fr)!important;gap:32px 24px!important;}
+    [data-ru1l-footer-grid]{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:32px 24px!important;}
   }
   @media(max-width:480px){
-    [data-ru1l-footer-grid]{grid-template-columns:1fr!important;}
+    [data-ru1l-footer-grid]{grid-template-columns:minmax(0,1fr)!important;}
     [data-ru1l-footer-grid]>div{justify-content:flex-start!important;}
   }
 </style>
 <footer data-ru1l-footer="true" style="background-color:${bg};color:${text};padding:${data.paddingY}px ${data.paddingX}px;${borderTop}">
   <div style="width:100%;max-width:1280px;margin:0 auto;box-sizing:border-box;">
-    <div data-ru1l-footer-grid="true" style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;padding-bottom:40px;align-items:start;">
+    <div data-ru1l-footer-grid="true" style="display:grid;grid-template-columns:${footerGridTemplate};gap:32px;padding-bottom:40px;align-items:start;">
       ${orderedCols}
     </div>
     <div style="border-top:1px solid ${data.borderColor || '#e5e7eb'};padding-top:24px;text-align:${data.copyrightAlign || 'center'};">
@@ -2316,6 +2655,7 @@ export interface Ru2FaqBannerData {
   pageTitleColor: string
   pageTitleFont: string
   sectionBgColor: string
+  contentPaddingX: number
   questionColor: string
   questionFont: string
   answerColor: string
@@ -2345,6 +2685,7 @@ export const ru2FaqBannerDefaults: Ru2FaqBannerData = {
   pageTitleColor: '#0a1e5e',
   pageTitleFont: '',
   sectionBgColor: '#ffffff',
+  contentPaddingX: 32,
   questionColor: '#111827',
   questionFont: '',
   answerColor: '#374151',
@@ -2389,6 +2730,8 @@ export const ru2FaqBannerFields: FieldConfig[] = [
 
   { key: '_h_section', label: 'Section', type: 'header' },
   { key: 'sectionBgColor', label: 'Section Background', type: 'color' },
+  { key: 'contentPaddingX', label: 'Breadcrumb/FAQ Side Padding (px)', type: 'number',
+    placeholder: '32 — horizontal margin for breadcrumb, page title and FAQ list (banner unaffected)' },
 
   { key: '_h_accordion', label: 'Accordion & Colours', type: 'header' },
   { key: 'questionColor', label: 'Question Colour', type: 'color' },
@@ -2431,7 +2774,7 @@ export function renderRu2FaqBanner(data: Ru2FaqBannerData): string {
     : `background:${data.bannerBgColor};`
 
   const breadcrumbHtml = data.showBreadcrumb !== false
-    ? `<nav style="max-width:80rem;margin:0 auto;padding:1.25rem 2rem 0;display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;color:${data.breadcrumbColor};">
+    ? `<nav style="max-width:80rem;margin:0 auto;padding:1.25rem ${data.contentPaddingX}px 0;display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;color:${data.breadcrumbColor};">
         <a href="${data.breadcrumbHomeHref}" aria-label="Home" style="display:inline-flex;color:${data.breadcrumbColor};text-decoration:none;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 3l9 7.5M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
@@ -2441,7 +2784,7 @@ export function renderRu2FaqBanner(data: Ru2FaqBannerData): string {
     : ''
 
   const pageTitleHtml = data.showPageTitle !== false
-    ? `<h2 style="max-width:80rem;margin:0 auto;padding:1rem 2rem 0;font-size:min(2rem,6vw);font-weight:700;color:${data.pageTitleColor};${fontCss(data.pageTitleFont, data.fontFamily)}">${data.pageTitle}</h2>`
+    ? `<h2 style="max-width:80rem;margin:0 auto;padding:1rem ${data.contentPaddingX}px 0;font-size:min(2rem,6vw);font-weight:700;color:${data.pageTitleColor};${fontCss(data.pageTitleFont, data.fontFamily)}">${data.pageTitle}</h2>`
     : ''
 
   // Native <details>/<summary> dropdown per question — the browser toggles it
@@ -2475,7 +2818,7 @@ export function renderRu2FaqBanner(data: Ru2FaqBannerData): string {
   </div>
   ${breadcrumbHtml}
   ${pageTitleHtml}
-  <div style="max-width:80rem;margin:0 auto;padding:1.5rem 2rem 4rem;">
+  <div style="max-width:80rem;margin:0 auto;padding:1.5rem ${data.contentPaddingX}px 4rem;">
     <div data-rubikx-component="FaqAccordion" data-on-mount="loadFaqAccordion" style="border-bottom:1px solid ${data.dividerColor};">
       ${itemsHtml}
     </div>

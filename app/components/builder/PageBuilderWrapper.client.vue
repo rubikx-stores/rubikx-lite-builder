@@ -363,36 +363,8 @@ onMounted(async () => {
     }
   )
 
-  // The builder wraps sections in a container that has overflow-x:scroll, which
-  // CSS spec forces overflow-y from 'visible' to 'auto'. Any overflow value other
-  // than 'visible' on an ancestor creates an overflow context that intercepts
-  // position:sticky, so sticky sections never reach the real scroll container
-  // (#page-builder-wrapper). Fix: walk from #pagebuilder up to the wrapper and
-  // clear overflow on every intermediate element.
-  function clearBuilderScroll() {
-    const pagebuilderEl = document.getElementById('pagebuilder')
-    const wrapperEl = document.getElementById('page-builder-wrapper')
-    if (pagebuilderEl && wrapperEl) {
-      let el = pagebuilderEl.parentElement
-      while (el && el !== wrapperEl) {
-        el.style.overflow = 'visible'
-        el.style.height = 'auto'
-        el.style.minHeight = '0'
-        el = el.parentElement
-      }
-    }
-  }
-
-  // Run early, then again after the builder UI is fully rendered.
-  clearBuilderScroll()
-
   _saveBtn = await waitForSaveButton()
   _saveBtn.addEventListener('click', handleSaveClick)
-
-  // Second pass: some library elements get their height set reactively after
-  // startBuilder resolves — re-applying after the UI is fully settled ensures
-  // the 90vh min-height is cleared for all pages.
-  clearBuilderScroll()
 
   // Capture-phase so we intercept before the builder's own click handler
   document.addEventListener('click', handleProductTileClick, true)
@@ -401,7 +373,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="relative h-full overflow-hidden">
+  <div class="relative h-full">
     <PageBuilder :CustomBuilderComponents="BuilderPanel">
       <template #toolbarExtra>
         <div class="flex items-center justify-center ml-2">

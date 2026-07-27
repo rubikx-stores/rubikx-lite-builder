@@ -11,7 +11,8 @@
 // (X or backdrop) discards any unsaved picks and reverts to the last-saved
 // values next time the modal opens.
 import { reactive, ref, watch } from 'vue'
-import type { ThemeColorValues } from '~/composables/editor/useThemeColors'
+import { useThemeColors, type ThemeColorValues } from '~/composables/editor/useThemeColors'
+import { usePageHtmlCache } from '~/composables/usePageHtmlCache'
 
 const props = defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>()
@@ -143,7 +144,7 @@ async function save() {
         </div>
 
         <div>
-          <span class="block text-xs text-gray-500 mb-1">Preview</span>
+          <span class="block text-xs text-gray-500 mb-1">Sample</span>
           <span
             class="h-9 rounded-md px-3 text-xs font-medium flex items-center justify-center"
             :style="{ background: draft.secondaryCtaBgColor, color: draft.secondaryCtaTextColor }"
@@ -155,7 +156,7 @@ async function save() {
       <!-- Independent of the CTA button colors above — this is the general
            site heading/subheading text color, previewed as plain text with
            no button background so it reads as text styling, not a button. -->
-      <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-2">Primary Text Color</h4>
+      <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-2">Primary Text Color (Heading)</h4>
 
       <div class="grid grid-cols-3 gap-3 mb-4">
         <div>
@@ -172,7 +173,7 @@ async function save() {
         </div>
       </div>
 
-      <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-2">Secondary Text Color</h4>
+      <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-2">Secondary Text Color (Subheading)</h4>
 
       <div class="grid grid-cols-3 gap-3 mb-4">
         <div>
