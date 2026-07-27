@@ -160,11 +160,19 @@ async function onSelectField(fieldKey: string, value: string | number) {
 // When a field changes the block re-renders → new DOM element (no data-hydrated).
 // The watcher calls hydrateComponents so the fresh element gets its carousel wired.
 // Other ProductDetail blocks keep their data-hydrated and are skipped automatically.
+//
+// Ru3-Mega-Header gets the same treatment: it has several hydrated shells
+// (AccountMenu, CartBadge, WishlistBadge, CategoryNav, HeaderSearch) that all
+// lose their click/hover wiring the same way on every field edit — without
+// this, e.g. the Account dropdown stops opening the moment you touch any
+// other field on the block.
 let _carouselRewireTimer = 0
 watch(
   blockData,
   async (newData) => {
-    if (!newData || (newData as Record<string, any>).galleryLayout !== 'layout3') return
+    const isCarouselLayout3 = !!newData && (newData as Record<string, any>).galleryLayout === 'layout3'
+    const isRu3MegaHeader = selectedBlockTitle.value === 'Ru3-Mega-Header'
+    if (!isCarouselLayout3 && !isRu3MegaHeader) return
     if (!document.getElementById('page-builder-wrapper')) return
     clearTimeout(_carouselRewireTimer)
     _carouselRewireTimer = window.setTimeout(async () => {

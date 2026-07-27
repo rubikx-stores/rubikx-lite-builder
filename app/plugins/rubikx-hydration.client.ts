@@ -180,6 +180,22 @@ async function loadCartCount(el: HTMLElement, companyId?: number) {
   el.appendChild(badge)
 }
 
+async function loadWishlistCount(el: HTMLElement, companyId?: number) {
+  // TODO: replace with real wishlist API call on live storefront
+  // Demo: hardcoded count for local testing
+  const count = 0
+
+  const existing = el.querySelector('[data-wishlist-badge]')
+  if (existing) existing.remove()
+
+  const badge = document.createElement('span')
+  badge.setAttribute('data-wishlist-badge', 'true')
+  badge.textContent = String(count)
+  badge.style.cssText =
+    'position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none;'
+  el.appendChild(badge)
+}
+
 async function loadAuthState(el: HTMLElement, companyId?: number) {
   const inBuilder = !!document.getElementById('page-builder-wrapper')
   if (inBuilder && !SIMULATE_AUTH) return
@@ -447,6 +463,7 @@ const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> =
     loadCategories,
     loadSlider,
     loadCartCount,
+    loadWishlistCount,
     loadAuthState,
     loadSearch,
     loadFaqAccordion,

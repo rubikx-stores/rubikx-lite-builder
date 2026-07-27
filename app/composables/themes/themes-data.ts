@@ -560,6 +560,7 @@ export interface Ru1ProductsData {
   hoverAmount: number
   animationDuration: number
   showAddToCart: boolean
+  addToCartLabel: string
   addToCartRadius: number
   showViewProduct: boolean
   viewProductLabel: string
@@ -625,6 +626,7 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   hoverAmount: 6,
   animationDuration: 300,
   showAddToCart: true,
+  addToCartLabel: 'Add to Cart',
   addToCartRadius: 6,
   showViewProduct: false,
   viewProductLabel: 'View Product',
@@ -701,6 +703,7 @@ export const ru1ProductsFields: FieldConfig[] = [
   fontField('priceFont', 'Price Font'),
   fontField('productNameFont', 'Product Name Font'),
   { key: 'showAddToCart', label: 'Show Add to Cart Button', type: 'toggle' },
+  { key: 'addToCartLabel', label: 'Add to Cart Button Text', type: 'text', placeholder: 'Add to Cart' },
   { key: 'buttonBgColor', label: 'Button Background', type: 'color' },
   { key: 'buttonTextColor', label: 'Button Text Color', type: 'color' },
   { key: 'addToCartRadius', label: 'Button Border Radius', type: 'number', unit: 'px', step: 2, placeholder: '6' },
@@ -714,7 +717,6 @@ export const ru1ProductsFields: FieldConfig[] = [
       { key: 'name', label: 'Product Name', type: 'text' },
       { key: 'price', label: 'Price', type: 'text' },
       { key: 'oldPrice', label: 'Old Price (optional)', type: 'text' },
-      { key: 'buttonLabel', label: 'Button Text', type: 'text' },
       { key: 'buttonUrl', label: 'Button URL', type: 'url' },
       { key: 'colors', label: 'Color Swatches', type: 'text', placeholder: 'blue, black, #ff0000' },
     ],
@@ -758,7 +760,7 @@ export function renderRu1Products(data: Ru1ProductsData, title = 'Ru1 Homepage F
   const innerStyle = `padding:${data.paddingY}px ${data.paddingX}px`
 
   const maxVisible = data.columns * (data.rows ?? 1)
-  const placeholder = { imageUrl: placeholderSvg, name: 'Product Name', price: '$0.00', oldPrice: '', buttonLabel: 'Add to Cart', buttonUrl: '/shop', colors: '' }
+  const placeholder = { imageUrl: placeholderSvg, name: 'Product Name', price: '$0.00', oldPrice: '', buttonUrl: '/shop', colors: '' }
   const visibleProducts = [
     ...data.products.slice(0, maxVisible),
     ...Array(Math.max(0, maxVisible - data.products.length)).fill(placeholder),
@@ -818,7 +820,7 @@ export function renderRu1Products(data: Ru1ProductsData, title = 'Ru1 Homepage F
           <p title="${p.name}" style="font-weight:600;font-size:0.875rem;line-height:1.3;min-height:36px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all;overflow-wrap:anywhere;color:${data.productNameColor ?? '#111827'};${fontCss(data.productNameFont, data.fontFamily)}">${p.name}</p>
           ${priceRow}
           ${colorsHtml}
-          ${data.showAddToCart !== false ? `<a href="${p.buttonUrl}" class="shop-btn" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.addToCartRadius ?? 6}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block;${fontCss(data.buttonFont, data.fontFamily)}">${p.buttonLabel}</a>` : ''}
+          ${data.showAddToCart !== false ? `<a href="${p.buttonUrl}" class="shop-btn" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.addToCartRadius ?? 6}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block;${fontCss(data.buttonFont, data.fontFamily)}">${data.addToCartLabel || 'Add to Cart'}</a>` : ''}
           ${bottomRow}
         </div>
       </div>`
@@ -1043,10 +1045,10 @@ export function renderRu1Footer(data: Ru1FooterData): string {
         </ul>
       </div>`
   const aboutCol = data.aboutMode === 'logo'
-    ? `<div style="max-width:20rem;text-align:${data.aboutAlign || 'left'};">
+    ? `<div style="width:100%;text-align:${data.aboutAlign || 'left'};">
         <img src="${data.aboutLogoUrl}" alt="Logo" style="width:${data.aboutLogoWidth}px;height:${data.aboutLogoHeight}px;object-fit:contain;display:inline-block;vertical-align:top;" />
       </div>`
-    : `<div style="max-width:20rem;text-align:${data.aboutAlign || 'left'};">
+    : `<div style="width:100%;text-align:${data.aboutAlign || 'left'};">
         <h3 style="${hStyle}">About Us</h3>
         <p data-field-key="tagline" style="${pStyle}white-space:pre-line;">${data.tagline}</p>
       </div>`
@@ -1069,26 +1071,36 @@ export function renderRu1Footer(data: Ru1FooterData): string {
     contact: data.showConnectWithUs !== false ? contactCol : '',
   }
   const slotJustify = ['flex-start', 'center', 'flex-end']
-  const orderedCols = (data.columnOrder ?? ['links', 'about', 'contact'])
+  const activeColumnOrder = data.columnOrder ?? ['links', 'about', 'contact']
+  const orderedCols = activeColumnOrder
     .map((k, i) => `<div style="display:flex;justify-content:${slotJustify[i] ?? 'flex-start'};">${colMap[k] ?? ''}</div>`)
     .join('\n      ')
+  // "about" carries a full paragraph while the other two are short link lists,
+  // so it gets a wider grid track (2fr vs 1fr) — tied to which column holds
+  // the About Us content, not its position, so this still works if columns
+  // are reordered.
+  const footerGridTemplate = activeColumnOrder
+    .map(k => `minmax(0,${k === 'about' ? 2 : 1}fr)`)
+    .join(' ')
 
   const sectionFontStyle = fontCss(undefined, data.fontFamily)
 
   return `<section data-component-title="Ru1 Homepage Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionFontStyle ? ` style="${sectionFontStyle}"` : ''}>
 <style>
-  @media(max-width:768px){
+  [data-ru1-footer-grid] img{max-width:100%;height:auto;}
+  @media(max-width:900px){
     [data-ru1-footer]{padding-left:24px!important;padding-right:24px!important;}
-    [data-ru1-footer-grid]{grid-template-columns:repeat(2,1fr)!important;gap:2rem 1.5rem!important;}
+    [data-ru1-footer-grid]{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:2rem 1.5rem!important;}
   }
   @media(max-width:480px){
-    [data-ru1-footer-grid]{grid-template-columns:1fr!important;}
+    [data-ru1-footer-grid]{grid-template-columns:minmax(0,1fr)!important;}
     [data-ru1-footer-grid]>div{justify-content:flex-start!important;}
+    [data-ru1-footer-grid] div[style*="max-width:20rem"]{max-width:100%!important;}
   }
 </style>
 <footer data-ru1-footer="true" style="${footerStyle}">
   <div style="max-width:80rem;margin:0 auto">
-    <div data-ru1-footer-grid="true" style="display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;">
+    <div data-ru1-footer-grid="true" style="display:grid;grid-template-columns:${footerGridTemplate};gap:2rem;">
       ${orderedCols}
     </div>
     <div style="border-top:1px solid ${data.borderColor || '#e5e7eb'};margin-top:2rem;padding-top:1.5rem;text-align:${data.copyrightAlign || 'center'};">

@@ -13,6 +13,10 @@ import {
   megaMenuHeaderFields,
   megaMenuHeaderSvg,
   renderMegaMenuHeader,
+  ru3MegaHeaderDefaults,
+  ru3MegaHeaderFields,
+  ru3MegaHeaderSvg,
+  renderRu3MegaHeader,
   bannerDefaults,
   bannerFields,
   bannerSvg,
@@ -165,6 +169,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Headers',
       cover_image: megaMenuHeaderSvg,
       html_code: renderMegaMenuHeader(megaMenuHeaderDefaults),
+    },
+    {
+      title: 'Ru3-Mega-Header',
+      category: 'Headers',
+      cover_image: ru3MegaHeaderSvg,
+      html_code: renderRu3MegaHeader(ru3MegaHeaderDefaults),
     },
   ],
   Banner: [
@@ -362,6 +372,12 @@ export function useLayouts() {
     defaults: megaMenuHeaderDefaults,
     fields: megaMenuHeaderFields,
     render: renderMegaMenuHeader,
+  })
+
+  blockRegistry.register('Ru3-Mega-Header', {
+    defaults: ru3MegaHeaderDefaults,
+    fields: ru3MegaHeaderFields,
+    render: renderRu3MegaHeader,
   })
 
   blockRegistry.register('Ru1-Banner', {
