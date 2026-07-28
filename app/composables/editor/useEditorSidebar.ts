@@ -71,12 +71,20 @@ export function useEditorSidebar() {
           return
         }
 
-        // Existing instance — sync text/image fields for inline edits and undo/redo
+        // Existing instance — sync text/image fields for inline edits and undo/redo.
+        // Read innerHTML (not textContent) for text fields so rich formatting
+        // applied via the canvas rich-text editor (bold, links, heading size)
+        // isn't silently downgraded to plain text on every history step —
+        // the block re-renders from this stored value later, and plain text
+        // in means plain text out.
         sec.querySelectorAll<HTMLElement>('[data-field-key]').forEach((el) => {
           const key = el.getAttribute('data-field-key')
           if (!key) return
-          const val = el.tagName === 'IMG' ? (el as HTMLImageElement).src || '' : el.textContent ?? ''
-          registry.setData(componentId, key, val)
+          if (el.tagName === 'IMG') {
+            registry.setData(componentId, key, (el as HTMLImageElement).src || '')
+            return
+          }
+          registry.setData(componentId, key, el.innerHTML ?? '')
         })
       })
     },
