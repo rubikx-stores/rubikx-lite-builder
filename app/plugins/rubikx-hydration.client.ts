@@ -16,7 +16,7 @@ function renderCategoryTree(
   return categories
     .map((cat) => {
       const slug =
-        cat.headlessName ?? cat.name.toLowerCase().replace(/\s+/g, '-')
+        cat.headlessName || cat.name.toLowerCase().replace(/\s+/g, '-')
       const label = cat.displayName.includes(' / ')
         ? cat.displayName.split(' / ').pop()!
         : cat.displayName
@@ -62,11 +62,11 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
       dropdown.innerHTML = tree
         .map((cat) => {
           const slug =
-            cat.headlessName ?? cat.name.toLowerCase().replace(/\s+/g, '-')
+            cat.headlessName || cat.name.toLowerCase().replace(/\s+/g, '-')
           const childrenHtml = (cat.children ?? [])
             .map((child) => {
               const childSlug =
-                child.headlessName ??
+                child.headlessName ||
                 child.name.toLowerCase().replace(/\s+/g, '-')
               const childLabel = child.displayName.includes(' / ')
                 ? child.displayName.split(' / ').pop()!
@@ -88,6 +88,132 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
   } catch (e) {
     console.error('[Rubikx] Failed to load categories:', e)
     if (dropdown) dropdown.innerHTML = ''
+  }
+}
+
+// Builder-preview-only aid for Ru3-Mega-Header's "+" overflow
+// (data-rubikx-component="NavOverflow"). Measures the nav row's available
+// width against its [data-nav-item] children and hides whichever trailing
+// ones don't fit, rendering them inside the "+" panel as an accordion —
+// header + chevron + children, expanded by default — instead of the
+// hover-flyout style they use in the row. Re-measures on ResizeObserver so
+// resizing the actual browser window (there's no device-preview toggle in
+// this builder) shows the effect live. This never runs on the published
+// site — the headless repo needs its own equivalent (mountCmsNavOverflow).
+function loadNavOverflow(row: HTMLElement) {
+  const overflowTrigger = row.querySelector<HTMLElement>(
+    '[data-rubikx-component="NavOverflow"]'
+  )
+  const overflowDropdown = overflowTrigger?.querySelector<HTMLElement>(
+    '[data-overflow-dropdown]'
+  )
+  if (!overflowTrigger || !overflowDropdown) return
+
+  function buildAccordionRow(item: HTMLElement): HTMLElement {
+    const link = item.querySelector<HTMLAnchorElement>('a')
+    const label = (link?.textContent ?? '').replace(/▾\s*$/, '').trim()
+    const href = link?.getAttribute('href') ?? '#'
+    const catDropdown = item.querySelector<HTMLElement>('[data-cat-dropdown]')
+    const children = catDropdown
+      ? Array.from(catDropdown.querySelectorAll<HTMLAnchorElement>('a'))
+      : []
+
+    const wrap = document.createElement('div')
+    wrap.style.cssText = 'border-bottom:1px solid #f3f4f6;'
+
+    if (!children.length) {
+      const a = document.createElement('a')
+      a.href = href
+      a.textContent = label
+      a.style.cssText =
+        'display:block;padding:10px 16px;color:#1f2937;font-size:14px;font-weight:500;text-decoration:none;white-space:nowrap;'
+      wrap.appendChild(a)
+      return wrap
+    }
+
+    const headerRow = document.createElement('div')
+    headerRow.style.cssText =
+      'display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;cursor:pointer;'
+    const headerLabel = document.createElement('span')
+    headerLabel.textContent = label
+    headerLabel.style.cssText = 'font-size:14px;font-weight:600;white-space:nowrap;'
+    const chevron = document.createElement('span')
+    chevron.textContent = '▾'
+    chevron.style.cssText = 'transition:transform .15s;transform:rotate(180deg);'
+    headerRow.append(headerLabel, chevron)
+    wrap.appendChild(headerRow)
+
+    const childList = document.createElement('div')
+    childList.style.cssText = 'display:block;padding-bottom:4px;'
+    children.forEach((child) => {
+      const clone = child.cloneNode(true) as HTMLAnchorElement
+      clone.style.cssText =
+        'display:block;padding:6px 16px 6px 32px;font-size:13px;color:#374151;text-decoration:none;white-space:nowrap;'
+      childList.appendChild(clone)
+    })
+    wrap.appendChild(childList)
+
+    // Expanded by default, per the design reference — chevron still toggles it.
+    let open = true
+    headerRow.addEventListener('click', () => {
+      open = !open
+      childList.style.display = open ? 'block' : 'none'
+      chevron.style.transform = open ? 'rotate(180deg)' : ''
+    })
+
+    return wrap
+  }
+
+  function recalc() {
+    const items = Array.from(row.querySelectorAll<HTMLElement>('[data-nav-item]'))
+    // Always reset from scratch before re-measuring — the only reliable way
+    // to handle both shrinking and growing the viewport from any prior state.
+    items.forEach((item) => { item.style.display = '' })
+    overflowDropdown!.innerHTML = ''
+    overflowTrigger!.style.display = 'none'
+    if (!items.length) return
+
+    const available = row.clientWidth
+    const reserve = overflowTrigger!.getBoundingClientRect().width || 40
+    let used = 0
+    let cut = items.length
+    for (let i = 0; i < items.length; i++) {
+      used += items[i].getBoundingClientRect().width + 32 // approximate the row's own gap
+      if (used > available - reserve) {
+        cut = i
+        break
+      }
+    }
+    if (cut >= items.length) return
+
+    overflowTrigger!.style.display = ''
+    for (let i = cut; i < items.length; i++) {
+      items[i].style.display = 'none'
+      overflowDropdown!.appendChild(buildAccordionRow(items[i]))
+    }
+  }
+
+  recalc()
+  ;(row as any)._navOverflowRecalc = recalc
+
+  if (!row.dataset.navOverflowResizeBound) {
+    row.dataset.navOverflowResizeBound = 'true'
+    let t: ReturnType<typeof setTimeout>
+    const ro = new ResizeObserver(() => {
+      clearTimeout(t)
+      t = setTimeout(recalc, 100)
+    })
+    ro.observe(row)
+  }
+
+  if (!overflowTrigger.dataset.navOverflowHoverBound) {
+    overflowTrigger.dataset.navOverflowHoverBound = 'true'
+    overflowTrigger.addEventListener('mouseenter', () => {
+      overflowDropdown!.style.display = 'block'
+    })
+    overflowTrigger.addEventListener('mouseleave', () => {
+      overflowDropdown!.style.display = 'none'
+    })
   }
 }
 
@@ -461,6 +587,7 @@ function loadSearch(el: HTMLElement, companyId?: number) {
 const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> =
   {
     loadCategories,
+    loadNavOverflow,
     loadSlider,
     loadCartCount,
     loadWishlistCount,

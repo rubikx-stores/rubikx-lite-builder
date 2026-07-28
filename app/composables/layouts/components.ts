@@ -455,16 +455,9 @@ export const ru3MegaHeaderDefaults: Ru3MegaHeaderData = {
   brandFont: '',
 
   navLinks: [
-    { label: 'Home',        href: '/',             showDropdown: false },
-    { label: 'Apparel',     href: '/apparel',      showDropdown: true  },
-    { label: 'Headwear',    href: '/headwear',     showDropdown: true  },
-    { label: 'Promo Items', href: '/promo-items',  showDropdown: true  },
-    { label: 'Collections', href: '/collections',  showDropdown: true  },
+    { label: 'Home', href: '/', showDropdown: false },
   ],
-  overflowLinks: [
-    { label: 'Sale/Clearance', href: '/sale-clearance' },
-    { label: 'Contact us',     href: '/contactus'      },
-  ],
+  overflowLinks: [],
   linkFontSize: 14,
   linkFontWeight: '500',
   linkColor: '#1f2937',
@@ -510,13 +503,14 @@ export const ru3MegaHeaderFields: FieldConfig[] = [
   fontField('brandFont', 'Brand Font'),
 
   {
-    key: 'navLinks', label: 'Nav Links (first 5 shown)', type: 'list',
+    key: 'navLinks', label: 'Nav Links', type: 'list',
     listFields: [
       { key: 'label',        label: 'Label',                   type: 'text', placeholder: 'e.g. Apparel'          },
       { key: 'href',         label: 'URL',                     type: 'url',  placeholder: 'e.g. /apparel or https://…' },
       { key: 'showDropdown', label: 'Show Categories Dropdown', type: 'toggle' },
     ],
   },
+  { key: 'syncCategoriesFromApi', label: 'Sync Categories from API', type: 'button' },
   {
     key: 'overflowLinks', label: 'Overflow Links (shown behind the + button)', type: 'list',
     listFields: [
@@ -574,12 +568,33 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
 
   // Dropdown under a nav link shows the site's real category tree (same
   // CategoryNav/loadCategories mechanism used elsewhere) — not hand-picked
-  // products. Any of the first 6 links can turn this on via its own toggle.
-  const mainLinks = data.navLinks.slice(0, 5)
-  const linksHtml = mainLinks.map(l => {
+  // products. Any nav link can turn this on via its own toggle.
+  //
+  // navLinks is populated either by hand, or in bulk via the "Sync Categories
+  // from API" button (EditorSidebar.client.vue), which fetches /api/categories
+  // once and writes one entry per root category — showDropdown on for any
+  // that have children. After syncing, entries are plain, editable Nav Links:
+  // labels/URLs can be hand-tuned, and re-syncing preserves any URL you've
+  // already edited (matched by label) while adding newly-appeared categories.
+  //
+  // Rendered items — navLinks and overflowLinks — share one shape: a
+  // [data-nav-item] div inside a [data-rubikx-component="MainNavRow"] row.
+  // This exact shape is read by mountCmsNavOverflow in the headless repo
+  // (app/layouts/default.vue, branch feat/navbar-functions), which measures
+  // available width at runtime and relocates whichever trailing items don't
+  // fit into the "+" panel. A dropdown-enabled item also gets
+  // data-category-name="<label>" so mountCmsCategoryNav can scope that
+  // item's dropdown to just its own children — the label must exactly match
+  // the real Odoo category's displayName/name (case/whitespace-sensitive) or
+  // scoping silently falls back to showing the full tree. This repo only
+  // emits the markup those functions read; it does no measurement itself.
+  const renderStaticNavItem = (l: Ru3NavLink): string => {
+    const pinned = l.href === '/' ? ` data-nav-pinned='true'` : ''
     if (l.showDropdown) {
       return `<div
+        data-nav-item${pinned}
         data-rubikx-component='CategoryNav'
+        data-category-name='${l.label}'
         data-on-mount='loadCategories'
         data-max-items='20'
         data-link-color='${data.linkColor}'
@@ -593,17 +608,28 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
         </div>
       </div>`
     }
-    return `<a href='${l.href}' style='${linkStyle}'>${l.label}</a>`
-  }).join('')
+    return `<div data-nav-item${pinned}><a href='${l.href}' style='${linkStyle}'>${l.label}</a></div>`
+  }
 
-  const overflowHtml = data.overflowLinks.length
-    ? `<div class="ru3-overflow" style="position:relative;display:inline-block;">
-        <button type="button" class="ru3-overflow-btn" onclick="(function(btn){var d=btn.nextElementSibling;var open=d.style.display==='block';document.querySelectorAll('.ru3-overflow-drop').forEach(function(x){x.style.display='none'});d.style.display=open?'none':'block';if(window.event)window.event.stopPropagation();})(this)" style="${linkStyle}cursor:pointer;background:none;border:none;padding:0;">+</button>
-        <div class="ru3-overflow-drop" style="display:none;position:absolute;top:100%;left:0;min-width:180px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100;overflow:hidden;padding:4px 0;">
-          ${data.overflowLinks.map(l => `<a href="${l.href}" style="display:block;padding:8px 14px;font-size:14px;color:#1f2937;text-decoration:none;">${l.label}</a>`).join('')}
-        </div>
+  const navLinksHtml = data.navLinks.map(renderStaticNavItem).join('')
+
+  const overflowLinksHtml = data.overflowLinks
+    .map(l => renderStaticNavItem({ ...l, showDropdown: false }))
+    .join('')
+
+  const linksHtml = navLinksHtml + overflowLinksHtml
+
+  // "+" overflow — always present but hidden by default; its dropdown starts
+  // empty. mountCmsNavOverflow (headless repo) shows this wrapper and moves
+  // whichever [data-nav-item] elements above don't fit into
+  // [data-overflow-dropdown], rendering ones with children as an expandable
+  // accordion. It binds its own hover show/hide on this trigger, so no
+  // onclick is needed here (unlike the other self-contained toggles in this
+  // header) — this one only works once that headless function runs.
+  const overflowHtml = `<div data-rubikx-component="NavOverflow" style="position:relative;display:none;">
+        <span style="${linkStyle}cursor:pointer;">+</span>
+        <div data-overflow-dropdown="true" style="display:none;position:absolute;top:100%;left:0;min-width:180px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100;overflow:hidden;padding:4px 0;"></div>
       </div>`
-    : ''
 
   const iconLabelStyle = `display:flex;flex-direction:column;align-items:center;gap:2px;color:${data.textColor};text-decoration:none;font-size:11px;background:none;border:none;cursor:pointer;`
 
@@ -642,18 +668,43 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
   </div>`
     : ''
 
-  // Flat list for the mobile drawer — the desktop categories-dropdown /
-  // overflow "+" mechanisms don't translate well to touch, so mobile just
-  // gets every link (main + overflow) as a simple stacked list, same
-  // simplification Ru2-Mega-Menu-Header's mobile drawer already uses.
-  const mobileDrawerLinks = [...mainLinks, ...data.overflowLinks].map(l =>
-    `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;">${l.label}</a>`
-  ).join('')
+  // Flat list for the mobile drawer, mirroring desktop's navLinks/overflowLinks
+  // one-to-one — no separate live-fetch mechanism needed anymore (the old
+  // "Categories" placeholder + mountCmsMobileCategoryNav route independently
+  // rebuilt every real category from categoriesMaster, which duplicated
+  // whatever "Sync Categories from API" already wrote into navLinks — same
+  // duplicate-source bug as the desktop one, just on mobile). Dropdown-enabled
+  // items reuse mountCmsCategoryNav's exact population mechanism (same
+  // data-rubikx-component="CategoryNav" + data-category-name shape desktop
+  // uses), just with a self-contained onclick chevron instead of hover, since
+  // hover isn't a reliable mobile interaction — no headless changes needed,
+  // mountCmsCategoryNav already populates any matching element regardless of
+  // where it lives in the DOM.
+  const renderMobileNavItem = (l: Ru3NavLink): string => {
+    if (!l.showDropdown) {
+      return `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;">${l.label}</a>`
+    }
+    return `<div data-rubikx-component='CategoryNav' data-category-name='${l.label}' data-on-mount='loadCategories' data-max-items='20' data-link-color='${data.textColor}' data-font-size='18' data-font-weight='500' style='border-bottom:1px solid #f3f4f6;'>
+      <div style='display:flex;align-items:center;justify-content:space-between;'>
+        <a href='${l.href}' style='flex:1;display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;'>${l.label}</a>
+        <button type='button' onclick="(function(btn){var d=btn.parentElement.nextElementSibling;var open=d.style.display==='block';d.style.display=open?'none':'block';event.stopPropagation();})(this)" style='background:none;border:none;padding:0.75rem;cursor:pointer;color:${data.textColor};font-size:14px;'>▾</button>
+      </div>
+      <div data-cat-dropdown='true' style='display:none;padding-left:1rem;padding-bottom:0.5rem;'>
+        <span style='display:block;padding:6px 0;color:#999;font-size:12px;font-style:italic;'>⟳ Loading…</span>
+      </div>
+    </div>`
+  }
+
+  const navLinksMobileHtml = data.navLinks.map(renderMobileNavItem).join('')
+  const overflowLinksMobileHtml = data.overflowLinks
+    .map(l => renderMobileNavItem({ ...l, showDropdown: false }))
+    .join('')
+  const mobileDrawerLinks = navLinksMobileHtml + overflowLinksMobileHtml
 
   const mobileSearchEl = data.showSearch
     ? `<div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0 0.5rem;gap:0.5rem;background:#fff;margin-bottom:1rem;">
         ${icon('magnifyingGlass', { size: 20, stroke: '#6b7280', style: 'flex-shrink:0;' })}
-        <input type="text" placeholder="Search" data-rubikx-component="HeaderSearch" data-on-mount="loadSearch" style="border:none;outline:none;background:#fff;font-size:0.875rem;width:100%;padding:0.5rem 0;" />
+        <input type="text" placeholder="Search" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="border:none;outline:none;background:#fff;font-size:0.875rem;width:100%;padding:0.5rem 0;" />
       </div>`
     : ''
 
@@ -705,15 +756,15 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
   return `<section data-component-title="Ru3-Mega-Header" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
 <nav style="${navStyle}">
   ${mobileNav}
-  <div data-nav-desktop="true" style="max-width:${data.containerMaxWidth}px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 2fr 1.3fr;align-items:center;gap:3rem;">
-    <div style="display:flex;align-items:center;">${logoEl}</div>
-    <nav style="display:flex;align-items:center;justify-content:center;gap:2rem;">${linksHtml}${overflowHtml}</nav>
-    <div style="display:flex;align-items:center;justify-content:flex-end;gap:2.5rem;">${searchEl}${cartEl}${wishlistEl}${accountEl}</div>
+  <div data-nav-desktop="true" style="max-width:${data.containerMaxWidth}px;margin:0 auto;width:100%;display:flex;align-items:center;gap:3rem;">
+    <div style="display:flex;align-items:center;flex-shrink:0;">${logoEl}</div>
+    <nav data-rubikx-component="MainNavRow" data-on-mount="loadNavOverflow" style="display:flex;align-items:center;justify-content:flex-start;gap:2rem;flex:1;min-width:0;">${linksHtml}${overflowHtml}</nav>
+    <div style="display:flex;align-items:center;justify-content:flex-end;gap:2.5rem;flex-shrink:0;">${searchEl}${cartEl}${wishlistEl}${accountEl}</div>
   </div>
   <div data-ru3-search-bar style="display:none;border-top:1px solid ${data.bottomBorderColor};">
     <div style="max-width:${data.searchBarWidth}px;margin:0 auto;width:100%;padding:0.75rem ${data.paddingX}px;">
       <div style="position:relative;display:flex;">
-        <input type="text" placeholder="Search" data-rubikx-component="HeaderSearch" data-on-mount="loadSearch" style="flex:1;border:1px solid #d1d5db;border-radius:0.375rem 0 0 0.375rem;padding:0.6rem 1rem;font-size:0.875rem;outline:none;" />
+        <input type="text" placeholder="Search" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="flex:1;border:1px solid #d1d5db;border-radius:0.375rem 0 0 0.375rem;padding:0.6rem 1rem;font-size:0.875rem;outline:none;" />
         <button type="button" style="background:#111827;color:#fff;border:none;border-radius:0 0.375rem 0.375rem 0;padding:0 1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">${icon('magnifyingGlass', { size: 18, stroke: '#fff' })}</button>
       </div>
     </div>
