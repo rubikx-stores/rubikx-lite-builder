@@ -222,7 +222,7 @@ async function onSelectField(fieldKey: string, value: string | number) {
 // Other ProductDetail blocks keep their data-hydrated and are skipped automatically.
 //
 // Ru3-Mega-Header gets the same treatment: it has several hydrated shells
-// (AccountMenu, CartBadge, WishlistBadge, CategoryNav, HeaderSearch) that all
+// (AccountMenu, CartBadge, CategoryNav, HeaderSearch) that all
 // lose their click/hover wiring the same way on every field edit — without
 // this, e.g. the Account dropdown stops opening the moment you touch any
 // other field on the block.

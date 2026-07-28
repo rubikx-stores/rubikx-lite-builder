@@ -426,14 +426,11 @@ export interface Ru3MegaHeaderData {
   searchBarWidth: number
   cartUrl: string
   showCart: boolean
-  wishlistUrl: string
-  showWishlist: boolean
   accountUrl: string
   showAccount: boolean
   accountGuestLabel: string
   accountLoginLabel: string
   accountCartLabel: string
-  accountWishlistLabel: string
 
   bgColor: string
   textColor: string
@@ -467,14 +464,11 @@ export const ru3MegaHeaderDefaults: Ru3MegaHeaderData = {
   searchBarWidth: 1280,
   cartUrl: '/cart',
   showCart: true,
-  wishlistUrl: '/wishlist',
-  showWishlist: true,
   accountUrl: '/login',
   showAccount: true,
   accountGuestLabel: 'Guest',
   accountLoginLabel: 'Login',
   accountCartLabel: 'My Cart',
-  accountWishlistLabel: 'Wishlist',
 
   bgColor: '#ffffff',
   textColor: '#1f2937',
@@ -532,14 +526,11 @@ export const ru3MegaHeaderFields: FieldConfig[] = [
     placeholder: '1280'                                                    },
   { key: 'cartUrl',      label: 'Cart URL',           type: 'url'    },
   { key: 'showCart',     label: 'Show Cart Icon',     type: 'toggle' },
-  { key: 'wishlistUrl',  label: 'Wishlist URL',       type: 'url'    },
-  { key: 'showWishlist', label: 'Show Wishlist Icon', type: 'toggle' },
   { key: 'accountUrl',   label: 'Login URL',          type: 'url'    },
   { key: 'showAccount',  label: 'Show Account Icon',  type: 'toggle' },
   { key: 'accountGuestLabel',    label: 'Account Dropdown: Guest Label',    type: 'text', placeholder: 'Guest'    },
   { key: 'accountLoginLabel',    label: 'Account Dropdown: Login Label',    type: 'text', placeholder: 'Login'    },
   { key: 'accountCartLabel',     label: 'Account Dropdown: Cart Label',     type: 'text', placeholder: 'My Cart'  },
-  { key: 'accountWishlistLabel', label: 'Account Dropdown: Wishlist Label', type: 'text', placeholder: 'Wishlist' },
 
   { key: 'bgColor',         label: 'Background Colour',       type: 'color'   },
   { key: 'paddingY',        label: 'Vertical Padding (px)',   type: 'number',
@@ -648,12 +639,6 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
   </span>`
     : ''
 
-  const wishlistEl = data.showWishlist
-    ? `<span data-rubikx-component="WishlistBadge" data-on-mount="loadWishlistCount" style="position:relative;display:inline-flex;">
-    <a href="${data.wishlistUrl}" style="${iconLabelStyle}">${icon('heart', { size: 20 })}<span>Wishlist</span></a>
-  </span>`
-    : ''
-
   // Plain inline onclick (not a data-on-mount hydration handler) — this
   // fragment is embedded directly into Odoo's own page template on publish,
   // where this app's Nuxt plugin (rubikx-hydration.client.ts) never loads.
@@ -668,7 +653,6 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
       <a href="${data.accountUrl}" style="display:block;padding:8px 16px;font-size:14px;font-weight:700;color:#1f2937;text-decoration:none;">${data.accountLoginLabel}</a>
       <div style="height:1px;background:#f3f4f6;margin:4px 0;"></div>
       <a href="${data.cartUrl}" style="display:block;padding:8px 16px;font-size:14px;font-weight:500;color:#1f2937;text-decoration:none;">${data.accountCartLabel}</a>
-      <a href="${data.wishlistUrl}" style="display:block;padding:8px 16px;font-size:14px;font-weight:500;color:#1f2937;text-decoration:none;">${data.accountWishlistLabel} (<span data-ru3-wishlist-count>0</span>)</a>
     </div>
   </div>`
     : ''
@@ -731,7 +715,6 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
   ${logoEl}
   <div style="display:flex;align-items:center;gap:1rem;">
     ${data.showCart ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart', { size: 22 })}</a></span>` : ''}
-    ${data.showWishlist ? `<span data-rubikx-component="WishlistBadge" data-on-mount="loadWishlistCount" style="position:relative;display:inline-flex;"><a href="${data.wishlistUrl}" style="color:${data.textColor};display:inline-flex;">${icon('heart', { size: 22 })}</a></span>` : ''}
     <button onclick="(function(btn){var s=btn.closest('section');var d=s&&s.querySelector('[data-mobile-drawer]');var o=s&&s.querySelector('[data-mobile-overlay]');if(d){d.style.transform='translateX(0)';}if(o){o.style.display='block';}document.body.style.overflow='hidden';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;">
       <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.textColor}" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
     </button>
@@ -764,7 +747,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
   <div data-nav-desktop="true" style="max-width:${data.containerMaxWidth}px;margin:0 auto;width:100%;display:flex;align-items:center;gap:3rem;">
     <div style="display:flex;align-items:center;flex-shrink:0;">${logoEl}</div>
     <nav data-rubikx-component="MainNavRow" data-on-mount="loadNavOverflow" style="display:flex;align-items:center;justify-content:flex-start;gap:2rem;flex:1;min-width:0;">${linksHtml}${overflowHtml}</nav>
-    <div style="display:flex;align-items:center;justify-content:flex-end;gap:2.5rem;flex-shrink:0;">${searchEl}${cartEl}${wishlistEl}${accountEl}</div>
+    <div style="display:flex;align-items:center;justify-content:flex-end;gap:2.5rem;flex-shrink:0;">${searchEl}${cartEl}${accountEl}</div>
   </div>
   <div data-ru3-search-bar style="display:none;border-top:1px solid ${data.bottomBorderColor};">
     <div style="max-width:${data.searchBarWidth}px;margin:0 auto;width:100%;padding:0.75rem ${data.paddingX}px;">

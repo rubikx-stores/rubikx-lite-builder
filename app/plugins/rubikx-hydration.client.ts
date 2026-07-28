@@ -9,65 +9,6 @@ import { productImageSrc } from '~/composables/useProductImageSrc'
 // Set true to preview logged-in auth state inside the builder
 const SIMULATE_AUTH = false
 
-// ─── Wishlist store (Ru3-Mega-Header's Wishlist icon + account dropdown) ──────
-// Plain localStorage-backed count — no separate composable file, kept right
-// next to the code that renders/reads it.
-const WISHLIST_STORAGE_KEY = 'rubikx-wishlist-v1'
-const WISHLIST_CHANGE_EVENT = 'rubikx:wishlist-changed'
-
-function _readWishlist(): number[] {
-  if (typeof localStorage === 'undefined') return []
-  try {
-    const raw = localStorage.getItem(WISHLIST_STORAGE_KEY)
-    const parsed = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed.filter((n) => typeof n === 'number') : []
-  } catch {
-    return []
-  }
-}
-
-function _writeWishlist(ids: number[]) {
-  if (typeof localStorage === 'undefined') return
-  try {
-    localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(ids))
-  } catch {}
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent(WISHLIST_CHANGE_EVENT, { detail: { ids } }))
-  }
-}
-
-function getWishlistCount(): number {
-  return _readWishlist().length
-}
-
-function isInWishlist(productId: number): boolean {
-  return _readWishlist().includes(productId)
-}
-
-function addToWishlist(productId: number) {
-  const ids = _readWishlist()
-  if (!ids.includes(productId)) _writeWishlist([...ids, productId])
-}
-
-function removeFromWishlist(productId: number) {
-  const ids = _readWishlist()
-  if (ids.includes(productId)) _writeWishlist(ids.filter((id) => id !== productId))
-}
-
-function toggleWishlist(productId: number): boolean {
-  const ids = _readWishlist()
-  const has = ids.includes(productId)
-  _writeWishlist(has ? ids.filter((id) => id !== productId) : [...ids, productId])
-  return !has
-}
-
-function onWishlistChange(cb: (ids: number[]) => void): () => void {
-  if (typeof window === 'undefined') return () => {}
-  const handler = (e: Event) => cb((e as CustomEvent).detail?.ids ?? _readWishlist())
-  window.addEventListener(WISHLIST_CHANGE_EVENT, handler)
-  return () => window.removeEventListener(WISHLIST_CHANGE_EVENT, handler)
-}
-
 function renderCategoryTree(
   categories: CategoryNode[],
   linkStyle: string
@@ -376,7 +317,7 @@ function loadSlider(el: HTMLElement) {
 }
 
 // ─── Cart count store (Ru3-Mega-Header's Cart icon) ───────────────────────────
-// Same pattern as the wishlist store above — plain localStorage-backed count.
+// Plain localStorage-backed count.
 // TODO: swap for a real Odoo cart API call once one exists; this is a stand-in
 // so the badge stops being hardcoded and moves as items get added/removed.
 const CART_STORAGE_KEY = 'rubikx-cart-v1'
@@ -448,34 +389,6 @@ async function loadCartCount(el: HTMLElement, companyId?: number) {
   if (el.dataset.cartWired === 'true') return
   el.dataset.cartWired = 'true'
   onCartChange(() => _renderCartBadge(el))
-}
-
-function _renderWishlistBadge(el: HTMLElement) {
-  const count = getWishlistCount()
-
-  const existing = el.querySelector('[data-wishlist-badge]')
-  if (existing) existing.remove()
-  if (count > 0) {
-    const badge = document.createElement('span')
-    badge.setAttribute('data-wishlist-badge', 'true')
-    badge.textContent = String(count)
-    badge.style.cssText =
-      'position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none;'
-    el.appendChild(badge)
-  }
-
-  // Ru3-Mega-Header's account dropdown shows "Wishlist (n)" as plain text,
-  // wherever it happens to be in the DOM — not just inside this shell.
-  document.querySelectorAll('[data-ru3-wishlist-count]').forEach((span) => {
-    span.textContent = String(count)
-  })
-}
-
-async function loadWishlistCount(el: HTMLElement, companyId?: number) {
-  _renderWishlistBadge(el)
-  if (el.dataset.wishlistWired === 'true') return
-  el.dataset.wishlistWired = 'true'
-  onWishlistChange(() => _renderWishlistBadge(el))
 }
 
 async function loadAuthState(el: HTMLElement, companyId?: number) {
@@ -746,7 +659,6 @@ const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> =
     loadNavOverflow,
     loadSlider,
     loadCartCount,
-    loadWishlistCount,
     loadAuthState,
     loadSearch,
     loadFaqAccordion,
