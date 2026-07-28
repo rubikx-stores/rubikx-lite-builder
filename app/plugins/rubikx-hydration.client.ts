@@ -9,6 +9,65 @@ import { productImageSrc } from '~/composables/useProductImageSrc'
 // Set true to preview logged-in auth state inside the builder
 const SIMULATE_AUTH = false
 
+// ─── Wishlist store (Ru3-Mega-Header's Wishlist icon + account dropdown) ──────
+// Plain localStorage-backed count — no separate composable file, kept right
+// next to the code that renders/reads it.
+const WISHLIST_STORAGE_KEY = 'rubikx-wishlist-v1'
+const WISHLIST_CHANGE_EVENT = 'rubikx:wishlist-changed'
+
+function _readWishlist(): number[] {
+  if (typeof localStorage === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(WISHLIST_STORAGE_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed.filter((n) => typeof n === 'number') : []
+  } catch {
+    return []
+  }
+}
+
+function _writeWishlist(ids: number[]) {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(ids))
+  } catch {}
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(WISHLIST_CHANGE_EVENT, { detail: { ids } }))
+  }
+}
+
+function getWishlistCount(): number {
+  return _readWishlist().length
+}
+
+function isInWishlist(productId: number): boolean {
+  return _readWishlist().includes(productId)
+}
+
+function addToWishlist(productId: number) {
+  const ids = _readWishlist()
+  if (!ids.includes(productId)) _writeWishlist([...ids, productId])
+}
+
+function removeFromWishlist(productId: number) {
+  const ids = _readWishlist()
+  if (ids.includes(productId)) _writeWishlist(ids.filter((id) => id !== productId))
+}
+
+function toggleWishlist(productId: number): boolean {
+  const ids = _readWishlist()
+  const has = ids.includes(productId)
+  _writeWishlist(has ? ids.filter((id) => id !== productId) : [...ids, productId])
+  return !has
+}
+
+function onWishlistChange(cb: (ids: number[]) => void): () => void {
+  if (typeof window === 'undefined') return () => {}
+  const handler = (e: Event) => cb((e as CustomEvent).detail?.ids ?? _readWishlist())
+  window.addEventListener(WISHLIST_CHANGE_EVENT, handler)
+  return () => window.removeEventListener(WISHLIST_CHANGE_EVENT, handler)
+}
+
 function renderCategoryTree(
   categories: CategoryNode[],
   linkStyle: string
@@ -35,6 +94,22 @@ function renderCategoryTree(
     .join('')
 }
 
+// Finds the tree node whose name/displayName/headlessName matches `filter`
+// (case-insensitive), searching every level, not just top-level categories.
+function _findCategoryNode(nodes: CategoryNode[], filter: string): CategoryNode | null {
+  const target = filter.trim().toLowerCase()
+  for (const node of nodes) {
+    if (
+      node.name?.toLowerCase() === target ||
+      node.displayName?.toLowerCase() === target ||
+      node.headlessName?.toLowerCase() === target
+    ) return node
+    const found = _findCategoryNode(node.children ?? [], filter)
+    if (found) return found
+  }
+  return null
+}
+
 async function loadCategories(el: HTMLElement, companyId?: number) {
   if (el.dataset.hydrated === 'true') return
   el.dataset.hydrated = 'true'
@@ -43,6 +118,7 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
   const linkColor = el.dataset.linkColor ?? '#000000'
   const fontSize = el.dataset.fontSize ?? '14'
   const fontWeight = el.dataset.fontWeight ?? '400'
+  const categoryFilter = el.dataset.categoryFilter ?? ''
   const linkStyle = `color:${linkColor};font-size:${fontSize}px;font-weight:${fontWeight};white-space:nowrap;`
 
   const dropdown = el.querySelector<HTMLElement>(
@@ -54,7 +130,17 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
     const flat = await $fetch<FlatCategory[]>('/api/categories', {
       query: { companyId },
     })
-    const tree = buildCategoryTree(flat).slice(0, maxItems)
+    const fullTree = buildCategoryTree(flat)
+    // When a specific category name is configured for this nav link (e.g.
+    // "Apparel" vs "Headwear"), scope the dropdown to just that category's
+    // own children instead of showing every top-level category everywhere.
+    const matched = categoryFilter ? _findCategoryNode(fullTree, categoryFilter) : null
+    const scoped = matched ? (matched.children ?? []) : fullTree
+    const tree = scoped.slice(0, maxItems)
+
+    if (categoryFilter && !matched) {
+      console.warn(`[Rubikx] Category filter "${categoryFilter}" did not match any category name`)
+    }
 
     if (tree.length > 6) {
       // Mega menu — horizontal grid layout
@@ -289,14 +375,61 @@ function loadSlider(el: HTMLElement) {
   startTimer()
 }
 
-async function loadCartCount(el: HTMLElement, companyId?: number) {
-  // TODO: replace with real Odoo cart API call on live storefront
-  // Demo: hardcoded count for local testing
-  const count = 0
+// ─── Cart count store (Ru3-Mega-Header's Cart icon) ───────────────────────────
+// Same pattern as the wishlist store above — plain localStorage-backed count.
+// TODO: swap for a real Odoo cart API call once one exists; this is a stand-in
+// so the badge stops being hardcoded and moves as items get added/removed.
+const CART_STORAGE_KEY = 'rubikx-cart-v1'
+const CART_CHANGE_EVENT = 'rubikx:cart-changed'
 
-  // Remove existing badge if any
+function _readCart(): number[] {
+  if (typeof localStorage === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(CART_STORAGE_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed.filter((n) => typeof n === 'number') : []
+  } catch {
+    return []
+  }
+}
+
+function _writeCart(ids: number[]) {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(ids))
+  } catch {}
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(CART_CHANGE_EVENT, { detail: { ids } }))
+  }
+}
+
+function getCartCount(): number {
+  return _readCart().length
+}
+
+function addToCart(productId: number) {
+  _writeCart([..._readCart(), productId])
+}
+
+function removeFromCart(productId: number) {
+  const ids = _readCart()
+  const idx = ids.indexOf(productId)
+  if (idx !== -1) { ids.splice(idx, 1); _writeCart(ids) }
+}
+
+function onCartChange(cb: (ids: number[]) => void): () => void {
+  if (typeof window === 'undefined') return () => {}
+  const handler = (e: Event) => cb((e as CustomEvent).detail?.ids ?? _readCart())
+  window.addEventListener(CART_CHANGE_EVENT, handler)
+  return () => window.removeEventListener(CART_CHANGE_EVENT, handler)
+}
+
+function _renderCartBadge(el: HTMLElement) {
+  const count = getCartCount()
+
   const existing = el.querySelector('[data-cart-badge]')
   if (existing) existing.remove()
+  if (count <= 0) return
 
   const badge = document.createElement('span')
   badge.setAttribute('data-cart-badge', 'true')
@@ -304,22 +437,45 @@ async function loadCartCount(el: HTMLElement, companyId?: number) {
   badge.style.cssText =
     'position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none;'
   el.appendChild(badge)
+
+  document.querySelectorAll('[data-ru3-cart-count]').forEach((span) => {
+    span.textContent = String(count)
+  })
 }
 
-async function loadWishlistCount(el: HTMLElement, companyId?: number) {
-  // TODO: replace with real wishlist API call on live storefront
-  // Demo: hardcoded count for local testing
-  const count = 0
+async function loadCartCount(el: HTMLElement, companyId?: number) {
+  _renderCartBadge(el)
+  if (el.dataset.cartWired === 'true') return
+  el.dataset.cartWired = 'true'
+  onCartChange(() => _renderCartBadge(el))
+}
+
+function _renderWishlistBadge(el: HTMLElement) {
+  const count = getWishlistCount()
 
   const existing = el.querySelector('[data-wishlist-badge]')
   if (existing) existing.remove()
+  if (count > 0) {
+    const badge = document.createElement('span')
+    badge.setAttribute('data-wishlist-badge', 'true')
+    badge.textContent = String(count)
+    badge.style.cssText =
+      'position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none;'
+    el.appendChild(badge)
+  }
 
-  const badge = document.createElement('span')
-  badge.setAttribute('data-wishlist-badge', 'true')
-  badge.textContent = String(count)
-  badge.style.cssText =
-    'position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none;'
-  el.appendChild(badge)
+  // Ru3-Mega-Header's account dropdown shows "Wishlist (n)" as plain text,
+  // wherever it happens to be in the DOM — not just inside this shell.
+  document.querySelectorAll('[data-ru3-wishlist-count]').forEach((span) => {
+    span.textContent = String(count)
+  })
+}
+
+async function loadWishlistCount(el: HTMLElement, companyId?: number) {
+  _renderWishlistBadge(el)
+  if (el.dataset.wishlistWired === 'true') return
+  el.dataset.wishlistWired = 'true'
+  onWishlistChange(() => _renderWishlistBadge(el))
 }
 
 async function loadAuthState(el: HTMLElement, companyId?: number) {

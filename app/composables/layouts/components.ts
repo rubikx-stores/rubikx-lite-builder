@@ -404,7 +404,7 @@ export const ru3MegaHeaderSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox
 </svg>`
 
 export interface OverflowLink { label: string; href: string }
-export interface Ru3NavLink { label: string; href: string; showDropdown: boolean }
+export interface Ru3NavLink { label: string; href: string; showDropdown: boolean; categoryFilter?: string }
 
 export interface Ru3MegaHeaderData {
   logoUrl: string
@@ -508,6 +508,8 @@ export const ru3MegaHeaderFields: FieldConfig[] = [
       { key: 'label',        label: 'Label',                   type: 'text', placeholder: 'e.g. Apparel'          },
       { key: 'href',         label: 'URL',                     type: 'url',  placeholder: 'e.g. /apparel or https://…' },
       { key: 'showDropdown', label: 'Show Categories Dropdown', type: 'toggle' },
+      { key: 'categoryFilter', label: 'Category Name (from backend)', type: 'text',
+        placeholder: 'e.g. Apparel — only that category\'s children show; blank shows all' },
     ],
   },
   { key: 'syncCategoriesFromApi', label: 'Sync Categories from API', type: 'button' },
@@ -553,6 +555,8 @@ export const ru3MegaHeaderFields: FieldConfig[] = [
 
 export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
   const navStyle = [
+    `width:100%`,
+    `box-sizing:border-box`,
     `background:${data.bgColor}`,
     `color:${data.textColor}`,
     `padding:${data.paddingY}px ${data.paddingX}px`,
@@ -600,6 +604,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
         data-link-color='${data.linkColor}'
         data-font-size='${data.linkFontSize}'
         data-font-weight='${data.linkFontWeight}'
+        data-category-filter='${l.categoryFilter ?? ''}'
         style='position:relative;display:inline-block;' data-cat-nav='true'
       >
         <a href='${l.href}' style='${linkStyle}cursor:pointer;'>${l.label} ▾</a>
@@ -663,7 +668,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
       <a href="${data.accountUrl}" style="display:block;padding:8px 16px;font-size:14px;font-weight:700;color:#1f2937;text-decoration:none;">${data.accountLoginLabel}</a>
       <div style="height:1px;background:#f3f4f6;margin:4px 0;"></div>
       <a href="${data.cartUrl}" style="display:block;padding:8px 16px;font-size:14px;font-weight:500;color:#1f2937;text-decoration:none;">${data.accountCartLabel}</a>
-      <a href="${data.wishlistUrl}" style="display:block;padding:8px 16px;font-size:14px;font-weight:500;color:#1f2937;text-decoration:none;">${data.accountWishlistLabel} (0)</a>
+      <a href="${data.wishlistUrl}" style="display:block;padding:8px 16px;font-size:14px;font-weight:500;color:#1f2937;text-decoration:none;">${data.accountWishlistLabel} (<span data-ru3-wishlist-count>0</span>)</a>
     </div>
   </div>`
     : ''
@@ -751,7 +756,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
 <!-- Overlay -->
 <div data-mobile-overlay="true" onclick="(function(el){var d=document.querySelector('[data-mobile-drawer]');if(d){d.style.transform='translateX(-100%)';}el.style.display='none';document.body.style.overflow='';})(this);" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;"></div>`
 
-  const sectionStyle = `${fontCss(undefined, data.fontFamily)}${data.sticky ? 'position:sticky;top:0;z-index:9999;' : ''}`
+  const sectionStyle = `width:100%;display:block;${fontCss(undefined, data.fontFamily)}${data.sticky ? 'position:sticky;top:0;z-index:9999;' : ''}`
 
   return `<section data-component-title="Ru3-Mega-Header" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
 <nav style="${navStyle}">
@@ -2636,18 +2641,18 @@ export function renderRu1Faq(data: Ru1FaqData): string {
   const fontWeight = weightMap[data.titleWeight] ?? '600'
   const subtitleWeight = weightMap[data.subtitleWeight] ?? '400'
 
-  const faqItems = (data.faqs ?? []).map((faq) => `
+  const faqItems = (data.faqs ?? []).map((faq, faqIdx) => `
     <div class="ru1-faq-item" style="border-top:1px solid ${data.dividerColor};padding:1.5rem 0;">
       <dt>
         <button onclick="var p=this.closest('.ru1-faq-item');var ans=p.querySelector('.ru1-faq-ans');var icon=p.querySelector('.ru1-faq-icon');var isOpen=ans.style.display!=='none';ans.style.display=isOpen?'none':'block';icon.textContent=isOpen?'+':'−';" style="display:flex;width:100%;align-items:flex-start;justify-content:space-between;text-align:left;background:none;border:none;cursor:pointer;padding:0;">
-          <span style="font-size:1rem;font-weight:600;line-height:1.75;color:${data.questionColor};${fontCss(data.questionFont, data.fontFamily)}">${faq.question}</span>
+          <span data-field-key="question" data-list-key="faqs" data-list-index="${faqIdx}" style="font-size:1rem;font-weight:600;line-height:1.75;color:${data.questionColor};${fontCss(data.questionFont, data.fontFamily)}">${faq.question}</span>
           <span style="margin-left:1.5rem;display:flex;height:1.75rem;align-items:center;flex-shrink:0;">
             <span class="ru1-faq-icon" style="font-size:1.375rem;font-weight:300;color:${data.iconColor};line-height:1;user-select:none;">+</span>
           </span>
         </button>
       </dt>
       <dd class="ru1-faq-ans" style="display:none;margin-top:0.5rem;padding-right:3rem;margin-bottom:0;">
-        <p style="font-size:1rem;line-height:1.75;color:${data.answerColor};margin:0;${fontCss(data.answerFont, data.fontFamily)}">${faq.answer}</p>
+        <p data-field-key="answer" data-list-key="faqs" data-list-index="${faqIdx}" style="font-size:1rem;line-height:1.75;color:${data.answerColor};margin:0;${fontCss(data.answerFont, data.fontFamily)}">${faq.answer}</p>
       </dd>
     </div>`).join('\n')
 
@@ -2847,15 +2852,15 @@ export function renderRu2FaqBanner(data: Ru2FaqBannerData): string {
 .ru2-faqb-item>summary::-webkit-details-marker{display:none;}
 .ru2-faqb-item[open] .ru2-faqb-chev{transform:rotate(180deg);}
 </style>`
-  const itemsHtml = (data.faqs ?? []).map((faq) => {
+  const itemsHtml = (data.faqs ?? []).map((faq, faqIdx) => {
     return `
       <details class="ru2-faqb-item" style="border-top:1px solid ${data.dividerColor};">
         <summary style="display:flex;align-items:center;justify-content:space-between;gap:1.5rem;cursor:pointer;padding:1.25rem 0;">
-          <span style="font-size:1rem;font-weight:700;line-height:1.5;color:${data.questionColor};${fontCss(data.questionFont, data.fontFamily)}">${faq.question}</span>
+          <span data-field-key="question" data-list-key="faqs" data-list-index="${faqIdx}" style="font-size:1rem;font-weight:700;line-height:1.5;color:${data.questionColor};${fontCss(data.questionFont, data.fontFamily)}">${faq.question}</span>
           <svg class="ru2-faqb-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;transition:transform 200ms ease;"><path d="M6 9l6 6 6-6" stroke="${data.chevronColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </summary>
         <div style="background:${data.itemBgColor};padding:1.25rem 1.5rem;margin-bottom:1rem;border-radius:4px;">
-          <p style="font-size:0.95rem;line-height:1.7;color:${data.answerColor};margin:0;${fontCss(data.answerFont, data.fontFamily)}">${faq.answer}</p>
+          <p data-field-key="answer" data-list-key="faqs" data-list-index="${faqIdx}" style="font-size:0.95rem;line-height:1.7;color:${data.answerColor};margin:0;${fontCss(data.answerFont, data.fontFamily)}">${faq.answer}</p>
         </div>
       </details>`
   }).join('')
