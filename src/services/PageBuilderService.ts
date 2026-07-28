@@ -1901,16 +1901,145 @@ export class PageBuilderService {
       return
     }
 
-    if (typeof this.getElement.value.innerHTML === 'string') {
-      await nextTick()
+    await nextTick()
 
-      // Update text content
-      this.getElement.value.textContent = textContentVueModel
-
-      this.pageBuilderStateStore.setTextAreaVueModel(this.getElement.value.innerHTML)
-
-      this.getElement.value.innerHTML = textContentVueModel
+    const tmp = document.createElement('div')
+    tmp.innerHTML = textContentVueModel
+    const HEADING_SIZES: Record<string, string> = {
+      H1: '2rem', H2: '1.75rem', H3: '1.5rem', H4: '1.25rem', H5: '1.1rem', H6: '1rem',
     }
+    const HEADING_WEIGHTS: Record<string, string> = {
+      H1: '700', H2: '700', H3: '700', H4: '600', H5: '600', H6: '600',
+    }
+
+    // Repairs a corruption pattern that earlier versions of this list-editing
+    // flow could leave behind: an empty trailing <li> immediately followed by
+    // a sibling <p> that holds the text the user actually meant to type into
+    // that bullet (list got "exited" partway through), and/or a second list
+    // immediately following the first (the same bug splitting one list into
+    // several one-item lists). Walk forward from each list, pulling any such
+    // orphaned paragraph back inside the empty <li>, and merging in any
+    // same-type list that immediately follows, until neither pattern matches
+    // — so this self-heals on the next edit instead of requiring the user to
+    // manually splice it back together with backspace.
+    Array.from(tmp.children).forEach((el) => {
+      if (el.tagName !== 'UL' && el.tagName !== 'OL') return
+      let next = el.nextElementSibling
+      while (next) {
+        const lastLi = el.lastElementChild
+        const lastLiEmpty = lastLi?.tagName === 'LI' && !lastLi.textContent?.trim()
+        if (lastLiEmpty && next.tagName === 'P' && next.textContent?.trim()) {
+          lastLi!.innerHTML = next.innerHTML
+          const toRemove = next
+          next = next.nextElementSibling
+          toRemove.remove()
+          continue
+        }
+        if (next.tagName === el.tagName) {
+          const toRemove = next
+          while (toRemove.firstElementChild) el.appendChild(toRemove.firstElementChild)
+          next = toRemove.nextElementSibling
+          toRemove.remove()
+          continue
+        }
+        break
+      }
+    })
+
+    // Prepend extra CSS onto an element's existing inline style, without
+    // clobbering anything already there (e.g. text-align from the alignment
+    // buttons).
+    const addInlineStyle = (el: Element, css: string) => {
+      const existing = (el.getAttribute('style') || '').trim()
+      const prefix = existing && !existing.endsWith(';') ? `${existing};` : existing
+      el.setAttribute('style', `${prefix}${css}`)
+    }
+
+   
+    tmp.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
+      const tag = heading.tagName
+      addInlineStyle(heading, `font-size:${HEADING_SIZES[tag]};font-weight:${HEADING_WEIGHTS[tag]};margin:0.75em 0 0.5em 0;line-height:1.3;`)
+    })
+   
+    tmp.querySelectorAll('p').forEach((p) => {
+      // ProseMirror's schema requires a list item's content to be wrapped in
+      // its own <p> (<li><p>text</p></li>) — removing that tag looks right
+      // visually but breaks re-opening this content in "Manage Content"
+      // later: TipTap's HTML parser can't match a bare-text <li> against
+      // that schema, and silently splits the text out into a new paragraph
+      // sibling, leaving an empty bullet behind. Keep the <p>, just drop its
+      // own margin so the <li>'s own margin (below) is the only spacing —
+      // with list-style-position left at its default (outside), the marker
+      // never competes with this block child for room on the same line, so
+      // no display trick is needed here either.
+      // A blank spacing line (empty <p>, whether it's its own paragraph or
+      // sits inside an <li>) has no content to give it height once it's out
+      // of the live editor — ProseMirror shows a cursor line for it while
+      // focused, but that's a decoration, not real height. Insert a real
+      // <br> so it keeps its line height everywhere it's rendered, list
+      // item or not.
+      if (!p.textContent?.trim() && p.children.length === 0) {
+        p.innerHTML = '<br>'
+      }
+      if (p.parentElement?.tagName === 'LI') {
+        // Whatever text-align TipTap already stamped on this item's <p>
+        // (from the align buttons, scoped per-selection — see
+        // TipTapInput.vue) is left untouched. The matching <li> width/margin
+        // conversion below is what actually moves this item's bullet along
+        // with its text, independently of every other item.
+        addInlineStyle(p, 'margin:0;line-height:1.6;')
+        return
+      }
+      addInlineStyle(p, 'margin:0 0 1em 0;line-height:1.6;')
+    })
+
+    tmp.querySelectorAll('ul').forEach((ul) => addInlineStyle(ul, 'margin:0 0 1em 0;padding-left:1.5em;list-style:disc;'))
+    tmp.querySelectorAll('ol').forEach((ol) => addInlineStyle(ol, 'margin:0 0 1em 0;padding-left:1.5em;list-style:decimal;'))
+
+    // The align buttons set text-align on the current selection's own <p>
+    // only (see TipTapInput.vue — 'bulletList'/'orderedList' are excluded
+    // from its types precisely so this stays scoped to whichever line(s)
+    // were actually selected, not the whole list). Reading that back here
+    // and applying a fixed width + margin:auto to the SAME item's <li> is
+    // what actually moves this item's bullet along with its text —
+    // list-style-position:outside anchors the marker to the <li>'s own box,
+    // so repositioning the box repositions the bullet — while every other
+    // <li>, which never got this treatment, stays exactly where it was. A
+    // fixed percentage width (not shrink-to-fit) also means the box's size
+    // never depends on content length, so the bullet doesn't drift as more
+    // text is typed into it later.
+    const ALIGN_RE = /text-align\s*:\s*(center|right|left)\s*;?/i
+    tmp.querySelectorAll('li').forEach((li) => {
+      // Same zero-height problem as the standalone/list-item <p> case above,
+      // but for a bullet that's an empty spacing line with no <p> wrapper at
+      // all — give it a <br> so the bullet itself keeps a visible line.
+      if (!li.textContent?.trim() && li.children.length === 0) {
+        li.innerHTML = '<br>'
+      }
+      addInlineStyle(li, 'margin:0.15em 0;overflow-wrap:break-word;word-break:break-word;')
+      const innerP = li.querySelector(':scope > p')
+      const align = innerP ? (innerP.getAttribute('style') || '').match(ALIGN_RE)?.[1].toLowerCase() : undefined
+      if (align === 'center') addInlineStyle(li, 'width:60%;margin-left:auto;margin-right:auto;')
+      else if (align === 'right') addInlineStyle(li, 'width:60%;margin-left:auto;margin-right:0;')
+    })
+
+
+    const BLOCK_TAGS = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6']
+    const topEl = tmp.children.length === 1 ? tmp.firstElementChild : null
+    const topTag = topEl?.tagName
+    const finalHtml = topTag && BLOCK_TAGS.includes(topTag)
+      ? (HEADING_SIZES[topTag]
+          ? `<span style="font-size:${HEADING_SIZES[topTag]};font-weight:${HEADING_WEIGHTS[topTag]};">${topEl!.innerHTML}</span>`
+          : topEl!.innerHTML)
+      : tmp.innerHTML
+
+    // Write the real HTML directly — writing it through textContent first
+    // (as plain text) and reading innerHTML back out would escape the tags
+    // (e.g. "<h2>" becomes literal text), corrupting the value that gets
+    // stored for anything reading getTextAreaVueModel (bold/headings/links
+    // would look broken there even though the element itself looked fine).
+    this.getElement.value.innerHTML = finalHtml
+    this.pageBuilderStateStore.setTextAreaVueModel(finalHtml)
 
     this.ensureTextAreaHasContent()
   }

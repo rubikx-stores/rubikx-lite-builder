@@ -1,6 +1,7 @@
 <script setup>
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
+import { Mark } from '@tiptap/core'
 import { computed, onBeforeMount, onMounted, ref, watch } from 'vue'
 import DynamicModalBuilder from '../Modals/DynamicModalBuilder.vue'
 import { sharedPageBuilderStore } from '../../stores/shared-store'
@@ -8,6 +9,46 @@ import { getPageBuilder } from '../../composables/builderInstance'
 import { useTranslations } from '../../composables/useTranslations'
 import TextAlign from '@tiptap/extension-text-align'
 import TypographyForTipTap from '../PageBuilder/EditorMenu/Editables/TypographyForTipTap.vue'
+
+// H2-H6 used to call StarterKit's built-in toggleHeading, which converts
+// the WHOLE containing block (paragraph/list item) to a heading node — a
+// single selected word can't become "half heading", ProseMirror headings
+// are block-level, so the entire line flipped to a heading. Worse, a list
+// item's schema doesn't allow a heading as its content, so ProseMirror
+// silently lifted the whole line out of the list to make room for it —
+// exactly the "bullet disappears" bug. A custom MARK (inline formatting,
+// same tier as Bold) applies only to the exact selected text and never
+// touches the surrounding block/list structure.
+const HEADING_MARK_SIZES = { 2: '1.75rem', 3: '1.5rem', 4: '1.25rem', 5: '1.1rem', 6: '1rem' }
+const HEADING_MARK_WEIGHTS = { 2: '700', 3: '700', 4: '600', 5: '600', 6: '600' }
+const HeadingMark = Mark.create({
+  name: 'headingMark',
+  addAttributes() {
+    return { level: { default: 2 } }
+  },
+  parseHTML() {
+    return [{
+      tag: 'span[data-heading-level]',
+      getAttrs: (el) => ({ level: Number(el.getAttribute('data-heading-level')) }),
+    }]
+  },
+  renderHTML({ mark }) {
+    const level = mark.attrs.level
+    return ['span', {
+      'data-heading-level': level,
+      style: `font-size:${HEADING_MARK_SIZES[level]};font-weight:${HEADING_MARK_WEIGHTS[level]};`,
+    }, 0]
+  },
+  addCommands() {
+    return {
+      setHeadingMark: (level) => ({ commands, editor }) => {
+        const isSameLevel = editor.isActive('headingMark', { level })
+        commands.unsetMark('headingMark')
+        return isSameLevel ? true : commands.setMark('headingMark', { level })
+      },
+    }
+  },
+})
 
 const pageBuilderService = getPageBuilder()
 
@@ -73,8 +114,19 @@ const editor = useEditor({
       },
     }),
     TextAlign.configure({
+      // 'bulletList'/'orderedList' deliberately excluded — updateAttributes()
+      // would target the WHOLE list ancestor, aligning every item together
+      // even if only one line/bullet was selected. 'paragraph' alone gives
+      // per-selection scoping instead: a list item's content is wrapped in
+      // its own <p>, and updateAttributes() walks every node of that type
+      // within the actual selection range — select just one bullet's text
+      // and only that <p> gets updated; select across all three and all
+      // three do. The bullet itself is never touched either way; it stays
+      // anchored in the <li>'s own margin (list-style-position defaults to
+      // outside — see style.css), same as any normal browser list.
       types: ['heading', 'paragraph'],
     }),
+    HeadingMark,
   ],
   editorProps: {
     attributes: {
@@ -270,11 +322,11 @@ onMounted(() => {
             <!-- H2 -->
 
             <div
-              @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
+              @click="editor.chain().focus().setHeadingMark(2).run()"
               class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
               :class="{
                 'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
-                  editor.isActive('heading', {
+                  editor.isActive('headingMark', {
                     level: 2,
                   }),
               }"
@@ -285,11 +337,11 @@ onMounted(() => {
             <!-- H3 -->
 
             <div
-              @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
+              @click="editor.chain().focus().setHeadingMark(3).run()"
               class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
               :class="{
                 'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
-                  editor.isActive('heading', {
+                  editor.isActive('headingMark', {
                     level: 3,
                   }),
               }"
@@ -300,11 +352,11 @@ onMounted(() => {
             <!-- H4 -->
 
             <div
-              @click="editor.chain().focus().toggleHeading({ level: 4 }).run()"
+              @click="editor.chain().focus().setHeadingMark(4).run()"
               class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
               :class="{
                 'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
-                  editor.isActive('heading', {
+                  editor.isActive('headingMark', {
                     level: 4,
                   }),
               }"
@@ -315,11 +367,11 @@ onMounted(() => {
             <!-- H5 -->
 
             <div
-              @click="editor.chain().focus().toggleHeading({ level: 5 }).run()"
+              @click="editor.chain().focus().setHeadingMark(5).run()"
               class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
               :class="{
                 'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
-                  editor.isActive('heading', {
+                  editor.isActive('headingMark', {
                     level: 5,
                   }),
               }"
@@ -330,11 +382,11 @@ onMounted(() => {
             <!-- H6 -->
 
             <div
-              @click="editor.chain().focus().toggleHeading({ level: 6 }).run()"
+              @click="editor.chain().focus().setHeadingMark(6).run()"
               class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
               :class="{
                 'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
-                  editor.isActive('heading', {
+                  editor.isActive('headingMark', {
                     level: 6,
                   }),
               }"
@@ -402,6 +454,19 @@ onMounted(() => {
               }"
             >
               <span class="material-symbols-outlined"> format_list_bulleted </span>
+            </div>
+
+            <!-- Numbered list -->
+
+            <div
+              @click="editor.chain().focus().toggleOrderedList().run()"
+              class="h-10 w-10 cursor-pointer flex items-center justify-center aspect-square text-myPrimaryDarkGrayColor bg-gray-100 rounded-xl hover:bg-myPrimaryLinkColor hover:text-white"
+              :class="{
+                'bg-myPrimaryLinkColor text-white hover:text-white hover:bg-myPrimaryLinkColor':
+                  editor.isActive('orderedList'),
+              }"
+            >
+              <span class="material-symbols-outlined"> format_list_numbered </span>
             </div>
 
             <!-- Toggle showTypography start -->
