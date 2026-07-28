@@ -6,6 +6,8 @@ import { useBlockRegistry } from '~/composables/editor/useBlockRegistry'
 import { productImageSrc } from '~/composables/useProductImageSrc'
 import { getDomain, faviconUrl } from '~/composables/useSocialIcons'
 import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
+import { buildCategoryTree } from '~/composables/categories/buildCategoryTree'
+import type { FlatCategory } from '~/composables/categories/buildCategoryTree'
 
 const selectedCompanyId = useState<number | null>('selectedCompanyId')
 
@@ -145,6 +147,64 @@ async function onToggleField(fieldKey: string, newValue: boolean) {
   }
 }
 
+// Sync Categories from API (Ru3-Mega-Header): fetches the real category
+// tree once and writes one Nav Links entry per root category — showDropdown
+// on for anything with children, so mountCmsCategoryNav (headless) scopes
+// its dropdown via data-category-name exactly like a hand-typed dropdown
+// link already does. Re-running preserves any URL you've already edited for
+// a category still present (matched by label) and only adds genuinely new
+// ones — it never touches links that aren't in the current category list
+// (e.g. "Home"), so those stay exactly as configured.
+async function syncCategoriesFromApi() {
+  const data = blockData.value
+  if (!data) return
+  buttonFieldBusy.value.syncCategoriesFromApi = true
+  buttonFieldError.value.syncCategoriesFromApi = ''
+  try {
+    const flat = await $fetch<FlatCategory[]>('/api/categories', {
+      query: { companyId: selectedCompanyId.value ?? undefined },
+    })
+    const tree = buildCategoryTree(flat)
+
+    // Display-name priority: headlessName (if truthy — it's `false` when
+    // unset, not null/undefined, hence `||` not `??`) → displayName → name.
+    const labelFor = (c: FlatCategory) => String(c.headlessName || c.displayName || c.name)
+
+    const existingNavLinks = (data.navLinks ?? []) as Array<{ label: string; href: string; showDropdown: boolean; categoryFilter?: string }>
+    const existingByLabel = new Map(existingNavLinks.map(l => [l.label, l]))
+    const categoryLabels = new Set(tree.map(labelFor))
+
+    const keptStatic = existingNavLinks.filter(l => !categoryLabels.has(l.label))
+    const syncedCategories = tree.map(cat => {
+      const label = labelFor(cat)
+      const existing = existingByLabel.get(label)
+      const slug = cat.headlessName || cat.name.toLowerCase().replace(/\s+/g, '-')
+      return {
+        label,
+        href: existing?.href ?? `/${slug}`,
+        showDropdown: (cat.children?.length ?? 0) > 0,
+        // Keeps the builder-preview's own dropdown scoping (loadCategories'
+        // data-category-filter) in sync with the live site's scoping
+        // (mountCmsCategoryNav's data-category-name, always derived from
+        // this same label) — without this, a synced category would preview
+        // as the full unscoped tree while still being correct once published.
+        categoryFilter: existing?.categoryFilter ?? label,
+      }
+    })
+
+    await updateBlockField('navLinks', [...keptStatic, ...syncedCategories])
+  } catch (e) {
+    console.error('[Sync Categories from API] failed', e)
+    buttonFieldError.value.syncCategoriesFromApi = 'Failed to fetch categories — check console.'
+  } finally {
+    buttonFieldBusy.value.syncCategoriesFromApi = false
+  }
+}
+
+function onButtonField(fieldKey: string) {
+  if (fieldKey === 'syncCategoriesFromApi') syncCategoriesFromApi()
+}
+
 async function onSelectField(fieldKey: string, value: string | number) {
   await updateBlockField(fieldKey, value)
   // When gallery layout changes, the block re-renders with new carousel HTML.
@@ -162,7 +222,7 @@ async function onSelectField(fieldKey: string, value: string | number) {
 // Other ProductDetail blocks keep their data-hydrated and are skipped automatically.
 //
 // Ru3-Mega-Header gets the same treatment: it has several hydrated shells
-// (AccountMenu, CartBadge, WishlistBadge, CategoryNav, HeaderSearch) that all
+// (AccountMenu, CartBadge, CategoryNav, HeaderSearch) that all
 // lose their click/hover wiring the same way on every field edit — without
 // this, e.g. the Account dropdown stops opening the moment you touch any
 // other field on the block.
@@ -250,6 +310,8 @@ function debouncedUpdateBlockListItem(listKey: string, idx: number, itemKey: str
 // ── Block image upload ────────────────────────────────────────────────────────
 const uploadError = ref<Record<string, string>>({})
 const uploading = ref<Record<string, boolean>>({})
+const buttonFieldBusy = ref<Record<string, boolean>>({})
+const buttonFieldError = ref<Record<string, string>>({})
 
 // NOTE: this deliberately does NOT pin/lock scroll during upload. An earlier
 // version force-held the canvas + sidebar scroll to a captured position every
@@ -723,6 +785,17 @@ onUnmounted(() => {
                     :class="blockData[field.key] ? 'translate-x-4' : 'translate-x-0.5'" />
                 </button>
               </div>
+            </div>
+
+            <!-- button -->
+            <div v-else-if="field.type === 'button'" class="mb-2.5">
+              <button type="button"
+                class="w-full rounded-lg border border-gray-300 bg-gray-50 hover:bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-800 transition-colors"
+                :disabled="buttonFieldBusy[field.key]"
+                @click="onButtonField(field.key)">
+                {{ buttonFieldBusy[field.key] ? 'Working…' : field.label }}
+              </button>
+              <p v-if="buttonFieldError[field.key]" class="text-xs text-red-500 mt-1">{{ buttonFieldError[field.key] }}</p>
             </div>
 
             <!-- select -->

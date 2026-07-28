@@ -9,65 +9,6 @@ import { productImageSrc } from '~/composables/useProductImageSrc'
 // Set true to preview logged-in auth state inside the builder
 const SIMULATE_AUTH = false
 
-// ─── Wishlist store (Ru3-Mega-Header's Wishlist icon + account dropdown) ──────
-// Plain localStorage-backed count — no separate composable file, kept right
-// next to the code that renders/reads it.
-const WISHLIST_STORAGE_KEY = 'rubikx-wishlist-v1'
-const WISHLIST_CHANGE_EVENT = 'rubikx:wishlist-changed'
-
-function _readWishlist(): number[] {
-  if (typeof localStorage === 'undefined') return []
-  try {
-    const raw = localStorage.getItem(WISHLIST_STORAGE_KEY)
-    const parsed = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed.filter((n) => typeof n === 'number') : []
-  } catch {
-    return []
-  }
-}
-
-function _writeWishlist(ids: number[]) {
-  if (typeof localStorage === 'undefined') return
-  try {
-    localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(ids))
-  } catch {}
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent(WISHLIST_CHANGE_EVENT, { detail: { ids } }))
-  }
-}
-
-function getWishlistCount(): number {
-  return _readWishlist().length
-}
-
-function isInWishlist(productId: number): boolean {
-  return _readWishlist().includes(productId)
-}
-
-function addToWishlist(productId: number) {
-  const ids = _readWishlist()
-  if (!ids.includes(productId)) _writeWishlist([...ids, productId])
-}
-
-function removeFromWishlist(productId: number) {
-  const ids = _readWishlist()
-  if (ids.includes(productId)) _writeWishlist(ids.filter((id) => id !== productId))
-}
-
-function toggleWishlist(productId: number): boolean {
-  const ids = _readWishlist()
-  const has = ids.includes(productId)
-  _writeWishlist(has ? ids.filter((id) => id !== productId) : [...ids, productId])
-  return !has
-}
-
-function onWishlistChange(cb: (ids: number[]) => void): () => void {
-  if (typeof window === 'undefined') return () => {}
-  const handler = (e: Event) => cb((e as CustomEvent).detail?.ids ?? _readWishlist())
-  window.addEventListener(WISHLIST_CHANGE_EVENT, handler)
-  return () => window.removeEventListener(WISHLIST_CHANGE_EVENT, handler)
-}
-
 function renderCategoryTree(
   categories: CategoryNode[],
   linkStyle: string
@@ -75,7 +16,7 @@ function renderCategoryTree(
   return categories
     .map((cat) => {
       const slug =
-        cat.headlessName ?? cat.name.toLowerCase().replace(/\s+/g, '-')
+        cat.headlessName || cat.name.toLowerCase().replace(/\s+/g, '-')
       const label = cat.displayName.includes(' / ')
         ? cat.displayName.split(' / ').pop()!
         : cat.displayName
@@ -148,11 +89,11 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
       dropdown.innerHTML = tree
         .map((cat) => {
           const slug =
-            cat.headlessName ?? cat.name.toLowerCase().replace(/\s+/g, '-')
+            cat.headlessName || cat.name.toLowerCase().replace(/\s+/g, '-')
           const childrenHtml = (cat.children ?? [])
             .map((child) => {
               const childSlug =
-                child.headlessName ??
+                child.headlessName ||
                 child.name.toLowerCase().replace(/\s+/g, '-')
               const childLabel = child.displayName.includes(' / ')
                 ? child.displayName.split(' / ').pop()!
@@ -174,6 +115,132 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
   } catch (e) {
     console.error('[Rubikx] Failed to load categories:', e)
     if (dropdown) dropdown.innerHTML = ''
+  }
+}
+
+// Builder-preview-only aid for Ru3-Mega-Header's "+" overflow
+// (data-rubikx-component="NavOverflow"). Measures the nav row's available
+// width against its [data-nav-item] children and hides whichever trailing
+// ones don't fit, rendering them inside the "+" panel as an accordion —
+// header + chevron + children, expanded by default — instead of the
+// hover-flyout style they use in the row. Re-measures on ResizeObserver so
+// resizing the actual browser window (there's no device-preview toggle in
+// this builder) shows the effect live. This never runs on the published
+// site — the headless repo needs its own equivalent (mountCmsNavOverflow).
+function loadNavOverflow(row: HTMLElement) {
+  const overflowTrigger = row.querySelector<HTMLElement>(
+    '[data-rubikx-component="NavOverflow"]'
+  )
+  const overflowDropdown = overflowTrigger?.querySelector<HTMLElement>(
+    '[data-overflow-dropdown]'
+  )
+  if (!overflowTrigger || !overflowDropdown) return
+
+  function buildAccordionRow(item: HTMLElement): HTMLElement {
+    const link = item.querySelector<HTMLAnchorElement>('a')
+    const label = (link?.textContent ?? '').replace(/▾\s*$/, '').trim()
+    const href = link?.getAttribute('href') ?? '#'
+    const catDropdown = item.querySelector<HTMLElement>('[data-cat-dropdown]')
+    const children = catDropdown
+      ? Array.from(catDropdown.querySelectorAll<HTMLAnchorElement>('a'))
+      : []
+
+    const wrap = document.createElement('div')
+    wrap.style.cssText = 'border-bottom:1px solid #f3f4f6;'
+
+    if (!children.length) {
+      const a = document.createElement('a')
+      a.href = href
+      a.textContent = label
+      a.style.cssText =
+        'display:block;padding:10px 16px;color:#1f2937;font-size:14px;font-weight:500;text-decoration:none;white-space:nowrap;'
+      wrap.appendChild(a)
+      return wrap
+    }
+
+    const headerRow = document.createElement('div')
+    headerRow.style.cssText =
+      'display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;cursor:pointer;'
+    const headerLabel = document.createElement('span')
+    headerLabel.textContent = label
+    headerLabel.style.cssText = 'font-size:14px;font-weight:600;white-space:nowrap;'
+    const chevron = document.createElement('span')
+    chevron.textContent = '▾'
+    chevron.style.cssText = 'transition:transform .15s;transform:rotate(180deg);'
+    headerRow.append(headerLabel, chevron)
+    wrap.appendChild(headerRow)
+
+    const childList = document.createElement('div')
+    childList.style.cssText = 'display:block;padding-bottom:4px;'
+    children.forEach((child) => {
+      const clone = child.cloneNode(true) as HTMLAnchorElement
+      clone.style.cssText =
+        'display:block;padding:6px 16px 6px 32px;font-size:13px;color:#374151;text-decoration:none;white-space:nowrap;'
+      childList.appendChild(clone)
+    })
+    wrap.appendChild(childList)
+
+    // Expanded by default, per the design reference — chevron still toggles it.
+    let open = true
+    headerRow.addEventListener('click', () => {
+      open = !open
+      childList.style.display = open ? 'block' : 'none'
+      chevron.style.transform = open ? 'rotate(180deg)' : ''
+    })
+
+    return wrap
+  }
+
+  function recalc() {
+    const items = Array.from(row.querySelectorAll<HTMLElement>('[data-nav-item]'))
+    // Always reset from scratch before re-measuring — the only reliable way
+    // to handle both shrinking and growing the viewport from any prior state.
+    items.forEach((item) => { item.style.display = '' })
+    overflowDropdown!.innerHTML = ''
+    overflowTrigger!.style.display = 'none'
+    if (!items.length) return
+
+    const available = row.clientWidth
+    const reserve = overflowTrigger!.getBoundingClientRect().width || 40
+    let used = 0
+    let cut = items.length
+    for (let i = 0; i < items.length; i++) {
+      used += items[i].getBoundingClientRect().width + 32 // approximate the row's own gap
+      if (used > available - reserve) {
+        cut = i
+        break
+      }
+    }
+    if (cut >= items.length) return
+
+    overflowTrigger!.style.display = ''
+    for (let i = cut; i < items.length; i++) {
+      items[i].style.display = 'none'
+      overflowDropdown!.appendChild(buildAccordionRow(items[i]))
+    }
+  }
+
+  recalc()
+  ;(row as any)._navOverflowRecalc = recalc
+
+  if (!row.dataset.navOverflowResizeBound) {
+    row.dataset.navOverflowResizeBound = 'true'
+    let t: ReturnType<typeof setTimeout>
+    const ro = new ResizeObserver(() => {
+      clearTimeout(t)
+      t = setTimeout(recalc, 100)
+    })
+    ro.observe(row)
+  }
+
+  if (!overflowTrigger.dataset.navOverflowHoverBound) {
+    overflowTrigger.dataset.navOverflowHoverBound = 'true'
+    overflowTrigger.addEventListener('mouseenter', () => {
+      overflowDropdown!.style.display = 'block'
+    })
+    overflowTrigger.addEventListener('mouseleave', () => {
+      overflowDropdown!.style.display = 'none'
+    })
   }
 }
 
@@ -250,7 +317,7 @@ function loadSlider(el: HTMLElement) {
 }
 
 // ─── Cart count store (Ru3-Mega-Header's Cart icon) ───────────────────────────
-// Same pattern as the wishlist store above — plain localStorage-backed count.
+// Plain localStorage-backed count.
 // TODO: swap for a real Odoo cart API call once one exists; this is a stand-in
 // so the badge stops being hardcoded and moves as items get added/removed.
 const CART_STORAGE_KEY = 'rubikx-cart-v1'
@@ -322,34 +389,6 @@ async function loadCartCount(el: HTMLElement, companyId?: number) {
   if (el.dataset.cartWired === 'true') return
   el.dataset.cartWired = 'true'
   onCartChange(() => _renderCartBadge(el))
-}
-
-function _renderWishlistBadge(el: HTMLElement) {
-  const count = getWishlistCount()
-
-  const existing = el.querySelector('[data-wishlist-badge]')
-  if (existing) existing.remove()
-  if (count > 0) {
-    const badge = document.createElement('span')
-    badge.setAttribute('data-wishlist-badge', 'true')
-    badge.textContent = String(count)
-    badge.style.cssText =
-      'position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none;'
-    el.appendChild(badge)
-  }
-
-  // Ru3-Mega-Header's account dropdown shows "Wishlist (n)" as plain text,
-  // wherever it happens to be in the DOM — not just inside this shell.
-  document.querySelectorAll('[data-ru3-wishlist-count]').forEach((span) => {
-    span.textContent = String(count)
-  })
-}
-
-async function loadWishlistCount(el: HTMLElement, companyId?: number) {
-  _renderWishlistBadge(el)
-  if (el.dataset.wishlistWired === 'true') return
-  el.dataset.wishlistWired = 'true'
-  onWishlistChange(() => _renderWishlistBadge(el))
 }
 
 async function loadAuthState(el: HTMLElement, companyId?: number) {
@@ -617,9 +656,9 @@ function loadSearch(el: HTMLElement, companyId?: number) {
 const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> =
   {
     loadCategories,
+    loadNavOverflow,
     loadSlider,
     loadCartCount,
-    loadWishlistCount,
     loadAuthState,
     loadSearch,
     loadFaqAccordion,
