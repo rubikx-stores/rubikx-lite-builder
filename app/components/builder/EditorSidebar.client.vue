@@ -170,7 +170,7 @@ async function syncCategoriesFromApi() {
     // unset, not null/undefined, hence `||` not `??`) → displayName → name.
     const labelFor = (c: FlatCategory) => String(c.headlessName || c.displayName || c.name)
 
-    const existingNavLinks = (data.navLinks ?? []) as Array<{ label: string; href: string; showDropdown: boolean }>
+    const existingNavLinks = (data.navLinks ?? []) as Array<{ label: string; href: string; showDropdown: boolean; categoryFilter?: string }>
     const existingByLabel = new Map(existingNavLinks.map(l => [l.label, l]))
     const categoryLabels = new Set(tree.map(labelFor))
 
@@ -183,6 +183,12 @@ async function syncCategoriesFromApi() {
         label,
         href: existing?.href ?? `/${slug}`,
         showDropdown: (cat.children?.length ?? 0) > 0,
+        // Keeps the builder-preview's own dropdown scoping (loadCategories'
+        // data-category-filter) in sync with the live site's scoping
+        // (mountCmsCategoryNav's data-category-name, always derived from
+        // this same label) — without this, a synced category would preview
+        // as the full unscoped tree while still being correct once published.
+        categoryFilter: existing?.categoryFilter ?? label,
       }
     })
 

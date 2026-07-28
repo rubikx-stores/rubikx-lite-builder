@@ -689,7 +689,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
     if (!l.showDropdown) {
       return `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;">${l.label}</a>`
     }
-    return `<div data-rubikx-component='CategoryNav' data-category-name='${l.label}' data-on-mount='loadCategories' data-max-items='20' data-link-color='${data.textColor}' data-font-size='18' data-font-weight='500' style='border-bottom:1px solid #f3f4f6;'>
+    return `<div data-rubikx-component='CategoryNav' data-category-name='${l.label}' data-category-filter='${l.categoryFilter ?? ''}' data-on-mount='loadCategories' data-max-items='20' data-link-color='${data.textColor}' data-font-size='18' data-font-weight='500' style='border-bottom:1px solid #f3f4f6;'>
       <div style='display:flex;align-items:center;justify-content:space-between;'>
         <a href='${l.href}' style='flex:1;display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;'>${l.label}</a>
         <button type='button' onclick="(function(btn){var d=btn.parentElement.nextElementSibling;var open=d.style.display==='block';d.style.display=open?'none':'block';event.stopPropagation();})(this)" style='background:none;border:none;padding:0.75rem;cursor:pointer;color:${data.textColor};font-size:14px;'>▾</button>
