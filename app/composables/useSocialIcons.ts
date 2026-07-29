@@ -12,3 +12,4 @@ export function socialIconHtml(href: string, size = 28): string {
   const label = domain || 'Link'
   return `<a href="${href}" style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:#fff;border:1.5px solid #e5e7eb;overflow:hidden;text-decoration:none;flex-shrink:0;" aria-label="${label}" target="_blank" rel="noopener"><img src="${faviconUrl(href)}" width="${size}" height="${size}" style="object-fit:contain;" alt="${domain}" /></a>`
 }
+
