@@ -20,7 +20,6 @@ import TypographyForTipTap from '../PageBuilder/EditorMenu/Editables/TypographyF
 // same tier as Bold) applies only to the exact selected text and never
 // touches the surrounding block/list structure.
 const HEADING_MARK_SIZES = { 2: '1.75rem', 3: '1.5rem', 4: '1.25rem', 5: '1.1rem', 6: '1rem' }
-const HEADING_MARK_WEIGHTS = { 2: '700', 3: '700', 4: '600', 5: '600', 6: '600' }
 const HeadingMark = Mark.create({
   name: 'headingMark',
   addAttributes() {
@@ -36,7 +35,7 @@ const HeadingMark = Mark.create({
     const level = mark.attrs.level
     return ['span', {
       'data-heading-level': level,
-      style: `font-size:${HEADING_MARK_SIZES[level]};font-weight:${HEADING_MARK_WEIGHTS[level]};`,
+      style: `font-size:${HEADING_MARK_SIZES[level]};`,
     }, 0]
   },
   addCommands() {
