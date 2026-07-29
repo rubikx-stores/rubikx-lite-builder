@@ -16,7 +16,7 @@ importers:
         version: 2.2.0(vue@3.5.34(typescript@5.8.3))
       '@myissue/vue-website-page-builder':
         specifier: file:../
-        version: file:..(@floating-ui/dom@1.7.6)(@tiptap/core@3.23.6(@tiptap/pm@3.23.6))(@tiptap/pm@3.23.6)(typescript@5.8.3)
+        version: file:..(@floating-ui/dom@1.7.6)(typescript@5.8.3)
       h3:
         specifier: ^1.15.0
         version: 1.15.11
@@ -5010,11 +5010,13 @@ snapshots:
       - encoding
       - supports-color
 
-  '@myissue/vue-website-page-builder@file:..(@floating-ui/dom@1.7.6)(@tiptap/core@3.23.6(@tiptap/pm@3.23.6))(@tiptap/pm@3.23.6)(typescript@5.8.3)':
+  '@myissue/vue-website-page-builder@file:..(@floating-ui/dom@1.7.6)(typescript@5.8.3)':
     dependencies:
       '@headlessui/vue': 1.7.23(vue@3.5.34(typescript@5.8.3))
+      '@tiptap/core': 3.23.6(@tiptap/pm@3.23.6)
       '@tiptap/extension-link': 3.23.6(@tiptap/core@3.23.6(@tiptap/pm@3.23.6))(@tiptap/pm@3.23.6)
       '@tiptap/extension-text-align': 3.23.6(@tiptap/core@3.23.6(@tiptap/pm@3.23.6))
+      '@tiptap/pm': 3.23.6
       '@tiptap/starter-kit': 3.23.6
       '@tiptap/vue-3': 3.23.6(@floating-ui/dom@1.7.6)(@tiptap/core@3.23.6(@tiptap/pm@3.23.6))(@tiptap/pm@3.23.6)(vue@3.5.34(typescript@5.8.3))
       pinia: 2.3.1(typescript@5.8.3)(vue@3.5.34(typescript@5.8.3))
@@ -5022,8 +5024,6 @@ snapshots:
       vue: 3.5.34(typescript@5.8.3)
     transitivePeerDependencies:
       - '@floating-ui/dom'
-      - '@tiptap/core'
-      - '@tiptap/pm'
       - '@vue/composition-api'
       - typescript
 
