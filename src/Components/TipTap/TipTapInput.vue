@@ -2,7 +2,7 @@
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import { Mark } from '@tiptap/core'
-import { computed, onBeforeMount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeMount, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import DynamicModalBuilder from '../Modals/DynamicModalBuilder.vue'
 import { sharedPageBuilderStore } from '../../stores/shared-store'
 import { getPageBuilder } from '../../composables/builderInstance'
@@ -75,6 +75,76 @@ const getElement = computed(() => {
   return pageBuilderStateStore.getElement
 })
 const textContentVueModel = ref('')
+
+// The Font Appearance popup (TypographyForTipTap) writes size/weight/family/
+// style straight onto the canvas element's classList via
+// PageBuilderService.applyElementClassChanges. Two things stand in the way
+// of just mirroring those classes onto this editor pane:
+//  1. prose-sm (baked into editorProps.attributes.class below) sets its own
+//     font-size directly on real h1-h6 tags via its typography scale.
+//  2. Real heading tags in the saved HTML also carry their OWN pre-baked
+//     inline font-size/font-weight (added by PageBuilderService.handleTextInput's
+//     heading-normalization pass — see HEADING_SIZES/HEADING_WEIGHTS there).
+// An element's own inline style always beats anything inherited from an
+// ancestor, whether that ancestor uses a class or its own inline style — so
+// no amount of styling the outer container can win against a heading's own
+// baked-in size. The only thing that outranks a plain inline style,
+// regardless of which element carries it, is an `!important` stylesheet
+// rule. So instead of setting classes/styles on the root, this injects one,
+// scoped to this popup's editor pane, targeting every element inside it.
+const fontOverrideStyleId = 'tiptap-font-appearance-override'
+
+// Resolving the actual CSS value behind a Tailwind class (rather than
+// hand-maintaining yet another size/weight/family lookup table here) via a
+// throwaway probe element keeps this in sync with whatever tailwind.config.ts
+// actually defines — including custom font stacks like font-garamond, which
+// this file has no other reason to know the raw value of.
+const resolveTailwindValue = (className, cssProperty) => {
+  if (!className || className === 'none') return ''
+  const probe = document.createElement('span')
+  probe.className = className
+  probe.style.position = 'absolute'
+  probe.style.visibility = 'hidden'
+  probe.style.pointerEvents = 'none'
+  document.body.appendChild(probe)
+  const value = getComputedStyle(probe)[cssProperty]
+  probe.remove()
+  return value
+}
+
+const fontOverrideCSS = computed(() => {
+  const declarations = [
+    [pageBuilderStateStore.getFontDesktop, 'fontSize', 'font-size'],
+    [pageBuilderStateStore.getFontWeight, 'fontWeight', 'font-weight'],
+    [pageBuilderStateStore.getFontFamily, 'fontFamily', 'font-family'],
+    [pageBuilderStateStore.getFontStyle, 'fontStyle', 'font-style'],
+  ]
+    .map(([cls, jsProp, cssProp]) => {
+      const value = resolveTailwindValue(cls, jsProp)
+      return value ? `${cssProp}:${value} !important;` : ''
+    })
+    .filter(Boolean)
+    .join('')
+
+  if (!declarations) return ''
+  return `#page-builder-editor, #page-builder-editor * { ${declarations} }`
+})
+
+const applyFontOverrideStyleTag = (css) => {
+  let styleTag = document.getElementById(fontOverrideStyleId)
+  if (!css) {
+    styleTag?.remove()
+    return
+  }
+  if (!styleTag) {
+    styleTag = document.createElement('style')
+    styleTag.id = fontOverrideStyleId
+    document.head.appendChild(styleTag)
+  }
+  styleTag.textContent = css
+}
+
+watch(fontOverrideCSS, (css) => applyFontOverrideStyleTag(css))
 
 const textContent = computed(() => {
   if (editor.value) {
@@ -235,6 +305,11 @@ onBeforeMount(() => {
 
 onMounted(() => {
   TipTapSetContent()
+  applyFontOverrideStyleTag(fontOverrideCSS.value)
+})
+
+onBeforeUnmount(() => {
+  document.getElementById(fontOverrideStyleId)?.remove()
 })
 </script>
 <template>
