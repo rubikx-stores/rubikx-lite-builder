@@ -18,7 +18,7 @@ export const megaMenuHeaderSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBo
 
 export interface MegaMenuProduct { id: number; label: string; href: string; image?: string; price?: number }
 export interface MegaMenuGroup   { label: string; href: string; products: MegaMenuProduct[] }
-export interface NavLink         { label: string; href: string; megaMenu?: MegaMenuGroup[] }
+export interface NavLink         { label: string; href: string; megaMenu?: MegaMenuGroup[]; newTab?: boolean }
 export interface CtaButton {
   label: string
   href: string
@@ -142,6 +142,7 @@ export const megaMenuHeaderFields: FieldConfig[] = [
     listFields: [
       { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Shop'          },
       { key: 'href',  label: 'URL',   type: 'url',  placeholder: 'e.g. /shop or https://…' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
   { key: 'navLinksAlign',      label: 'Links Position',                  type: 'select',
@@ -238,11 +239,11 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
           const json = JSON.stringify(groups).replace(/'/g, '&quot;')
           const staticContent = renderStaticDrop(l.megaMenu)
           return `<div class='ru-mega-item' data-mega-json='${json}' style='position:relative;display:inline-block;'>` +
-            `<a href='${l.href}' style='${linkStyle}cursor:pointer;'>${l.label} ▾</a>` +
+            `<a href='${l.href}' style='${linkStyle}cursor:pointer;'${l.newTab ? ` target='_blank' rel='noopener noreferrer'` : ''}>${l.label} ▾</a>` +
             `<div class='ru-mega-drop' style='display:none;position:absolute;top:100%;left:0;min-width:260px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100;overflow:hidden;'>${staticContent}</div>` +
             `</div>`
         }
-        return `<a href='${l.href}' style='${linkStyle}'>${l.label}</a>`
+        return `<a href='${l.href}' style='${linkStyle}'${l.newTab ? ` target='_blank' rel='noopener noreferrer'` : ''}>${l.label}</a>`
       }).join('')
     : ''
 
@@ -310,7 +311,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
   const hasMegaMenu = data.navLinks.some(l => l.megaMenu && l.megaMenu.length > 0)
 
   const mobileDrawerLinks = data.navLinks.map(l =>
-    `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;${fontCss(data.linkFont, data.fontFamily)}">${l.label}</a>`
+    `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;${fontCss(data.linkFont, data.fontFamily)}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`
   ).join('')
 
   const mobileSearchEl = data.showSearch
@@ -403,8 +404,8 @@ export const ru3MegaHeaderSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox
   <rect fill="#718096" x="240" y="12" width="30" height="8"/>
 </svg>`
 
-export interface OverflowLink { label: string; href: string }
-export interface Ru3NavLink { label: string; href: string; showDropdown: boolean; categoryFilter?: string }
+export interface OverflowLink { label: string; href: string; newTab?: boolean }
+export interface Ru3NavLink { label: string; href: string; showDropdown: boolean; categoryFilter?: string; newTab?: boolean }
 
 export interface Ru3MegaHeaderData {
   logoUrl: string
@@ -504,6 +505,7 @@ export const ru3MegaHeaderFields: FieldConfig[] = [
       { key: 'showDropdown', label: 'Show Categories Dropdown', type: 'toggle' },
       { key: 'categoryFilter', label: 'Category Name (from backend)', type: 'text',
         placeholder: 'e.g. Apparel — only that category\'s children show; blank shows all' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
   { key: 'syncCategoriesFromApi', label: 'Sync Categories from API', type: 'button' },
@@ -512,6 +514,7 @@ export const ru3MegaHeaderFields: FieldConfig[] = [
     listFields: [
       { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Contact us' },
       { key: 'href',  label: 'URL',   type: 'url',  placeholder: 'e.g. /contactus' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
   { key: 'linkColor',       label: 'Link Colour',            type: 'color'   },
@@ -598,13 +601,13 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
         data-category-filter='${l.categoryFilter ?? ''}'
         style='position:relative;display:inline-block;' data-cat-nav='true'
       >
-        <a href='${l.href}' style='${linkStyle}cursor:pointer;'>${l.label} ▾</a>
+        <a href='${l.href}' style='${linkStyle}cursor:pointer;'${l.newTab ? ` target='_blank' rel='noopener noreferrer'` : ''}>${l.label} ▾</a>
         <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
           <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Loading…</span>
         </div>
       </div>`
     }
-    return `<div data-nav-item${pinned}><a href='${l.href}' style='${linkStyle}'>${l.label}</a></div>`
+    return `<div data-nav-item${pinned}><a href='${l.href}' style='${linkStyle}'${l.newTab ? ` target='_blank' rel='noopener noreferrer'` : ''}>${l.label}</a></div>`
   }
 
   const navLinksHtml = data.navLinks.map(renderStaticNavItem).join('')
@@ -671,11 +674,11 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
   // where it lives in the DOM.
   const renderMobileNavItem = (l: Ru3NavLink): string => {
     if (!l.showDropdown) {
-      return `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;">${l.label}</a>`
+      return `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`
     }
     return `<div data-rubikx-component='CategoryNav' data-category-name='${l.label}' data-category-filter='${l.categoryFilter ?? ''}' data-on-mount='loadCategories' data-max-items='20' data-link-color='${data.textColor}' data-font-size='18' data-font-weight='500' style='border-bottom:1px solid #f3f4f6;'>
       <div style='display:flex;align-items:center;justify-content:space-between;'>
-        <a href='${l.href}' style='flex:1;display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;'>${l.label}</a>
+        <a href='${l.href}' style='flex:1;display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;'${l.newTab ? ` target='_blank' rel='noopener noreferrer'` : ''}>${l.label}</a>
         <button type='button' onclick="(function(btn){var d=btn.parentElement.nextElementSibling;var open=d.style.display==='block';d.style.display=open?'none':'block';event.stopPropagation();})(this)" style='background:none;border:none;padding:0.75rem;cursor:pointer;color:${data.textColor};font-size:14px;'>▾</button>
       </div>
       <div data-cat-dropdown='true' style='display:none;padding-left:1rem;padding-bottom:0.5rem;'>
@@ -781,6 +784,40 @@ export const ru1FormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 
   <rect fill="#394152" x="204" y="88" width="60" height="10"/>
 </svg>`
 
+// ─── Shared contact-form field shape ───────────────────────────────────────────
+// Used by Ru1-Form, Ru2-Form, and Ru3-Form + Banner. `name` is the technical
+// key the field submits under (matches what Odoo's contact-form backend
+// expects, e.g. 'reply_to' for email, 'note' for the message) — free text so
+// any number of custom fields can be added, not just the standard set.
+// `sequence` is never stored on the field itself (see withFieldSequence below)
+// — it's always derived from array position at output time, so reordering or
+// inserting a field in the middle never leaves a stale number behind.
+export interface ContactFormFieldItem {
+  name: string
+  label: string
+  field_type: string
+  is_required: boolean
+  default_value: string
+  values: string
+}
+
+export const contactFormFieldListConfig: FieldConfig[] = [
+  { key: 'name', label: 'Field Name (technical key)', type: 'text', placeholder: 'e.g. name, phone, reply_to, company, subject, note' },
+  { key: 'label', label: 'Field Label', type: 'text', placeholder: 'e.g. Your Name' },
+  { key: 'field_type', label: 'Field Type', type: 'select', options: ['text', 'number', 'tel', 'email', 'textarea', 'select'] },
+  { key: 'is_required', label: 'Required', type: 'toggle' },
+  { key: 'default_value', label: 'Default Value', type: 'text' },
+  { key: 'values', label: 'Options (comma-separated, for Select type)', type: 'text' },
+]
+
+// Computes each field's `sequence` from its current array position right
+// before serializing to data-component-props — the one place this output
+// gets built, so "add/remove/reorder a field" always produces correct
+// sequence numbers with nothing to keep in sync by hand.
+export function withFieldSequence<T extends { fields?: ContactFormFieldItem[] }>(data: T): T & { fields: (ContactFormFieldItem & { sequence: number })[] } {
+  return { ...data, fields: (data.fields ?? []).map((f, i) => ({ sequence: i + 1, ...f })) }
+}
+
 export interface Ru1FormData {
   title: string
   description: string
@@ -800,6 +837,7 @@ export interface Ru1FormData {
   titleFont: string
   descriptionFont: string
   buttonFont: string
+  fields: ContactFormFieldItem[]
 }
 
 export const ru1FormDefaults: Ru1FormData = {
@@ -821,6 +859,13 @@ export const ru1FormDefaults: Ru1FormData = {
   titleFont: '',
   descriptionFont: '',
   buttonFont: '',
+  fields: [
+    { name: 'first_name', label: 'First name', field_type: 'text', is_required: true, default_value: '', values: '' },
+    { name: 'last_name', label: 'Last name', field_type: 'text', is_required: true, default_value: '', values: '' },
+    { name: 'reply_to', label: 'Email', field_type: 'email', is_required: true, default_value: '', values: '' },
+    { name: 'phone', label: 'Phone number', field_type: 'tel', is_required: false, default_value: '', values: '' },
+    { name: 'note', label: 'Message', field_type: 'textarea', is_required: true, default_value: '', values: '' },
+  ],
 }
 
 export const ru1FormFields: FieldConfig[] = [
@@ -845,6 +890,8 @@ export const ru1FormFields: FieldConfig[] = [
       { key: 'href', label: 'URL', type: 'url', placeholder: 'Paste your social media URL' },
     ],
   },
+  { key: '_h_fields', label: 'Form Fields', type: 'header' },
+  { key: 'fields', label: 'Form Fields', type: 'list', listFields: contactFormFieldListConfig },
   { key: 'columnOrder', label: 'Column Order', type: 'column-order' },
   { key: '_h_blocks', label: 'Blocks', type: 'header' },
   { key: 'showInfo', label: 'Show "Get in Touch" Block', type: 'toggle' },
@@ -906,29 +953,32 @@ export function renderRu1Form(data: Ru1FormData): string {
       ${socialRow}
     </div>`
 
+  // Fields render from data.fields — falls back to the block's own defaults
+  // for pages saved before this list existed (data.fields undefined/empty).
+  const ru1Fields = (data.fields && data.fields.length) ? data.fields : ru1FormDefaults.fields
+  const ru1FieldsHtml = ru1Fields.map((f) => {
+    const req = f.is_required ? ' required' : ''
+    const value = f.default_value ? ` value="${f.default_value}"` : ''
+    const fullWidth = (f.field_type === 'textarea' || f.field_type === 'select') ? 'grid-column:1/-1;' : ''
+    let control: string
+    if (f.field_type === 'textarea') {
+      control = `<textarea id="ru1-${f.name}" name="${f.name}" rows="4" style="${inputStyle}resize:vertical;"${req}>${f.default_value ?? ''}</textarea>`
+    } else if (f.field_type === 'select') {
+      const opts = (f.values ?? '').split(',').map(v => v.trim()).filter(Boolean)
+      control = `<select id="ru1-${f.name}" name="${f.name}" style="${inputStyle}"${req}>${opts.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`
+    } else {
+      control = `<input type="${f.field_type || 'text'}" id="ru1-${f.name}" name="${f.name}" style="${inputStyle}"${value}${req} />`
+    }
+    return `<div style="${fullWidth}">
+            <label for="ru1-${f.name}" style="display:block;font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:0.625rem;">${f.label}</label>
+            ${control}
+          </div>`
+  }).join('')
+
   const formCol = `<div data-ru1form-formcol="true" style="padding:5rem 2rem 6rem;">
       <div data-ru1form-inner="true" style="max-width:100%;margin-left:3.5rem;">
         <div data-ru1form-fields="true" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem 2rem;">
-          <div>
-            <label for="ru1-first-name" style="display:block;font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:0.625rem;">First name</label>
-            <input type="text" id="ru1-first-name" name="first-name" autocomplete="given-name" style="${inputStyle}" />
-          </div>
-          <div>
-            <label for="ru1-last-name" style="display:block;font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:0.625rem;">Last name</label>
-            <input type="text" id="ru1-last-name" name="last-name" autocomplete="family-name" style="${inputStyle}" />
-          </div>
-          <div style="grid-column:1/-1;">
-            <label for="ru1-email" style="display:block;font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:0.625rem;">Email</label>
-            <input type="email" id="ru1-email" name="email" autocomplete="email" style="${inputStyle}" />
-          </div>
-          <div style="grid-column:1/-1;">
-            <label for="ru1-phone" style="display:block;font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:0.625rem;">Phone number</label>
-            <input type="tel" id="ru1-phone" name="phone-number" autocomplete="tel" style="${inputStyle}" />
-          </div>
-          <div style="grid-column:1/-1;">
-            <label for="ru1-message" style="display:block;font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:0.625rem;">Message</label>
-            <textarea id="ru1-message" name="message" rows="4" style="${inputStyle}resize:vertical;"></textarea>
-          </div>
+          ${ru1FieldsHtml}
         </div>
         <div style="margin-top:2rem;display:flex;justify-content:${btnJustify};">
           <button type="submit" style="${btnStyle}">${data.submitLabel}</button>
@@ -938,12 +988,13 @@ export function renderRu1Form(data: Ru1FormData): string {
 
   const showInfo = data.showInfo !== false
   const showForm = data.showForm !== false
+  const dataForProps = withFieldSequence(data)
 
   if (showInfo && showForm) {
     const colMap: Record<string, string> = { info: infoCol, form: formCol }
     const order = data.columnOrder ?? ['info', 'form']
     const orderedCols = order.map(k => colMap[k] ?? '').join('\n    ')
-    return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;background:#fff;${sectionFontStyle}">
+    return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(dataForProps))}" style="position:relative;background:#fff;${sectionFontStyle}">
 ${responsiveStyle}
   <div data-ru1form-grid="true" style="margin:0 auto;max-width:80rem;display:grid;grid-template-columns:1fr 1fr;">
     ${orderedCols}
@@ -955,7 +1006,7 @@ ${responsiveStyle}
     const singleCol = showInfo ? infoCol : formCol
     const alignMap: Record<string, string> = { left: '0 auto 0 0', center: '0 auto', right: '0 0 0 auto' }
     const margin = alignMap[data.singleBlockAlign ?? 'center'] ?? '0 auto'
-    return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;background:#fff;${sectionFontStyle}">
+    return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(dataForProps))}" style="position:relative;background:#fff;${sectionFontStyle}">
 ${responsiveStyle}
   <div style="margin:0 auto;max-width:80rem;">
     <div data-ru1form-single="true" style="max-width:50%;margin:${margin};">${singleCol}</div>
@@ -963,7 +1014,7 @@ ${responsiveStyle}
 </section>`
   }
 
-  return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;background:#fff;min-height:4rem;${sectionFontStyle}"></section>`
+  return `<section data-component-title="Ru1-Form" data-component-props="${encodeURIComponent(JSON.stringify(dataForProps))}" style="position:relative;background:#fff;min-height:4rem;${sectionFontStyle}"></section>`
 }
 
 // ─── Ru2-Form ─────────────────────────────────────────────────────────────────
@@ -1032,6 +1083,7 @@ export interface Ru2FormData {
   formTitleFont: string
   formSubtitleFont: string
   buttonFont: string
+  fields: ContactFormFieldItem[]
 }
 
 export const ru2FormDefaults: Ru2FormData = {
@@ -1073,6 +1125,13 @@ export const ru2FormDefaults: Ru2FormData = {
   formTitleFont: '',
   formSubtitleFont: '',
   buttonFont: '',
+  fields: [
+    { name: 'first_name', label: 'First Name', field_type: 'text', is_required: true, default_value: '', values: '' },
+    { name: 'last_name', label: 'Last Name', field_type: 'text', is_required: true, default_value: '', values: '' },
+    { name: 'reply_to', label: 'Email Address', field_type: 'email', is_required: true, default_value: '', values: '' },
+    { name: 'subject', label: 'Subject', field_type: 'select', is_required: false, default_value: '', values: 'Order Inquiry,Product Question,Returns & Exchanges,Custom Branding,Other' },
+    { name: 'note', label: 'Message', field_type: 'textarea', is_required: true, default_value: '', values: '' },
+  ],
 }
 
 export const ru2FormFields: FieldConfig[] = [
@@ -1113,8 +1172,8 @@ export const ru2FormFields: FieldConfig[] = [
   fontField('formTitleFont', 'Form Title Font'),
   { key: 'formSubtitle', label: 'Form Subtitle', type: 'text', placeholder: "e.g. We'll get back to you within 24 hours." },
   fontField('formSubtitleFont', 'Form Subtitle Font'),
-  { key: 'showSubjectField', label: 'Show Subject Dropdown', type: 'toggle' },
-  { key: 'subjectOptions', label: 'Subject Options (comma separated)', type: 'textarea', placeholder: 'Order Inquiry,Product Question,Other' },
+  { key: '_h_fields', label: 'Form Fields', type: 'header' },
+  { key: 'fields', label: 'Form Fields', type: 'list', listFields: contactFormFieldListConfig },
   { key: 'submitLabel', label: 'Submit Button Text', type: 'text', placeholder: 'Send Message' },
   { key: 'submitBgColor', label: 'Submit Button Background', type: 'color' },
   { key: 'submitTextColor', label: 'Submit Button Text Colour', type: 'color' },
@@ -1172,38 +1231,35 @@ export function renderRu2Form(data: Ru2FormData): string {
     ${socialRow}
   </div>`
 
-  const subjectFieldHtml = data.showSubjectField
-    ? `<div style="margin-bottom:16px;">
-        <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">Subject</label>
-        <select style="${inputStyle}appearance:none;cursor:pointer;">
-          ${(data.subjectOptions ?? '').split(',').map(o => `<option>${o.trim()}</option>`).join('')}
-        </select>
+  // Fields render from data.fields — falls back to the block's own defaults
+  // for pages saved before this list existed (data.fields undefined/empty).
+  const ru2Fields = (data.fields && data.fields.length) ? data.fields : ru2FormDefaults.fields
+  const ru2FieldsHtml = ru2Fields.map((f) => {
+    const req = f.is_required ? ' required' : ''
+    const value = f.default_value ? ` value="${f.default_value}"` : ''
+    const fullWidth = (f.field_type === 'textarea' || f.field_type === 'select') ? 'grid-column:1/-1;' : ''
+    let control: string
+    if (f.field_type === 'textarea') {
+      control = `<textarea name="${f.name}" rows="4" placeholder="${f.label}" style="${inputStyle}resize:vertical;height:120px;"${req}>${f.default_value ?? ''}</textarea>`
+    } else if (f.field_type === 'select') {
+      const opts = (f.values ?? '').split(',').map(v => v.trim()).filter(Boolean)
+      control = `<select name="${f.name}" style="${inputStyle}appearance:none;cursor:pointer;"${req}>${opts.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`
+    } else {
+      control = `<input type="${f.field_type || 'text'}" name="${f.name}" placeholder="${f.label}" style="${inputStyle}"${value}${req}/>`
+    }
+    return `<div style="margin-bottom:16px;${fullWidth}">
+        <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">${f.label}</label>
+        ${control}
       </div>`
-    : ''
+  }).join('')
 
   const formPanel = `<div data-ru2form-panel="true" style="background:${data.formBgColor};padding:${data.paddingY}px ${data.paddingX}px;">
     <div style="margin-bottom:28px;">
       <h3 style="font-size:22px;font-weight:700;color:#111827;margin:0 0 6px;${fontCss(data.formTitleFont, data.fontFamily)}">${data.formTitle}</h3>
       <p style="font-size:14px;color:#9ca3af;margin:0;${fontCss(data.formSubtitleFont, data.fontFamily)}">${data.formSubtitle}</p>
     </div>
-    <div data-ru2form-fields="true" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-      <div>
-        <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">First Name</label>
-        <input type="text" placeholder="John" style="${inputStyle}"/>
-      </div>
-      <div>
-        <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">Last Name</label>
-        <input type="text" placeholder="Smith" style="${inputStyle}"/>
-      </div>
-    </div>
-    <div style="margin-bottom:16px;">
-      <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">Email Address</label>
-      <input type="email" placeholder="john@company.com" style="${inputStyle}"/>
-    </div>
-    ${subjectFieldHtml}
-    <div style="margin-bottom:20px;">
-      <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">Message</label>
-      <textarea rows="4" placeholder="Tell us how we can help..." style="${inputStyle}resize:vertical;height:120px;"></textarea>
+    <div data-ru2form-fields="true" style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
+      ${ru2FieldsHtml}
     </div>
     <div style="display:flex;justify-content:${btnJustify};">
       <button type="submit" style="background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.02em;${fontCss(data.buttonFont, data.fontFamily)}">${data.submitLabel}</button>
@@ -1212,9 +1268,10 @@ export function renderRu2Form(data: Ru2FormData): string {
 
   const showInfo = data.showInfo !== false
   const showForm = data.showForm !== false
+  const dataForProps = withFieldSequence(data)
 
   if (showInfo && showForm) {
-    return `<section data-component-title="Ru2-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="overflow:hidden;${sectionFontStyle}">
+    return `<section data-component-title="Ru2-Form" data-component-props="${encodeURIComponent(JSON.stringify(dataForProps))}" style="overflow:hidden;${sectionFontStyle}">
 ${responsiveStyle}
   <div data-ru2form-grid="true" style="display:grid;grid-template-columns:1fr 1.4fr;">
     ${infoPanel}
@@ -1227,7 +1284,7 @@ ${responsiveStyle}
   const singleAlignMap: Record<string, string> = { left: '0 auto 0 0', center: '0 auto', right: '0 0 0 auto' }
   const margin = singleAlignMap[data.singleBlockAlign ?? 'center'] ?? '0 auto'
 
-  return `<section data-component-title="Ru2-Form" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${showInfo ? data.panelBgColor : data.formBgColor};${sectionFontStyle}">
+  return `<section data-component-title="Ru2-Form" data-component-props="${encodeURIComponent(JSON.stringify(dataForProps))}" style="background:${showInfo ? data.panelBgColor : data.formBgColor};${sectionFontStyle}">
 ${responsiveStyle}
   <div style="max-width:80rem;margin:${margin};">
     ${singleCol}
@@ -1254,13 +1311,7 @@ export const ru3FormBannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox
   <rect fill="#718096" x="12" y="138" width="253.5" height="14" rx="3"/>
 </svg>`
 
-export interface Ru3FormBannerFieldItem {
-  label: string
-  type: string
-  required: boolean
-  placeholder: string
-  rows: number
-}
+export type Ru3FormBannerFieldItem = ContactFormFieldItem
 
 export interface Ru3FormBannerData {
   fontFamily: string
@@ -1361,11 +1412,11 @@ export const ru3FormBannerDefaults: Ru3FormBannerData = {
   buttonFont: '',
 
   fields: [
-    { label: 'Your Name', type: 'text', required: true, placeholder: '', rows: 4 },
-    { label: 'Phone Number', type: 'tel', required: false, placeholder: '', rows: 4 },
-    { label: 'Email', type: 'email', required: true, placeholder: '', rows: 4 },
-    { label: 'Subject', type: 'text', required: true, placeholder: '', rows: 4 },
-    { label: 'Your Question', type: 'textarea', required: true, placeholder: '', rows: 5 },
+    { name: 'name', label: 'Your Name', field_type: 'text', is_required: true, default_value: '', values: '' },
+    { name: 'phone', label: 'Phone Number', field_type: 'tel', is_required: false, default_value: '', values: '' },
+    { name: 'reply_to', label: 'Email', field_type: 'email', is_required: true, default_value: '', values: '' },
+    { name: 'subject', label: 'Subject', field_type: 'text', is_required: true, default_value: '', values: '' },
+    { name: 'note', label: 'Your Question', field_type: 'textarea', is_required: true, default_value: '', values: '' },
   ],
 }
 
@@ -1423,16 +1474,7 @@ export const ru3FormBannerFields: FieldConfig[] = [
   // Placed at the bottom of the panel — banner/layout/style are set up first,
   // then the actual fields are added/edited/reordered last.
   { key: '_h_fields', label: 'Form Fields', type: 'header' },
-  {
-    key: 'fields', label: 'Form Fields', type: 'list',
-    listFields: [
-      { key: 'label', label: 'Field Label', type: 'text', placeholder: 'e.g. Your Name' },
-      { key: 'type', label: 'Field Type', type: 'select', options: ['text', 'email', 'tel', 'textarea'] },
-      { key: 'required', label: 'Required', type: 'toggle' },
-      { key: 'placeholder', label: 'Placeholder (optional)', type: 'text', placeholder: 'e.g. John Doe' },
-      { key: 'rows', label: 'Textarea Rows (if type = textarea)', type: 'number', step: 1, placeholder: '5' },
-    ],
-  },
+  { key: 'fields', label: 'Form Fields', type: 'list', listFields: contactFormFieldListConfig },
 ]
 
 export function renderRu3FormBanner(data: Ru3FormBannerData): string {
@@ -1472,12 +1514,23 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
   const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:${data.inputRadius ?? 4}px;background:${data.inputBgColor};padding:0.625rem 0.875rem;font-size:0.9375rem;color:${data.inputTextColor};border:1px solid ${data.inputBorderColor};outline:none;`
   const labelStyle = `display:block;font-size:0.875rem;font-weight:600;color:${data.labelColor};margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
 
-  const fieldsHtml = (data.fields ?? []).map((f) => {
-    const requiredMark = f.required ? ` <span style="color:${data.requiredColor};">*</span>` : ''
-    const placeholderAttr = f.placeholder ? ` placeholder="${f.placeholder}"` : ''
-    const control = f.type === 'textarea'
-      ? `<textarea rows="${f.rows || 5}" style="${inputStyle}resize:vertical;"${placeholderAttr}></textarea>`
-      : `<input type="${f.type || 'text'}" style="${inputStyle}"${placeholderAttr} />`
+  // Fields render from data.fields — falls back to the block's own defaults
+  // for pages saved before the new field shape (name/field_type/is_required/
+  // default_value/values) existed.
+  const ru3Fields = (data.fields && data.fields.length) ? data.fields : ru3FormBannerDefaults.fields
+  const fieldsHtml = ru3Fields.map((f) => {
+    const requiredMark = f.is_required ? ` <span style="color:${data.requiredColor};">*</span>` : ''
+    const req = f.is_required ? ' required' : ''
+    const value = f.default_value ? ` value="${f.default_value}"` : ''
+    let control: string
+    if (f.field_type === 'textarea') {
+      control = `<textarea name="${f.name}" rows="4" style="${inputStyle}resize:vertical;"${req}>${f.default_value ?? ''}</textarea>`
+    } else if (f.field_type === 'select') {
+      const opts = (f.values ?? '').split(',').map(v => v.trim()).filter(Boolean)
+      control = `<select name="${f.name}" style="${inputStyle}"${req}>${opts.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`
+    } else {
+      control = `<input type="${f.field_type || 'text'}" name="${f.name}" style="${inputStyle}"${value}${req} />`
+    }
     return `<div style="margin-bottom:1.25rem;">
       <label style="${labelStyle}">${f.label}${requiredMark}</label>
       ${control}
@@ -1494,7 +1547,8 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
   const alignMarginMap: Record<string, string> = { left: '0 auto 0 0', center: '0 auto', right: '0 0 0 auto' }
   const formMargin = alignMarginMap[data.formAlign ?? 'left'] ?? '0 auto 0 0'
 
-  return `<section data-component-title="Ru3-Form + Banner" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.sectionBgColor};${fontCss(undefined, data.fontFamily)}">
+  const dataForProps = withFieldSequence(data)
+  return `<section data-component-title="Ru3-Form + Banner" data-component-props="${encodeURIComponent(JSON.stringify(dataForProps))}" style="background:${data.sectionBgColor};${fontCss(undefined, data.fontFamily)}">
   <div style="${bannerBg}${bannerAspect}min-height:${data.bannerHeight}px;padding:2.5rem 0;display:flex;flex-direction:column;justify-content:flex-end;box-sizing:border-box;">
     <div style="max-width:80rem;margin:0 auto;padding:0 2rem;display:flex;flex-direction:column;align-items:${bannerItems};text-align:${bannerTextAlign};width:100%;box-sizing:border-box;">
       <h2 style="font-size:min(2.75rem,9vw);font-weight:800;color:${data.bannerTitleColor};margin:0;line-height:1.1;${fontCss(data.bannerTitleFont, data.fontFamily)}">${data.bannerTitle}</h2>
@@ -1535,7 +1589,7 @@ export const ru1FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 
 </svg>`
 
 export interface Ru1FooterData {
-  usefulLinks: { label: string; url: string }[]
+  usefulLinks: { label: string; url: string; newTab?: boolean }[]
   aboutText: string
   contactEmail: string
   contactPhone: string
@@ -1615,6 +1669,7 @@ export const ru1FooterFields: FieldConfig[] = [
     listFields: [
       { key: 'label', label: 'Label', type: 'text' },
       { key: 'url',   label: 'URL',   type: 'url'  },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
   { key: 'contactEmail', label: 'Contact Email',      type: 'text'   },
@@ -1678,7 +1733,7 @@ export function renderRu1Footer(data: Ru1FooterData): string {
   const linksCol = `<div style="max-width:320px;">
         <h3 style="${hStyle}">Useful Links</h3>
         <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;">
-          ${(data.usefulLinks ?? []).map(l => `<li style="list-style:none;"><a href="${l.url}" style="${aStyle}">${l.label}</a></li>`).join('\n          ')}
+          ${(data.usefulLinks ?? []).map(l => `<li style="list-style:none;"><a href="${l.url}" style="${aStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a></li>`).join('\n          ')}
         </ul>
       </div>`
   const aboutCol = data.aboutMode === 'logo'

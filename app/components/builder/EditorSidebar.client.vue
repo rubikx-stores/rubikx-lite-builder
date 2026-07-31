@@ -3,6 +3,7 @@ import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { usePageBuilderStateStore, sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
 import ProductsEditor from '../ProductsEditor.client.vue'
 import { useBlockRegistry } from '~/composables/editor/useBlockRegistry'
+import type { FieldConfig } from '~/composables/editor/useBlockRegistry'
 import { productImageSrc } from '~/composables/useProductImageSrc'
 import { getDomain, faviconUrl } from '~/composables/useSocialIcons'
 import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
@@ -77,6 +78,18 @@ function toHex(v: string | undefined | null): string {
     if (/^#[0-9a-fA-F]{6}$/.test(resolved)) return resolved
   } catch { /* ignore SSR / headless */ }
   return '#000000'                                      // safe fallback
+}
+
+// ── List-item toggle sub-field ────────────────────────────────────────────────
+// Unset value normally reads as ON (matches fields like `visible`, where a
+// link should still show up until someone turns it off). A field can opt into
+// the opposite by setting `default: false` in its FieldConfig (e.g. "Open in
+// New Tab", which should stay off until explicitly enabled).
+function isSubToggleOn(item: Record<string, any>, subField: FieldConfig): boolean {
+  return subField.default === false ? item[subField.key] === true : item[subField.key] !== false
+}
+function nextSubToggleValue(item: Record<string, any>, subField: FieldConfig): boolean {
+  return subField.default === false ? item[subField.key] !== true : item[subField.key] === false
 }
 
 // ── Product block flag ────────────────────────────────────────────────────────
@@ -897,10 +910,10 @@ onUnmounted(() => {
                       <template v-else-if="subField.type === 'toggle'">
                         <button type="button"
                           class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors border-none cursor-pointer"
-                          :class="item[subField.key] !== false ? 'bg-blue-500' : 'bg-gray-200'"
-                          @click="updateBlockListItem(field.key, idx, subField.key, item[subField.key] === false)">
+                          :class="isSubToggleOn(item, subField) ? 'bg-blue-500' : 'bg-gray-200'"
+                          @click="updateBlockListItem(field.key, idx, subField.key, nextSubToggleValue(item, subField))">
                           <span class="inline-block h-3.5 w-3.5 rounded-full bg-white shadow transform transition-transform"
-                            :class="item[subField.key] !== false ? 'translate-x-4' : 'translate-x-0.5'" />
+                            :class="isSubToggleOn(item, subField) ? 'translate-x-4' : 'translate-x-0.5'" />
                         </button>
                       </template>
 
