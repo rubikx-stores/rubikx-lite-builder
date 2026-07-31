@@ -77,7 +77,7 @@ export const ru1HomepageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="
 
 // ─── Navbar block editor data ───────────────────────────────────────────────
 
-export interface NavLink { label: string; url: string; visible?: boolean }
+export interface NavLink { label: string; url: string; visible?: boolean; newTab?: boolean }
 
 export interface Ru1NavbarData {
   logoUrl: string
@@ -187,6 +187,7 @@ export const ru1NavbarFields: FieldConfig[] = [
       { key: 'label', label: 'Label', type: 'text' },
       { key: 'url', label: 'URL', type: 'url' },
       { key: 'visible', label: 'Visible', type: 'toggle' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
   { key: 'navLinksAlign', label: 'Links Position', type: 'select', options: ['left', 'center', 'right', 'lower-left', 'lower-center', 'lower-right'] },
@@ -268,7 +269,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     : ''
 
   const visibleNavLinks = data.navLinks.filter(l => l.visible !== false)
-  const staticLinks = visibleNavLinks.map(l => `<div style="position:relative;"><a href="${l.url}" style="${linkStyle}">${l.label}</a></div>`).join('')
+  const staticLinks = visibleNavLinks.map(l => `<div style="position:relative;"><a href="${l.url}" style="${linkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a></div>`).join('')
   const dynamicPlaceholder = data.dynamicCategories
     ? `<div
         data-rubikx-component='CategoryNav'
@@ -313,7 +314,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   const sectionStyle = fontCss(undefined, data.fontFamily) + (data.sticky ? 'position:sticky;top:0;z-index:9999' : '')
 
   const mobileDrawerLinks = visibleNavLinks.map(l =>
-    `<a href="${l.url}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;">${l.label}</a>`
+    `<a href="${l.url}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`
   ).join('')
 
   const mobileSearchEl = data.showSearch
@@ -895,7 +896,7 @@ export const showFeaturedProductsSvg = `<svg xmlns="http://www.w3.org/2000/svg" 
 
 export interface Ru1FooterData {
   tagline: string
-  usefulLinks: { label: string; url: string }[]
+  usefulLinks: { label: string; url: string; newTab?: boolean }[]
   contactEmail: string
   contactPhone: string
   showSocials: boolean
@@ -979,6 +980,7 @@ export const ru1FooterFields: FieldConfig[] = [
     listFields: [
       { key: 'label', label: 'Label', type: 'text' },
       { key: 'url', label: 'URL', type: 'url' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
   fontField('headingFont', 'Heading Font'),
@@ -1041,7 +1043,7 @@ export function renderRu1Footer(data: Ru1FooterData): string {
   const linksCol = `<div style="max-width:20rem;">
         <h3 style="${hStyle}">Useful Links</h3>
         <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.2rem;">
-          ${data.usefulLinks.map(l => `<li style="list-style:none;"><a href="${l.url}" style="${aStyle}">${l.label}</a></li>`).join('\n          ')}
+          ${data.usefulLinks.map(l => `<li style="list-style:none;"><a href="${l.url}" style="${aStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a></li>`).join('\n          ')}
         </ul>
       </div>`
   const aboutCol = data.aboutMode === 'logo'

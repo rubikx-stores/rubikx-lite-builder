@@ -11,6 +11,10 @@ export interface FieldConfig {
   step?: number
   noAspectRatio?: boolean
   visibleIf?: (data: Record<string, any>) => boolean
+  // For type: 'toggle' only — the switch's on/off state when the field has
+  // never been set. Defaults to true (matches existing fields like
+  // `visible`, where an unset link should still show up).
+  default?: boolean
 }
 
 export interface BlockEditorConfig<T = Record<string, any>> {

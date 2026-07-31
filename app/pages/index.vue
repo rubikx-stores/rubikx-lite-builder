@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useSiteConfig } from '~/composables/useSiteConfig'
+
 definePageMeta({ layout: 'dashboard' })
 
 interface Website {
@@ -37,12 +39,14 @@ const deleting = ref<Record<string, boolean>>({})
 
 const showDeleteModal = ref(false)
 const pageToDelete = ref<Page | null>(null)
-
 // New page modal state
 const showNewPageModal = ref(false)
 const newPageName = ref('')
 const newPageNameInput = ref<HTMLInputElement | null>(null)
 const newPageError = ref('')
+
+// Site configuration composable
+const siteConfig = useSiteConfig()
 
 watchEffect(() => {
   if (websites.value?.length && !selectedWebsiteId.value) {
@@ -58,12 +62,22 @@ async function fetchPages() {
     pages.value.forEach((p) => {
       selectedVersions.value[p.id] = p.versions[0]?.version ?? 1
     })
+
+    const configPage = pages.value.find(p => p.id === 'global-config')
+    if (configPage && configPage.versions[0]?.value) {
+      siteConfig.loadFromJson(configPage.versions[0].value)
+    } else {
+      siteConfig.reset()
+    }
+    const themePage = pages.value.find(p => p.id === 'global-theme')
+    if (themePage && themePage.versions[0]?.value) {
+      useThemeColors().seedFromThemeJson(themePage.versions[0].value)
+    }
   } finally {
     loadingPages.value = false
   }
 }
 watch(selectedWebsiteId, fetchPages, { immediate: true })
-onMounted(fetchPages)
 
 function selectedVersionData(page: Page) {
   const vNum = selectedVersions.value[page.id]
@@ -83,7 +97,9 @@ async function publishPage(page: Page) {
     updatedBy: user.value?.name ?? 'editor',
     updatedOn: new Date().toISOString(),
   }
-  console.log('[PUBLISH] sending:', { key: publishPayload.key, version: publishPayload.version, state: publishPayload.state, valueLength: publishPayload.value?.length })
+  console.log('====================================================')
+  console.log(`[PUBLISH PAGE] Publishing page "${page.id}":`, publishPayload)
+  console.log('====================================================')
   try {
     const res = await $fetch('/api/proxy/odoo/cms', {
       method: 'POST',
@@ -126,8 +142,14 @@ async function deletePage() {
 
 const pageHtmlCache = usePageHtmlCache()
 
-const GLOBAL_KEYS = ['global-header', 'global-footer', 'global-theme']
-const displayPages = computed(() => pages.value.filter(p => !GLOBAL_KEYS.includes(p.id)))
+const GLOBAL_KEYS = ['global-header', 'global-footer', 'global-theme', 'global-config']
+const displayPages = computed(() => {
+  return pages.value.filter(p => {
+    if (GLOBAL_KEYS.includes(p.id)) return false
+    if (p.id === 'home' && siteConfig.state.isShopAsHomePage) return false
+    return true
+  })
+})
 
 function editPage(page: Page) {
   const vData = selectedVersionData(page)
@@ -252,9 +274,20 @@ function handleModalKeydown(e: KeyboardEvent) {
     </div>
 
     <!-- Page title -->
-    <div class="mb-8">
-      <h1 class="text-2xl font-bold text-gray-900">Your Pages</h1>
-      <p class="mt-1 text-sm text-gray-500">Manage and publish your store pages</p>
+    <div class="mb-8 flex items-start justify-between">
+      <div>
+        <div class="flex items-center gap-3">
+          <h1 class="text-2xl font-bold text-gray-900">Your Pages</h1>
+          <NuxtLink
+            to="/configuration"
+            title="Site & Theme Configuration"
+            class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 border-none shadow-xs"
+          >
+            <span class="material-symbols-outlined text-2xl leading-none">settings</span>
+          </NuxtLink>
+        </div>
+        <p class="mt-1 text-sm text-gray-500">Manage and publish your store pages</p>
+      </div>
     </div>
 
     <!-- Loading -->

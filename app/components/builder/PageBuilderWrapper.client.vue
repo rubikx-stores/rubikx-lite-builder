@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { PageBuilder, getPageBuilder } from '@myissue/vue-website-page-builder'
 import type { PageBuilderConfig } from '@myissue/vue-website-page-builder'
 import BuilderPanel from './BuilderPanel.client.vue'

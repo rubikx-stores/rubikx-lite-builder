@@ -18,7 +18,7 @@ export const megaMenuHeaderSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBo
 
 export interface MegaMenuProduct { id: number; label: string; href: string; image?: string; price?: number }
 export interface MegaMenuGroup   { label: string; href: string; products: MegaMenuProduct[] }
-export interface NavLink         { label: string; href: string; megaMenu?: MegaMenuGroup[] }
+export interface NavLink         { label: string; href: string; megaMenu?: MegaMenuGroup[]; newTab?: boolean }
 export interface CtaButton {
   label: string
   href: string
@@ -142,6 +142,7 @@ export const megaMenuHeaderFields: FieldConfig[] = [
     listFields: [
       { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Shop'          },
       { key: 'href',  label: 'URL',   type: 'url',  placeholder: 'e.g. /shop or https://…' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
   { key: 'navLinksAlign',      label: 'Links Position',                  type: 'select',
@@ -238,11 +239,11 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
           const json = JSON.stringify(groups).replace(/'/g, '&quot;')
           const staticContent = renderStaticDrop(l.megaMenu)
           return `<div class='ru-mega-item' data-mega-json='${json}' style='position:relative;display:inline-block;'>` +
-            `<a href='${l.href}' style='${linkStyle}cursor:pointer;'>${l.label} ▾</a>` +
+            `<a href='${l.href}' style='${linkStyle}cursor:pointer;'${l.newTab ? ` target='_blank' rel='noopener noreferrer'` : ''}>${l.label} ▾</a>` +
             `<div class='ru-mega-drop' style='display:none;position:absolute;top:100%;left:0;min-width:260px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100;overflow:hidden;'>${staticContent}</div>` +
             `</div>`
         }
-        return `<a href='${l.href}' style='${linkStyle}'>${l.label}</a>`
+        return `<a href='${l.href}' style='${linkStyle}'${l.newTab ? ` target='_blank' rel='noopener noreferrer'` : ''}>${l.label}</a>`
       }).join('')
     : ''
 
@@ -310,7 +311,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
   const hasMegaMenu = data.navLinks.some(l => l.megaMenu && l.megaMenu.length > 0)
 
   const mobileDrawerLinks = data.navLinks.map(l =>
-    `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;${fontCss(data.linkFont, data.fontFamily)}">${l.label}</a>`
+    `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;${fontCss(data.linkFont, data.fontFamily)}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`
   ).join('')
 
   const mobileSearchEl = data.showSearch
@@ -403,8 +404,8 @@ export const ru3MegaHeaderSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox
   <rect fill="#718096" x="240" y="12" width="30" height="8"/>
 </svg>`
 
-export interface OverflowLink { label: string; href: string }
-export interface Ru3NavLink { label: string; href: string; showDropdown: boolean; categoryFilter?: string }
+export interface OverflowLink { label: string; href: string; newTab?: boolean }
+export interface Ru3NavLink { label: string; href: string; showDropdown: boolean; categoryFilter?: string; newTab?: boolean }
 
 export interface Ru3MegaHeaderData {
   logoUrl: string
@@ -504,6 +505,7 @@ export const ru3MegaHeaderFields: FieldConfig[] = [
       { key: 'showDropdown', label: 'Show Categories Dropdown', type: 'toggle' },
       { key: 'categoryFilter', label: 'Category Name (from backend)', type: 'text',
         placeholder: 'e.g. Apparel — only that category\'s children show; blank shows all' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
   { key: 'syncCategoriesFromApi', label: 'Sync Categories from API', type: 'button' },
@@ -512,6 +514,7 @@ export const ru3MegaHeaderFields: FieldConfig[] = [
     listFields: [
       { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Contact us' },
       { key: 'href',  label: 'URL',   type: 'url',  placeholder: 'e.g. /contactus' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
   { key: 'linkColor',       label: 'Link Colour',            type: 'color'   },
@@ -598,13 +601,13 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
         data-category-filter='${l.categoryFilter ?? ''}'
         style='position:relative;display:inline-block;' data-cat-nav='true'
       >
-        <a href='${l.href}' style='${linkStyle}cursor:pointer;'>${l.label} ▾</a>
+        <a href='${l.href}' style='${linkStyle}cursor:pointer;'${l.newTab ? ` target='_blank' rel='noopener noreferrer'` : ''}>${l.label} ▾</a>
         <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
           <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Loading…</span>
         </div>
       </div>`
     }
-    return `<div data-nav-item${pinned}><a href='${l.href}' style='${linkStyle}'>${l.label}</a></div>`
+    return `<div data-nav-item${pinned}><a href='${l.href}' style='${linkStyle}'${l.newTab ? ` target='_blank' rel='noopener noreferrer'` : ''}>${l.label}</a></div>`
   }
 
   const navLinksHtml = data.navLinks.map(renderStaticNavItem).join('')
@@ -671,11 +674,11 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
   // where it lives in the DOM.
   const renderMobileNavItem = (l: Ru3NavLink): string => {
     if (!l.showDropdown) {
-      return `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;">${l.label}</a>`
+      return `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`
     }
     return `<div data-rubikx-component='CategoryNav' data-category-name='${l.label}' data-category-filter='${l.categoryFilter ?? ''}' data-on-mount='loadCategories' data-max-items='20' data-link-color='${data.textColor}' data-font-size='18' data-font-weight='500' style='border-bottom:1px solid #f3f4f6;'>
       <div style='display:flex;align-items:center;justify-content:space-between;'>
-        <a href='${l.href}' style='flex:1;display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;'>${l.label}</a>
+        <a href='${l.href}' style='flex:1;display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;'${l.newTab ? ` target='_blank' rel='noopener noreferrer'` : ''}>${l.label}</a>
         <button type='button' onclick="(function(btn){var d=btn.parentElement.nextElementSibling;var open=d.style.display==='block';d.style.display=open?'none':'block';event.stopPropagation();})(this)" style='background:none;border:none;padding:0.75rem;cursor:pointer;color:${data.textColor};font-size:14px;'>▾</button>
       </div>
       <div data-cat-dropdown='true' style='display:none;padding-left:1rem;padding-bottom:0.5rem;'>
@@ -1535,7 +1538,7 @@ export const ru1FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 
 </svg>`
 
 export interface Ru1FooterData {
-  usefulLinks: { label: string; url: string }[]
+  usefulLinks: { label: string; url: string; newTab?: boolean }[]
   aboutText: string
   contactEmail: string
   contactPhone: string
@@ -1615,6 +1618,7 @@ export const ru1FooterFields: FieldConfig[] = [
     listFields: [
       { key: 'label', label: 'Label', type: 'text' },
       { key: 'url',   label: 'URL',   type: 'url'  },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
   { key: 'contactEmail', label: 'Contact Email',      type: 'text'   },
@@ -1678,7 +1682,7 @@ export function renderRu1Footer(data: Ru1FooterData): string {
   const linksCol = `<div style="max-width:320px;">
         <h3 style="${hStyle}">Useful Links</h3>
         <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;">
-          ${(data.usefulLinks ?? []).map(l => `<li style="list-style:none;"><a href="${l.url}" style="${aStyle}">${l.label}</a></li>`).join('\n          ')}
+          ${(data.usefulLinks ?? []).map(l => `<li style="list-style:none;"><a href="${l.url}" style="${aStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a></li>`).join('\n          ')}
         </ul>
       </div>`
   const aboutCol = data.aboutMode === 'logo'
