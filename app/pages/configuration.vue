@@ -107,9 +107,19 @@ async function save() {
     })
 
     const companyId = selectedCompanyId.value ?? websites.value?.[0]?.id ?? 1
+
+    // Always save as the next version after whatever the CMS currently has —
+    // never a hardcoded 1. A fixed version number can end up lower than an
+    // existing record's (e.g. from an old/stray write) and get permanently
+    // shadowed by it, since "latest" is picked by highest version number.
+    const latestPages = await $fetch<any[]>('/api/pages', { query: { companyId } })
+    const nextVersion = (key: string) => {
+      const versions = latestPages.find((p) => p.id === key)?.versions ?? []
+      return versions.length ? Math.max(...versions.map((v: any) => Number(v.version) || 0)) + 1 : 1
+    }
+
     const commonPayload = {
       state: 'published' as const,
-      version: 1,
       updatedBy: user.value?.name ?? 'editor',
       updatedOn: new Date().toISOString(),
       companyId,
@@ -118,12 +128,14 @@ async function save() {
 
     const configPayload = {
       ...commonPayload,
+      version: nextVersion('global-config'),
       key: 'global-config',
       value: siteConfig.configJson(),
     }
 
     const themePayload = {
       ...commonPayload,
+      version: nextVersion('global-theme'),
       key: 'global-theme',
       value: themeJson(),
     }

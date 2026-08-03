@@ -11,7 +11,7 @@
 // (X or backdrop) discards any unsaved picks and reverts to the last-saved
 // values next time the modal opens.
 import { reactive, ref, watch } from 'vue'
-import { useThemeColors, type ThemeColorValues } from '~/composables/editor/useThemeColors'
+import { useThemeColors, refreshThemeFromCms, nextThemeVersion, type ThemeColorValues } from '~/composables/editor/useThemeColors'
 import { usePageHtmlCache } from '~/composables/usePageHtmlCache'
 
 const props = defineProps<{ modelValue: boolean }>()
@@ -31,10 +31,13 @@ const draft = reactive<ThemeColorValues>({
   secondaryTextColor: themeColorsState.secondaryTextColor,
 })
 
-// Re-sync the draft from the last-saved values every time the modal opens,
-// so a previous unsaved edit never leaks in on reopen.
-watch(() => props.modelValue, (open) => {
+// Re-sync the draft every time the modal opens. Fetches the live CMS record
+// first so a color saved elsewhere (another tab, the /configuration page)
+// since this browser last loaded is never shown as stale — only then copies
+// into the draft, so a previous unsaved edit still never leaks in on reopen.
+watch(() => props.modelValue, async (open) => {
   if (!open) return
+  await refreshThemeFromCms(selectedCompanyId.value)
   draft.primaryCtaBgColor = themeColorsState.primaryCtaBgColor
   draft.primaryCtaTextColor = themeColorsState.primaryCtaTextColor
   draft.secondaryCtaBgColor = themeColorsState.secondaryCtaBgColor
@@ -52,13 +55,17 @@ async function save() {
   saving.value = true
   saveError.value = ''
   try {
+    // Always the next version after whatever the CMS currently has — never
+    // a hardcoded '1' — so this save can never end up shadowed by an
+    // existing higher-versioned record ("latest" is picked by version order).
+    const version = await nextThemeVersion(selectedCompanyId.value)
     await $fetch('/api/proxy/odoo/cms', {
       method: 'POST',
       body: {
         key: 'global-theme',
         value: themeJson(),
         state: 'published',
-        version: '1',
+        version: String(version),
         updatedOn: new Date().toISOString(),
         updatedBy: 'editor',
         ...(selectedCompanyId.value ? { companyId: selectedCompanyId.value } : {}),
