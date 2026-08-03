@@ -1890,6 +1890,432 @@ export function renderRu2Footer(data: Ru2FooterData): string {
 </section>`
 }
 
+// ─── Ru3-Footer ──────────────────────────────────────────────────────────────
+// Logo + brand name, tagline, a link list and an optional "Connect with Us"
+// label sit top-left; social icons are independently positionable anywhere
+// in a 9-zone grid (absolute inside the footer); a huge low-opacity brand
+// watermark anchors the bottom. Every piece of copy (brand name included) is
+// a plain configurable field — nothing is hardcoded to any one brand.
+
+export const ru3FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 140">
+  <rect fill="#1f2937" x="0" y="0" width="277.5" height="140"/>
+  <circle cx="20" cy="18" r="7" fill="#9ca3af"/>
+  <rect fill="#9ca3af" x="34" y="14" width="60" height="7" rx="1"/>
+  <rect fill="#6b7280" x="14" y="32" width="90" height="4" rx="1"/>
+  <rect fill="#6b7280" x="14" y="39" width="70" height="4" rx="1"/>
+  <rect fill="#6b7280" x="14" y="54" width="50" height="3" rx="1"/>
+  <rect fill="#6b7280" x="14" y="62" width="35" height="3" rx="1"/>
+  <rect fill="#6b7280" x="14" y="70" width="65" height="3" rx="1"/>
+  <rect fill="#374151" x="14" y="100" width="249.5" height="30" rx="2"/>
+</svg>`
+
+export interface Ru3FooterLink {
+  label: string
+  url: string
+}
+
+export interface Ru3FooterSocial {
+  href: string
+}
+
+// 9-zone anchor grid for the social icons block — same left/middle/right ×
+// up/centre/(base) naming as a standard background-position picker. Applied
+// as position:absolute against the footer's own position:relative box, so
+// icons can sit anywhere independent of where the logo/links content flows.
+export const RU3_FOOTER_SOCIAL_POSITIONS: Record<string, string> = {
+  'Left':          'left:2rem;bottom:2rem;',
+  'Centre':        'left:50%;bottom:2rem;transform:translateX(-50%);',
+  'Right':         'right:2rem;bottom:2rem;',
+  'Left Up':       'left:2rem;top:2rem;',
+  'Middle Up':     'left:50%;top:2rem;transform:translateX(-50%);',
+  'Right Up':      'right:2rem;top:2rem;',
+  'Left Centre':   'left:2rem;top:50%;transform:translateY(-50%);',
+  'Middle Centre': 'left:50%;top:50%;transform:translate(-50%,-50%);',
+  'Right Centre':  'right:2rem;top:50%;transform:translateY(-50%);',
+}
+
+export interface Ru3FooterData {
+  fontFamily: string
+
+  logoUrl: string
+  logoAlt: string
+  logoWidth: number
+  logoHeight: number
+  logoAlign: 'left' | 'center' | 'right'
+
+  tagline: string
+
+  links: Ru3FooterLink[]
+
+  showConnectWithUs: boolean
+  connectLabel: string
+  connectAlign: 'left' | 'center' | 'right'
+  contactEmail: string
+  contactPhone: string
+
+  showSocials: boolean
+  socials: Ru3FooterSocial[]
+  socialPosition: string
+
+  watermarkText: string
+  watermarkFontSize: number
+  watermarkOpacity: number
+  watermarkColor: string
+
+  bgColor: string
+  taglineColor: string
+  linkColor: string
+  connectColor: string
+
+  minHeight: number
+  paddingY: number
+  paddingX: number
+
+  taglineFont: string
+  linkFont: string
+  connectFont: string
+  watermarkFont: string
+}
+
+export const ru3FooterDefaults: Ru3FooterData = {
+  fontFamily: '',
+
+  logoUrl: '',
+  logoAlt: 'Your Logo',
+  logoWidth: 28,
+  logoHeight: 28,
+  logoAlign: 'left',
+
+  tagline: 'A short line about who you are and what you build.',
+
+  links: [
+    { label: 'Privacy Policy', url: '/privacy-policy' },
+    { label: 'FAQ', url: '/faq' },
+    { label: 'Terms and Conditions', url: '/terms-and-conditions' },
+  ],
+
+  showConnectWithUs: false,
+  connectLabel: 'Connect with Us',
+  connectAlign: 'left',
+  contactEmail: 'support@yourdomain.com',
+  contactPhone: '+1 000-000-0000',
+
+  showSocials: false,
+  socials: [],
+  socialPosition: 'Right Up',
+
+  watermarkText: 'YOUR BRAND',
+  watermarkFontSize: 160,
+  watermarkOpacity: 8,
+  watermarkColor: '#ffffff',
+
+  bgColor: '#474526',
+  taglineColor: '#d8d6c4',
+  linkColor: '#eceadf',
+  connectColor: '#f5f5f0',
+
+  minHeight: 420,
+  paddingY: 64,
+  paddingX: 32,
+
+  taglineFont: '',
+  linkFont: '',
+  connectFont: '',
+  watermarkFont: '',
+}
+
+export const ru3FooterFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_logo', label: 'Logo', type: 'header' },
+  { key: 'logoUrl',    label: 'Logo', type: 'image', noAspectRatio: true },
+  { key: 'logoAlt',    label: 'Logo Alt Text', type: 'text', placeholder: 'Your Logo' },
+  { key: 'logoWidth',  label: 'Logo Width',  type: 'number', unit: 'px', step: 2, placeholder: '28' },
+  { key: 'logoHeight', label: 'Logo Height', type: 'number', unit: 'px', step: 2, placeholder: '28' },
+  { key: 'logoAlign',  label: 'Logo Alignment', type: 'select', options: ['left', 'center', 'right'] },
+
+  { key: '_h_tagline', label: 'Tagline', type: 'header' },
+  { key: 'tagline', label: 'Tagline', type: 'textarea', placeholder: 'A short line about who you are…' },
+  fontField('taglineFont', 'Tagline Font'),
+
+  { key: '_h_links', label: 'Links', type: 'header' },
+  {
+    key: 'links', label: 'Footer Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'url',   label: 'URL',   type: 'url'  },
+    ],
+  },
+  fontField('linkFont', 'Link Font'),
+
+  { key: '_h_connect', label: 'Connect With Us', type: 'header' },
+  { key: 'showConnectWithUs', label: 'Show Connect with Us', type: 'toggle' },
+  { key: 'connectLabel', label: 'Label Text', type: 'text', placeholder: 'Connect with Us' },
+  { key: 'connectAlign', label: 'Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'contactEmail', label: 'Contact Email', type: 'text', placeholder: 'support@yourdomain.com' },
+  { key: 'contactPhone', label: 'Contact Phone', type: 'text', placeholder: '+1 000-000-0000' },
+  fontField('connectFont', 'Connect Label Font'),
+
+  { key: '_h_socials', label: 'Social Icons', type: 'header' },
+  { key: 'showSocials', label: 'Show Social Icons', type: 'toggle' },
+  {
+    key: 'socials', label: 'Social Links', type: 'list',
+    listFields: [
+      { key: 'href', label: 'URL', type: 'url', placeholder: 'Paste your social media URL' },
+    ],
+  },
+  { key: 'socialPosition', label: 'Icon Position', type: 'select', options: Object.keys(RU3_FOOTER_SOCIAL_POSITIONS) },
+
+  { key: '_h_watermark', label: 'Watermark', type: 'header' },
+  { key: 'watermarkText',      label: 'Watermark Text',    type: 'text',  placeholder: 'e.g. YOUR BRAND' },
+  { key: 'watermarkFontSize',  label: 'Watermark Size',    type: 'number', unit: 'px', step: 4, placeholder: '160' },
+  { key: 'watermarkOpacity',   label: 'Watermark Opacity (0–100)', type: 'number', step: 1, placeholder: '8' },
+  { key: 'watermarkColor',     label: 'Watermark Colour',  type: 'color' },
+  fontField('watermarkFont', 'Watermark Font'),
+
+  { key: '_h_style', label: 'Style', type: 'header' },
+  { key: 'bgColor',      label: 'Background Colour',   type: 'color' },
+  { key: 'taglineColor', label: 'Tagline Colour',      type: 'color' },
+  { key: 'linkColor',    label: 'Link Colour',         type: 'color' },
+  { key: 'connectColor', label: 'Connect Label Colour', type: 'color' },
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'minHeight', label: 'Minimum Height', type: 'number', unit: 'px', step: 8, placeholder: '420' },
+  { key: 'paddingY',  label: 'Vertical Padding',   type: 'number', unit: 'px', step: 4, placeholder: '64' },
+  { key: 'paddingX',  label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '32' },
+]
+
+export function renderRu3Footer(data: Ru3FooterData): string {
+  // With no logo uploaded yet, show the alt text as clean styled text instead
+  // of an actual <img> — a real <img> with no src just renders the browser's
+  // tiny, cramped "broken image" icon, which looks like an error rather than
+  // a placeholder. Once a real URL is set, it renders as a normal image.
+  const logoHtml = data.logoUrl
+    ? `<img src="${productImageSrc(data.logoUrl)}" alt="${data.logoAlt ?? ''}" style="width:${data.logoWidth}px;height:${data.logoHeight}px;object-fit:contain;flex-shrink:0;" />`
+    : `<span style="color:#ffffff;font-size:1.15rem;font-weight:700;">${data.logoAlt ?? ''}</span>`
+
+  // font-weight 500 (not 600) — these are links, not headings/values, so they
+  // shouldn't compete visually with the actual bold text on the page. The
+  // ru3-footer-link class (styled once below) adds the hover underline that
+  // inline styles can't express via a :hover pseudo-class.
+  const linksHtml = (data.links ?? []).map((l) =>
+    `<li style="list-style:none;"><a href="${l.url}" class="ru3-footer-link" style="color:${data.linkColor};text-decoration:none;font-size:0.9rem;font-weight:500;${fontCss(data.linkFont, data.fontFamily)}">${l.label}</a></li>`
+  ).join('')
+
+  // A sibling of the tagline/links column in a flex row (see the row wrapper
+  // in the return below), so this sits parallel to the links — on the right
+  // by default, since it's the row's second item and the row justifies
+  // space-between. connectAlign only controls text alignment *within* this
+  // column, not which side of the row it's on.
+  const connectHtml = data.showConnectWithUs !== false
+    ? `<div style="text-align:${data.connectAlign ?? 'left'};">
+        <span style="color:${data.connectColor};font-weight:700;font-size:0.85rem;letter-spacing:0.06em;text-transform:uppercase;${fontCss(data.connectFont, data.fontFamily)}">${data.connectLabel}</span>
+        <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:6px;">
+          ${data.contactEmail ? `<a href="mailto:${data.contactEmail}" class="ru3-footer-link" style="color:${data.linkColor};text-decoration:none;font-size:0.9rem;font-weight:500;${fontCss(data.linkFont, data.fontFamily)}">${data.contactEmail}</a>` : ''}
+          ${data.contactPhone ? `<a href="tel:${data.contactPhone}" class="ru3-footer-link" style="color:${data.linkColor};text-decoration:none;font-size:0.9rem;font-weight:500;${fontCss(data.linkFont, data.fontFamily)}">${data.contactPhone}</a>` : ''}
+        </div>
+      </div>`
+    : ''
+
+  const socialIcons = (data.socials ?? []).map((s) => socialIconHtml(s.href)).filter(Boolean)
+  const socialPositionStyle = RU3_FOOTER_SOCIAL_POSITIONS[data.socialPosition] ?? RU3_FOOTER_SOCIAL_POSITIONS['Right Up']
+  const socialsHtml = data.showSocials !== false && socialIcons.length
+    ? `<div style="position:absolute;display:flex;gap:12px;flex-wrap:wrap;z-index:2;${socialPositionStyle}">${socialIcons.join('')}</div>`
+    : ''
+
+  const watermarkOpacity = Math.min(100, Math.max(0, data.watermarkOpacity ?? 8)) / 100
+
+  return `<section data-component-title="Ru3-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
+<style>
+  .ru3-footer-link:hover{text-decoration:underline;}
+  @media(max-width:640px){[data-ru3-footer-row]{flex-direction:column;}}
+</style>
+<footer style="position:relative;overflow:hidden;box-sizing:border-box;background:${data.bgColor};min-height:${data.minHeight}px;padding:${data.paddingY}px min(${data.paddingX}px,6vw);display:flex;flex-direction:column;">
+  <div style="position:relative;z-index:1;width:100%;max-width:1280px;margin:0 auto;">
+    <div style="text-align:${data.logoAlign ?? 'left'};"><div style="display:inline-flex;align-items:center;">${logoHtml}</div></div>
+    <div data-ru3-footer-row="true" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:2rem;">
+      <div style="text-align:left;">
+        <p style="margin:0.85rem 0 0;color:${data.taglineColor};font-size:0.9rem;line-height:1.5;max-width:28rem;white-space:pre-line;${fontCss(data.taglineFont, data.fontFamily)}">${data.tagline}</p>
+        <ul style="list-style:none;margin:1.25rem 0 0;padding:0;display:flex;flex-direction:column;gap:6px;">
+          ${linksHtml}
+        </ul>
+      </div>
+      ${connectHtml}
+    </div>
+  </div>
+
+  ${socialsHtml}
+
+  <div aria-hidden="true" style="pointer-events:none;user-select:none;margin-top:auto;width:100%;overflow:hidden;text-align:center;">
+    <span style="display:inline-block;color:${data.watermarkColor};opacity:${watermarkOpacity};font-size:min(${data.watermarkFontSize}px,22vw);font-weight:800;letter-spacing:-0.02em;line-height:1;white-space:nowrap;${fontCss(data.watermarkFont, data.fontFamily)}">${data.watermarkText}</span>
+  </div>
+</footer>
+</section>`
+}
+
+// ─── Ru4-Footer ──────────────────────────────────────────────────────────────
+// Single-row footer bar: logo (image + wordmark) on one side, an inline link
+// list in the middle, and a free-text snippet (e.g. a copyright/event line)
+// on the other. No columns/categories — everything lives in one flex row
+// that wraps to a centered stack on narrow screens.
+
+export const ru4FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 48">
+  <rect fill="#1f2937" x="0" y="0" width="277.5" height="48"/>
+  <circle cx="18" cy="24" r="8" fill="#ffffff" fill-opacity="0.9"/>
+  <rect fill="#ffffff" fill-opacity="0.9" x="32" y="20" width="46" height="7" rx="1"/>
+  <rect fill="#ffffff" fill-opacity="0.6" x="120" y="21" width="34" height="5" rx="1"/>
+  <rect fill="#ffffff" fill-opacity="0.6" x="160" y="21" width="30" height="5" rx="1"/>
+  <rect fill="#ffffff" fill-opacity="0.6" x="196" y="21" width="24" height="5" rx="1"/>
+  <rect fill="#ffffff" fill-opacity="0.6" x="238" y="21" width="28" height="5" rx="1"/>
+</svg>`
+
+export interface Ru4FooterLink {
+  label: string
+  url: string
+}
+
+export interface Ru4FooterData {
+  fontFamily: string
+
+  logoUrl: string
+  logoHref: string
+  logoText: string
+  logoWidth: number
+  logoHeight: number
+
+  links: Ru4FooterLink[]
+
+  rightText: string
+  rightTextUrl: string
+
+  rowAlign: 'space-between' | 'center' | 'flex-start' | 'flex-end'
+  itemsAlign: 'top' | 'center' | 'bottom'
+  minHeight: number
+  paddingY: number
+  paddingX: number
+
+  bgColor: string
+  textColor: string
+  linkColor: string
+
+  textFont: string
+  linkFont: string
+}
+
+export const ru4FooterDefaults: Ru4FooterData = {
+  fontFamily: '',
+
+  logoUrl: '',
+  logoHref: '/',
+  logoText: 'Your Brand',
+  logoWidth: 32,
+  logoHeight: 32,
+
+  links: [
+    { label: 'Terms and Conditions', url: '/terms-and-conditions' },
+    { label: 'Privacy Policy', url: '/privacy-policy' },
+    { label: 'FAQs', url: '/faq' },
+  ],
+
+  rightText: '© 2026 Your Company, Inc.',
+  rightTextUrl: '',
+
+  rowAlign: 'space-between',
+  itemsAlign: 'center',
+  minHeight: 64,
+  paddingY: 16,
+  paddingX: 32,
+
+  bgColor: '#1d4ed8',
+  textColor: '#ffffff',
+  linkColor: '#e5e9ff',
+
+  textFont: '',
+  linkFont: '',
+}
+
+export const ru4FooterFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_logo', label: 'Logo', type: 'header' },
+  { key: 'logoUrl',   label: 'Logo Image', type: 'image', noAspectRatio: true },
+  { key: 'logoText',  label: 'Logo Text (shown if no Logo Image)',  type: 'text', placeholder: 'Your Brand' },
+  { key: 'logoHref',  label: 'Logo Link',  type: 'url', placeholder: '/' },
+  { key: 'logoWidth',  label: 'Logo Width',  type: 'number', unit: 'px', step: 2, placeholder: '32' },
+  { key: 'logoHeight', label: 'Logo Height', type: 'number', unit: 'px', step: 2, placeholder: '32' },
+  fontField('textFont', 'Logo & Right Text Font'),
+
+  { key: '_h_links', label: 'Links', type: 'header' },
+  {
+    key: 'links', label: 'Footer Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'url',   label: 'URL',   type: 'url'  },
+    ],
+  },
+  fontField('linkFont', 'Link Font'),
+
+  { key: '_h_right', label: 'Right Side Text', type: 'header' },
+  { key: 'rightText',    label: 'Text', type: 'text', placeholder: '© 2026 Your Company, Inc.' },
+  { key: 'rightTextUrl', label: 'Link (optional)', type: 'url', placeholder: 'https://…' },
+
+  { key: '_h_style', label: 'Style', type: 'header' },
+  { key: 'bgColor',   label: 'Background Color', type: 'color' },
+  { key: 'textColor', label: 'Text Color',        type: 'color' },
+  { key: 'linkColor', label: 'Link Color',        type: 'color' },
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'rowAlign',   label: 'Row Alignment',    type: 'select', options: ['space-between', 'center', 'flex-start', 'flex-end'] },
+  { key: 'itemsAlign', label: 'Vertical Alignment', type: 'select', options: ['top', 'center', 'bottom'] },
+  { key: 'minHeight', label: 'Minimum Height',    type: 'number', unit: 'px', step: 4, placeholder: '64' },
+  { key: 'paddingY',  label: 'Vertical Padding',   type: 'number', unit: 'px', step: 4, placeholder: '16' },
+  { key: 'paddingX',  label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '32' },
+]
+
+export function renderRu4Footer(data: Ru4FooterData): string {
+  const itemsAlignMap: Record<string, string> = { top: 'flex-start', center: 'center', bottom: 'flex-end' }
+  const verticalAlign = itemsAlignMap[data.itemsAlign] ?? 'center'
+
+  const logoInner = data.logoUrl
+    ? `<img src="${productImageSrc(data.logoUrl)}" alt="${data.logoText ?? ''}" style="width:${data.logoWidth}px;height:${data.logoHeight}px;object-fit:contain;flex-shrink:0;" />`
+    : (data.logoText
+        ? `<span style="color:${data.textColor};font-size:1.1rem;font-weight:700;white-space:nowrap;${fontCss(data.textFont, data.fontFamily)}">${data.logoText}</span>`
+        : '')
+  const logoHtml = data.logoHref
+    ? `<a href="${data.logoHref}" style="display:inline-flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;">${logoInner}</a>`
+    : `<div style="display:inline-flex;align-items:center;gap:10px;flex-shrink:0;">${logoInner}</div>`
+
+  const linksHtml = (data.links ?? []).map((l) =>
+    `<a href="${l.url}" class="ru4-footer-link" style="color:${data.linkColor};text-decoration:none;font-size:0.9rem;font-weight:500;white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}">${l.label}</a>`
+  ).join('')
+  const linksWrap = linksHtml
+    ? `<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:24px;">${linksHtml}</div>`
+    : ''
+
+  const rightInner = `<span style="color:${data.textColor};font-size:0.85rem;opacity:0.9;white-space:nowrap;${fontCss(data.textFont, data.fontFamily)}">${data.rightText}</span>`
+  const rightHtml = data.rightText
+    ? (data.rightTextUrl
+        ? `<a href="${data.rightTextUrl}" style="text-decoration:none;flex-shrink:0;">${rightInner}</a>`
+        : `<div style="flex-shrink:0;">${rightInner}</div>`)
+    : ''
+
+  return `<section data-component-title="Ru4-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
+<style>
+  .ru4-footer-link:hover{text-decoration:underline;}
+  @media(max-width:768px){[data-ru4-footer-row]{flex-direction:column;align-items:center!important;text-align:center;gap:16px!important;}}
+</style>
+<footer style="box-sizing:border-box;background:${data.bgColor};min-height:${data.minHeight}px;padding:${data.paddingY}px ${data.paddingX}px;display:flex;align-items:center;">
+  <div data-ru4-footer-row="true" style="width:100%;max-width:1280px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:${verticalAlign};justify-content:${data.rowAlign};gap:24px;">
+    ${logoHtml}
+    ${linksWrap}
+    ${rightHtml}
+  </div>
+</footer>
+</section>`
+}
+
 // ─── Ru1-About ───────────────────────────────────────────────────────────────
 
 export const ru1AboutSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
@@ -4809,6 +5235,314 @@ export function renderRu6SplitHero(data: Ru6SplitHeroData): string {
 </section>`
 }
 
+// ─── Ru7-Hero-Category-Collection ───────────────────────────────────────────
+// Title + CTA + category cards all render statically. Each card's background
+// image and name are entered manually by the admin (a "list" field, same UX
+// as Ru1-Products' products list) — no live backend fetch. A card's link is
+// auto-built from its name as /shop?category=<slug>.
+
+export const ru7HeroCategoryCollectionSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
+  <rect fill="#1f2937" width="277.5" height="80"/>
+  <rect fill="#9ca3af" x="98" y="12" width="82" height="8" rx="1"/>
+  <rect fill="#4b5563" x="118" y="26" width="42" height="8" rx="4"/>
+  <rect fill="#374151" x="10" y="46" width="82" height="26" rx="3"/>
+  <rect fill="#374151" x="98" y="46" width="82" height="26" rx="3"/>
+  <rect fill="#374151" x="186" y="46" width="82" height="26" rx="3"/>
+  <rect fill="#6b7280" x="14" y="60" width="40" height="4" rx="1"/>
+  <rect fill="#6b7280" x="102" y="60" width="40" height="4" rx="1"/>
+  <rect fill="#6b7280" x="190" y="60" width="40" height="4" rx="1"/>
+</svg>`
+
+export interface Ru7CategoryItem {
+  imageUrl: string
+  name: string
+  categoryUrl: string
+}
+
+export interface Ru7HeroCategoryCollectionData {
+  bgColor: string
+  bgImageUrl: string
+  paddingY: number
+  paddingX: number
+  fontFamily: string
+
+  title: string
+  titleFontSize: number
+  titleFontWeight: string
+  titleColor: string
+  titleLineHeight: number
+  titleLetterSpacing: number
+  titleAlign: string
+  titleFont: string
+
+  showCta: boolean
+  ctaLabel: string
+  ctaHref: string
+  ctaStyle: string
+  ctaBgColor: string
+  ctaTextColor: string
+  ctaBorderColor: string
+  ctaBorderRadius: number
+  ctaFont: string
+
+  columns: number
+  rows: number
+
+  cardGap: number
+  cardBorderRadius: number
+  cardAspectRatio: string
+  cardHeight: number
+  overlayColor: string
+  overlayOpacity: number
+  eyebrowText: string
+  eyebrowFontSize: number
+  eyebrowColor: string
+  eyebrowFont: string
+
+  categoryFontSize: number
+  categoryFontWeight: string
+  categoryColor: string
+  categoryLineHeight: number
+  categoryLetterSpacing: number
+  categoryTextAlign: string
+  categoryFont: string
+
+  cardAnimation: boolean
+  hoverEffect: string
+  hoverAmount: number
+  animationDuration: number
+
+  categories: Ru7CategoryItem[]
+}
+
+export const ru7HeroCategoryCollectionDefaults: Ru7HeroCategoryCollectionData = {
+  bgColor: '#ffffff',
+  bgImageUrl: '',
+  paddingY: 64,
+  paddingX: 32,
+  fontFamily: '',
+
+  title: 'Welcome to the Store',
+  titleFontSize: 48,
+  titleFontWeight: '800',
+  titleColor: '#111827',
+  titleLineHeight: 1.15,
+  titleLetterSpacing: 0,
+  titleAlign: 'center',
+  titleFont: '',
+
+  showCta: true,
+  ctaLabel: 'Shop Now',
+  ctaHref: '/shop',
+  ctaStyle: 'filled',
+  ctaBgColor: '#4f46e5',
+  ctaTextColor: '#ffffff',
+  ctaBorderColor: '#4f46e5',
+  ctaBorderRadius: 6,
+  ctaFont: '',
+
+  columns: 3,
+  rows: 1,
+
+  cardGap: 16,
+  cardBorderRadius: 12,
+  cardAspectRatio: '4 / 5',
+  cardHeight: 0,
+  overlayColor: '#000000',
+  overlayOpacity: 45,
+  eyebrowText: 'Shop the collection',
+  eyebrowFontSize: 13,
+  eyebrowColor: '#ffffff',
+  eyebrowFont: '',
+
+  categoryFontSize: 22,
+  categoryFontWeight: '700',
+  categoryColor: '#ffffff',
+  categoryLineHeight: 1.2,
+  categoryLetterSpacing: 0,
+  categoryTextAlign: 'left',
+  categoryFont: '',
+
+  cardAnimation: false,
+  hoverEffect: 'Zoom In',
+  hoverAmount: 6,
+  animationDuration: 300,
+
+  categories: [],
+}
+
+export const ru7HeroCategoryCollectionFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_section', label: 'Section', type: 'header' },
+  { key: 'bgImageUrl', label: 'Background Image', type: 'image', noAspectRatio: true },
+  { key: 'bgColor', label: 'Background Colour', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '64' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '32' },
+
+  { key: '_h_title', label: 'Title', type: 'header' },
+  { key: 'title', label: 'Title', type: 'text', placeholder: 'e.g. Welcome to the Store' },
+  { key: 'titleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '48' },
+  { key: 'titleFontWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
+  { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  { key: 'titleLineHeight', label: 'Title Line Height', type: 'number', placeholder: '1.15' },
+  { key: 'titleLetterSpacing', label: 'Title Letter Spacing (px)', type: 'number', placeholder: '0' },
+  { key: 'titleAlign', label: 'Title Align', type: 'select', options: ['left', 'center', 'right'] },
+  fontField('titleFont', 'Title Font'),
+
+  { key: '_h_cta', label: 'CTA Button', type: 'header' },
+  { key: 'showCta', label: 'Show CTA Button', type: 'toggle' },
+  { key: 'ctaLabel', label: 'Button Text', type: 'text', placeholder: 'e.g. Shop Now' },
+  { key: 'ctaHref', label: 'Button URL', type: 'url', placeholder: '/shop' },
+  { key: 'ctaStyle', label: 'Button Style', type: 'select', options: ['filled', 'outline', 'ghost'] },
+  { key: 'ctaBgColor', label: 'Button Background', type: 'color' },
+  { key: 'ctaTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'ctaBorderColor', label: 'Button Border Colour', type: 'color' },
+  { key: 'ctaBorderRadius', label: 'Button Border Radius (px)', type: 'number', placeholder: '6' },
+  fontField('ctaFont', 'Button Font'),
+
+  { key: '_h_grid', label: 'Grid', type: 'header' },
+  { key: 'columns', label: 'Columns', type: 'select', options: ['1', '2', '3', '4', '5', '6'] },
+  { key: 'rows', label: 'Rows', type: 'select', options: ['1', '2', '3', '4', '5', '6'] },
+
+  { key: '_h_card', label: 'Card Style', type: 'header' },
+  { key: 'cardGap', label: 'Card Gap (px)', type: 'number', placeholder: '16' },
+  { key: 'cardBorderRadius', label: 'Card Border Radius (px)', type: 'number', placeholder: '12' },
+  { key: 'cardAspectRatio', label: 'Card Aspect Ratio', type: 'select', options: ['1 / 1', '4 / 5', '3 / 4', '16 / 9'] },
+  { key: 'cardHeight', label: 'Card Height (px)', type: 'number', placeholder: '0 = auto (use aspect ratio)' },
+  { key: 'overlayColor', label: 'Overlay Colour', type: 'color' },
+  { key: 'overlayOpacity', label: 'Overlay Opacity (%)', type: 'number', placeholder: '45' },
+  { key: 'eyebrowText', label: 'Eyebrow Text', type: 'text', placeholder: 'e.g. Shop the collection' },
+  { key: 'eyebrowFontSize', label: 'Eyebrow Size (px)', type: 'number', placeholder: '13' },
+  { key: 'eyebrowColor', label: 'Eyebrow Colour', type: 'color' },
+  fontField('eyebrowFont', 'Eyebrow Font'),
+
+  { key: '_h_category', label: 'Category Name Text', type: 'header' },
+  { key: 'categoryFontSize', label: 'Font Size (px)', type: 'number', placeholder: '22' },
+  { key: 'categoryFontWeight', label: 'Font Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
+  { key: 'categoryColor', label: 'Colour', type: 'color' },
+  { key: 'categoryLineHeight', label: 'Line Height', type: 'number', placeholder: '1.2' },
+  { key: 'categoryLetterSpacing', label: 'Letter Spacing (px)', type: 'number', placeholder: '0' },
+  { key: 'categoryTextAlign', label: 'Text Align', type: 'select', options: ['left', 'center', 'right'] },
+  fontField('categoryFont', 'Category Font'),
+
+  { key: '_h_animation', label: 'Hover Animation', type: 'header' },
+  { key: 'cardAnimation', label: 'Hover Animation', type: 'toggle' },
+  { key: 'hoverEffect', label: 'Animation Type', type: 'select', options: ['Lift Up', 'Drop Down', 'Slide Left', 'Slide Right', 'Pop Out', 'Zoom In', 'Glow', 'Tilt Left', 'Tilt Right'] },
+  { key: 'hoverAmount', label: 'Animation Amount', type: 'number', unit: 'px', step: 1, placeholder: '6' },
+  { key: 'animationDuration', label: 'Animation Duration', type: 'number', unit: 'ms', step: 50, placeholder: '300' },
+
+  { key: '_h_categories', label: 'Categories', type: 'header' },
+  { key: 'syncRu7CategoriesFromApi', label: 'Sync Categories from API', type: 'button' },
+  {
+    key: 'categories', label: 'Categories', type: 'list',
+    listFields: [
+      { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
+      { key: 'name', label: 'Category Name', type: 'text', placeholder: 'e.g. Apparel' },
+      { key: 'categoryUrl', label: 'Categories url', type: 'text', placeholder: '/shop?category=apparel' },
+    ],
+  },
+]
+
+export function renderRu7HeroCategoryCollection(data: Ru7HeroCategoryCollectionData): string {
+  const columns = Number(data.columns) || 3
+  const rows = Number(data.rows) || 1
+  const maxItems = columns * rows
+
+  const titleHtml = data.title
+    ? `<h2 style="margin:0 0 20px;font-size:min(${data.titleFontSize}px,9vw);font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:${data.titleLineHeight};letter-spacing:${data.titleLetterSpacing}px;text-align:${data.titleAlign};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>`
+    : ''
+
+  let ctaBtnStyle: string
+  if (data.ctaStyle === 'outline') {
+    ctaBtnStyle = `background:transparent;color:${data.ctaBgColor};border:2px solid ${data.ctaBorderColor};`
+  } else if (data.ctaStyle === 'ghost') {
+    ctaBtnStyle = `background:transparent;color:${data.ctaTextColor};border:none;`
+  } else {
+    ctaBtnStyle = `background:${data.ctaBgColor};color:${data.ctaTextColor};border:2px solid transparent;`
+  }
+  const ctaHtml = data.showCta !== false
+    ? `<a href="${data.ctaHref}" style="display:inline-block;padding:0.75rem 1.75rem;${ctaBtnStyle}border-radius:${data.ctaBorderRadius}px;text-decoration:none;font-size:0.9rem;font-weight:600;${fontCss(data.ctaFont, data.fontFamily)}">${data.ctaLabel}</a>`
+    : ''
+
+  const headerHtml = (titleHtml || ctaHtml)
+    ? `<div style="text-align:${data.titleAlign};margin-bottom:${data.cardGap * 2}px;">${titleHtml}${ctaHtml ? `<div style="margin-top:4px;">${ctaHtml}</div>` : ''}</div>`
+    : ''
+
+  const overlayOpacity = Math.min(100, Math.max(0, data.overlayOpacity ?? 0)) / 100
+  const fallbackIcon = `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`
+
+  const placeholder: Ru7CategoryItem = { imageUrl: '', name: 'Category', categoryUrl: '' }
+  const categories = Array.isArray(data.categories) ? data.categories : []
+  const visibleCategories = [
+    ...categories.slice(0, maxItems),
+    ...Array(Math.max(0, maxItems - categories.length)).fill(placeholder),
+  ]
+
+  const cards = visibleCategories.map((cat) => {
+    const name = cat.name || 'Category'
+    const slug = name.trim().toLowerCase().replace(/\s+/g, '-')
+    const href = cat.categoryUrl?.trim() || (slug ? `/shop?category=${slug}` : '#')
+    const imgSrc = productImageSrc(cat.imageUrl)
+    const imageHtml = imgSrc
+      ? `<img src="${imgSrc}" alt="${name}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" />`
+      : `<div style="position:absolute;inset:0;background:#e2e8f0;display:flex;align-items:center;justify-content:center;">${fallbackIcon}</div>`
+
+    const sizingStyle = data.cardHeight ? `height:${data.cardHeight}px;` : `aspect-ratio:${data.cardAspectRatio};`
+
+    return `<a data-ru7hcc-card href="${href}" style="position:relative;display:block;overflow:hidden;border-radius:${data.cardBorderRadius}px;${sizingStyle}text-decoration:none;">
+      ${imageHtml}
+      <div style="position:absolute;left:0;right:0;bottom:0;height:65%;background:linear-gradient(to top,${hexToRgba(data.overlayColor, overlayOpacity)},transparent);pointer-events:none;"></div>
+      <div style="position:absolute;left:0;right:0;bottom:0;padding:20px;">
+        <p style="margin:0 0 4px;font-size:${data.eyebrowFontSize}px;color:${data.eyebrowColor};${fontCss(data.eyebrowFont, data.fontFamily)}">${data.eyebrowText}</p>
+        <p style="margin:0;font-size:${data.categoryFontSize}px;font-weight:${data.categoryFontWeight};color:${data.categoryColor};line-height:${data.categoryLineHeight};letter-spacing:${data.categoryLetterSpacing}px;text-align:${data.categoryTextAlign};${fontCss(data.categoryFont, data.fontFamily)}">${name}</p>
+      </div>
+    </a>`
+  }).join('')
+
+  // Hover animation — same effect set/formula as Ru1-Products' _hoverCSS.
+  const _ru7HoverCSS = (effect: string, amount: number): string => {
+    switch (effect) {
+      case 'Lift Up':     return `transform:translateY(-${amount}px)`
+      case 'Drop Down':   return `transform:translateY(${amount}px)`
+      case 'Slide Left':  return `transform:translateX(-${amount}px)`
+      case 'Slide Right': return `transform:translateX(${amount}px)`
+      case 'Pop Out':     return `transform:scale(${1 + amount / 100})`
+      case 'Zoom In':     return `transform:scale(${1 + amount / 100});box-shadow:0 25px 50px rgba(0,0,0,0.15)`
+      case 'Glow':        return `box-shadow:0 0 ${amount}px rgba(99,102,241,0.7)`
+      case 'Tilt Left':   return `transform:rotate(-${amount}deg)`
+      case 'Tilt Right':  return `transform:rotate(${amount}deg)`
+      default:            return `transform:translateY(-${amount}px)`
+    }
+  }
+
+  const styleRules: string[] = [
+    `@media(max-width:1023px){[data-ru7hcc-grid]{grid-template-columns:repeat(${Math.min(columns, 3)},1fr)!important;}}`,
+    `@media(max-width:639px){[data-ru7hcc-grid]{grid-template-columns:repeat(${Math.min(columns, 2)},1fr)!important;}}`,
+  ]
+  if (data.cardAnimation) {
+    const dur = data.animationDuration ?? 300
+    styleRules.push(`[data-ru7hcc-card]{transition:transform ${dur}ms ease,box-shadow ${dur}ms ease}`)
+    styleRules.push(`[data-ru7hcc-card]:hover{${_ru7HoverCSS(data.hoverEffect, data.hoverAmount)}}`)
+  }
+
+  const bgImgSrc = productImageSrc(data.bgImageUrl)
+  const sectionBgStyle = bgImgSrc
+    ? `background:url('${bgImgSrc}') center/cover no-repeat;background-color:${data.bgColor};`
+    : `background:${data.bgColor};`
+
+  return `<section data-component-title="Ru7-Hero-Category-Collection" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionBgStyle}padding:${data.paddingY}px min(${data.paddingX}px,6vw);${fontCss(undefined, data.fontFamily)}">
+  <style>${styleRules.join('')}</style>
+  <div style="max-width:80rem;margin:0 auto;">
+    ${headerHtml}
+    <div data-ru7hcc-grid="true" style="display:grid;grid-template-columns:repeat(${columns},1fr);gap:${data.cardGap}px;">
+      ${cards}
+    </div>
+  </div>
+</section>`
+}
+
 // ─── Ru4-Overlay Panel ───────────────────────────────────────────────────────
 
 export const ru4OverlayPanelSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
@@ -7529,6 +8263,151 @@ export function renderRu1AnnouncementBar(data: Ru1AnnouncementBarData): string {
   return `<section data-component-title="Ru1-Announcement Bar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
   <div style="background:${data.bgColor};padding:${data.paddingY}px 1rem;display:flex;justify-content:${justify};align-items:center;text-align:center;box-sizing:border-box;">
     <span style="color:${data.textColor};font-size:${data.fontSize}px;font-weight:${weight};line-height:1.4;${fontCss(data.textFont, data.fontFamily)}">${data.message}</span>
+  </div>
+</section>`
+}
+
+// ─── Ru2-Scrolling Ticker ────────────────────────────────────────────────────
+// A horizontally auto-scrolling row of short phrases separated by a
+// configurable icon. The track renders its item sequence twice back-to-back
+// and animates translateX(0 → -50%) — since the second copy is identical to
+// the first, the loop point lands on a visually identical frame, so it reads
+// as an infinite scroll with no seam or reset jump. Template is dark,
+// matching Ru1-Announcement Bar.
+
+export const ru2ScrollingTickerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 40">
+  <rect fill="#1f2430" width="277.5" height="40"/>
+  <rect fill="#aab2c5" x="14"  y="17" width="46" height="6" rx="1"/>
+  <rect fill="#6b7488" x="70"  y="17" width="7" height="7" rx="1"/>
+  <rect fill="#aab2c5" x="87"  y="17" width="46" height="6" rx="1"/>
+  <rect fill="#6b7488" x="143" y="17" width="7" height="7" rx="1"/>
+  <rect fill="#aab2c5" x="160" y="17" width="46" height="6" rx="1"/>
+  <rect fill="#6b7488" x="216" y="17" width="7" height="7" rx="1"/>
+</svg>`
+
+// Solid shapes (fill="currentColor") for the separator dropdown — kept local
+// to this block rather than in useIconSvg.ts, whose icon() helper is built
+// for stroke-only outline icons (search/cart/user); a solid Dot in
+// particular has no outline equivalent.
+// width/height kept small and fixed (10px) — these are inline text
+// separators, not standalone icons, so they should read as punctuation
+// alongside the ticker text, not compete with it visually.
+export const RU2_TICKER_ICONS: Record<string, string> = {
+  // Classic 5-point star — the earlier 4-point sparkle's concave waist wasn't
+  // visible at 10px and just read as a plus sign.
+  Star: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.007Z"/></svg>',
+  Dot: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4"/></svg>',
+  Cross: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" d="M6 6l12 12M6 18 18 6"/></svg>',
+  Diamond: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 22 12 12 22 2 12 Z"/></svg>',
+  // 4-point compass-star with concave sides between points — a distinct
+  // shape from the plain-edged Diamond above and the 5-point Star.
+  Sparkle: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg>',
+  Plus: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M12 4v16M4 12h16"/></svg>',
+  Slash: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M17 5 7 19"/></svg>',
+  Triangle: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 21 20 3 20 Z"/></svg>',
+}
+
+export interface Ru2ScrollingTickerItem {
+  text: string
+}
+
+export interface Ru2ScrollingTickerData {
+  fontFamily: string
+  items: Ru2ScrollingTickerItem[]
+  icon: string
+  bgColor: string
+  textColor: string
+  iconColor: string
+  fontSize: number
+  fontWeight: string
+  letterSpacing: number
+  paddingY: number
+  speed: number
+  textFont: string
+}
+
+export const ru2ScrollingTickerDefaults: Ru2ScrollingTickerData = {
+  fontFamily: '',
+  items: [
+    { text: 'GET AROUND' },
+    { text: 'AIM HIGH' },
+    { text: 'LIE LOW' },
+    { text: 'SUIT UP' },
+    { text: 'COOL DOWN' },
+    { text: 'STAY CENTERED' },
+  ],
+  icon: 'Star',
+  bgColor: '#1f2430',
+  textColor: '#aab2c5',
+  iconColor: '#6b7488',
+  fontSize: 14,
+  fontWeight: 'Semibold',
+  letterSpacing: 1,
+  paddingY: 14,
+  speed: 25,
+  textFont: '',
+}
+
+export const ru2ScrollingTickerFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_content', label: 'Content', type: 'header' },
+  {
+    key: 'items',
+    label: 'Ticker Items',
+    type: 'list',
+    listFields: [
+      { key: 'text', label: 'Text', type: 'text', placeholder: 'e.g. GET AROUND' },
+    ],
+  },
+  { key: 'icon', label: 'Separator Icon', type: 'select', options: Object.keys(RU2_TICKER_ICONS) },
+  fontField('textFont', 'Text Font'),
+
+  { key: '_h_style', label: 'Style', type: 'header' },
+  { key: 'bgColor',       label: 'Background Colour',   type: 'color' },
+  { key: 'textColor',     label: 'Text Colour',         type: 'color' },
+  { key: 'iconColor',     label: 'Icon Colour',         type: 'color' },
+  { key: 'fontSize',      label: 'Font Size',           type: 'number', unit: 'px', step: 1, placeholder: '14' },
+  { key: 'fontWeight',    label: 'Text Weight',         type: 'select', options: ['Normal', 'Medium', 'Semibold', 'Bold'] },
+  { key: 'letterSpacing', label: 'Letter Spacing (px)', type: 'number', step: 0.5, placeholder: '1' },
+  { key: 'paddingY',      label: 'Vertical Padding',    type: 'number', unit: 'px', step: 2, placeholder: '14' },
+
+  { key: '_h_motion', label: 'Motion', type: 'header' },
+  { key: 'speed', label: 'Scroll Speed (secs per loop)', type: 'number', step: 1, placeholder: '25' },
+]
+
+export function renderRu2ScrollingTicker(data: Ru2ScrollingTickerData): string {
+  const weightMap: Record<string, string> = { Normal: '400', Medium: '500', Semibold: '600', Bold: '700' }
+  const weight = weightMap[data.fontWeight] ?? '600'
+  const letterSpacing = data.letterSpacing ? `letter-spacing:${data.letterSpacing}px;` : ''
+  const iconSvg = RU2_TICKER_ICONS[data.icon] ?? RU2_TICKER_ICONS.Star
+
+  const itemHtml = (data.items ?? []).map((item) =>
+    `<span style="display:inline-flex;align-items:center;flex-shrink:0;">
+      <span data-ru2-ticker-text style="color:${data.textColor};font-size:${data.fontSize}px;font-weight:${weight};white-space:nowrap;${letterSpacing}${fontCss(data.textFont, data.fontFamily)}">${item.text}</span>
+      <span data-ru2-ticker-icon style="display:inline-flex;align-items:center;color:${data.iconColor};margin:0 1.5rem;flex-shrink:0;">${iconSvg}</span>
+    </span>`
+  ).join('')
+
+  // Rendered twice so translateX(-50%) always lands the second copy exactly
+  // where the first started — see comment above the section for why.
+  const track = itemHtml + itemHtml
+
+  const mobileFontSize = Math.max(10, Math.round((data.fontSize ?? 14) * 0.85))
+
+  return `<section data-component-title="Ru2-Scrolling Ticker" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
+  <style>
+    @keyframes ru2-ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    @media(max-width:640px){
+      [data-ru2-ticker-text]{font-size:${mobileFontSize}px!important;}
+      [data-ru2-ticker-icon]{margin:0 0.85rem!important;}
+    }
+  </style>
+  <div style="background:${data.bgColor};padding:${data.paddingY}px 0;overflow:hidden;box-sizing:border-box;">
+    <div style="display:inline-flex;width:max-content;animation:ru2-ticker-scroll ${data.speed}s linear infinite;">
+      ${track}
+    </div>
   </div>
 </section>`
 }

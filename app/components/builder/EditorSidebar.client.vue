@@ -214,9 +214,71 @@ async function syncCategoriesFromApi() {
   }
 }
 
+// Sync Categories from API (Ru7-Hero-Category-Collection): fetches the real
+// category tree once and writes one Categories list entry per top-level
+// category, name-matched against whatever's already there so an
+// already-uploaded card image survives a re-sync. Unlike Ru3-Mega-Header's
+// Nav Links (a mix of static + category links), every item in this list is a
+// category, so re-syncing fully replaces the list rather than merging with
+// "kept" entries.
+async function syncRu7CategoriesFromApi() {
+  const data = blockData.value
+  if (!data) return
+  buttonFieldBusy.value.syncRu7CategoriesFromApi = true
+  buttonFieldError.value.syncRu7CategoriesFromApi = ''
+  try {
+    const flat = await $fetch<FlatCategory[]>('/api/categories', {
+      query: { companyId: selectedCompanyId.value ?? undefined },
+    })
+    const tree = buildCategoryTree(flat)
+    const labelFor = (c: FlatCategory) => String(c.headlessName || c.displayName || c.name)
+
+    const existingCategories = (data.categories ?? []) as Array<{ imageUrl: string; name: string; categoryUrl?: string }>
+    const existingByName = new Map(existingCategories.map(c => [c.name, c]))
+
+    const synced = tree.map(cat => {
+      const label = labelFor(cat)
+      const existing = existingByName.get(label)
+      // Real backend slug (headlessName, same convention as CategoryNav/Sync
+      // Categories From API above) — not a naive slugify of the display
+      // label, so it matches the company's actual category identifiers.
+      const slug = cat.headlessName || cat.name.toLowerCase().replace(/\s+/g, '-')
+      return {
+        imageUrl: existing?.imageUrl ?? '',
+        name: label,
+        categoryUrl: existing?.categoryUrl ?? `/shop?category=${slug}`,
+      }
+    })
+
+    await updateBlockField('categories', synced)
+  } catch (e) {
+    console.error('[Sync Ru7 Categories from API] failed', e)
+    buttonFieldError.value.syncRu7CategoriesFromApi = 'Failed to fetch categories — check console.'
+  } finally {
+    buttonFieldBusy.value.syncRu7CategoriesFromApi = false
+  }
+}
+
 function onButtonField(fieldKey: string) {
   if (fieldKey === 'syncCategoriesFromApi') syncCategoriesFromApi()
+  if (fieldKey === 'syncRu7CategoriesFromApi') syncRu7CategoriesFromApi()
 }
+
+// Ru7-Hero-Category-Collection: Card Height defaults to 0 ("auto" — use Card
+// Aspect Ratio for real responsive sizing on the live page, see
+// renderRu7HeroCategoryCollection). While it's still 0, the sidebar box shows
+// a standard height for whichever aspect ratio is selected (based on a fixed
+// reference card width) instead of a bare "0", so there's a sensible number
+// to nudge up/down from. The moment it's touched, it becomes a real stored
+// px value like any other number field.
+const RU7_CARD_HEIGHT_BASELINE_WIDTH = 400
+const ru7CardHeightDisplay = computed(() => {
+  const stored = Number(blockData.value?.cardHeight ?? 0)
+  if (stored > 0) return stored
+  const [w, h] = String(blockData.value?.cardAspectRatio ?? '4 / 5')
+    .split('/').map(s => parseFloat(s.trim()) || 0)
+  return Math.round(RU7_CARD_HEIGHT_BASELINE_WIDTH * ((h || 5) / (w || 4)))
+})
 
 async function onSelectField(fieldKey: string, value: string | number) {
   await updateBlockField(fieldKey, value)
@@ -318,6 +380,24 @@ function debouncedUpdateBlockListItem(listKey: string, idx: number, itemKey: str
   _listItemDebounceTimer = window.setTimeout(() => {
     updateBlockListItem(listKey, idx, itemKey, value)
   }, 50)
+}
+
+// Ru7-Hero-Category-Collection: typing the Category Name auto-fills the
+// sibling Categories url — but only while that field is still empty, so an
+// admin who has typed their own URL never gets it clobbered by further name
+// edits. Uses its own debounce timer (not _listItemDebounceTimer) so it
+// doesn't race with unrelated list-item edits on other fields/items.
+let _ru7CategoryNameDebounceTimer = 0
+function onRu7CategoryNameInput(idx: number, value: string) {
+  clearTimeout(_ru7CategoryNameDebounceTimer)
+  _ru7CategoryNameDebounceTimer = window.setTimeout(async () => {
+    await updateBlockListItem('categories', idx, 'name', value)
+    const current = (blockData.value?.categories as any[] | undefined)?.[idx]
+    if (!current?.categoryUrl) {
+      const slug = value.trim().toLowerCase().replace(/\s+/g, '-')
+      await updateBlockListItem('categories', idx, 'categoryUrl', slug ? `/shop?category=${slug}` : '')
+    }
+  }, 150)
 }
 
 // ── Block image upload ────────────────────────────────────────────────────────
@@ -757,6 +837,26 @@ onUnmounted(() => {
             </div>
 
             <!-- number → stepper -->
+            <!-- Ru7-Hero-Category-Collection Card Height: shows a standard
+                 height for whichever Card Aspect Ratio is selected instead of
+                 a bare 0 until the admin nudges it, then behaves like any
+                 other number field -->
+            <div v-else-if="field.key === 'cardHeight' && selectedBlockTitle === 'Ru7-Hero-Category-Collection'" class="mb-2.5">
+              <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
+              <div class="flex items-center gap-1 w-full">
+                <button type="button"
+                  class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-lg font-medium cursor-pointer shrink-0"
+                  @click="updateBlockField('cardHeight', Math.max(0, ru7CardHeightDisplay - (field.step ?? 1)))">−</button>
+                <input type="number" :value="ru7CardHeightDisplay"
+                  class="flex-1 text-center border border-gray-300 rounded-lg py-1.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                  @input="debouncedUpdateBlockField('cardHeight', Number(($event.target as HTMLInputElement).value))" />
+                <span class="text-xs text-gray-500 font-semibold">{{ field.unit ?? 'px' }}</span>
+                <button type="button"
+                  class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-lg font-medium cursor-pointer shrink-0"
+                  @click="updateBlockField('cardHeight', ru7CardHeightDisplay + (field.step ?? 1))">+</button>
+              </div>
+            </div>
+
             <div v-else-if="field.type === 'number'" class="mb-2.5">
               <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
               <div class="flex items-center gap-1 w-full">
@@ -937,6 +1037,18 @@ onUnmounted(() => {
                           @change="updateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLSelectElement).value)">
                           <option v-for="opt in subField.options" :key="opt" :value="opt">{{ opt }}</option>
                         </select>
+                      </template>
+
+                      <!-- Ru7-Hero-Category-Collection: typing the Category Name
+                           auto-fills the sibling Categories url ONLY while that
+                           field is still empty — once the admin edits it
+                           directly it's a fully independent, editable value and
+                           is never overwritten by further name edits. -->
+                      <template v-else-if="field.key === 'categories' && subField.key === 'name'">
+                        <input type="text" :value="item.name ?? ''"
+                          :placeholder="subField.placeholder ?? ''"
+                          class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-blue-400"
+                          @input="onRu7CategoryNameInput(idx, ($event.target as HTMLInputElement).value)" />
                       </template>
 
                       <!-- text / url / number: instant update on every keystroke -->
