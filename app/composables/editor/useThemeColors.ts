@@ -180,6 +180,34 @@ export function seedFromThemeJson(json: string | undefined | null): boolean {
   }
 }
 
+// Fetch the live `global-theme` CMS record and re-seed local state from it.
+// Bypasses pageHtmlCache/localStorage — use this wherever colors are about to
+// be shown or written so a stale in-memory copy never overrides a newer save
+// made elsewhere (another tab, another editor session, the /configuration page).
+export async function refreshThemeFromCms(companyId?: number | null): Promise<boolean> {
+  try {
+    const pages = await $fetch<any[]>('/api/pages', companyId ? { query: { companyId } } : undefined)
+    const themePage = pages.find((p) => p.id === 'global-theme')
+    if (themePage?.versions?.[0]?.value) {
+      return seedFromThemeJson(themePage.versions[0].value)
+    }
+  } catch {}
+  return false
+}
+
+// The version number to save the *next* global-theme write as. Always one
+// past whatever the CMS currently has — never a hardcoded constant — so a
+// stray/old record with a higher version number can never permanently
+// shadow a newer save (version order is what "latest" is picked by).
+export async function nextThemeVersion(companyId?: number | null): Promise<number> {
+  try {
+    const pages = await $fetch<any[]>('/api/pages', companyId ? { query: { companyId } } : undefined)
+    const versions = pages.find((p) => p.id === 'global-theme')?.versions ?? []
+    if (versions.length) return Math.max(...versions.map((v: any) => Number(v.version) || 0)) + 1
+  } catch {}
+  return 1
+}
+
 export function useThemeColors() {
   _load()
   return {

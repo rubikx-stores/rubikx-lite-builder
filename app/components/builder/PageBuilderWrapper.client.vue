@@ -11,6 +11,7 @@ import { sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
 import { useBlockRegistry } from '~/composables/editor/useBlockRegistry'
 import { usePageHtmlCache } from '~/composables/usePageHtmlCache'
 import { GOOGLE_FONTS_STYLESHEET_URL } from '~/composables/editor/fontFields'
+import { refreshThemeFromCms } from '~/composables/editor/useThemeColors'
 import { SLIDER_SCRIPT } from '~/composables/useHydrationScript'
 
 // Register all block configs eagerly on builder mount so the editor opens
@@ -149,17 +150,6 @@ async function confirmSave() {
       }))
     }
 
-    // Clean, structured theme-colors record — separate from the CSS baked
-    // into global-header above. Only saved once a theme has actually been
-    // set, so nobody who never opens the color modal gets a stray record.
-    const themeJsonValue = useThemeColors().themeJson()
-    if (themeJsonValue) {
-      saves.push($fetch<any>('/api/proxy/odoo/cms', {
-        method: 'POST',
-        body: { ...globalBody, key: 'global-theme', value: themeJsonValue },
-      }))
-    }
-
     if (saves.length === 0) {
       console.warn('[CMS] Nothing to save — canvas is empty')
       showVersionModal.value = false
@@ -176,7 +166,6 @@ async function confirmSave() {
     if (navbarSections.length > 0)  pageHtmlCache.value['global-header'] = toHtml(navbarSections)
     if (contentSections.length > 0) pageHtmlCache.value[props.pageId]    = toHtml(contentSections)
     if (footerSections.length > 0)  pageHtmlCache.value['global-footer'] = toHtml(footerSections)
-    if (themeJsonValue)              pageHtmlCache.value['global-theme']  = themeJsonValue
 
     showVersionModal.value = false
   } catch (error) {
@@ -266,11 +255,15 @@ onMounted(async () => {
     let headerHtml = pageHtmlCache.value['global-header'] ?? ''
     let contentHtml = pageHtmlCache.value[props.pageId] ?? ''
     let footerHtml = pageHtmlCache.value['global-footer'] ?? ''
-    const themeJsonHtml = pageHtmlCache.value['global-theme'] ?? ''
 
-    // Restore the site-wide theme color state (saved for reference / the CMS
-    // record only — it doesn't apply itself to any block).
-    useThemeColors().seedFromThemeJson(themeJsonHtml)
+    // Restore the site-wide theme color state from the live CMS record (not
+    // the possibly-stale pageHtmlCache/localStorage), so this editor session
+    // never works off outdated colors. Falls back to the cache only if the
+    // live fetch fails (e.g. offline).
+    const seededFromCms = await refreshThemeFromCms(props.companyId)
+    if (!seededFromCms) {
+      useThemeColors().seedFromThemeJson(pageHtmlCache.value['global-theme'] ?? '')
+    }
 
     // Strip navbar and footer from contentHtml to prevent duplication
     // Handles pages saved before the global split existed
