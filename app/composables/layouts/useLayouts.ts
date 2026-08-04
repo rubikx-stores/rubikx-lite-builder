@@ -65,6 +65,10 @@ import {
   ru6SplitHeroFields,
   ru6SplitHeroSvg,
   renderRu6SplitHero,
+  ru7HeroCategoryCollectionDefaults,
+  ru7HeroCategoryCollectionFields,
+  ru7HeroCategoryCollectionSvg,
+  renderRu7HeroCategoryCollection,
   ru1StatsDefaults,
   ru1StatsFields,
   ru1StatsSvg,
@@ -93,6 +97,14 @@ import {
   ru2FooterFields,
   ru2FooterSvg,
   renderRu2Footer,
+  ru3FooterDefaults,
+  ru3FooterFields,
+  ru3FooterSvg,
+  renderRu3Footer,
+  ru4FooterDefaults,
+  ru4FooterFields,
+  ru4FooterSvg,
+  renderRu4Footer,
   ru1ProductDetailDefaults,
   ru1ProductDetailFields,
   ru1ProductDetailSvg,
@@ -125,6 +137,10 @@ import {
   ru1AnnouncementBarFields,
   ru1AnnouncementBarSvg,
   renderRu1AnnouncementBar,
+  ru2ScrollingTickerDefaults,
+  ru2ScrollingTickerFields,
+  ru2ScrollingTickerSvg,
+  renderRu2ScrollingTicker,
 } from './components'
 
 export interface LayoutComponentItem {
@@ -214,6 +230,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       cover_image: ru6SplitHeroSvg,
       html_code: renderRu6SplitHero(ru6SplitHeroDefaults),
     },
+    {
+      title: 'Ru7-Hero-Category-Collection',
+      category: 'Banner',
+      cover_image: ru7HeroCategoryCollectionSvg,
+      html_code: renderRu7HeroCategoryCollection(ru7HeroCategoryCollectionDefaults),
+    },
   ],
   Contact: [
     {
@@ -302,6 +324,18 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       cover_image: ru2FooterSvg,
       html_code: renderRu2Footer(ru2FooterDefaults),
     },
+    {
+      title: 'Ru3-Footer',
+      category: 'Footer',
+      cover_image: ru3FooterSvg,
+      html_code: renderRu3Footer(ru3FooterDefaults),
+    },
+    {
+      title: 'Ru4-Footer',
+      category: 'Footer',
+      cover_image: ru4FooterSvg,
+      html_code: renderRu4Footer(ru4FooterDefaults),
+    },
   ],
   'Product Showcase': [
     {
@@ -361,6 +395,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Announcement Bar',
       cover_image: ru1AnnouncementBarSvg,
       html_code: renderRu1AnnouncementBar(ru1AnnouncementBarDefaults),
+    },
+    {
+      title: 'Ru2-Scrolling Ticker',
+      category: 'Announcement Bar',
+      cover_image: ru2ScrollingTickerSvg,
+      html_code: renderRu2ScrollingTicker(ru2ScrollingTickerDefaults),
     },
   ],
 }
@@ -458,6 +498,12 @@ export function useLayouts() {
     render: renderRu6SplitHero,
   })
 
+  blockRegistry.register('Ru7-Hero-Category-Collection', {
+    defaults: ru7HeroCategoryCollectionDefaults,
+    fields: ru7HeroCategoryCollectionFields,
+    render: renderRu7HeroCategoryCollection,
+  })
+
   blockRegistry.register('Ru1-Footer', {
     defaults: ru1FooterDefaults,
     fields: ru1FooterFields,
@@ -468,6 +514,18 @@ export function useLayouts() {
     defaults: ru2FooterDefaults,
     fields: ru2FooterFields,
     render: renderRu2Footer,
+  })
+
+  blockRegistry.register('Ru3-Footer', {
+    defaults: ru3FooterDefaults,
+    fields: ru3FooterFields,
+    render: renderRu3Footer,
+  })
+
+  blockRegistry.register('Ru4-Footer', {
+    defaults: ru4FooterDefaults,
+    fields: ru4FooterFields,
+    render: renderRu4Footer,
   })
 
   blockRegistry.register('Ru1-Product Detail', {
@@ -546,6 +604,12 @@ export function useLayouts() {
     defaults: ru1AnnouncementBarDefaults,
     fields: ru1AnnouncementBarFields,
     render: renderRu1AnnouncementBar,
+  })
+
+  blockRegistry.register('Ru2-Scrolling Ticker', {
+    defaults: ru2ScrollingTickerDefaults,
+    fields: ru2ScrollingTickerFields,
+    render: renderRu2ScrollingTicker,
   })
 
   return { layoutComponentRegistry }
