@@ -157,7 +157,7 @@ async function deletePage() {
 
 const pageHtmlCache = usePageHtmlCache()
 
-const GLOBAL_KEYS = ['global-header', 'global-footer', 'global-theme', 'global-config']
+const GLOBAL_KEYS = ['global-header', 'global-footer', 'global-theme', 'global-config', 'shop-header', 'shop-footer']
 const displayPages = computed(() => {
   return pages.value.filter(p => {
     if (GLOBAL_KEYS.includes(p.id)) return false
