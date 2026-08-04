@@ -828,6 +828,7 @@ export interface Ru1FormData {
   submitLabel: string
   submitBgColor: string
   submitAlign: string
+  submitToEmail: string
   socials: Array<{ href: string }>
   columnOrder: string[]
   showInfo: boolean
@@ -850,6 +851,7 @@ export const ru1FormDefaults: Ru1FormData = {
   submitLabel: 'Send message',
   submitBgColor: '#4f46e5',
   submitAlign: 'right',
+  submitToEmail: '',
   socials: [],
   columnOrder: ['info', 'form'],
   showInfo: true,
@@ -883,6 +885,7 @@ export const ru1FormFields: FieldConfig[] = [
   { key: 'submitLabel', label: 'Submit Button Text', type: 'text',   placeholder: 'Send message'              },
   { key: 'submitBgColor', label: 'Submit Button Colour', type: 'color'                                        },
   { key: 'submitAlign',   label: 'Submit Button Align',  type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'submitToEmail', label: 'Submit Form To Email', type: 'text', placeholder: 'e.g. sales@yourstore.com' },
   fontField('buttonFont', 'Button Font'),
   {
     key: 'socials', label: 'Social Links', type: 'list',
@@ -976,14 +979,15 @@ export function renderRu1Form(data: Ru1FormData): string {
   }).join('')
 
   const formCol = `<div data-ru1form-formcol="true" style="padding:5rem 2rem 6rem;">
-      <div data-ru1form-inner="true" style="max-width:100%;margin-left:3.5rem;">
+      <form data-ru1form-inner="true" style="max-width:100%;margin-left:3.5rem;">
+        <input type="hidden" name="submit_to_email" value="${data.submitToEmail ?? ''}" />
         <div data-ru1form-fields="true" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem 2rem;">
           ${ru1FieldsHtml}
         </div>
         <div style="margin-top:2rem;display:flex;justify-content:${btnJustify};">
           <button type="submit" style="${btnStyle}">${data.submitLabel}</button>
         </div>
-      </div>
+      </form>
     </div>`
 
   const showInfo = data.showInfo !== false
@@ -1070,6 +1074,7 @@ export interface Ru2FormData {
   submitBgColor: string
   submitTextColor: string
   submitAlign: string
+  submitToEmail: string
   inputBorderColor: string
   labelColor: string
   paddingY: number
@@ -1112,6 +1117,7 @@ export const ru2FormDefaults: Ru2FormData = {
   submitBgColor: '#6366f1',
   submitTextColor: '#ffffff',
   submitAlign: 'right',
+  submitToEmail: '',
   inputBorderColor: '#e5e7eb',
   labelColor: '#374151',
   paddingY: 64,
@@ -1178,6 +1184,7 @@ export const ru2FormFields: FieldConfig[] = [
   { key: 'submitBgColor', label: 'Submit Button Background', type: 'color' },
   { key: 'submitTextColor', label: 'Submit Button Text Colour', type: 'color' },
   { key: 'submitAlign', label: 'Submit Button Align', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'submitToEmail', label: 'Submit Form To Email', type: 'text', placeholder: 'e.g. sales@yourstore.com' },
   fontField('buttonFont', 'Button Font'),
   { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
   { key: 'labelColor', label: 'Label Colour', type: 'color' },
@@ -1253,7 +1260,8 @@ export function renderRu2Form(data: Ru2FormData): string {
       </div>`
   }).join('')
 
-  const formPanel = `<div data-ru2form-panel="true" style="background:${data.formBgColor};padding:${data.paddingY}px ${data.paddingX}px;">
+  const formPanel = `<form data-ru2form-panel="true" style="background:${data.formBgColor};padding:${data.paddingY}px ${data.paddingX}px;">
+    <input type="hidden" name="submit_to_email" value="${data.submitToEmail ?? ''}" />
     <div style="margin-bottom:28px;">
       <h3 style="font-size:22px;font-weight:700;color:#111827;margin:0 0 6px;${fontCss(data.formTitleFont, data.fontFamily)}">${data.formTitle}</h3>
       <p style="font-size:14px;color:#9ca3af;margin:0;${fontCss(data.formSubtitleFont, data.fontFamily)}">${data.formSubtitle}</p>
@@ -1264,7 +1272,7 @@ export function renderRu2Form(data: Ru2FormData): string {
     <div style="display:flex;justify-content:${btnJustify};">
       <button type="submit" style="background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.02em;${fontCss(data.buttonFont, data.fontFamily)}">${data.submitLabel}</button>
     </div>
-  </div>`
+  </form>`
 
   const showInfo = data.showInfo !== false
   const showForm = data.showForm !== false
@@ -1362,6 +1370,7 @@ export interface Ru3FormBannerData {
   submitAlign: string
   submitRadius: number
   buttonFont: string
+  submitToEmail: string
 
   // Fields — user-editable list, so any number of fields can be added/removed/reordered
   fields: Ru3FormBannerFieldItem[]
@@ -1410,6 +1419,7 @@ export const ru3FormBannerDefaults: Ru3FormBannerData = {
   submitAlign: 'center',
   submitRadius: 4,
   buttonFont: '',
+  submitToEmail: '',
 
   fields: [
     { name: 'name', label: 'Your Name', field_type: 'text', is_required: true, default_value: '', values: '' },
@@ -1470,6 +1480,7 @@ export const ru3FormBannerFields: FieldConfig[] = [
   { key: 'submitAlign', label: 'Button Alignment', type: 'select', options: ['left', 'center', 'right'], visibleIf: (d) => d.submitWidthMode === 'auto' },
   { key: 'submitRadius', label: 'Button Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '4' },
   fontField('buttonFont', 'Button Font'),
+  { key: 'submitToEmail', label: 'Submit Form To Email', type: 'text', placeholder: 'e.g. sales@yourstore.com' },
 
   // Placed at the bottom of the panel — banner/layout/style are set up first,
   // then the actual fields are added/edited/reordered last.
@@ -1557,12 +1568,13 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
   ${breadcrumbHtml}
   ${pageTitleHtml}
   <div style="padding:${data.paddingY}px min(${data.paddingX}px,6vw);">
-    <div style="width:100%;max-width:${data.formMaxWidth ?? 640}px;margin:${formMargin};box-sizing:border-box;">
+    <form style="width:100%;max-width:${data.formMaxWidth ?? 640}px;margin:${formMargin};box-sizing:border-box;">
+      <input type="hidden" name="submit_to_email" value="${data.submitToEmail ?? ''}" />
       ${fieldsHtml}
       <div style="${submitWrapperStyle}margin-top:0.5rem;">
         <button type="submit" style="${submitBtnStyle}">${data.submitLabel}</button>
       </div>
-    </div>
+    </form>
   </div>
 </section>`
 }
