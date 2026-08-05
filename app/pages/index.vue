@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useSiteConfig } from '~/composables/useSiteConfig'
+import { splitShopSectionsForPublish } from '~/composables/useGlobalSections'
 
 definePageMeta({ layout: 'dashboard' })
 
@@ -87,24 +88,38 @@ function selectedVersionData(page: Page) {
 async function publishPage(page: Page) {
   publishing.value[page.id] = true
   const vData = selectedVersionData(page)
-  const publishPayload = {
-    key: page.id,
-    value: vData.value,
+  const { mainHtml, shopHeaderHtml, shopFooterHtml } = splitShopSectionsForPublish(vData.value)
+
+  const commonFields = {
     version: vData.version,
-    state: 'published',
+    state: 'published' as const,
     companyId: selectedWebsiteId.value ?? 1,
     company_id: selectedWebsiteId.value ?? 1,
     updatedBy: user.value?.name ?? 'editor',
     updatedOn: new Date().toISOString(),
   }
+  const publishPayload = { key: page.id, value: mainHtml, ...commonFields }
+
   console.log('====================================================')
   console.log(`[PUBLISH PAGE] Publishing page "${page.id}":`, publishPayload)
+  if (shopHeaderHtml) console.log('[PUBLISH PAGE] Also publishing "shop-header":', shopHeaderHtml)
+  if (shopFooterHtml) console.log('[PUBLISH PAGE] Also publishing "shop-footer":', shopFooterHtml)
   console.log('====================================================')
   try {
-    const res = await $fetch('/api/proxy/odoo/cms', {
-      method: 'POST',
-      body: publishPayload,
-    })
+    const posts = [$fetch('/api/proxy/odoo/cms', { method: 'POST', body: publishPayload })]
+    if (shopHeaderHtml) {
+      posts.push($fetch('/api/proxy/odoo/cms', {
+        method: 'POST',
+        body: { ...commonFields, key: 'shop-header', value: shopHeaderHtml },
+      }))
+    }
+    if (shopFooterHtml) {
+      posts.push($fetch('/api/proxy/odoo/cms', {
+        method: 'POST',
+        body: { ...commonFields, key: 'shop-footer', value: shopFooterHtml },
+      }))
+    }
+    const res = await Promise.all(posts)
     console.log('[PUBLISH] response:', res)
     const target = pages.value.find((p) => p.id === page.id)
     if (target) {

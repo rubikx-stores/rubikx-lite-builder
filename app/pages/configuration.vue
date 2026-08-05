@@ -48,7 +48,7 @@ async function loadExistingSettings() {
   loading.value = true
   try {
     const pages = await $fetch<any[]>('/api/pages', { query: { companyId } })
-    
+
     const configPage = pages.find((p: any) => p.id === 'global-config')
     if (configPage && configPage.versions[0]?.value) {
       siteConfig.loadFromJson(configPage.versions[0].value)
