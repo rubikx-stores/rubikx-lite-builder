@@ -918,7 +918,7 @@ onUnmounted(() => {
                 <select class="w-full rounded-lg border border-gray-300 px-3 py-2 pr-8 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors appearance-none cursor-pointer"
                   :value="String(blockData[field.key])"
                   @change="onSelectField(field.key, Number(($event.target as HTMLSelectElement).value) || ($event.target as HTMLSelectElement).value)">
-                  <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt || 'Default' }}</option>
+                  <option v-for="opt in field.options" :key="opt" :value="opt">{{ field.optionLabels?.[opt] ?? (opt || 'Default') }}</option>
                 </select>
                 <svg class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M3 5L7 9L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -984,8 +984,8 @@ onUnmounted(() => {
                   </div>
                 </div>
                 <div class="px-2 py-1.5">
-                  <template v-for="subField in field.listFields" :key="subField.key">
-                    <div class="mb-1">
+                  <template v-for="subField in field.listFields" :key="subField.label">
+                    <div class="mb-1" v-if="!subField.visibleIf || subField.visibleIf(item)">
                       <label class="block text-sm font-medium text-gray-700 mb-0.5">{{ subField.label }}</label>
                       <template v-if="subField.type === 'image'">
                         <div class="flex items-center gap-1 mb-1">
@@ -1035,7 +1035,7 @@ onUnmounted(() => {
                         <select class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs bg-white focus:outline-none focus:border-blue-400"
                           :value="item[subField.key]"
                           @change="updateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLSelectElement).value)">
-                          <option v-for="opt in subField.options" :key="opt" :value="opt">{{ opt }}</option>
+                          <option v-for="opt in subField.options" :key="opt" :value="opt">{{ subField.optionLabels?.[opt] ?? opt }}</option>
                         </select>
                       </template>
 
