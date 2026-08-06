@@ -437,7 +437,6 @@ export interface Ru3MegaHeaderData {
   textColor: string
   paddingY: number
   paddingX: number
-  containerMaxWidth: number
   sticky: boolean
   showBottomBorder: boolean
   bottomBorderColor: string
@@ -475,7 +474,6 @@ export const ru3MegaHeaderDefaults: Ru3MegaHeaderData = {
   textColor: '#1f2937',
   paddingY: 12,
   paddingX: 0,
-  containerMaxWidth: 1280,
   sticky: false,
   showBottomBorder: true,
   bottomBorderColor: '#e5e7eb',
@@ -540,8 +538,6 @@ export const ru3MegaHeaderFields: FieldConfig[] = [
     placeholder: '12'                                                        },
   { key: 'paddingX',        label: 'Horizontal Padding (px)', type: 'number',
     placeholder: '16'                                                        },
-  { key: 'containerMaxWidth', label: 'Content Max Width (px)', type: 'number',
-    placeholder: '1280 — controls the navbar row width'                      },
   { key: 'sticky',          label: 'Sticky Navbar (stays fixed while scrolling)', type: 'toggle' },
   { key: 'showBottomBorder', label: 'Show Bottom Border',     type: 'toggle'  },
   { key: 'bottomBorderColor', label: 'Bottom Border Colour',  type: 'color'   },
@@ -747,7 +743,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
   return `<section data-component-title="Ru3-Mega-Header" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
 <nav style="${navStyle}">
   ${mobileNav}
-  <div data-nav-desktop="true" style="max-width:${data.containerMaxWidth}px;margin:0 auto;width:100%;display:flex;align-items:center;gap:3rem;">
+  <div data-nav-desktop="true" style="width:100%;display:flex;align-items:center;gap:3rem;">
     <div style="display:flex;align-items:center;flex-shrink:0;">${logoEl}</div>
     <nav data-rubikx-component="MainNavRow" data-on-mount="loadNavOverflow" style="display:flex;align-items:center;justify-content:flex-start;gap:2rem;flex:1;min-width:0;">${linksHtml}${overflowHtml}</nav>
     <div style="display:flex;align-items:center;justify-content:flex-end;gap:2.5rem;flex-shrink:0;">${searchEl}${cartEl}${accountEl}</div>
@@ -757,6 +753,309 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
       <div style="position:relative;display:flex;">
         <input type="text" placeholder="Search" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="flex:1;border:1px solid #d1d5db;border-radius:0.375rem 0 0 0.375rem;padding:0.6rem 1rem;font-size:0.875rem;outline:none;" />
         <button type="button" style="background:#111827;color:#fff;border:none;border-radius:0 0.375rem 0.375rem 0;padding:0 1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">${icon('magnifyingGlass', { size: 18, stroke: '#fff' })}</button>
+      </div>
+    </div>
+  </div>
+</nav>
+</section>`
+}
+
+export const ru4NavbarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 40">
+  <rect fill="#374151" x="0" y="0" width="277.5" height="40"/>
+  <rect fill="#ffffff" x="8" y="14" width="10" height="10" rx="5"/>
+  <rect fill="#ffffff" x="22" y="15" width="42" height="8" rx="1"/>
+  <rect fill="#9ca3af" x="100" y="16" width="20" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="128" y="16" width="18" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="154" y="16" width="30" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="200" y="17" width="20" height="5" rx="1"/>
+  <rect fill="#9ca3af" x="224" y="17" width="26" height="5" rx="1"/>
+  <circle fill="none" stroke="#ffffff" stroke-width="1.5" cx="258" cy="19.5" r="5"/>
+  <rect fill="#ffffff" x="266" y="15" width="8" height="9" rx="1"/>
+</svg>`
+
+export interface Ru4NavLink { label: string; url: string; visible?: boolean; newTab?: boolean }
+
+export interface Ru4NavbarData {
+  logoUrl: string
+  logoText: string
+  logoWidth: number
+  brandFontSize: number
+  brandFontWeight: string
+  fontFamily: string
+  brandFont: string
+
+  navLinks: Ru4NavLink[]
+  navLinksAlign: string
+  dynamicCategories: boolean
+  linkColor: string
+  linkFontSize: number
+  linkFontWeight: string
+  linkFont: string
+
+  showSignIn: boolean
+  signInLabel: string
+  signInUrl: string
+  showCreateAccount: boolean
+  createAccountLabel: string
+  createAccountUrl: string
+  authLinksColor: string
+
+  showSearch: boolean
+  searchPlaceholder: string
+  searchBarWidth: number
+  searchColor: string
+
+  showCart: boolean
+  cartUrl: string
+  cartColor: string
+
+  bgColor: string
+  textColor: string
+  paddingY: number
+  paddingX: number
+  sticky: boolean
+  showBottomBorder: boolean
+  bottomBorderColor: string
+}
+
+export const ru4NavbarDefaults: Ru4NavbarData = {
+  logoUrl: '',
+  logoText: 'Your Logo',
+  logoWidth: 140,
+  brandFontSize: 20,
+  brandFontWeight: '700',
+  fontFamily: '',
+  brandFont: '',
+
+  navLinks: [
+    { label: 'Home', url: '/', visible: true },
+    { label: 'Shop', url: '/shop', visible: true },
+    { label: 'Contact Us', url: '/contactus', visible: true },
+  ],
+  navLinksAlign: 'left',
+  dynamicCategories: false,
+  linkColor: '#111827',
+  linkFontSize: 14,
+  linkFontWeight: '500',
+  linkFont: '',
+
+  showSignIn: true,
+  signInLabel: 'Sign In',
+  signInUrl: '/login',
+  showCreateAccount: true,
+  createAccountLabel: 'Create an account',
+  createAccountUrl: '/register',
+  authLinksColor: '#111827',
+
+  showSearch: true,
+  searchPlaceholder: 'Search',
+  searchBarWidth: 1600,
+  searchColor: '#111827',
+
+  showCart: true,
+  cartUrl: '/cart',
+  cartColor: '#111827',
+
+  bgColor: '#ffffff',
+  textColor: '#111827',
+  paddingY: 14,
+  paddingX: 16,
+  sticky: false,
+  showBottomBorder: false,
+  bottomBorderColor: '#e5e7eb',
+}
+
+export const ru4NavbarFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_branding', label: 'Branding', type: 'header' },
+  { key: 'logoUrl', label: 'Logo Image', type: 'image', noAspectRatio: true },
+  { key: 'logoText', label: 'Logo Alt Text / Brand Name', type: 'text',
+    placeholder: 'Used as the logo image\'s alt text, and shown instead when no logo image is set' },
+  { key: 'logoWidth', label: 'Logo Width (px)', type: 'number', step: 4, placeholder: '140' },
+  { key: 'brandFontSize', label: 'Brand Font Size (px)', type: 'number', step: 1, placeholder: '20' },
+  { key: 'brandFontWeight', label: 'Brand Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  fontField('brandFont', 'Brand Font'),
+
+  { key: '_h_navigation', label: 'Navigation', type: 'header' },
+  {
+    key: 'navLinks', label: 'Nav Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'url', label: 'URL', type: 'url' },
+      { key: 'visible', label: 'Visible', type: 'toggle' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
+    ],
+  },
+  { key: 'navLinksAlign', label: 'Links Position', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'dynamicCategories', label: 'Dynamic Categories', type: 'toggle' },
+  { key: 'linkColor', label: 'Link Colour', type: 'color' },
+  { key: 'linkFontSize', label: 'Link Font Size (px)', type: 'number', step: 1, placeholder: '14' },
+  { key: 'linkFontWeight', label: 'Link Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  fontField('linkFont', 'Link Font'),
+
+  { key: '_h_auth', label: 'Sign In / Account', type: 'header' },
+  { key: 'showSignIn', label: 'Show Sign In', type: 'toggle' },
+  { key: 'signInLabel', label: 'Sign In Label', type: 'text' },
+  { key: 'signInUrl', label: 'Sign In URL', type: 'url' },
+  { key: 'showCreateAccount', label: 'Show Create an Account', type: 'toggle' },
+  { key: 'createAccountLabel', label: 'Create Account Label', type: 'text' },
+  { key: 'createAccountUrl', label: 'Create Account URL', type: 'url' },
+  { key: 'authLinksColor', label: 'Sign In / Create Account Colour', type: 'color' },
+
+  { key: '_h_search', label: 'Search', type: 'header' },
+  { key: 'showSearch', label: 'Show Search Icon', type: 'toggle' },
+  { key: 'searchPlaceholder', label: 'Search Placeholder', type: 'text' },
+  { key: 'searchBarWidth', label: 'Search Bar Width (px)', type: 'number', step: 10, placeholder: '1280' },
+  { key: 'searchColor', label: 'Search Icon / Text Colour', type: 'color' },
+
+  { key: '_h_cart', label: 'Cart', type: 'header' },
+  { key: 'showCart', label: 'Show Cart Icon', type: 'toggle' },
+  { key: 'cartUrl', label: 'Cart URL', type: 'url' },
+  { key: 'cartColor', label: 'Cart Icon Colour', type: 'color' },
+
+  { key: '_h_style', label: 'Style', type: 'header' },
+  { key: 'bgColor', label: 'Background Colour', type: 'color' },
+  { key: 'textColor', label: 'Text / Icon Colour', type: 'color' },
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', step: 4, placeholder: '14' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', step: 4, placeholder: '24' },
+  { key: 'showBottomBorder', label: 'Show Bottom Border', type: 'toggle' },
+  { key: 'bottomBorderColor', label: 'Bottom Border Colour', type: 'color' },
+]
+
+export function renderRu4Navbar(data: Ru4NavbarData): string {
+  const navStyle = [
+    `width:100%`,
+    `box-sizing:border-box`,
+    `background:${data.bgColor}`,
+    `color:${data.textColor}`,
+    `padding:${data.paddingY}px ${data.paddingX}px`,
+    data.showBottomBorder ? `border-bottom:1px solid ${data.bottomBorderColor}` : '',
+  ].filter(Boolean).join(';')
+
+  const logoInner = data.logoUrl
+    ? `<img src="${data.logoUrl}" alt="${data.logoText}" style="width:${data.logoWidth}px;height:auto;display:block;" />`
+    : `<span data-field-key="logoText" style="font-size:${data.brandFontSize}px;font-weight:${data.brandFontWeight};color:inherit;${fontCss(data.brandFont, data.fontFamily)}">${data.logoText}</span>`
+  const logoEl = `<a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;">${logoInner}</a>`
+
+  const linkStyle = `color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}`
+
+  const visibleNavLinks = data.navLinks.filter(l => l.visible !== false)
+  const staticLinksHtml = visibleNavLinks
+    .map(l => `<a href="${l.url}" style="${linkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`)
+    .join('')
+  const dynamicCategoriesHtml = data.dynamicCategories
+    ? `<div
+        data-rubikx-component='CategoryNav'
+        data-on-mount='loadCategories'
+        data-max-items='20'
+        data-link-color='${data.linkColor}'
+        data-font-size='${data.linkFontSize}'
+        data-font-weight='${data.linkFontWeight}'
+        style='position:relative;display:inline-block;' data-cat-nav='true'
+      >
+        <a style='${linkStyle}cursor:pointer;'>Categories ▾</a>
+        <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Load Categories</span>
+        </div>
+      </div>`
+    : ''
+  const navLinksJustifyMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
+  const linksEl = `<nav style="display:flex;align-items:center;justify-content:${navLinksJustifyMap[data.navLinksAlign] ?? 'flex-start'};gap:1.75rem;">${staticLinksHtml}${dynamicCategoriesHtml}</nav>`
+
+  const authLinksArr = [
+    data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${data.authLinksColor};font-size:0.875rem;font-weight:500;text-decoration:none;white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}">${data.signInLabel}</a>` : '',
+    data.showCreateAccount ? `<a href="${data.createAccountUrl}" data-auth-signin-btn="true" style="color:${data.authLinksColor};font-size:0.875rem;font-weight:500;text-decoration:none;white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}">${data.createAccountLabel}</a>` : '',
+  ].filter(Boolean)
+  const authLinksEl = authLinksArr.length
+    ? `<div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0;">${authLinksArr.join('<span style="opacity:0.5;">|</span>')}</div>`
+    : ''
+  const authStateEl = (data.showSignIn || data.showCreateAccount)
+    ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" style="position:relative;display:none;align-items:center;flex-shrink:0;"></span>`
+    : ''
+
+  const searchToggleEl = data.showSearch
+    ? `<button type="button" onclick="(function(btn){var sec=btn.closest('section');var bar=sec.querySelector('[data-ru4-search-bar]');var open=bar.style.display==='block';bar.style.display=open?'none':'block';var s=btn.querySelector('[data-icon-search]');var x=btn.querySelector('[data-icon-close]');if(s)s.style.display=open?'inline-flex':'none';if(x)x.style.display=open?'none':'inline-flex';if(!open){var inp=bar.querySelector('input');if(inp)setTimeout(function(){inp.focus()},0);}})(this)" style="background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;color:${data.searchColor};flex-shrink:0;">
+        <span data-icon-search style="display:inline-flex;">${icon('magnifyingGlass', { size: 20 })}</span>
+        <span data-icon-close style="display:none;">${icon('xMark', { size: 20 })}</span>
+      </button>`
+    : ''
+
+  const cartEl = data.showCart
+    ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.cartColor}" style="position:relative;display:inline-flex;flex-shrink:0;"><a href="${data.cartUrl}" style="color:${data.cartColor};display:inline-flex;">${icon('shoppingCart', { size: 20 })}</a></span>`
+    : ''
+
+  const rightClusterEl = `<div style="display:flex;align-items:center;justify-content:flex-end;gap:1.5rem;flex-shrink:0;">${authLinksEl}${authStateEl}${searchToggleEl}${cartEl}</div>`
+
+  const mobileDrawerLinks = visibleNavLinks.map(l =>
+    `<a href="${l.url}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.15);"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`
+  ).join('')
+
+  const mobileSearchEl = data.showSearch
+    ? `<div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:0.5rem;padding:0.5rem 0.75rem;gap:0.5rem;background:#fff;margin-bottom:1rem;">
+        ${icon('magnifyingGlass', { size: 18, stroke: '#9ca3af' })}
+        <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="border:none;outline:none;background:#fff;font-size:0.875rem;width:100%;color:#111827;padding:0.25rem 0;" />
+      </div>`
+    : ''
+
+  const mobileNav = `
+<style>
+  [data-nav-mobile] { display: none; }
+  [data-nav-desktop] { display: flex; }
+  @media (max-width: 1024px) {
+    [data-nav-mobile] { display: flex !important; }
+    [data-nav-desktop] { display: none !important; }
+  }
+</style>
+<!-- Mobile header -->
+<div data-nav-mobile="true" style="display:none;align-items:center;justify-content:space-between;padding:1rem ${data.paddingX}px;${data.showBottomBorder ? `border-bottom:1px solid ${data.bottomBorderColor};` : ''}">
+  ${logoEl}
+  <div style="display:flex;align-items:center;gap:1rem;">
+    ${data.showCart ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart', { size: 22 })}</a></span>` : ''}
+    <button onclick="(function(btn){var s=btn.closest('section');var d=s&&s.querySelector('[data-mobile-drawer]');var o=s&&s.querySelector('[data-mobile-overlay]');if(d){d.style.transform='translateX(0)';}if(o){o.style.display='block';}document.body.style.overflow='hidden';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.textColor}" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+</div>
+<!-- Drawer -->
+<div data-mobile-drawer="true" style="position:fixed;top:0;left:0;width:320px;max-width:85vw;height:100vh;background:${data.bgColor};color:${data.textColor};z-index:99999;transform:translateX(-100%);transition:transform 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+    ${logoEl}
+    <button onclick="(function(btn){var d=document.querySelector('[data-mobile-drawer]');var o=document.querySelector('[data-mobile-overlay]');if(d){d.style.transform='translateX(-100%)';}if(o){o.style.display='none';}document.body.style.overflow='';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0.25rem;display:flex;align-items:center;">
+      ${icon('xMark', { size: 24, stroke: data.textColor })}
+    </button>
+  </div>
+  ${mobileSearchEl}
+  <div style="display:flex;flex-direction:column;">
+    ${mobileDrawerLinks}
+    ${data.dynamicCategories ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.15);cursor:pointer;">Categories</a>` : ''}
+  </div>
+  <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
+    ${data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;">${data.signInLabel}</a>` : ''}
+    ${data.showCreateAccount ? `<a href="${data.createAccountUrl}" data-auth-signin-btn="true" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;">${data.createAccountLabel}</a>` : ''}
+  </div>
+</div>
+<!-- Overlay -->
+<div data-mobile-overlay="true" onclick="(function(el){var d=document.querySelector('[data-mobile-drawer]');if(d){d.style.transform='translateX(-100%)';}el.style.display='none';document.body.style.overflow='';})(this);" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;"></div>`
+
+  const sectionStyle = `width:100%;display:block;${fontCss(undefined, data.fontFamily)}${data.sticky ? 'position:sticky;top:0;z-index:9999;' : ''}`
+
+  return `<section data-component-title="Ru4-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
+<nav style="${navStyle}">
+  ${mobileNav}
+  <div data-nav-desktop="true" style="width:100%;display:flex;align-items:center;gap:2rem;">
+    <div style="display:flex;align-items:center;flex-shrink:0;">${logoEl}</div>
+    <div style="flex:1;min-width:0;">${linksEl}</div>
+    ${rightClusterEl}
+  </div>
+  <div data-ru4-search-bar style="display:none;background:${data.bgColor};">
+    <div style="max-width:${data.searchBarWidth}px;margin:0 auto;width:100%;padding:0.875rem ${data.paddingX}px;">
+      <div style="display:flex;align-items:center;background:#ffffff;border-radius:0.5rem;padding:0.625rem 1rem;gap:0.625rem;">
+        ${icon('magnifyingGlass', { size: 18, stroke: '#6b7280' })}
+        <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:#111827;" />
       </div>
     </div>
   </div>
@@ -2319,7 +2618,7 @@ export function renderRu4Footer(data: Ru4FooterData): string {
   @media(max-width:768px){[data-ru4-footer-row]{flex-direction:column;align-items:center!important;text-align:center;gap:16px!important;}}
 </style>
 <footer style="box-sizing:border-box;background:${data.bgColor};min-height:${data.minHeight}px;padding:${data.paddingY}px ${data.paddingX}px;display:flex;align-items:center;">
-  <div data-ru4-footer-row="true" style="width:100%;max-width:1280px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:${verticalAlign};justify-content:${data.rowAlign};gap:24px;">
+  <div data-ru4-footer-row="true" style="width:100%;display:flex;flex-wrap:wrap;align-items:${verticalAlign};justify-content:${data.rowAlign};gap:24px;">
     ${logoHtml}
     ${linksWrap}
     ${rightHtml}
@@ -3108,6 +3407,134 @@ export function renderBanner(data: BannerData): string {
       <p style="font-size:min(1.125rem,4.5vw);color:${data.textColor};opacity:0.85;margin:1rem 0 0;max-width:42rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>
       ${ctaHtml}
     </div>
+  </div>
+</section>`
+}
+
+// ─── Ru8-Featured-Brands ──────────────────────────────────────────────────────
+
+export const ru8FeaturedBrandsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
+  <rect fill="#1f2937" x="0" y="0" width="277.5" height="100"/>
+  <rect fill="#9ca3af" x="89" y="14" width="100" height="8" rx="1"/>
+  <rect fill="#6b7280" x="99" y="27" width="80" height="4" rx="1"/>
+  <rect fill="#4b5563" x="119" y="38" width="40" height="10" rx="3"/>
+  <rect fill="#6b7280" x="20" y="66" width="40" height="10" rx="1"/>
+  <rect fill="#6b7280" x="72" y="66" width="40" height="10" rx="1"/>
+  <rect fill="#6b7280" x="124" y="66" width="40" height="10" rx="1"/>
+  <rect fill="#6b7280" x="176" y="66" width="40" height="10" rx="1"/>
+  <rect fill="#6b7280" x="228" y="66" width="30" height="10" rx="1"/>
+</svg>`
+
+export interface Ru8BrandItem {
+  imageUrl: string
+  url: string
+}
+
+export interface Ru8FeaturedBrandsData {
+  bgColor: string
+  paddingY: number
+  title: string
+  titleColor: string
+  subtitle: string
+  subtitleColor: string
+  showCta: boolean
+  ctaLabel: string
+  ctaHref: string
+  ctaBgColor: string
+  ctaTextColor: string
+  logoHeight: number
+  logoGap: number
+  brands: Ru8BrandItem[]
+  fontFamily: string
+  titleFont: string
+  subtitleFont: string
+  buttonFont: string
+}
+
+export const ru8FeaturedBrandsDefaults: Ru8FeaturedBrandsData = {
+  bgColor: '#1f9d55',
+  paddingY: 64,
+  title: 'Your Favorite Brands',
+  titleColor: '#ffffff',
+  subtitle: 'Shop the brands you already know and trust—now customized to work for you.',
+  subtitleColor: '#ffffff',
+  showCta: true,
+  ctaLabel: 'Shop By Brand',
+  ctaHref: '/shop',
+  ctaBgColor: '#166534',
+  ctaTextColor: '#ffffff',
+  logoHeight: 40,
+  logoGap: 48,
+  brands: [],
+  fontFamily: '',
+  titleFont: '',
+  subtitleFont: '',
+  buttonFont: '',
+}
+
+export const ru8FeaturedBrandsFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_section', label: 'Section', type: 'header' },
+  { key: 'bgColor',  label: 'Background Colour', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '64' },
+
+  { key: '_h_title', label: 'Title', type: 'header' },
+  { key: 'title',      label: 'Title',        type: 'text', placeholder: 'e.g. Your Favorite Brands' },
+  { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  fontField('titleFont', 'Title Font'),
+
+  { key: '_h_subtitle', label: 'Subtitle', type: 'header' },
+  { key: 'subtitle',      label: 'Subtitle',        type: 'text', placeholder: 'Short supporting line…' },
+  { key: 'subtitleColor', label: 'Subtitle Colour', type: 'color' },
+  fontField('subtitleFont', 'Subtitle Font'),
+
+  { key: '_h_cta', label: 'CTA Button', type: 'header' },
+  { key: 'showCta',      label: 'Show Button',      type: 'toggle' },
+  { key: 'ctaLabel',     label: 'Button Text',      type: 'text', placeholder: 'e.g. Shop By Brand' },
+  { key: 'ctaHref',      label: 'Button URL',       type: 'url',  placeholder: '/shop' },
+  { key: 'ctaBgColor',   label: 'Button Background',  type: 'color' },
+  { key: 'ctaTextColor', label: 'Button Text Colour', type: 'color' },
+  fontField('buttonFont', 'Button Font'),
+
+  { key: '_h_brands', label: 'Brands', type: 'header' },
+  { key: 'logoHeight', label: 'Logo Height (px)', type: 'number', placeholder: '40' },
+  { key: 'logoGap',    label: 'Logo Gap (px)',    type: 'number', placeholder: '48' },
+  {
+    key: 'brands', label: 'Brand Logos', type: 'list',
+    listFields: [
+      { key: 'imageUrl', label: 'Logo Image',       type: 'image', noAspectRatio: true },
+      { key: 'url',      label: 'Link URL (optional)', type: 'url', placeholder: 'https://...' },
+    ],
+  },
+]
+
+export function renderRu8FeaturedBrands(data: Ru8FeaturedBrandsData): string {
+  const ctaHtml = data.showCta !== false
+    ? `<a href="${data.ctaHref}" style="display:inline-block;margin-top:2rem;padding:0.75rem 2rem;background:${data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:999px;font-size:1rem;font-weight:600;${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaLabel}</a>`
+    : ''
+
+  const brands = data.brands ?? []
+  const logosHtml = brands.length
+    ? `<div style="display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:${data.logoGap}px;margin-top:3rem;">
+      ${brands.map((b) => {
+        const src = productImageSrc(b.imageUrl)
+        if (!src) return ''
+        const img = `<img src="${src}" alt="" style="max-height:${data.logoHeight}px;width:auto;object-fit:contain;display:block;" />`
+        return b.url
+          ? `<a href="${b.url}" style="display:inline-flex;align-items:center;">${img}</a>`
+          : img
+      }).join('')}
+    </div>`
+    : ''
+
+  return `<section data-component-title="Ru8-Featured-Brands" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px 1rem;${fontCss(undefined, data.fontFamily)}">
+  <div style="max-width:80rem;margin:0 auto;width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;">
+    <h2 data-field-key="title" style="font-size:min(2.5rem,8vw);font-weight:700;color:${data.titleColor};margin:0;line-height:1.2;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+    <p data-field-key="subtitle" style="font-size:min(1.125rem,4.5vw);color:${data.subtitleColor};margin:1rem 0 0;max-width:42rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>
+    ${ctaHtml}
+    ${logosHtml}
   </div>
 </section>`
 }
@@ -5479,7 +5906,7 @@ export function renderRu7HeroCategoryCollection(data: Ru7HeroCategoryCollectionD
     : ''
 
   const headerHtml = (titleHtml || ctaHtml)
-    ? `<div style="text-align:${data.titleAlign};margin-bottom:${data.cardGap * 2}px;">${titleHtml}${ctaHtml ? `<div style="margin-top:4px;">${ctaHtml}</div>` : ''}</div>`
+    ? `<div style="text-align:${data.titleAlign};">${titleHtml}${ctaHtml ? `<div style="margin-top:4px;">${ctaHtml}</div>` : ''}</div>`
     : ''
 
   const overlayOpacity = Math.min(100, Math.max(0, data.overlayOpacity ?? 0)) / 100
@@ -5540,15 +5967,40 @@ export function renderRu7HeroCategoryCollection(data: Ru7HeroCategoryCollectionD
   }
 
   const bgImgSrc = productImageSrc(data.bgImageUrl)
-  const sectionBgStyle = bgImgSrc
+  const heroBgStyle = bgImgSrc
     ? `background:url('${bgImgSrc}') center/cover no-repeat;background-color:${data.bgColor};`
     : `background:${data.bgColor};`
 
-  return `<section data-component-title="Ru7-Hero-Category-Collection" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionBgStyle}padding:${data.paddingY}px min(${data.paddingX}px,6vw);${fontCss(undefined, data.fontFamily)}">
+  // Cards overlap up onto the bottom of the hero band by 30% of their own
+  // height, matching the reference design. Computed in px off the grid's
+  // fixed max-width:90rem (1440px) container, then added as EXTRA bottom
+  // padding on the hero band (on top of the normal paddingY) — so the
+  // negative margin-top on the grid always eats exactly that reserved
+  // empty space and never the title/button content above it.
+  let overlapPx = 0
+  if (headerHtml) {
+    const containerPx = 1440
+    const cardWidthPx = containerPx / columns
+    const cardHeightPx = data.cardHeight
+      ? data.cardHeight
+      : cardWidthPx * (() => {
+          const [rw, rh] = String(data.cardAspectRatio ?? '1 / 1').split('/').map((n) => parseFloat(n.trim()) || 1)
+          return rh / rw
+        })()
+    overlapPx = Math.round(cardHeightPx * 0.3)
+  }
+
+  const heroHtml = headerHtml
+    ? `<div style="${heroBgStyle}padding:${data.paddingY}px min(${data.paddingX}px,6vw) ${data.paddingY + overlapPx}px;">
+      <div style="max-width:90rem;margin:0 auto;">${headerHtml}</div>
+    </div>`
+    : ''
+
+  return `<section data-component-title="Ru7-Hero-Category-Collection" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};${fontCss(undefined, data.fontFamily)}">
   <style>${styleRules.join('')}</style>
-  <div style="max-width:80rem;margin:0 auto;">
-    ${headerHtml}
-    <div data-ru7hcc-grid="true" style="display:grid;grid-template-columns:repeat(${columns},1fr);gap:${data.cardGap}px;">
+  ${heroHtml}
+  <div style="max-width:90rem;margin:0 auto;padding:0 min(${data.paddingX}px,6vw) ${data.paddingY}px;">
+    <div data-ru7hcc-grid="true" style="display:grid;grid-template-columns:repeat(${columns},1fr);gap:${data.cardGap}px;${overlapPx ? `margin-top:-${overlapPx}px;` : ''}">
       ${cards}
     </div>
   </div>
@@ -8099,10 +8551,25 @@ export interface ShowMultipleProductsData extends ProductCardStyleData {
   bgColor: string
   paddingY: number
   paddingX: number
+  contentMaxWidth: number
   fontFamily: string
   sectionTitleFont: string
   productNameFont: string
   priceFont: string
+  cardAspectRatio: string
+  contentAlign: string
+  defaultBorderColor: string
+  borderWidth: number
+  hoverBorderColor: string
+  hoverBorderRadius: number
+  showViewProduct: boolean
+  viewProductLabel: string
+  viewProductBg: string
+  viewProductTextColor: string
+  hoverOverlayColor: string
+  hoverOverlayOpacity: number
+  imageHoverZoom: boolean
+  imageHoverZoomAmount: number
 }
 
 export const showMultipleProductsDefaults: ShowMultipleProductsData = {
@@ -8134,26 +8601,82 @@ export const showMultipleProductsDefaults: ShowMultipleProductsData = {
       buttonUrl: '#',
       colors: '',
     },
+    {
+      imageUrl: '',
+      name: 'Layouts and visual.',
+      price: '$0.00',
+      oldPrice: '',
+      buttonLabel: 'Add to Cart',
+      buttonUrl: '#',
+      colors: '',
+    },
   ],
-  columns: 3,
+  columns: 5,
   bgColor: '#ffffff',
   paddingY: 64,
   paddingX: 16,
+  contentMaxWidth: 1440,
   fontFamily: '',
   sectionTitleFont: '',
   productNameFont: '',
   priceFont: '',
+  cardAspectRatio: '4 / 3',
+  contentAlign: 'left',
+  defaultBorderColor: '#e5e7eb',
+  borderWidth: 1,
+  hoverBorderColor: '#1e3a8a',
+  hoverBorderRadius: 8,
+  showViewProduct: true,
+  viewProductLabel: 'View Product',
+  viewProductBg: '#1e3a8a',
+  viewProductTextColor: '#ffffff',
+  hoverOverlayColor: '#9ca3af',
+  hoverOverlayOpacity: 35,
+  imageHoverZoom: true,
+  imageHoverZoomAmount: 6,
   ...productCardStyleDefaults,
+  cardPadding: 16,
+  showButton: true,
+  buttonBgColor: '#1e3a8a',
+  buttonTextColor: '#ffffff',
 }
 
+// cardLayout's default/inline/centered options and the shared "Add to Cart"
+// -style rectangular button don't apply to this block's card — it has its
+// own left/center/right content-align control and a circular arrow button
+// instead — so both are dropped from the shared field set, and the
+// remaining button fields are relabeled to match what they now control.
 export const showMultipleProductsFields: FieldConfig[] = [
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'bgColor', label: 'Background Colour', type: 'color' },
-  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '64' },
-  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '16' },
-  { key: 'columns', label: 'Columns', type: 'select', options: ['1', '2', '3', '4'] },
+  { key: 'paddingY', label: 'Bottom Padding (px)', type: 'number', placeholder: '64' },
+  { key: 'contentMaxWidth', label: 'Content Max Width (px)', type: 'number', step: 10, placeholder: '1440' },
+  { key: 'columns', label: 'Columns', type: 'select', options: ['1', '2', '3', '4', '5', '6'] },
 
-  ...productCardStyleFields,
+  ...productCardStyleFields
+    .filter(f => f.key !== 'cardLayout' && f.key !== 'cardBorderRadius')
+    .map(f => {
+      if (f.key === 'showButton') return { ...f, label: 'Show Arrow Button' }
+      if (f.key === 'buttonBgColor') return { ...f, label: 'Arrow Button Background' }
+      if (f.key === 'buttonTextColor') return { ...f, label: 'Arrow Icon Colour' }
+      return f
+    }),
+
+  { key: '_h_hover', label: 'Card & Hover', type: 'header' },
+  { key: 'cardAspectRatio', label: 'Image Aspect Ratio', type: 'select', options: ['1 / 1', '4 / 3', '4 / 5', '3 / 4', '16 / 9'] },
+  { key: 'contentAlign', label: 'Name & Swatches Alignment', type: 'align' },
+  { key: 'defaultBorderColor', label: 'Default Border Colour', type: 'color' },
+  { key: 'borderWidth', label: 'Border Thickness (px)', type: 'number', step: 0.5, placeholder: '1' },
+  { key: 'hoverBorderColor', label: 'Hover Border Colour', type: 'color' },
+  { key: 'hoverBorderRadius', label: 'Hover Border Radius (px)', type: 'number', placeholder: '8' },
+  { key: 'imageHoverZoom', label: 'Zoom Image on Hover', type: 'toggle' },
+  { key: 'imageHoverZoomAmount', label: 'Zoom Amount (%)', type: 'number', placeholder: '6' },
+  { key: 'showViewProduct', label: 'Show "View Product" on Hover', type: 'toggle' },
+  { key: 'viewProductLabel', label: 'View Product Text', type: 'text', placeholder: 'View Product' },
+  { key: 'viewProductBg', label: 'View Product Background', type: 'color' },
+  { key: 'viewProductTextColor', label: 'View Product Text Colour', type: 'color' },
+  { key: 'hoverOverlayColor', label: 'Hover Overlay Colour', type: 'color' },
+  { key: 'hoverOverlayOpacity', label: 'Hover Overlay Opacity (0-100)', type: 'number', placeholder: '18' },
 
   { key: '_h_font', label: 'Fonts', type: 'header' },
   fontField('fontFamily', 'Font Family'),
@@ -8177,39 +8700,113 @@ export const showMultipleProductsFields: FieldConfig[] = [
 ]
 
 export function renderShowMultipleProducts(data: ShowMultipleProductsData): string {
-  const cols = Math.min(Math.max(data.columns ?? 3, 1), 4)
+  const cols = Math.min(Math.max(data.columns ?? 4, 1), 6)
   const products = (data.products ?? []).slice(0, cols)
 
   if (!products.length) {
-    return `<section data-component-title="Show Multiple Products" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
-  <div style="max-width:80rem;margin:0 auto;">
+    return `<section data-component-title="Show Multiple Products" style="background:${data.bgColor};padding:0 0 ${data.paddingY}px;${fontCss(undefined, data.fontFamily)}">
+  <div style="max-width:${data.contentMaxWidth ?? 1440}px;margin:0 auto;">
     <p style="color:#999;text-align:center;">No products added</p>
   </div>
 </section>`
   }
 
   const wrapperStyle = productCardWrapperStyle(data)
+  const textAlign = data.contentAlign || 'center'
+  const rowJustify = textAlign === 'center' ? 'center' : textAlign === 'right' ? 'flex-end' : 'flex-start'
+  const fontSize = data.cardFontSize ?? 14
 
   const productsHtml = products.map(product => {
     const imageSrc = productImageSrc(product.imageUrl)
-    const body = renderProductCardBody(
-      product, data,
-      fontCss(data.productNameFont, data.fontFamily),
-      fontCss(data.priceFont, data.fontFamily),
-    )
-    return `<div style="display:flex;flex-direction:column;flex:1;${wrapperStyle}">
-      <img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:${data.cardBorderRadius}px;display:block;margin-bottom:0.75rem;background:${data.imageBgColor || '#ffffff'};" />
-      ${body}
+
+    const cs = Array.isArray(product.colors) ? '' : String(product.colors ?? '').trim()
+    const allColors = cs ? cs.split(',').map((c: string) => c.trim()).filter(Boolean) : []
+    const shownColors = allColors.slice(0, 6)
+    const extraColors = allColors.length - 6
+    // The divider spans the card's full width edge-to-edge (breaking out of
+    // cardPadding via matching negative margins), while the swatches inside
+    // keep the same inset as the rest of the card content via matching padding.
+    const cardPad = data.cardPadding ?? 16
+    const colorsHtml = allColors.length
+      ? `<div style="margin:2px -${cardPad}px 0;padding:8px ${cardPad}px 0;border-top:1px solid #eef0f2;">
+        <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;justify-content:${rowJustify};">${shownColors.map((c: string) => `<span title="${c}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,0.15);flex-shrink:0"></span>`).join('')}${extraColors > 0 ? `<span style="font-size:10px;color:#6b7280;line-height:14px;flex-shrink:0">+${extraColors}</span>` : ''}</div>
+      </div>`
+      : ''
+
+    // Reserve a fixed 2-line height regardless of the name's actual line
+    // count, so price/swatches sit at the same row height across every card —
+    // a 1-line name shouldn't leave its card shorter than its neighbors.
+    const nameLineHeight = 1.3
+    const nameMinHeight = Math.round(fontSize * nameLineHeight * 2)
+    const nameHtml = `<p style="font-size:${fontSize}px;line-height:${nameLineHeight};font-weight:500;margin:0;min-height:${nameMinHeight}px;text-align:${textAlign};color:${data.cardTextColor};display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all;overflow-wrap:anywhere;${fontCss(data.productNameFont, data.fontFamily)}">${product.name}</p>`
+
+    const arrowBtnHtml = data.showButton !== false
+      ? `<a data-smp-arrow href="${product.buttonUrl}" style="width:32px;height:32px;border-radius:50%;background:${data.buttonBgColor};display:flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0;opacity:0;transition:opacity 300ms cubic-bezier(0.4,0,0.2,1);"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="${data.buttonTextColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`
+      : ''
+    const priceRow = `<div style="display:flex;align-items:center;gap:0.5rem;">
+      <p style="flex:1;min-width:0;font-size:${fontSize}px;font-weight:600;margin:0;text-align:${textAlign};color:${data.cardTextColor};${fontCss(data.priceFont, data.fontFamily)}">${product.price}</p>
+      ${arrowBtnHtml}
+    </div>`
+
+    // Light grey band across the bottom portion of the image only (matching
+    // the reference) — the top of the image stays untouched, no dark tint.
+    const overlayOpacity = Math.min(100, Math.max(0, data.hoverOverlayOpacity ?? 18)) / 100
+    const overlayColorStop = hexToRgba(data.hoverOverlayColor || '#9ca3af', overlayOpacity)
+    const overlayColorTransparent = hexToRgba(data.hoverOverlayColor || '#9ca3af', 0)
+    const viewProductOverlay = data.showViewProduct !== false
+      ? `<div data-smp-overlay style="position:absolute;inset:0;background:linear-gradient(to bottom, ${overlayColorTransparent} 45%, ${overlayColorStop} 100%);opacity:0;transition:opacity 300ms cubic-bezier(0.4,0,0.2,1);pointer-events:none;"></div>
+      <div data-smp-viewbtn style="position:absolute;left:0;right:0;bottom:14px;display:flex;justify-content:center;opacity:0;transition:opacity 300ms cubic-bezier(0.4,0,0.2,1);">
+        <a href="${product.buttonUrl}" style="pointer-events:auto;display:inline-block;padding:0.55rem 1.5rem;background:${data.viewProductBg};color:${data.viewProductTextColor};text-decoration:none;border-radius:999px;font-size:0.8125rem;font-weight:600;">${data.viewProductLabel || 'View Product'}</a>
+      </div>`
+      : ''
+
+    const imageHtml = imageSrc
+      ? `<img data-smp-image src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:${data.cardAspectRatio || '4 / 3'};object-fit:contain;display:block;background:${data.imageBgColor || '#ffffff'};transition:transform 300ms cubic-bezier(0.4,0,0.2,1);" />`
+      : `<div data-smp-image style="width:100%;aspect-ratio:${data.cardAspectRatio || '4 / 3'};display:flex;align-items:center;justify-content:center;background:${data.imageBgColor || '#f3f4f6'};transition:transform 300ms cubic-bezier(0.4,0,0.2,1);">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>`
+
+    // Border is a box-shadow "ring" (not a real border) so its width can change
+    // on hover without shifting layout — a light grey ring at rest, replaced by
+    // a thicker accent-colored ring + elevation shadow on hover (see the
+    // [data-smp-card]:hover rule below).
+    const baseShadow = CARD_SHADOW_PRESETS[data.cardShadow] ?? CARD_SHADOW_PRESETS.none
+    const baseBorderWidth = data.borderWidth ?? 1
+    const baseBoxShadow = baseShadow === 'none'
+      ? `0 0 0 ${baseBorderWidth}px ${data.defaultBorderColor || '#e5e7eb'}`
+      : `0 0 0 ${baseBorderWidth}px ${data.defaultBorderColor || '#e5e7eb'}, ${baseShadow}`
+
+    return `<div data-smp-card style="display:flex;flex-direction:column;flex:1;position:relative;cursor:pointer;transition:box-shadow 300ms cubic-bezier(0.4,0,0.2,1),transform 300ms cubic-bezier(0.4,0,0.2,1);${wrapperStyle}box-shadow:${baseBoxShadow};border-radius:${data.hoverBorderRadius ?? data.cardBorderRadius}px;">
+      <div style="position:relative;overflow:hidden;border-radius:${data.hoverBorderRadius ?? data.cardBorderRadius}px ${data.hoverBorderRadius ?? data.cardBorderRadius}px 0 0;margin:0 -${cardPad}px;">
+        <div style="padding:0 ${cardPad}px;">
+          ${imageHtml}
+        </div>
+        ${viewProductOverlay}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0px;margin-top:0.625rem;">
+        ${nameHtml}
+        ${priceRow}
+        ${colorsHtml}
+      </div>
     </div>`
   }).join('')
 
-  return `<section data-component-title="Show Multiple Products" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Show Multiple Products" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:0 0 ${data.paddingY}px;${fontCss(undefined, data.fontFamily)}">
 <style>
+  @media(max-width:1024px){[data-showmulti-grid]{grid-template-columns:repeat(3,1fr)!important;}}
   @media(max-width:768px){[data-showmulti-grid]{grid-template-columns:repeat(2,1fr)!important;}}
   @media(max-width:480px){[data-showmulti-grid]{grid-template-columns:1fr!important;}}
+  [data-smp-card]:hover{box-shadow:0 0 0 ${data.borderWidth ?? 1}px ${data.hoverBorderColor || '#1e3a8a'},${CARD_SHADOW_PRESETS['shadow-xl']}!important;transform:translateY(-4px) scale(1.02)!important;}
+  [data-smp-card]:hover [data-smp-overlay],[data-smp-card]:hover [data-smp-viewbtn],[data-smp-card]:hover [data-smp-arrow]{opacity:1!important;}
+  ${data.imageHoverZoom !== false ? `[data-smp-card]:hover [data-smp-image]{transform:scale(${1 + (data.imageHoverZoomAmount ?? 6) / 100})!important;}` : ''}
+  /* Touch devices (tablet/mobile) can't rely on :hover to reveal these —
+     keep them visible so the "View Product"/arrow buttons stay reachable. */
+  @media(hover:none){
+    [data-smp-overlay],[data-smp-viewbtn],[data-smp-arrow]{opacity:1!important;}
+  }
 </style>
-  <div style="max-width:80rem;margin:0 auto;width:100%;">
-    <div data-showmulti-grid="true" style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:1.5rem;">
+  <div style="max-width:${data.contentMaxWidth ?? 1440}px;margin:0 auto;width:100%;">
+    <div data-showmulti-grid="true" style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:1rem;">
       ${productsHtml}
     </div>
   </div>

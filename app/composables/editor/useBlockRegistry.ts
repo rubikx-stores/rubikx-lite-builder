@@ -3,7 +3,7 @@ import { reactive } from 'vue'
 export interface FieldConfig {
   key: string
   label: string
-  type: 'text' | 'textarea' | 'url' | 'color' | 'select' | 'toggle' | 'number' | 'image' | 'list' | 'column-order' | 'header' | 'button'
+  type: 'text' | 'textarea' | 'url' | 'color' | 'select' | 'align' | 'toggle' | 'number' | 'image' | 'list' | 'column-order' | 'header' | 'button'
   options?: string[]
   listFields?: FieldConfig[]
   placeholder?: string

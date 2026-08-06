@@ -1066,7 +1066,7 @@ onMounted(async () => {
               <div
                 @click="handleInsertButtonClick(0)"
                 id="addsection"
-                class="h-10 rounded-l-full bg-gray-50 text-gray-700 z-50 pl-2 pr-2 flex items-center justify-center cursor-pointer"
+                class="h-10 rounded-l-full bg-gray-100 text-gray-600 z-50 pl-2 pr-2 flex items-center justify-center hover:text-white hover:bg-gray-900 cursor-pointer"
               >
                 <div class="flex items-center gap-1">
                   <span class="material-symbols-outlined"> add </span>
@@ -1092,7 +1092,7 @@ onMounted(async () => {
                 <div
                   @click="handleInsertButtonClick(idx + 1)"
                   id="addsection"
-                  class="h-10 rounded-l-full bg-gray-50 text-gray-700 z-50 pl-2 pr-2 flex items-center justify-center cursor-pointer"
+                  class="h-10 rounded-l-full bg-gray-100 text-gray-600 z-50 pl-2 pr-2 flex items-center justify-center hover:text-white hover:bg-gray-900 cursor-pointer"
                 >
                   <div class="flex items-center gap-1">
                     <span class="material-symbols-outlined"> add </span>
@@ -1280,9 +1280,6 @@ onMounted(async () => {
   align-items: center;
 }
 #pagebuilder #addsection {
-  display: none;
-}
-#pagebuilder #nolocalstorage:hover #addsection {
   display: flex;
   justify-content: center;
   align-items: center;
