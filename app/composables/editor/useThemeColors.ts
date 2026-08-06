@@ -180,19 +180,48 @@ export function seedFromThemeJson(json: string | undefined | null): boolean {
   }
 }
 
+// Reset the shared theme-color state back to hardcoded defaults. _state is a
+// single module-level object shared across every company viewed in this
+// browser — without an explicit reset, a company with no global-theme record
+// of its own just keeps showing whatever a previously-viewed company left
+// behind. Only ever resets local display state (and its localStorage mirror);
+// never touches the CMS, so it can't affect any company's saved record.
+export function resetThemeToDefaults() {
+  _state.primaryCtaBgColor = RBX_PRIMARY_DEFAULT
+  _state.primaryCtaTextColor = RBX_TEXT_DEFAULT
+  _state.secondaryCtaBgColor = RBX_SECONDARY_DEFAULT
+  _state.secondaryCtaTextColor = RBX_TEXT_DEFAULT
+  _state.primaryTextColor = RBX_HEADING_TEXT_DEFAULT
+  _state.secondaryTextColor = RBX_SUBHEADING_TEXT_DEFAULT
+  _state.activated = false
+  _persist()
+}
+
 // Fetch the live `global-theme` CMS record and re-seed local state from it.
 // Bypasses pageHtmlCache/localStorage — use this wherever colors are about to
 // be shown or written so a stale in-memory copy never overrides a newer save
 // made elsewhere (another tab, another editor session, the /configuration page).
+//
+// Returns true whenever the fetch itself succeeded — whether that company had
+// a theme record (seeded from it) or not (reset to defaults) — since _state is
+// correct for this company either way. Only returns false when the fetch
+// itself failed, so callers know to fall back to a cache as a last resort.
 export async function refreshThemeFromCms(companyId?: number | null): Promise<boolean> {
   try {
     const pages = await $fetch<any[]>('/api/pages', companyId ? { query: { companyId } } : undefined)
     const themePage = pages.find((p) => p.id === 'global-theme')
     if (themePage?.versions?.[0]?.value) {
-      return seedFromThemeJson(themePage.versions[0].value)
+      seedFromThemeJson(themePage.versions[0].value)
+    } else {
+      // This company has no global-theme record of its own — reset to
+      // defaults rather than leaving whatever a previously-viewed company
+      // left behind.
+      resetThemeToDefaults()
     }
-  } catch {}
-  return false
+    return true
+  } catch {
+    return false
+  }
 }
 
 // The version number to save the *next* global-theme write as. Always one
