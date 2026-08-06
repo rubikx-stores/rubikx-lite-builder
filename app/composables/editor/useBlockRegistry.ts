@@ -5,6 +5,10 @@ export interface FieldConfig {
   label: string
   type: 'text' | 'textarea' | 'url' | 'color' | 'select' | 'align' | 'toggle' | 'number' | 'image' | 'list' | 'column-order' | 'header' | 'button'
   options?: string[]
+  // Friendly display text for one or more `options` values — the option's
+  // stored/submitted value never changes, only what the admin sees in the
+  // dropdown. Omit an entry to fall back to showing the raw value.
+  optionLabels?: Record<string, string>
   listFields?: FieldConfig[]
   placeholder?: string
   unit?: string
