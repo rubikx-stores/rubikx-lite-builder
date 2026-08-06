@@ -612,8 +612,8 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   columns: 4,
   rows: 1,
   bgColor: '',
-  paddingY: 48,
-  paddingX: 16,
+  paddingY: 24,
+  paddingX: 30,
   cardBorderRadius: 8,
   hoverBorderColor: '',
   imageBgColor: '#ffffff',
@@ -629,7 +629,7 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   showAddToCart: true,
   addToCartLabel: 'Add to Cart',
   addToCartRadius: 6,
-  showViewProduct: false,
+  showViewProduct: true,
   viewProductLabel: 'View Product',
   viewProductBg: '#2563eb',
   viewProductTextColor: '#ffffff',
@@ -821,7 +821,7 @@ export function renderRu1Products(data: Ru1ProductsData, title = 'Ru1 Homepage F
           <p title="${p.name}" style="font-weight:600;font-size:0.875rem;line-height:1.3;min-height:36px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all;overflow-wrap:anywhere;color:${data.productNameColor ?? '#111827'};${fontCss(data.productNameFont, data.fontFamily)}">${p.name}</p>
           ${priceRow}
           ${colorsHtml}
-          ${data.showAddToCart !== false ? `<a href="${p.buttonUrl}" class="shop-btn" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.addToCartRadius ?? 6}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block;${fontCss(data.buttonFont, data.fontFamily)}">${data.addToCartLabel || 'Add to Cart'}</a>` : ''}
+          ${data.showAddToCart !== false ? `<a href="${p.buttonUrl}" class="shop-btn" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.addToCartRadius ?? 6}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block;${fontCss(data.buttonFont, data.fontFamily)}">${title === 'Show Featured Products' ? 'View Product' : (data.addToCartLabel || 'Add to Cart')}</a>` : ''}
           ${bottomRow}
         </div>
       </div>`
@@ -839,7 +839,7 @@ export function renderRu1Products(data: Ru1ProductsData, title = 'Ru1 Homepage F
   return `<section data-component-title="${title}" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 ${animStyle}
 <div style="${innerStyle}">
-  <div style="max-width:80rem;margin:0 auto">
+  <div style="max-width:90rem;margin:0 auto">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:2rem">
       <h1 data-field-key="sectionTitle" style="margin:0;font-size:2rem;font-weight:600;text-align:${data.titleAlign};color:${data.titleColor};${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h1>
       ${browseAllHtml}
@@ -860,7 +860,14 @@ ${animStyle}
 // fully independent on the same page.
 
 export const showFeaturedProductsDefaults: Ru1ProductsData = ru1ProductsDefaults
+// Button text is hardcoded to "View Product" for this block (see
+// renderShowFeaturedProducts below), so the "Add to Cart Button Text"
+// field — otherwise identical to ru1ProductsFields — is dropped here
+// since editing it would have no visible effect, and the show/hide
+// toggle is relabeled to match the hardcoded text.
 export const showFeaturedProductsFields: FieldConfig[] = ru1ProductsFields
+  .filter(f => f.key !== 'addToCartLabel')
+  .map(f => f.key === 'showAddToCart' ? { ...f, label: 'Show View Product Button' } : f)
 
 export function renderShowFeaturedProducts(data: Ru1ProductsData): string {
   return renderRu1Products(data, 'Show Featured Products')

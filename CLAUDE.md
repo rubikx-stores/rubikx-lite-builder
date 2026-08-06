@@ -27,7 +27,7 @@ pnpm run build:lib   # from root
 - **Use `ru-` prefix** for all custom CSS classes (e.g. `ru-mega-item`, `ru-ptile`, `ru-pd`)
 - **No `pbx-` prefix** — fully migrated away, do not introduce it anywhere
 - **No Tailwind utility classes inside render functions** — use inline styles only. Tailwind is only for the builder UI shell, not for rendered block HTML
-- **No `max-w-7xl`, `mx-auto`, etc.** in render functions — replace with `max-width:80rem;margin:0 auto`
+- **No `max-w-7xl`, `mx-auto`, etc.** in render functions — replace with `max-width:90rem;margin:0 auto`
 
 ## Hydration Shell Pattern
 

@@ -17,6 +17,10 @@ import {
   ru3MegaHeaderFields,
   ru3MegaHeaderSvg,
   renderRu3MegaHeader,
+  ru4NavbarDefaults,
+  ru4NavbarFields,
+  ru4NavbarSvg,
+  renderRu4Navbar,
   bannerDefaults,
   bannerFields,
   bannerSvg,
@@ -69,6 +73,10 @@ import {
   ru7HeroCategoryCollectionFields,
   ru7HeroCategoryCollectionSvg,
   renderRu7HeroCategoryCollection,
+  ru8FeaturedBrandsDefaults,
+  ru8FeaturedBrandsFields,
+  ru8FeaturedBrandsSvg,
+  renderRu8FeaturedBrands,
   ru1StatsDefaults,
   ru1StatsFields,
   ru1StatsSvg,
@@ -192,6 +200,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       cover_image: ru3MegaHeaderSvg,
       html_code: renderRu3MegaHeader(ru3MegaHeaderDefaults),
     },
+    {
+      title: 'Ru4-Navbar',
+      category: 'Headers',
+      cover_image: ru4NavbarSvg,
+      html_code: renderRu4Navbar(ru4NavbarDefaults),
+    },
   ],
   Banner: [
     {
@@ -235,6 +249,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Banner',
       cover_image: ru7HeroCategoryCollectionSvg,
       html_code: renderRu7HeroCategoryCollection(ru7HeroCategoryCollectionDefaults),
+    },
+    {
+      title: 'Ru8-Featured-Brands',
+      category: 'Banner',
+      cover_image: ru8FeaturedBrandsSvg,
+      html_code: renderRu8FeaturedBrands(ru8FeaturedBrandsDefaults),
     },
   ],
   Contact: [
@@ -420,6 +440,12 @@ export function useLayouts() {
     render: renderRu3MegaHeader,
   })
 
+  blockRegistry.register('Ru4-Navbar', {
+    defaults: ru4NavbarDefaults,
+    fields: ru4NavbarFields,
+    render: renderRu4Navbar,
+  })
+
   blockRegistry.register('Ru1-Banner', {
     defaults: bannerDefaults,
     fields: bannerFields,
@@ -502,6 +528,12 @@ export function useLayouts() {
     defaults: ru7HeroCategoryCollectionDefaults,
     fields: ru7HeroCategoryCollectionFields,
     render: renderRu7HeroCategoryCollection,
+  })
+
+  blockRegistry.register('Ru8-Featured-Brands', {
+    defaults: ru8FeaturedBrandsDefaults,
+    fields: ru8FeaturedBrandsFields,
+    render: renderRu8FeaturedBrands,
   })
 
   blockRegistry.register('Ru1-Footer', {

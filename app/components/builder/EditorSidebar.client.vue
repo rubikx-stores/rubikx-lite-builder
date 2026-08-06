@@ -926,6 +926,28 @@ onUnmounted(() => {
               </div>
             </div>
 
+            <!-- align: left/center/right icon button group -->
+            <div v-else-if="field.type === 'align'" class="mb-2.5">
+              <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
+              <div class="flex gap-1.5">
+                <button v-for="a in ['left', 'center', 'right']" :key="a" type="button"
+                  class="flex-1 h-9 rounded-lg border flex items-center justify-center cursor-pointer transition-colors"
+                  :class="String(blockData[field.key] ?? 'left') === a
+                    ? 'bg-blue-50 border-blue-400 text-blue-600'
+                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'"
+                  :title="a.charAt(0).toUpperCase() + a.slice(1)"
+                  @click="updateBlockField(field.key, a)">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="2" y1="4" x2="14" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <line v-if="a === 'left'" x1="2" y1="8" x2="10" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <line v-else-if="a === 'center'" x1="4" y1="8" x2="12" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <line v-else x1="6" y1="8" x2="14" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="2" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
             <!-- column-order -->
             <div v-else-if="field.type === 'column-order'" class="mb-2.5">
               <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
