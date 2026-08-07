@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useSiteConfig } from '~/composables/useSiteConfig'
 import { splitShopSectionsForPublish } from '~/composables/useGlobalSections'
+import { resetThemeToDefaults } from '~/composables/editor/useThemeColors'
 
 definePageMeta({ layout: 'dashboard' })
 
@@ -73,6 +74,8 @@ async function fetchPages() {
     const themePage = pages.value.find(p => p.id === 'global-theme')
     if (themePage && themePage.versions[0]?.value) {
       useThemeColors().seedFromThemeJson(themePage.versions[0].value)
+    } else {
+      resetThemeToDefaults()
     }
   } finally {
     loadingPages.value = false
@@ -88,7 +91,13 @@ function selectedVersionData(page: Page) {
 async function publishPage(page: Page) {
   publishing.value[page.id] = true
   const vData = selectedVersionData(page)
-  const { mainHtml, shopHeaderHtml, shopFooterHtml } = splitShopSectionsForPublish(vData.value)
+  // Only the dedicated "shop" page's banners get split into shop-header/
+  // shop-footer — those are the two keys the live /shop route reads. Shop-theme
+  // blocks reused on any other page (e.g. a shop preview section on Home) are
+  // just normal page content and publish as-is, unsplit.
+  const { mainHtml, shopHeaderHtml, shopFooterHtml } = page.id === 'shop'
+    ? splitShopSectionsForPublish(vData.value)
+    : { mainHtml: vData.value, shopHeaderHtml: '', shopFooterHtml: '' }
 
   const commonFields = {
     version: vData.version,
@@ -157,7 +166,7 @@ async function deletePage() {
 
 const pageHtmlCache = usePageHtmlCache()
 
-const GLOBAL_KEYS = ['global-header', 'global-footer', 'global-theme', 'global-config']
+const GLOBAL_KEYS = ['global-header', 'global-footer', 'global-theme', 'global-config', 'shop-header', 'shop-footer']
 const displayPages = computed(() => {
   return pages.value.filter(p => {
     if (GLOBAL_KEYS.includes(p.id)) return false

@@ -1098,6 +1098,9 @@ export interface ContactFormFieldItem {
   is_required: boolean
   default_value: string
   values: string
+  // Optional — only ever set/shown for Ru3-Form-Banner's 'file' field type
+  // (see ru3ContactFormFieldListConfig). Left unset for Ru1/Ru2.
+  button_bg_color?: string
 }
 
 export const contactFormFieldListConfig: FieldConfig[] = [
@@ -1620,6 +1623,44 @@ export const ru3FormBannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox
 
 export type Ru3FormBannerFieldItem = ContactFormFieldItem
 
+// Ru3-Form + Banner's own Field Type list — kept separate from
+// contactFormFieldListConfig (shared by Ru1/Ru2) so its extra types
+// (checkbox, file) and friendlier labels don't leak into those blocks.
+// No technical "Field Name" input — the admin only ever sees the Field
+// Label; the technical submit key is derived from it (see
+// slugifyRu3FieldName below), so there's nothing to leave blank.
+// `values` doubles as the comma-separated option list for 'select' and
+// 'checkbox'. `default_value` doubles as the upload button's label for
+// 'file' — shown as a distinctly-labeled field only for that type so it
+// doesn't get mistaken for a checkbox/dropdown default.
+export const ru3ContactFormFieldListConfig: FieldConfig[] = [
+  { key: 'label', label: 'Field Label', type: 'text', placeholder: 'e.g. Your Name' },
+  {
+    key: 'field_type', label: 'Field Type', type: 'select',
+    options: ['text', 'tel', 'number', 'email', 'textarea', 'select', 'checkbox', 'file'],
+    optionLabels: {
+      tel: 'Phone Number',
+      number: 'Number Stepper',
+      select: 'Dropdown',
+      checkbox: 'Checkboxes (Multiple)',
+      file: 'Image Upload',
+    },
+  },
+  { key: 'is_required', label: 'Required', type: 'toggle' },
+  { key: 'default_value', label: 'Default Value', type: 'text', visibleIf: (item) => item.field_type !== 'file' },
+  { key: 'default_value', label: 'Upload Button Text', type: 'text', placeholder: 'e.g. Choose Photo', visibleIf: (item) => item.field_type === 'file' },
+  { key: 'button_bg_color', label: 'Upload Button Background Color', type: 'color', visibleIf: (item) => item.field_type === 'file' },
+  { key: 'values', label: 'Options (comma-separated)', type: 'text', visibleIf: (item) => item.field_type === 'select' || item.field_type === 'checkbox' },
+]
+
+// The admin never types a technical key — it's always derived from the
+// Field Label. Falls back to the field's own `name` first so existing
+// saved pages (and the fixed default fields below, which use Odoo's
+// expected keys like 'reply_to') keep their exact technical key.
+function slugifyRu3FieldName(label: string): string {
+  return (label ?? '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'field'
+}
+
 export interface Ru3FormBannerData {
   fontFamily: string
 
@@ -1669,6 +1710,7 @@ export interface Ru3FormBannerData {
   submitAlign: string
   submitRadius: number
   buttonFont: string
+  submitFromEmail: string
   submitToEmail: string
 
   // Fields — user-editable list, so any number of fields can be added/removed/reordered
@@ -1718,6 +1760,7 @@ export const ru3FormBannerDefaults: Ru3FormBannerData = {
   submitAlign: 'center',
   submitRadius: 4,
   buttonFont: '',
+  submitFromEmail: '',
   submitToEmail: '',
 
   fields: [
@@ -1779,12 +1822,13 @@ export const ru3FormBannerFields: FieldConfig[] = [
   { key: 'submitAlign', label: 'Button Alignment', type: 'select', options: ['left', 'center', 'right'], visibleIf: (d) => d.submitWidthMode === 'auto' },
   { key: 'submitRadius', label: 'Button Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '4' },
   fontField('buttonFont', 'Button Font'),
-  { key: 'submitToEmail', label: 'Submit Form To Email', type: 'text', placeholder: 'e.g. sales@yourstore.com' },
+  { key: 'submitFromEmail', label: 'Email From', type: 'text', placeholder: 'e.g. noreply@yourstore.com' },
+  { key: 'submitToEmail', label: 'Email To', type: 'text', placeholder: 'e.g. sales@yourstore.com' },
 
   // Placed at the bottom of the panel — banner/layout/style are set up first,
   // then the actual fields are added/edited/reordered last.
   { key: '_h_fields', label: 'Form Fields', type: 'header' },
-  { key: 'fields', label: 'Form Fields', type: 'list', listFields: contactFormFieldListConfig },
+  { key: 'fields', label: 'Form Fields', type: 'list', listFields: ru3ContactFormFieldListConfig },
 ]
 
 export function renderRu3FormBanner(data: Ru3FormBannerData): string {
@@ -1826,8 +1870,11 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
 
   // Fields render from data.fields — falls back to the block's own defaults
   // for pages saved before the new field shape (name/field_type/is_required/
-  // default_value/values) existed.
-  const ru3Fields = (data.fields && data.fields.length) ? data.fields : ru3FormBannerDefaults.fields
+  // default_value/values) existed. `name` is always resolved here (falling
+  // back to a slug of the label) rather than left to admin input — see
+  // slugifyRu3FieldName above.
+  const ru3Fields = ((data.fields && data.fields.length) ? data.fields : ru3FormBannerDefaults.fields)
+    .map(f => ({ ...f, name: f.name || slugifyRu3FieldName(f.label) }))
   const fieldsHtml = ru3Fields.map((f) => {
     const requiredMark = f.is_required ? ` <span style="color:${data.requiredColor};">*</span>` : ''
     const req = f.is_required ? ' required' : ''
@@ -1838,6 +1885,14 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
     } else if (f.field_type === 'select') {
       const opts = (f.values ?? '').split(',').map(v => v.trim()).filter(Boolean)
       control = `<select name="${f.name}" style="${inputStyle}"${req}>${opts.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`
+    } else if (f.field_type === 'checkbox') {
+      const opts = (f.values ?? '').split(',').map(v => v.trim()).filter(Boolean)
+      const checked = (f.default_value ?? '').split(',').map(v => v.trim()).filter(Boolean)
+      control = `<div style="display:flex;flex-direction:column;gap:0.5rem;">${opts.map(o => `<label style="display:flex;align-items:center;gap:0.5rem;font-size:0.9375rem;color:${data.inputTextColor};font-weight:400;"><input type="checkbox" name="${f.name}[]" value="${o}"${checked.includes(o) ? ' checked' : ''} />${o}</label>`).join('')}</div>`
+    } else if (f.field_type === 'file') {
+      const buttonLabel = f.default_value || 'Upload Image'
+      const buttonBg = f.button_bg_color || data.submitBgColor
+      control = `<label style="display:inline-flex;align-items:center;border-radius:${data.inputRadius ?? 4}px;padding:0.625rem 1.25rem;font-size:0.9375rem;font-weight:600;color:${data.submitTextColor};background:${buttonBg};cursor:pointer;">${buttonLabel}<input type="file" name="${f.name}" accept="image/*" style="display:none;"${req} /></label>`
     } else {
       control = `<input type="${f.field_type || 'text'}" name="${f.name}" style="${inputStyle}"${value}${req} />`
     }
@@ -1857,7 +1912,13 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
   const alignMarginMap: Record<string, string> = { left: '0 auto 0 0', center: '0 auto', right: '0 0 0 auto' }
   const formMargin = alignMarginMap[data.formAlign ?? 'left'] ?? '0 auto 0 0'
 
-  const dataForProps = withFieldSequence(data)
+  // email_from/email_to are NOT added to data.fields — they already exist as
+  // real hidden <input>s in the <form> below, which any form submission
+  // (native submit, FormData, Odoo's form handling) picks up on its own.
+  // Duplicating them into this metadata array made a downstream renderer
+  // that walks `fields` show a visible "Email From"/"Email To" label for
+  // every entry regardless of field_type.
+  const dataForProps = withFieldSequence({ ...data, fields: ru3Fields })
   return `<section data-component-title="Ru3-Form + Banner" data-component-props="${encodeURIComponent(JSON.stringify(dataForProps))}" style="background:${data.sectionBgColor};${fontCss(undefined, data.fontFamily)}">
   <div style="${bannerBg}${bannerAspect}min-height:${data.bannerHeight}px;padding:2.5rem 0;display:flex;flex-direction:column;justify-content:flex-end;box-sizing:border-box;">
     <div style="max-width:80rem;margin:0 auto;padding:0 2rem;display:flex;flex-direction:column;align-items:${bannerItems};text-align:${bannerTextAlign};width:100%;box-sizing:border-box;">
@@ -1868,7 +1929,8 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
   ${pageTitleHtml}
   <div style="padding:${data.paddingY}px min(${data.paddingX}px,6vw);">
     <form style="width:100%;max-width:${data.formMaxWidth ?? 640}px;margin:${formMargin};box-sizing:border-box;">
-      <input type="hidden" name="submit_to_email" value="${data.submitToEmail ?? ''}" />
+      <input type="hidden" name="email_from" value="${data.submitFromEmail ?? ''}" />
+      <input type="hidden" name="email_to" value="${data.submitToEmail ?? ''}" />
       ${fieldsHtml}
       <div style="${submitWrapperStyle}margin-top:0.5rem;">
         <button type="submit" style="${submitBtnStyle}">${data.submitLabel}</button>

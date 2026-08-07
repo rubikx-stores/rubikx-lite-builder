@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue'
 import { useSiteConfig, type SiteConfigValues } from '~/composables/useSiteConfig'
-import { useThemeColors, type ThemeColorValues } from '~/composables/editor/useThemeColors'
+import { useThemeColors, resetThemeToDefaults, type ThemeColorValues } from '~/composables/editor/useThemeColors'
 import { usePageHtmlCache } from '~/composables/usePageHtmlCache'
 
 definePageMeta({ layout: 'dashboard' })
@@ -59,6 +59,8 @@ async function loadExistingSettings() {
     const themePage = pages.find((p: any) => p.id === 'global-theme')
     if (themePage && themePage.versions[0]?.value) {
       useThemeColors().seedFromThemeJson(themePage.versions[0].value)
+    } else {
+      resetThemeToDefaults()
     }
 
     // Sync draft values

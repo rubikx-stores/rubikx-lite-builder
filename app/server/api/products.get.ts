@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
       'Authorization': `Bearer ${token}`,
     },
     body: JSON.stringify({
-      query: `query products($domain: Any, $context: Any) { StoreProductTemplate(domain: $domain, order: "sequence asc", context: $context) { id name price image attributeValues { id name htmlColor displayType } } }`,
+      query: `query products($domain: Any, $context: Any) { StoreProductTemplate(domain: $domain, order: "sequence asc", context: $context) { id name price storeName image attributeValues { id name htmlColor displayType } } }`,
       variables: { domain, context },
     }),
   })
@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
 
   return json.data.products.StoreProductTemplate.map((product: any) => ({
     id: product.id,
-    name: product.name,
+    name: product.storeName || product.name,
     price: product.price,
     image: product.image,
     colors: (product.attributeValues ?? [])
