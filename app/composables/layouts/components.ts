@@ -1727,12 +1727,35 @@ export const ru3FormBannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox
   <rect fill="#718096" x="12" y="138" width="253.5" height="14" rx="3"/>
 </svg>`
 
+export const ru3BannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 90">
+  <rect fill="#394152" width="277.5" height="90"/>
+  <rect fill="#1c2434" width="277.5" height="34"/>
+  <rect fill="#4a5568" x="12" y="12" width="110" height="11" rx="1"/>
+  <rect fill="#5a6475" x="12" y="46" width="55" height="6" rx="1"/>
+  <rect fill="#718096" x="12" y="60" width="110" height="16" rx="3"/>
+</svg>`
+
+export const ru3ContactFormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 130">
+  <rect fill="#ffffff" width="277.5" height="130"/>
+  <rect fill="#9ca3af" x="12" y="14" width="55" height="6" rx="1"/>
+  <rect fill="#e5e7eb" x="12" y="24" width="253.5" height="14" rx="3"/>
+  <rect fill="#9ca3af" x="12" y="50" width="65" height="6" rx="1"/>
+  <rect fill="#e5e7eb" x="12" y="60" width="253.5" height="14" rx="3"/>
+  <rect fill="#0a1e5e" x="12" y="96" width="90" height="24" rx="4"/>
+</svg>`
+
 export type Ru3FormBannerFieldItem = ContactFormFieldItem
 
-export interface Ru3FormBannerData {
+// Split into two independent pieces — Ru3-Banner and Ru3-Contact-Form — so
+// either can be added/removed/reordered on its own (e.g. to put a Text
+// block between them). Ru3FormBannerData is kept as the union of both
+// shapes purely for the original combined "Ru3-Form + Banner" block, which
+// stays untouched below so already-published pages using it don't need any
+// migration; it shares the exact same rendering code as the two new blocks
+// via buildRu3BannerHtml/buildRu3ContactFormHtml.
+export interface Ru3BannerData {
   fontFamily: string
 
-  // Banner
   bannerBgColor: string
   bannerImage: string
   bannerImageAspectRatio: string
@@ -1742,26 +1765,26 @@ export interface Ru3FormBannerData {
   bannerHeight: number
   bannerTitleFont: string
 
-  // Breadcrumb
   showBreadcrumb: boolean
   breadcrumbHomeHref: string
   breadcrumbLabel: string
   breadcrumbColor: string
 
-  // Page title
   showPageTitle: boolean
   pageTitle: string
   pageTitleColor: string
   pageTitleFont: string
+}
 
-  // Section & form layout
+export interface Ru3ContactFormData {
+  fontFamily: string
+
   sectionBgColor: string
   paddingY: number
   paddingX: number
   formMaxWidth: number
   formAlign: string
 
-  // Field style
   labelColor: string
   labelFont: string
   requiredColor: string
@@ -1770,7 +1793,6 @@ export interface Ru3FormBannerData {
   inputTextColor: string
   inputRadius: number
 
-  // Submit button
   submitLabel: string
   submitBgColor: string
   submitTextColor: string
@@ -1785,7 +1807,9 @@ export interface Ru3FormBannerData {
   fields: Ru3FormBannerFieldItem[]
 }
 
-export const ru3FormBannerDefaults: Ru3FormBannerData = {
+export interface Ru3FormBannerData extends Ru3BannerData, Ru3ContactFormData {}
+
+export const ru3BannerDefaults: Ru3BannerData = {
   fontFamily: '',
 
   bannerBgColor: '#0f1b2d',
@@ -1806,6 +1830,10 @@ export const ru3FormBannerDefaults: Ru3FormBannerData = {
   pageTitle: 'Contact Us',
   pageTitleColor: '#0a1e5e',
   pageTitleFont: '',
+}
+
+export const ru3ContactFormDefaults: Ru3ContactFormData = {
+  fontFamily: '',
 
   sectionBgColor: '#ffffff',
   paddingY: 48,
@@ -1839,6 +1867,78 @@ export const ru3FormBannerDefaults: Ru3FormBannerData = {
     { name: 'note', label: 'Your Question', field_type: 'textarea', is_required: true, default_value: '', values: '' },
   ],
 }
+
+export const ru3FormBannerDefaults: Ru3FormBannerData = {
+  ...ru3BannerDefaults,
+  ...ru3ContactFormDefaults,
+  // Spread copies `fields` by reference — clone it so this object never
+  // shares a mutable array with ru3ContactFormDefaults.
+  fields: [...ru3ContactFormDefaults.fields],
+}
+
+export const ru3BannerFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_banner', label: 'Banner', type: 'header' },
+  { key: 'bannerBgColor', label: 'Banner Background', type: 'color' },
+  { key: 'bannerImage', label: 'Banner Image (URL)', type: 'image' },
+  { key: 'bannerImageAspectRatio', label: 'Banner Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
+  { key: 'bannerTitle', label: 'Banner Title', type: 'text', placeholder: 'e.g. Contact Us' },
+  { key: 'bannerTitleColor', label: 'Banner Title Colour', type: 'color' },
+  { key: 'bannerTitleAlign', label: 'Banner Title Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'bannerHeight', label: 'Banner Height', type: 'number', unit: 'px', step: 10, placeholder: '200' },
+  fontField('bannerTitleFont', 'Banner Title Font'),
+
+  { key: '_h_breadcrumb', label: 'Breadcrumb', type: 'header' },
+  { key: 'showBreadcrumb', label: 'Show Breadcrumb', type: 'toggle' },
+  { key: 'breadcrumbHomeHref', label: 'Home Link URL', type: 'url', placeholder: '/' },
+  { key: 'breadcrumbLabel', label: 'Current Page Label', type: 'text', placeholder: 'e.g. Contact Us' },
+  { key: 'breadcrumbColor', label: 'Breadcrumb Colour', type: 'color' },
+
+  { key: '_h_pagetitle', label: 'Page Title', type: 'header' },
+  { key: 'showPageTitle', label: 'Show Page Title', type: 'toggle' },
+  { key: 'pageTitle', label: 'Page Title Text', type: 'text', placeholder: 'e.g. Contact Us' },
+  { key: 'pageTitleColor', label: 'Page Title Colour', type: 'color' },
+  fontField('pageTitleFont', 'Page Title Font'),
+]
+
+export const ru3ContactFormFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_layout', label: 'Form Layout', type: 'header' },
+  { key: 'sectionBgColor', label: 'Section Background', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '48' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '24' },
+  { key: 'formMaxWidth', label: 'Form Max Width', type: 'number', unit: 'px', step: 20, placeholder: '640' },
+  { key: 'formAlign', label: 'Form Alignment', type: 'select', options: ['left', 'center', 'right'] },
+
+  { key: '_h_fieldstyle', label: 'Field Style', type: 'header' },
+  { key: 'labelColor', label: 'Label Colour', type: 'color' },
+  fontField('labelFont', 'Label Font'),
+  { key: 'requiredColor', label: 'Required Asterisk Colour', type: 'color' },
+  { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
+  { key: 'inputBgColor', label: 'Input Background', type: 'color' },
+  { key: 'inputTextColor', label: 'Input Text Colour', type: 'color' },
+  { key: 'inputRadius', label: 'Input Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '4' },
+
+  { key: '_h_submit', label: 'Submit Button', type: 'header' },
+  { key: 'submitLabel', label: 'Button Text', type: 'text', placeholder: 'e.g. Submit' },
+  { key: 'submitBgColor', label: 'Button Background', type: 'color' },
+  { key: 'submitTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'submitWidthMode', label: 'Button Width', type: 'select', options: ['full', 'auto'] },
+  { key: 'submitAlign', label: 'Button Alignment', type: 'select', options: ['left', 'center', 'right'], visibleIf: (d) => d.submitWidthMode === 'auto' },
+  { key: 'submitRadius', label: 'Button Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '4' },
+  fontField('buttonFont', 'Button Font'),
+  { key: 'submitFromEmail', label: 'Email From', type: 'text', placeholder: 'e.g. noreply@yourstore.com' },
+  { key: 'submitToEmail', label: 'Email To', type: 'text', placeholder: 'e.g. sales@yourstore.com' },
+
+  // Placed at the bottom of the panel — layout/style are set up first, then
+  // the actual fields are added/edited/reordered last.
+  { key: '_h_fields', label: 'Form Fields', type: 'header' },
+  { key: 'fields', label: 'Form Fields', type: 'list', listFields: contactFormFieldListConfig },
+]
 
 export const ru3FormBannerFields: FieldConfig[] = [
   { key: '_h_font', label: 'Font', type: 'header' },
@@ -1899,7 +1999,10 @@ export const ru3FormBannerFields: FieldConfig[] = [
   { key: 'fields', label: 'Form Fields', type: 'list', listFields: contactFormFieldListConfig },
 ]
 
-export function renderRu3FormBanner(data: Ru3FormBannerData): string {
+// Returns just the banner + breadcrumb + page title markup (no <section>
+// wrapper) — shared by the standalone Ru3-Banner block and the combined
+// Ru3-Form + Banner block so they can never render this differently.
+function buildRu3BannerHtml(data: Ru3BannerData): string {
   const bannerAlignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
   const bannerItems = bannerAlignMap[data.bannerTitleAlign] ?? 'flex-start'
   const bannerTextAlign = data.bannerTitleAlign ?? 'left'
@@ -1933,6 +2036,20 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
     ? `<h1 style="max-width:80rem;margin:0 auto;padding:1rem 2rem 0;font-size:min(2.25rem,7vw);font-weight:700;color:${data.pageTitleColor};${fontCss(data.pageTitleFont, data.fontFamily)}">${data.pageTitle}</h1>`
     : ''
 
+  return `<div style="${bannerBg}${bannerAspect}min-height:${data.bannerHeight}px;padding:2.5rem 0;display:flex;flex-direction:column;justify-content:flex-end;box-sizing:border-box;">
+    <div style="max-width:80rem;margin:0 auto;padding:0 2rem;display:flex;flex-direction:column;align-items:${bannerItems};text-align:${bannerTextAlign};width:100%;box-sizing:border-box;">
+      <h2 style="font-size:min(2.75rem,9vw);font-weight:800;color:${data.bannerTitleColor};margin:0;line-height:1.1;${fontCss(data.bannerTitleFont, data.fontFamily)}">${data.bannerTitle}</h2>
+    </div>
+  </div>
+  ${breadcrumbHtml}
+  ${pageTitleHtml}`
+}
+
+// Returns just the form-layout wrapper + <form> markup (no <section>
+// wrapper), plus the fields resolved for data-component-props — shared by
+// the standalone Ru3-Contact-Form block and the combined Ru3-Form + Banner
+// block so they can never render or serialize this differently.
+function buildRu3ContactFormHtml(data: Ru3ContactFormData): { html: string; resolvedFields: Ru3FormBannerFieldItem[] } {
   const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:${data.inputRadius ?? 4}px;background:${data.inputBgColor};padding:0.625rem 0.875rem;font-size:0.9375rem;color:${data.inputTextColor};border:1px solid ${data.inputBorderColor};outline:none;`
   const labelStyle = `display:block;font-size:0.875rem;font-weight:600;color:${data.labelColor};margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
 
@@ -1941,9 +2058,9 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
   // default_value/values) existed. `name` is always resolved here (falling
   // back to a slug of the label) rather than left to admin input — see
   // slugifyContactFieldName above.
-  const ru3Fields = dedupeContactFieldNames(((data.fields && data.fields.length) ? data.fields : ru3FormBannerDefaults.fields)
+  const resolvedFields = dedupeContactFieldNames(((data.fields && data.fields.length) ? data.fields : ru3ContactFormDefaults.fields)
     .map(f => ({ ...f, name: f.name || slugifyContactFieldName(f.label) })))
-  const fieldsHtml = ru3Fields.map((f) => {
+  const fieldsHtml = resolvedFields.map((f) => {
     const requiredMark = f.is_required ? ` <span style="color:${data.requiredColor};">*</span>` : ''
     const req = f.is_required ? ' required' : ''
     const value = f.default_value ? ` value="${f.default_value}"` : ''
@@ -1982,16 +2099,7 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
   // Duplicating them into this metadata array made a downstream renderer
   // that walks `fields` show a visible "Email From"/"Email To" label for
   // every entry regardless of field_type.
-  const dataForProps = withFieldSequence({ ...data, fields: ru3Fields })
-  return `<section data-component-title="Ru3-Form + Banner" data-component-props="${encodeURIComponent(JSON.stringify(dataForProps))}" style="background:${data.sectionBgColor};${fontCss(undefined, data.fontFamily)}">
-  <div style="${bannerBg}${bannerAspect}min-height:${data.bannerHeight}px;padding:2.5rem 0;display:flex;flex-direction:column;justify-content:flex-end;box-sizing:border-box;">
-    <div style="max-width:80rem;margin:0 auto;padding:0 2rem;display:flex;flex-direction:column;align-items:${bannerItems};text-align:${bannerTextAlign};width:100%;box-sizing:border-box;">
-      <h2 style="font-size:min(2.75rem,9vw);font-weight:800;color:${data.bannerTitleColor};margin:0;line-height:1.1;${fontCss(data.bannerTitleFont, data.fontFamily)}">${data.bannerTitle}</h2>
-    </div>
-  </div>
-  ${breadcrumbHtml}
-  ${pageTitleHtml}
-  <div style="padding:${data.paddingY}px min(${data.paddingX}px,6vw);">
+  const html = `<div style="padding:${data.paddingY}px min(${data.paddingX}px,6vw);">
     <form enctype="multipart/form-data" style="width:100%;max-width:${data.formMaxWidth ?? 640}px;margin:${formMargin};box-sizing:border-box;">
       <input type="hidden" name="email_from" value="${data.submitFromEmail ?? ''}" />
       <input type="hidden" name="email_to" value="${data.submitToEmail ?? ''}" />
@@ -2000,7 +2108,31 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
         <button type="submit" style="${submitBtnStyle}">${data.submitLabel}</button>
       </div>
     </form>
-  </div>
+  </div>`
+
+  return { html, resolvedFields }
+}
+
+export function renderRu3Banner(data: Ru3BannerData): string {
+  return `<section data-component-title="Ru3-Banner" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
+  ${buildRu3BannerHtml(data)}
+</section>`
+}
+
+export function renderRu3ContactForm(data: Ru3ContactFormData): string {
+  const { html, resolvedFields } = buildRu3ContactFormHtml(data)
+  const dataForProps = withFieldSequence({ ...data, fields: resolvedFields })
+  return `<section data-component-title="Ru3-Contact-Form" data-component-props="${encodeURIComponent(JSON.stringify(dataForProps))}" style="background:${data.sectionBgColor};${fontCss(undefined, data.fontFamily)}">
+  ${html}
+</section>`
+}
+
+export function renderRu3FormBanner(data: Ru3FormBannerData): string {
+  const { html: formHtml, resolvedFields } = buildRu3ContactFormHtml(data)
+  const dataForProps = withFieldSequence({ ...data, fields: resolvedFields })
+  return `<section data-component-title="Ru3-Form + Banner" data-component-props="${encodeURIComponent(JSON.stringify(dataForProps))}" style="background:${data.sectionBgColor};${fontCss(undefined, data.fontFamily)}">
+  ${buildRu3BannerHtml(data)}
+  ${formHtml}
 </section>`
 }
 
