@@ -36,7 +36,7 @@ export const helperTextFields: FieldConfig[] = [
 
 export function renderHelperText(data: HelperTextData): string {
   return `<section data-component-title="Text" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="padding:${data.paddingY}px 16px;${fontCss(undefined, data.fontFamily)}">
-  <div style="max-width:80rem;margin:0 auto;">
+  <div style="max-width:80rem;margin:0 1rem;">
     <p style="margin:0;font-size:${data.fontSize}px;font-weight:${data.fontWeight};color:${data.color};text-align:${data.textAlign};white-space:pre-wrap;">${data.content}</p>
   </div>
 </section>`
@@ -81,7 +81,7 @@ function makeHeaderBlock(tag: string, title: string, defaultFontSize: number) {
 
   function render(data: HelperHeaderData): string {
     return `<section data-component-title="${title}" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="padding:${data.paddingY}px 16px;${fontCss(undefined, data.fontFamily)}">
-  <div style="max-width:80rem;margin:0 auto;">
+  <div style="max-width:80rem;margin:0 1.5rem;">
     <${tag} style="margin:0;font-size:${data.fontSize}px;font-weight:${data.fontWeight};color:${data.color};text-align:${data.textAlign};">${data.content}</${tag}>
   </div>
 </section>`

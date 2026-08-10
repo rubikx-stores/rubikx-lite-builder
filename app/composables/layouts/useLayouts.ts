@@ -77,6 +77,10 @@ import {
   ru8FeaturedBrandsFields,
   ru8FeaturedBrandsSvg,
   renderRu8FeaturedBrands,
+  ru9MultiBannerGridDefaults,
+  ru9MultiBannerGridFields,
+  ru9MultiBannerGridSvg,
+  renderRu9MultiBannerGrid,
   ru1StatsDefaults,
   ru1StatsFields,
   ru1StatsSvg,
@@ -113,6 +117,10 @@ import {
   ru4FooterFields,
   ru4FooterSvg,
   renderRu4Footer,
+  ru5FooterDefaults,
+  ru5FooterFields,
+  ru5FooterSvg,
+  renderRu5Footer,
   ru1ProductDetailDefaults,
   ru1ProductDetailFields,
   ru1ProductDetailSvg,
@@ -256,6 +264,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       cover_image: ru8FeaturedBrandsSvg,
       html_code: renderRu8FeaturedBrands(ru8FeaturedBrandsDefaults),
     },
+    {
+      title: 'Ru9-Multi-Banner-Grid',
+      category: 'Banner',
+      cover_image: ru9MultiBannerGridSvg,
+      html_code: renderRu9MultiBannerGrid(ru9MultiBannerGridDefaults),
+    },
   ],
   Contact: [
     {
@@ -355,6 +369,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Footer',
       cover_image: ru4FooterSvg,
       html_code: renderRu4Footer(ru4FooterDefaults),
+    },
+    {
+      title: 'Ru5-Footer',
+      category: 'Footer',
+      cover_image: ru5FooterSvg,
+      html_code: renderRu5Footer(ru5FooterDefaults),
     },
   ],
   'Product Showcase': [
@@ -536,6 +556,12 @@ export function useLayouts() {
     render: renderRu8FeaturedBrands,
   })
 
+  blockRegistry.register('Ru9-Multi-Banner-Grid', {
+    defaults: ru9MultiBannerGridDefaults,
+    fields: ru9MultiBannerGridFields,
+    render: renderRu9MultiBannerGrid,
+  })
+
   blockRegistry.register('Ru1-Footer', {
     defaults: ru1FooterDefaults,
     fields: ru1FooterFields,
@@ -558,6 +584,12 @@ export function useLayouts() {
     defaults: ru4FooterDefaults,
     fields: ru4FooterFields,
     render: renderRu4Footer,
+  })
+
+  blockRegistry.register('Ru5-Footer', {
+    defaults: ru5FooterDefaults,
+    fields: ru5FooterFields,
+    render: renderRu5Footer,
   })
 
   blockRegistry.register('Ru1-Product Detail', {

@@ -1061,6 +1061,23 @@ onUnmounted(() => {
                         </select>
                       </template>
 
+                      <!-- number sub-field: same −/+ stepper widget as top-level number fields -->
+                      <template v-else-if="subField.type === 'number'">
+                        <div class="flex items-center gap-1 w-full">
+                          <button type="button"
+                            class="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-base font-medium cursor-pointer shrink-0"
+                            @click="updateBlockListItem(field.key, idx, subField.key, Math.max(0, Number(item[subField.key] ?? subField.placeholder ?? 0) - (subField.step ?? 1)))">−</button>
+                          <input type="number" :value="item[subField.key]"
+                            :placeholder="subField.placeholder ?? ''"
+                            class="flex-1 text-center border border-gray-300 rounded-lg py-1 text-xs text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                            @input="debouncedUpdateBlockListItem(field.key, idx, subField.key, Number(($event.target as HTMLInputElement).value))" />
+                          <span class="text-xs text-gray-500 font-semibold shrink-0">{{ subField.unit ?? 'px' }}</span>
+                          <button type="button"
+                            class="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-base font-medium cursor-pointer shrink-0"
+                            @click="updateBlockListItem(field.key, idx, subField.key, Number(item[subField.key] ?? subField.placeholder ?? 0) + (subField.step ?? 1))">+</button>
+                        </div>
+                      </template>
+
                       <!-- Ru7-Hero-Category-Collection: typing the Category Name
                            auto-fills the sibling Categories url ONLY while that
                            field is still empty — once the admin edits it
