@@ -2885,6 +2885,197 @@ export function renderRu4Footer(data: Ru4FooterData): string {
 </section>`
 }
 
+// ─── Ru5-Footer ──────────────────────────────────────────────────────────────
+// Stacked, centered footer: logo row, then a link row, then a copyright line
+// (and an optional social icons row) — each row independently alignable
+// left/center/right, matching a minimal single-column footer layout.
+
+export const ru5FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 90">
+  <rect fill="#1f2937" x="0" y="0" width="277.5" height="90"/>
+  <circle cx="138.75" cy="20" r="7" fill="#ffffff" fill-opacity="0.9"/>
+  <rect fill="#ffffff" fill-opacity="0.9" x="106" y="45" width="24" height="5" rx="1"/>
+  <rect fill="#ffffff" fill-opacity="0.9" x="134" y="45" width="18" height="5" rx="1"/>
+  <rect fill="#ffffff" fill-opacity="0.9" x="156" y="45" width="14" height="5" rx="1"/>
+  <rect fill="#6b7280" x="90" y="68" width="97.5" height="4" rx="1"/>
+</svg>`
+
+export interface Ru5FooterLink {
+  label: string
+  url: string
+}
+
+export interface Ru5FooterSocial {
+  href: string
+}
+
+export interface Ru5FooterData {
+  fontFamily: string
+
+  logoUrl: string
+  logoAlt: string
+  logoHref: string
+  logoWidth: number
+  logoHeight: number
+  logoAlign: 'left' | 'center' | 'right'
+
+  links: Ru5FooterLink[]
+  linksAlign: 'left' | 'center' | 'right'
+  linkColor: string
+  linkFont: string
+
+  showSocials: boolean
+  socials: Ru5FooterSocial[]
+  socialAlign: 'left' | 'center' | 'right'
+  socialIconSize: number
+
+  copyrightText: string
+  copyrightAlign: 'left' | 'center' | 'right'
+  copyrightColor: string
+  copyrightFont: string
+
+  bgColor: string
+  gap: number
+  paddingY: number
+  paddingX: number
+}
+
+export const ru5FooterDefaults: Ru5FooterData = {
+  fontFamily: '',
+
+  logoUrl: '',
+  logoAlt: 'Your Logo',
+  logoHref: '/',
+  logoWidth: 140,
+  logoHeight: 44,
+  logoAlign: 'center',
+
+  links: [
+    { label: 'Terms and Conditions', url: '/terms-and-conditions' },
+    { label: 'Privacy Policy', url: '/privacy-policy' },
+    { label: 'FAQs', url: '/faq' },
+  ],
+  linksAlign: 'center',
+  linkColor: '#ffffff',
+  linkFont: '',
+
+  showSocials: false,
+  socials: [],
+  socialAlign: 'center',
+  socialIconSize: 24,
+
+  copyrightText: '© 2026 Your Company. All Rights Reserved.',
+  copyrightAlign: 'center',
+  copyrightColor: '#9ca3af',
+  copyrightFont: '',
+
+  bgColor: '#000000',
+  gap: 24,
+  paddingY: 48,
+  paddingX: 32,
+}
+
+export const ru5FooterFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_logo', label: 'Logo', type: 'header' },
+  { key: 'logoUrl',    label: 'Logo Image', type: 'image', noAspectRatio: true },
+  { key: 'logoAlt',    label: 'Logo Alt Text', type: 'text', placeholder: 'Your Logo' },
+  { key: 'logoHref',   label: 'Logo Link', type: 'url', placeholder: '/' },
+  { key: 'logoWidth',  label: 'Logo Width',  type: 'number', unit: 'px', step: 4, placeholder: '140' },
+  { key: 'logoHeight', label: 'Logo Height', type: 'number', unit: 'px', step: 4, placeholder: '44' },
+  { key: 'logoAlign',  label: 'Logo Alignment', type: 'align' },
+
+  { key: '_h_links', label: 'Links', type: 'header' },
+  {
+    key: 'links', label: 'Footer Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'url',   label: 'URL',   type: 'url'  },
+    ],
+  },
+  { key: 'linksAlign', label: 'Links Alignment', type: 'align' },
+  { key: 'linkColor',  label: 'Link Colour', type: 'color' },
+  fontField('linkFont', 'Link Font'),
+
+  { key: '_h_socials', label: 'Social Icons', type: 'header' },
+  { key: 'showSocials', label: 'Show Social Icons', type: 'toggle' },
+  {
+    key: 'socials', label: 'Social Links', type: 'list',
+    listFields: [
+      { key: 'href', label: 'URL', type: 'url', placeholder: 'Paste your social media URL' },
+    ],
+  },
+  { key: 'socialAlign',    label: 'Social Icons Alignment', type: 'align', visibleIf: (d) => d.showSocials !== false },
+  { key: 'socialIconSize', label: 'Social Icon Size', type: 'number', unit: 'px', step: 2, placeholder: '24', visibleIf: (d) => d.showSocials !== false },
+
+  { key: '_h_copyright', label: 'Copyright', type: 'header' },
+  { key: 'copyrightText',  label: 'Copyright Text', type: 'text', placeholder: '© 2026 Your Company. All Rights Reserved.' },
+  { key: 'copyrightAlign', label: 'Copyright Alignment', type: 'align' },
+  { key: 'copyrightColor', label: 'Copyright Colour', type: 'color' },
+  fontField('copyrightFont', 'Copyright Font'),
+
+  { key: '_h_style', label: 'Style', type: 'header' },
+  { key: 'bgColor',   label: 'Background Colour', type: 'color' },
+  { key: 'gap',       label: 'Row Gap',           type: 'number', unit: 'px', step: 4, placeholder: '24' },
+  { key: 'paddingY',  label: 'Vertical Padding',   type: 'number', unit: 'px', step: 4, placeholder: '48' },
+  { key: 'paddingX',  label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '32' },
+]
+
+export function renderRu5Footer(data: Ru5FooterData): string {
+  const justifyMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
+
+  const logoInner = data.logoUrl
+    ? `<img data-ru5-logo src="${productImageSrc(data.logoUrl)}" alt="${data.logoAlt ?? ''}" style="width:${data.logoWidth}px;height:${data.logoHeight}px;object-fit:contain;flex-shrink:0;max-width:100%;" />`
+    : `<span style="color:#ffffff;font-size:1.15rem;font-weight:700;${fontCss(undefined, data.fontFamily)}">${data.logoAlt ?? ''}</span>`
+  const logoHtml = data.logoHref
+    ? `<a href="${data.logoHref}" style="display:inline-flex;align-items:center;text-decoration:none;">${logoInner}</a>`
+    : `<div style="display:inline-flex;align-items:center;">${logoInner}</div>`
+  const logoRow = `<div style="display:flex;justify-content:${justifyMap[data.logoAlign ?? 'center'] ?? 'center'};">${logoHtml}</div>`
+
+  const linksHtml = (data.links ?? []).map((l) =>
+    `<a href="${l.url}" class="ru5-footer-link" style="color:${data.linkColor};text-decoration:none;font-size:0.95rem;font-weight:500;white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}">${l.label}</a>`
+  ).join('')
+  const linksRow = linksHtml
+    ? `<div data-ru5-links style="display:flex;flex-wrap:wrap;justify-content:${justifyMap[data.linksAlign ?? 'center'] ?? 'center'};align-items:center;gap:1.5rem;">${linksHtml}</div>`
+    : ''
+
+  const socialIcons = (data.socials ?? []).map((s) => socialIconHtml(s.href, data.socialIconSize ?? 24)).filter(Boolean)
+  const socialsRow = data.showSocials !== false && socialIcons.length
+    ? `<div style="display:flex;flex-wrap:wrap;justify-content:${justifyMap[data.socialAlign ?? 'center'] ?? 'center'};align-items:center;gap:12px;">${socialIcons.join('')}</div>`
+    : ''
+
+  const copyrightRow = data.copyrightText
+    ? `<div data-ru5-copyright style="text-align:${data.copyrightAlign ?? 'center'};color:${data.copyrightColor};font-size:0.85rem;${fontCss(data.copyrightFont, data.fontFamily)}">${data.copyrightText}</div>`
+    : ''
+
+  return `<section data-component-title="Ru5-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
+<style>
+  .ru5-footer-link:hover{text-decoration:underline;}
+  @media(max-width:640px){
+    [data-ru5-footer-inner]{gap:16px!important;}
+    [data-ru5-links]{gap:1rem!important;}
+    [data-ru5-links] a{font-size:0.85rem!important;}
+    [data-ru5-copyright]{font-size:0.8rem!important;}
+  }
+  @media(max-width:420px){
+    [data-ru5-footer-inner]{gap:12px!important;}
+    [data-ru5-logo]{width:auto!important;max-width:70%!important;height:auto!important;}
+    [data-ru5-links]{gap:0.65rem 1rem!important;justify-content:center!important;}
+    [data-ru5-copyright]{text-align:center!important;font-size:0.75rem!important;}
+  }
+</style>
+<footer style="box-sizing:border-box;background:${data.bgColor};padding:${data.paddingY}px min(${data.paddingX}px,6vw);">
+  <div data-ru5-footer-inner style="width:100%;max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:${data.gap ?? 24}px;">
+    ${logoRow}
+    ${linksRow}
+    ${socialsRow}
+    ${copyrightRow}
+  </div>
+</footer>
+</section>`
+}
+
 // ─── Ru1-About ───────────────────────────────────────────────────────────────
 
 export const ru1AboutSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
@@ -3793,6 +3984,249 @@ export function renderRu8FeaturedBrands(data: Ru8FeaturedBrandsData): string {
     <p data-field-key="subtitle" style="font-size:min(1.125rem,4.5vw);color:${data.subtitleColor};margin:1rem 0 0;max-width:42rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>
     ${ctaHtml}
     ${logosHtml}
+  </div>
+</section>`
+}
+
+// ─── Ru9-Multi-Banner-Grid ─────────────────────────────────────────────────────
+
+export const ru9MultiBannerGridSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
+  <rect fill="#1f2937" x="0" y="0" width="277.5" height="100"/>
+  <rect fill="#4b5563" x="6" y="6" width="86" height="88"/>
+  <rect fill="#6b7280" x="98" y="6" width="173" height="40"/>
+  <rect fill="#6b7280" x="98" y="52" width="83" height="42"/>
+  <rect fill="#6b7280" x="187" y="52" width="84" height="42"/>
+</svg>`
+
+export interface Ru9BannerItem {
+  imageUrl: string
+  href: string
+  // Per-tile overrides — 0 means "use the Grid Layout preset's default for
+  // this slot". Width is a column count; Height is a px cap that switches
+  // the image to object-fit:contain (still never cropped, only ever
+  // letterboxed) so the two dimensions can be tuned independently.
+  widthSpan: number
+  heightPx: number
+}
+
+export type Ru9GridLayout = 'Tall + Wide + 2 Square' | '2x2 Equal' | '3-Column Equal' | '1 Wide Top + 3 Below'
+
+export interface Ru9MultiBannerGridData {
+  bgColor: string
+  paddingY: number
+  layout: Ru9GridLayout
+  gap: number
+  // Shape of ONE base grid unit (e.g. '1/1' = square). Every tile's box is
+  // this ratio scaled by how many column/row units it spans, so the whole
+  // grid reads as one consistent, compact rhythm — a Wide tile (2 units
+  // across) is exactly twice as wide as a Normal tile at the same height,
+  // never a mismatched one-off shape. Images fit inside via object-fit:
+  // contain, so nothing is ever cropped — only ever letterboxed.
+  cellRatio: string
+  // Common height (px) applied to every banner tile at once. 0 = auto (use
+  // cellRatio instead). A per-tile Height override still wins over this.
+  cellHeight: number
+  hoverAnimation: boolean
+  hoverEffect: string
+  hoverAmount: number
+  banners: Ru9BannerItem[]
+}
+
+export const ru9MultiBannerGridDefaults: Ru9MultiBannerGridData = {
+  bgColor: '#ffffff',
+  paddingY: 32,
+  layout: 'Tall + Wide + 2 Square',
+  gap: 16,
+  cellRatio: '1/1',
+  // Pre-filled to roughly what a square cell naturally renders at inside the
+  // default 3-column bento layout at typical desktop widths, so the field
+  // starts already matching what's on screen — the admin then nudges it up
+  // or down from there instead of starting from an empty "auto".
+  cellHeight: 320,
+  hoverAnimation: true,
+  hoverEffect: 'Zoom In',
+  hoverAmount: 4,
+  banners: [
+    { imageUrl: '', href: '/shop', widthSpan: 0, heightPx: 0 },
+    { imageUrl: '', href: '/shop', widthSpan: 0, heightPx: 0 },
+    { imageUrl: '', href: '/shop', widthSpan: 0, heightPx: 0 },
+    { imageUrl: '', href: '/shop', widthSpan: 0, heightPx: 0 },
+  ],
+}
+
+export const ru9MultiBannerGridFields: FieldConfig[] = [
+  { key: '_h_section', label: 'Section', type: 'header' },
+  { key: 'bgColor',  label: 'Background Colour', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '32' },
+
+  { key: '_h_grid', label: 'Grid', type: 'header' },
+  { key: 'layout', label: 'Grid Layout', type: 'select',
+    options: ['Tall + Wide + 2 Square', '2x2 Equal', '3-Column Equal', '1 Wide Top + 3 Below'] },
+  { key: 'gap', label: 'Grid Gap (px)', type: 'number', placeholder: '16' },
+  { key: 'cellRatio', label: 'Grid Cell Shape', type: 'select',
+    options: ['1/1', '4/3', '3/4', '16/9'],
+    optionLabels: { '1/1': 'Square (compact)', '4/3': 'Landscape', '3/4': 'Portrait', '16/9': 'Wide' } },
+  { key: 'cellHeight', label: 'Banner Height (px)', type: 'number', step: 10, placeholder: '320' },
+
+  { key: '_h_hover', label: 'Hover', type: 'header' },
+  { key: 'hoverAnimation', label: 'Enable Hover Animation', type: 'toggle' },
+  { key: 'hoverEffect', label: 'Hover Effect', type: 'select',
+    options: ['Lift Up', 'Drop Down', 'Slide Left', 'Slide Right', 'Pop Out', 'Zoom In', 'Glow', 'Tilt Left', 'Tilt Right'],
+    visibleIf: (d) => d.hoverAnimation !== false },
+  { key: 'hoverAmount', label: 'Hover Amount (px)', type: 'number', placeholder: '4',
+    visibleIf: (d) => d.hoverAnimation !== false },
+
+  { key: '_h_banners', label: 'Banners', type: 'header' },
+  {
+    key: 'banners', label: 'Banner Tiles', type: 'list',
+    listFields: [
+      { key: 'imageUrl',  label: 'Banner Image', type: 'image', noAspectRatio: true },
+      { key: 'href',      label: 'Redirect URL', type: 'url', placeholder: '/shop' },
+      { key: 'widthSpan', label: 'Width (columns, 0 = auto)', type: 'number', step: 1,  unit: 'col', placeholder: '0' },
+      { key: 'heightPx',  label: 'Height (px, 0 = auto)',     type: 'number', step: 10, unit: 'px',  placeholder: '0' },
+    ],
+  },
+]
+
+// Same effect set/formula as Ru7-Hero-Category-Collection's _ru7HoverCSS.
+function _ru9HoverCSS(effect: string, amount: number): string {
+  switch (effect) {
+    case 'Lift Up':     return `transform:translateY(-${amount}px)`
+    case 'Drop Down':   return `transform:translateY(${amount}px)`
+    case 'Slide Left':  return `transform:translateX(-${amount}px)`
+    case 'Slide Right': return `transform:translateX(${amount}px)`
+    case 'Pop Out':     return `transform:scale(${1 + amount / 100})`
+    case 'Zoom In':     return `transform:scale(${1 + amount / 100});box-shadow:0 25px 50px rgba(0,0,0,0.15)`
+    case 'Glow':        return `box-shadow:0 0 ${amount}px rgba(99,102,241,0.7)`
+    case 'Tilt Left':   return `transform:rotate(-${amount}deg)`
+    case 'Tilt Right':  return `transform:rotate(${amount}deg)`
+    default:            return `transform:translateY(-${amount}px)`
+  }
+}
+
+// Each preset fixes the desktop column count and a repeating per-slot column
+// span (width only — height is never forced, see _ru9TileHtml). Tiles beyond
+// the pattern length just cycle back to slot 0. 'Tall + Wide + 2 Square' is
+// NOT built from this table — it uses a nested flex structure instead (see
+// _ru9BentoGroupHtml) because a flat grid with pinned column-starts breaks
+// (tiles overlap and visually "disappear" behind each other) the moment a
+// per-tile Width override changes a neighbor's span.
+const RU9_LAYOUTS: Record<Exclude<Ru9GridLayout, 'Tall + Wide + 2 Square'>, { columns: number; pattern: number[] }> = {
+  '2x2 Equal':            { columns: 2, pattern: [1] },
+  '3-Column Equal':       { columns: 3, pattern: [1] },
+  '1 Wide Top + 3 Below': { columns: 3, pattern: [3, 1, 1, 1] },
+}
+
+// Scales the base "1 unit" cell ratio (e.g. '1/1') by how many column/row
+// units a tile spans, e.g. base '1/1' + 2 columns wide → '2/1'. This is what
+// keeps every tile in the grid reading as the same compact shape — a Wide
+// tile is just N squares' worth of width at the same per-unit height.
+function _ru9ScaleRatio(base: string, colUnits: number, rowUnits: number): string {
+  const [w, h] = base.split('/').map(Number)
+  if (!w || !h) return `${colUnits}/${rowUnits}`
+  return `${w * colUnits}/${h * rowUnits}`
+}
+
+// cellAspect: a fixed 'W/H' ratio for a self-contained shape, or null to
+// instead stretch to 100% of the parent cell (used only for the bento
+// preset's left/tall tile, so its height exactly matches whatever height the
+// right column (wide + gap + squares) naturally comes out to — perfect top
+// AND bottom alignment by construction, rather than an approximated ratio).
+// commonHeightPx: the section-wide "Banner Height" field, already scaled by
+// the caller for however many row-units this specific tile represents. A
+// per-tile Height override always wins over it.
+function _ru9TileHtml(banner: Ru9BannerItem, extraStyle: string, cellAspect: string | null, commonHeightPx: number = 0): string {
+  const src = productImageSrc(banner.imageUrl)
+  // Independent height override: when set, the tile gets a fixed height
+  // instead of the shared grid-cell ratio, and the image stretches to fill
+  // it (object-fit:fill). Left at 0, the tile uses cellAspect and the image
+  // fits inside via object-fit:contain — never cropped, only letterboxed.
+  const fixedHeightPx = banner.heightPx > 0 ? banner.heightPx : commonHeightPx > 0 ? commonHeightPx : 0
+  const useFixedHeight = fixedHeightPx > 0
+  const shapeStyle = useFixedHeight ? `height:${fixedHeightPx}px;` : cellAspect ? `aspect-ratio:${cellAspect};` : `height:100%;`
+  const tileStyle = `display:block;min-width:0;${shapeStyle}border-radius:8px;overflow:hidden;${extraStyle}`
+  const imgStyle = useFixedHeight
+    ? `display:block;width:100%;height:100%;object-fit:fill;transition:transform 300ms ease,box-shadow 300ms ease;`
+    : `display:block;width:100%;height:100%;object-fit:contain;transition:transform 300ms ease,box-shadow 300ms ease;`
+  const inner = src
+    ? `<img src="${src}" alt="" style="${imgStyle}" />`
+    : `<div style="width:100%;height:100%;background-color:#2d3748;border:2px dashed #4b5563;box-sizing:border-box;"></div>`
+
+  return banner.href
+    ? `<a data-ru9-tile href="${banner.href}" style="${tileStyle}">${inner}</a>`
+    : `<div data-ru9-tile style="${tileStyle}">${inner}</div>`
+}
+
+// Left tile (tall) + right column (wide on top, 2 squares below it). Each
+// side is its own flex container, so tiles can never overlap a neighbor —
+// widening one square just shrinks the other, it never collides with the
+// left tile the way pinned grid-column-starts did.
+function _ru9BentoGroupHtml(group: Ru9BannerItem[], gap: number, cellRatio: string, cellHeight: number): string {
+  const [left, wide, sq1, sq2] = group
+  const leftFlex = left && left.widthSpan > 0 ? left.widthSpan : 1
+  // With no common Banner Height set, align-items:stretch (the flex default,
+  // relied on below) makes this cell — and the tall tile inside it, via
+  // height:100% — exactly match the right column's natural height. Once a
+  // common height IS set, the right column's own height becomes known
+  // upfront (wide + gap + squares, all at cellHeight), so the tall tile can
+  // just be given that same total directly instead of relying on stretch.
+  const leftTileHeight = cellHeight > 0 ? cellHeight * 2 + gap : 0
+  const leftHtml = left
+    ? `<div data-ru9-cell style="flex:${leftFlex} 1 0%;min-width:0;">${_ru9TileHtml(left, 'width:100%;', null, leftTileHeight)}</div>`
+    : ''
+
+  const squares = [sq1, sq2].filter(Boolean) as Ru9BannerItem[]
+  const squaresRow = squares.length
+    ? `<div style="display:flex;gap:${gap}px;">${squares.map(sq => {
+        const units = sq.widthSpan > 0 ? sq.widthSpan : 1
+        return `<div data-ru9-cell style="flex:${units} 1 0%;min-width:0;">${_ru9TileHtml(sq, 'width:100%;', _ru9ScaleRatio(cellRatio, units, 1), cellHeight)}</div>`
+      }).join('')}</div>`
+    : ''
+  const rightHtml = (wide || squaresRow)
+    ? `<div data-ru9-cell style="flex:1 1 0%;min-width:0;display:flex;flex-direction:column;gap:${gap}px;">
+        ${wide ? _ru9TileHtml(wide, 'width:100%;', _ru9ScaleRatio(cellRatio, 2, 1), cellHeight) : ''}
+        ${squaresRow}
+      </div>`
+    : ''
+
+  return `<div data-ru9-bento style="display:flex;gap:${gap}px;">${leftHtml}${rightHtml}</div>`
+}
+
+export function renderRu9MultiBannerGrid(data: Ru9MultiBannerGridData): string {
+  const gap = data.gap ?? 16
+  const cellRatio = data.cellRatio || '1/1'
+  const cellHeight = data.cellHeight ?? 0
+  const banners = data.banners ?? []
+
+  const hoverCss = data.hoverAnimation !== false
+    ? `[data-ru9-tile]:hover img{${_ru9HoverCSS(data.hoverEffect, data.hoverAmount)}}`
+    : ''
+
+  let gridHtml: string
+  if (data.layout === 'Tall + Wide + 2 Square') {
+    const groups: Ru9BannerItem[][] = []
+    for (let i = 0; i < banners.length; i += 4) groups.push(banners.slice(i, i + 4))
+    gridHtml = `<div style="display:flex;flex-direction:column;gap:${gap}px;">${groups.map(g => _ru9BentoGroupHtml(g, gap, cellRatio, cellHeight)).join('')}</div>`
+  } else {
+    const { columns, pattern } = RU9_LAYOUTS[data.layout] ?? RU9_LAYOUTS['3-Column Equal']
+    const tilesHtml = banners.map((banner, idx) => {
+      const colSpan = banner.widthSpan > 0 ? Math.min(banner.widthSpan, columns) : pattern[idx % pattern.length]
+      const spanStyle = `width:100%;${colSpan > 1 ? `grid-column:span ${colSpan};` : ''}`
+      return _ru9TileHtml(banner, spanStyle, _ru9ScaleRatio(cellRatio, colSpan, 1), cellHeight)
+    }).join('')
+    gridHtml = `<div data-ru9-grid style="display:grid;grid-template-columns:repeat(${columns},1fr);align-items:start;gap:${gap}px;">${tilesHtml}</div>`
+  }
+
+  return `<section data-component-title="Ru9-Multi-Banner-Grid" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px 1rem;">
+<style>
+  [data-ru9-tile]{position:relative;}
+  [data-ru9-tile] img{will-change:transform;}
+  ${hoverCss}
+  @media(max-width:900px){[data-ru9-grid]{grid-template-columns:repeat(2,1fr)!important}[data-ru9-grid]>[data-ru9-tile]{grid-column:span 1!important;}[data-ru9-bento]{flex-wrap:wrap;}[data-ru9-bento]>[data-ru9-cell]{flex:1 1 100%!important;}}
+  @media(max-width:560px){[data-ru9-grid]{grid-template-columns:1fr!important}}
+</style>
+  <div style="max-width:90rem;margin:0 auto;width:100%;">
+    ${gridHtml}
   </div>
 </section>`
 }
