@@ -1098,19 +1098,91 @@ export interface ContactFormFieldItem {
   is_required: boolean
   default_value: string
   values: string
-  // Optional — only ever set/shown for Ru3-Form-Banner's 'file' field type
-  // (see ru3ContactFormFieldListConfig). Left unset for Ru1/Ru2.
+  // Optional — only shown for the 'file' field type (see
+  // contactFormFieldListConfig). Left unset for every other type.
   button_bg_color?: string
 }
 
+// No technical "Field Name" input — the admin only ever sees the Field
+// Label; the technical submit key is derived from it (see
+// slugifyContactFieldName below), so there's nothing to leave blank.
+// `values` doubles as the comma-separated option list for 'select' and
+// 'checkbox'. `default_value` doubles as the upload button's label for
+// 'file' — shown as a distinctly-labeled field only for that type so it
+// doesn't get mistaken for a checkbox/dropdown default.
 export const contactFormFieldListConfig: FieldConfig[] = [
-  { key: 'name', label: 'Field Name (technical key)', type: 'text', placeholder: 'e.g. name, phone, reply_to, company, subject, note' },
   { key: 'label', label: 'Field Label', type: 'text', placeholder: 'e.g. Your Name' },
-  { key: 'field_type', label: 'Field Type', type: 'select', options: ['text', 'number', 'tel', 'email', 'textarea', 'select'] },
+  {
+    key: 'field_type', label: 'Field Type', type: 'select',
+    options: ['text', 'tel', 'number', 'email', 'textarea', 'select', 'checkbox', 'file'],
+    optionLabels: {
+      tel: 'Phone Number',
+      number: 'Number Stepper',
+      select: 'Dropdown',
+      checkbox: 'Checkboxes (Multiple)',
+      file: 'Image Upload',
+    },
+  },
   { key: 'is_required', label: 'Required', type: 'toggle' },
-  { key: 'default_value', label: 'Default Value', type: 'text' },
-  { key: 'values', label: 'Options (comma-separated, for Select type)', type: 'text' },
+  { key: 'default_value', label: 'Default Value', type: 'text', visibleIf: (item) => item.field_type !== 'file' },
+  { key: 'default_value', label: 'Upload Button Text', type: 'text', placeholder: 'e.g. Choose Photo', visibleIf: (item) => item.field_type === 'file' },
+  { key: 'button_bg_color', label: 'Upload Button Background Color', type: 'color', visibleIf: (item) => item.field_type === 'file' },
+  { key: 'values', label: 'Options (comma-separated)', type: 'text', visibleIf: (item) => item.field_type === 'select' || item.field_type === 'checkbox' },
 ]
+
+// The admin never types a technical key — it's always derived from the
+// Field Label. Callers fall back to the field's own `name` first so
+// existing saved pages (and the default fields below, which use Odoo's
+// expected keys like 'reply_to') keep their exact technical key.
+function slugifyContactFieldName(label: string): string {
+  return (label ?? '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'field'
+}
+
+// Two fields can end up with the same resolved name — two left unlabeled
+// (both fall back to 'field'), or two labels that happen to slugify
+// identically. Left alone, their submitted values would silently collide
+// under one key. Only the first occurrence keeps its name; every repeat
+// gets a numeric suffix.
+function dedupeContactFieldNames<T extends { name: string }>(fields: T[]): T[] {
+  const seen = new Map<string, number>()
+  return fields.map((f) => {
+    const count = seen.get(f.name) ?? 0
+    seen.set(f.name, count + 1)
+    return count === 0 ? f : { ...f, name: `${f.name}_${count + 1}` }
+  })
+}
+
+// Renders a 'checkbox' field's option group. Native HTML has no "at least
+// one of these" constraint — putting `required` on every checkbox would
+// wrongly demand ALL of them be checked. Instead each box starts out
+// required only while none are pre-checked, and toggles every box's
+// `required` off as soon as any one in the group gets checked (and back on
+// if the group empties out again), so the browser's own validation UI
+// still fires correctly on submit.
+function renderCheckboxGroup(f: ContactFormFieldItem, req: string, optionLabelStyle: string): string {
+  const opts = (f.values ?? '').split(',').map(v => v.trim()).filter(Boolean)
+  const checked = (f.default_value ?? '').split(',').map(v => v.trim()).filter(Boolean)
+  const perBoxReq = (req && checked.length === 0) ? ' required' : ''
+  const onchange = req
+    ? ` onchange="var g=this.closest('[data-cbgroup]').querySelectorAll('input[type=checkbox]'),any=Array.prototype.some.call(g,function(c){return c.checked});Array.prototype.forEach.call(g,function(c){c.required=!any});"`
+    : ''
+  return `<div data-cbgroup="true" style="display:flex;flex-direction:column;gap:0.5rem;">${opts.map(o => `<label style="${optionLabelStyle}"><input type="checkbox" name="${f.name}[]" value="${o}"${checked.includes(o) ? ' checked' : ''}${perBoxReq}${onchange} />${o}</label>`).join('')}</div>`
+}
+
+// Renders a 'file' field as a styled button plus a single sibling <span>
+// that shows the selected file's name once chosen. One shared
+// implementation for all three forms so this can't drift or end up
+// duplicated between them — the span is filled in by the file input's own
+// onchange, reading the name straight off the File object.
+function renderFileUploadButton(f: ContactFormFieldItem, req: string, id: string | null, submitBgColor: string, buttonStyle: string, fileNameTextColor: string): string {
+  const buttonLabel = f.default_value || 'Upload Image'
+  const buttonBg = f.button_bg_color || submitBgColor
+  const idAttr = id ? ` id="${id}"` : ''
+  return `<span style="display:inline-flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+    <label style="position:relative;${buttonStyle}background:${buttonBg};">${buttonLabel}<input type="file"${idAttr} name="${f.name}" accept="image/*" style="${VISUALLY_HIDDEN_FILE_INPUT_STYLE}"${req} onchange="var s=this.closest('label').nextElementSibling;if(s)s.textContent=this.files&amp;&amp;this.files[0]?this.files[0].name:'';" /></label>
+    <span style="font-size:0.875rem;color:${fileNameTextColor};"></span>
+  </span>`
+}
 
 // Computes each field's `sequence` from its current array position right
 // before serializing to data-component-props — the one place this output
@@ -1119,6 +1191,13 @@ export const contactFormFieldListConfig: FieldConfig[] = [
 export function withFieldSequence<T extends { fields?: ContactFormFieldItem[] }>(data: T): T & { fields: (ContactFormFieldItem & { sequence: number })[] } {
   return { ...data, fields: (data.fields ?? []).map((f, i) => ({ sequence: i + 1, ...f })) }
 }
+
+// Visually hides the 'file' field type's native <input> while keeping it
+// focusable and part of constraint validation. `display:none` would strip
+// both — per the HTML spec an element with no layout box is barred from
+// constraint validation, so a "Required" image-upload field would silently
+// never be enforced, and it drops out of the tab order entirely.
+const VISUALLY_HIDDEN_FILE_INPUT_STYLE = 'position:absolute;opacity:0;width:1px;height:1px;overflow:hidden;'
 
 export interface Ru1FormData {
   title: string
@@ -1130,6 +1209,7 @@ export interface Ru1FormData {
   submitLabel: string
   submitBgColor: string
   submitAlign: string
+  submitFromEmail: string
   submitToEmail: string
   socials: Array<{ href: string }>
   columnOrder: string[]
@@ -1153,6 +1233,7 @@ export const ru1FormDefaults: Ru1FormData = {
   submitLabel: 'Send message',
   submitBgColor: '#4f46e5',
   submitAlign: 'right',
+  submitFromEmail: '',
   submitToEmail: '',
   socials: [],
   columnOrder: ['info', 'form'],
@@ -1187,7 +1268,8 @@ export const ru1FormFields: FieldConfig[] = [
   { key: 'submitLabel', label: 'Submit Button Text', type: 'text',   placeholder: 'Send message'              },
   { key: 'submitBgColor', label: 'Submit Button Colour', type: 'color'                                        },
   { key: 'submitAlign',   label: 'Submit Button Align',  type: 'select', options: ['left', 'center', 'right'] },
-  { key: 'submitToEmail', label: 'Submit Form To Email', type: 'text', placeholder: 'e.g. sales@yourstore.com' },
+  { key: 'submitFromEmail', label: 'Email From', type: 'text', placeholder: 'e.g. noreply@yourstore.com' },
+  { key: 'submitToEmail', label: 'Email To', type: 'text', placeholder: 'e.g. sales@yourstore.com' },
   fontField('buttonFont', 'Button Font'),
   {
     key: 'socials', label: 'Social Links', type: 'list',
@@ -1260,29 +1342,42 @@ export function renderRu1Form(data: Ru1FormData): string {
 
   // Fields render from data.fields — falls back to the block's own defaults
   // for pages saved before this list existed (data.fields undefined/empty).
-  const ru1Fields = (data.fields && data.fields.length) ? data.fields : ru1FormDefaults.fields
+  // `name` is always resolved here (falling back to a slug of the label)
+  // rather than left to admin input — see slugifyContactFieldName above.
+  const ru1Fields = dedupeContactFieldNames(((data.fields && data.fields.length) ? data.fields : ru1FormDefaults.fields)
+    .map(f => ({ ...f, name: f.name || slugifyContactFieldName(f.label) })))
   const ru1FieldsHtml = ru1Fields.map((f) => {
     const req = f.is_required ? ' required' : ''
     const value = f.default_value ? ` value="${f.default_value}"` : ''
-    const fullWidth = (f.field_type === 'textarea' || f.field_type === 'select') ? 'grid-column:1/-1;' : ''
+    const fullWidth = ['textarea', 'select', 'checkbox', 'file'].includes(f.field_type) ? 'grid-column:1/-1;' : ''
     let control: string
     if (f.field_type === 'textarea') {
       control = `<textarea id="ru1-${f.name}" name="${f.name}" rows="4" style="${inputStyle}resize:vertical;"${req}>${f.default_value ?? ''}</textarea>`
     } else if (f.field_type === 'select') {
       const opts = (f.values ?? '').split(',').map(v => v.trim()).filter(Boolean)
       control = `<select id="ru1-${f.name}" name="${f.name}" style="${inputStyle}"${req}>${opts.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`
+    } else if (f.field_type === 'checkbox') {
+      control = renderCheckboxGroup(f, req, 'display:flex;align-items:center;gap:0.5rem;font-size:0.9375rem;color:#111827;font-weight:400;')
+    } else if (f.field_type === 'file') {
+      control = renderFileUploadButton(f, req, `ru1-${f.name}`, data.submitBgColor, 'display:inline-flex;align-items:center;border-radius:6px;padding:0.625rem 1.25rem;font-size:0.875rem;font-weight:600;color:#fff;cursor:pointer;', '#111827')
     } else {
       control = `<input type="${f.field_type || 'text'}" id="ru1-${f.name}" name="${f.name}" style="${inputStyle}"${value}${req} />`
     }
+    // A checkbox group has no single control to point a `for` at — a plain
+    // <span> avoids a dangling label reference that focuses nothing.
+    const fieldLabelHtml = f.field_type === 'checkbox'
+      ? `<span style="display:block;font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:0.625rem;">${f.label}</span>`
+      : `<label for="ru1-${f.name}" style="display:block;font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:0.625rem;">${f.label}</label>`
     return `<div style="${fullWidth}">
-            <label for="ru1-${f.name}" style="display:block;font-size:0.875rem;font-weight:600;color:#111827;margin-bottom:0.625rem;">${f.label}</label>
+            ${fieldLabelHtml}
             ${control}
           </div>`
   }).join('')
 
   const formCol = `<div data-ru1form-formcol="true" style="padding:5rem 2rem 6rem;">
-      <form data-ru1form-inner="true" style="max-width:100%;margin-left:3.5rem;">
-        <input type="hidden" name="submit_to_email" value="${data.submitToEmail ?? ''}" />
+      <form data-ru1form-inner="true" enctype="multipart/form-data" style="max-width:100%;margin-left:3.5rem;">
+        <input type="hidden" name="email_from" value="${data.submitFromEmail ?? ''}" />
+        <input type="hidden" name="email_to" value="${data.submitToEmail ?? ''}" />
         <div data-ru1form-fields="true" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem 2rem;">
           ${ru1FieldsHtml}
         </div>
@@ -1294,7 +1389,7 @@ export function renderRu1Form(data: Ru1FormData): string {
 
   const showInfo = data.showInfo !== false
   const showForm = data.showForm !== false
-  const dataForProps = withFieldSequence(data)
+  const dataForProps = withFieldSequence({ ...data, fields: ru1Fields })
 
   if (showInfo && showForm) {
     const colMap: Record<string, string> = { info: infoCol, form: formCol }
@@ -1376,6 +1471,7 @@ export interface Ru2FormData {
   submitBgColor: string
   submitTextColor: string
   submitAlign: string
+  submitFromEmail: string
   submitToEmail: string
   inputBorderColor: string
   labelColor: string
@@ -1419,6 +1515,7 @@ export const ru2FormDefaults: Ru2FormData = {
   submitBgColor: '#6366f1',
   submitTextColor: '#ffffff',
   submitAlign: 'right',
+  submitFromEmail: '',
   submitToEmail: '',
   inputBorderColor: '#e5e7eb',
   labelColor: '#374151',
@@ -1486,7 +1583,8 @@ export const ru2FormFields: FieldConfig[] = [
   { key: 'submitBgColor', label: 'Submit Button Background', type: 'color' },
   { key: 'submitTextColor', label: 'Submit Button Text Colour', type: 'color' },
   { key: 'submitAlign', label: 'Submit Button Align', type: 'select', options: ['left', 'center', 'right'] },
-  { key: 'submitToEmail', label: 'Submit Form To Email', type: 'text', placeholder: 'e.g. sales@yourstore.com' },
+  { key: 'submitFromEmail', label: 'Email From', type: 'text', placeholder: 'e.g. noreply@yourstore.com' },
+  { key: 'submitToEmail', label: 'Email To', type: 'text', placeholder: 'e.g. sales@yourstore.com' },
   fontField('buttonFont', 'Button Font'),
   { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
   { key: 'labelColor', label: 'Label Colour', type: 'color' },
@@ -1542,17 +1640,24 @@ export function renderRu2Form(data: Ru2FormData): string {
 
   // Fields render from data.fields — falls back to the block's own defaults
   // for pages saved before this list existed (data.fields undefined/empty).
-  const ru2Fields = (data.fields && data.fields.length) ? data.fields : ru2FormDefaults.fields
+  // `name` is always resolved here (falling back to a slug of the label)
+  // rather than left to admin input — see slugifyContactFieldName above.
+  const ru2Fields = dedupeContactFieldNames(((data.fields && data.fields.length) ? data.fields : ru2FormDefaults.fields)
+    .map(f => ({ ...f, name: f.name || slugifyContactFieldName(f.label) })))
   const ru2FieldsHtml = ru2Fields.map((f) => {
     const req = f.is_required ? ' required' : ''
     const value = f.default_value ? ` value="${f.default_value}"` : ''
-    const fullWidth = (f.field_type === 'textarea' || f.field_type === 'select') ? 'grid-column:1/-1;' : ''
+    const fullWidth = ['textarea', 'select', 'checkbox', 'file'].includes(f.field_type) ? 'grid-column:1/-1;' : ''
     let control: string
     if (f.field_type === 'textarea') {
       control = `<textarea name="${f.name}" rows="4" placeholder="${f.label}" style="${inputStyle}resize:vertical;height:120px;"${req}>${f.default_value ?? ''}</textarea>`
     } else if (f.field_type === 'select') {
       const opts = (f.values ?? '').split(',').map(v => v.trim()).filter(Boolean)
       control = `<select name="${f.name}" style="${inputStyle}appearance:none;cursor:pointer;"${req}>${opts.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`
+    } else if (f.field_type === 'checkbox') {
+      control = renderCheckboxGroup(f, req, `display:flex;align-items:center;gap:8px;font-size:14px;color:${data.labelColor};font-weight:400;`)
+    } else if (f.field_type === 'file') {
+      control = renderFileUploadButton(f, req, null, data.submitBgColor, `display:inline-flex;align-items:center;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;color:${data.submitTextColor};cursor:pointer;`, data.labelColor)
     } else {
       control = `<input type="${f.field_type || 'text'}" name="${f.name}" placeholder="${f.label}" style="${inputStyle}"${value}${req}/>`
     }
@@ -1562,8 +1667,9 @@ export function renderRu2Form(data: Ru2FormData): string {
       </div>`
   }).join('')
 
-  const formPanel = `<form data-ru2form-panel="true" style="background:${data.formBgColor};padding:${data.paddingY}px ${data.paddingX}px;">
-    <input type="hidden" name="submit_to_email" value="${data.submitToEmail ?? ''}" />
+  const formPanel = `<form data-ru2form-panel="true" enctype="multipart/form-data" style="background:${data.formBgColor};padding:${data.paddingY}px ${data.paddingX}px;">
+    <input type="hidden" name="email_from" value="${data.submitFromEmail ?? ''}" />
+    <input type="hidden" name="email_to" value="${data.submitToEmail ?? ''}" />
     <div style="margin-bottom:28px;">
       <h3 style="font-size:22px;font-weight:700;color:#111827;margin:0 0 6px;${fontCss(data.formTitleFont, data.fontFamily)}">${data.formTitle}</h3>
       <p style="font-size:14px;color:#9ca3af;margin:0;${fontCss(data.formSubtitleFont, data.fontFamily)}">${data.formSubtitle}</p>
@@ -1578,7 +1684,7 @@ export function renderRu2Form(data: Ru2FormData): string {
 
   const showInfo = data.showInfo !== false
   const showForm = data.showForm !== false
-  const dataForProps = withFieldSequence(data)
+  const dataForProps = withFieldSequence({ ...data, fields: ru2Fields })
 
   if (showInfo && showForm) {
     return `<section data-component-title="Ru2-Form" data-component-props="${encodeURIComponent(JSON.stringify(dataForProps))}" style="overflow:hidden;${sectionFontStyle}">
@@ -1621,50 +1727,35 @@ export const ru3FormBannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox
   <rect fill="#718096" x="12" y="138" width="253.5" height="14" rx="3"/>
 </svg>`
 
+export const ru3BannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 90">
+  <rect fill="#394152" width="277.5" height="90"/>
+  <rect fill="#1c2434" width="277.5" height="34"/>
+  <rect fill="#4a5568" x="12" y="12" width="110" height="11" rx="1"/>
+  <rect fill="#5a6475" x="12" y="46" width="55" height="6" rx="1"/>
+  <rect fill="#718096" x="12" y="60" width="110" height="16" rx="3"/>
+</svg>`
+
+export const ru3ContactFormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 130">
+  <rect fill="#ffffff" width="277.5" height="130"/>
+  <rect fill="#9ca3af" x="12" y="14" width="55" height="6" rx="1"/>
+  <rect fill="#e5e7eb" x="12" y="24" width="253.5" height="14" rx="3"/>
+  <rect fill="#9ca3af" x="12" y="50" width="65" height="6" rx="1"/>
+  <rect fill="#e5e7eb" x="12" y="60" width="253.5" height="14" rx="3"/>
+  <rect fill="#0a1e5e" x="12" y="96" width="90" height="24" rx="4"/>
+</svg>`
+
 export type Ru3FormBannerFieldItem = ContactFormFieldItem
 
-// Ru3-Form + Banner's own Field Type list — kept separate from
-// contactFormFieldListConfig (shared by Ru1/Ru2) so its extra types
-// (checkbox, file) and friendlier labels don't leak into those blocks.
-// No technical "Field Name" input — the admin only ever sees the Field
-// Label; the technical submit key is derived from it (see
-// slugifyRu3FieldName below), so there's nothing to leave blank.
-// `values` doubles as the comma-separated option list for 'select' and
-// 'checkbox'. `default_value` doubles as the upload button's label for
-// 'file' — shown as a distinctly-labeled field only for that type so it
-// doesn't get mistaken for a checkbox/dropdown default.
-export const ru3ContactFormFieldListConfig: FieldConfig[] = [
-  { key: 'label', label: 'Field Label', type: 'text', placeholder: 'e.g. Your Name' },
-  {
-    key: 'field_type', label: 'Field Type', type: 'select',
-    options: ['text', 'tel', 'number', 'email', 'textarea', 'select', 'checkbox', 'file'],
-    optionLabels: {
-      tel: 'Phone Number',
-      number: 'Number Stepper',
-      select: 'Dropdown',
-      checkbox: 'Checkboxes (Multiple)',
-      file: 'Image Upload',
-    },
-  },
-  { key: 'is_required', label: 'Required', type: 'toggle' },
-  { key: 'default_value', label: 'Default Value', type: 'text', visibleIf: (item) => item.field_type !== 'file' },
-  { key: 'default_value', label: 'Upload Button Text', type: 'text', placeholder: 'e.g. Choose Photo', visibleIf: (item) => item.field_type === 'file' },
-  { key: 'button_bg_color', label: 'Upload Button Background Color', type: 'color', visibleIf: (item) => item.field_type === 'file' },
-  { key: 'values', label: 'Options (comma-separated)', type: 'text', visibleIf: (item) => item.field_type === 'select' || item.field_type === 'checkbox' },
-]
-
-// The admin never types a technical key — it's always derived from the
-// Field Label. Falls back to the field's own `name` first so existing
-// saved pages (and the fixed default fields below, which use Odoo's
-// expected keys like 'reply_to') keep their exact technical key.
-function slugifyRu3FieldName(label: string): string {
-  return (label ?? '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'field'
-}
-
-export interface Ru3FormBannerData {
+// Split into two independent pieces — Ru3-Banner and Ru3-Contact-Form — so
+// either can be added/removed/reordered on its own (e.g. to put a Text
+// block between them). Ru3FormBannerData is kept as the union of both
+// shapes purely for the original combined "Ru3-Form + Banner" block, which
+// stays untouched below so already-published pages using it don't need any
+// migration; it shares the exact same rendering code as the two new blocks
+// via buildRu3BannerHtml/buildRu3ContactFormHtml.
+export interface Ru3BannerData {
   fontFamily: string
 
-  // Banner
   bannerBgColor: string
   bannerImage: string
   bannerImageAspectRatio: string
@@ -1674,26 +1765,26 @@ export interface Ru3FormBannerData {
   bannerHeight: number
   bannerTitleFont: string
 
-  // Breadcrumb
   showBreadcrumb: boolean
   breadcrumbHomeHref: string
   breadcrumbLabel: string
   breadcrumbColor: string
 
-  // Page title
   showPageTitle: boolean
   pageTitle: string
   pageTitleColor: string
   pageTitleFont: string
+}
 
-  // Section & form layout
+export interface Ru3ContactFormData {
+  fontFamily: string
+
   sectionBgColor: string
   paddingY: number
   paddingX: number
   formMaxWidth: number
   formAlign: string
 
-  // Field style
   labelColor: string
   labelFont: string
   requiredColor: string
@@ -1702,7 +1793,6 @@ export interface Ru3FormBannerData {
   inputTextColor: string
   inputRadius: number
 
-  // Submit button
   submitLabel: string
   submitBgColor: string
   submitTextColor: string
@@ -1717,7 +1807,9 @@ export interface Ru3FormBannerData {
   fields: Ru3FormBannerFieldItem[]
 }
 
-export const ru3FormBannerDefaults: Ru3FormBannerData = {
+export interface Ru3FormBannerData extends Ru3BannerData, Ru3ContactFormData {}
+
+export const ru3BannerDefaults: Ru3BannerData = {
   fontFamily: '',
 
   bannerBgColor: '#0f1b2d',
@@ -1738,6 +1830,10 @@ export const ru3FormBannerDefaults: Ru3FormBannerData = {
   pageTitle: 'Contact Us',
   pageTitleColor: '#0a1e5e',
   pageTitleFont: '',
+}
+
+export const ru3ContactFormDefaults: Ru3ContactFormData = {
+  fontFamily: '',
 
   sectionBgColor: '#ffffff',
   paddingY: 48,
@@ -1771,6 +1867,78 @@ export const ru3FormBannerDefaults: Ru3FormBannerData = {
     { name: 'note', label: 'Your Question', field_type: 'textarea', is_required: true, default_value: '', values: '' },
   ],
 }
+
+export const ru3FormBannerDefaults: Ru3FormBannerData = {
+  ...ru3BannerDefaults,
+  ...ru3ContactFormDefaults,
+  // Spread copies `fields` by reference — clone it so this object never
+  // shares a mutable array with ru3ContactFormDefaults.
+  fields: [...ru3ContactFormDefaults.fields],
+}
+
+export const ru3BannerFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_banner', label: 'Banner', type: 'header' },
+  { key: 'bannerBgColor', label: 'Banner Background', type: 'color' },
+  { key: 'bannerImage', label: 'Banner Image (URL)', type: 'image' },
+  { key: 'bannerImageAspectRatio', label: 'Banner Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
+  { key: 'bannerTitle', label: 'Banner Title', type: 'text', placeholder: 'e.g. Contact Us' },
+  { key: 'bannerTitleColor', label: 'Banner Title Colour', type: 'color' },
+  { key: 'bannerTitleAlign', label: 'Banner Title Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'bannerHeight', label: 'Banner Height', type: 'number', unit: 'px', step: 10, placeholder: '200' },
+  fontField('bannerTitleFont', 'Banner Title Font'),
+
+  { key: '_h_breadcrumb', label: 'Breadcrumb', type: 'header' },
+  { key: 'showBreadcrumb', label: 'Show Breadcrumb', type: 'toggle' },
+  { key: 'breadcrumbHomeHref', label: 'Home Link URL', type: 'url', placeholder: '/' },
+  { key: 'breadcrumbLabel', label: 'Current Page Label', type: 'text', placeholder: 'e.g. Contact Us' },
+  { key: 'breadcrumbColor', label: 'Breadcrumb Colour', type: 'color' },
+
+  { key: '_h_pagetitle', label: 'Page Title', type: 'header' },
+  { key: 'showPageTitle', label: 'Show Page Title', type: 'toggle' },
+  { key: 'pageTitle', label: 'Page Title Text', type: 'text', placeholder: 'e.g. Contact Us' },
+  { key: 'pageTitleColor', label: 'Page Title Colour', type: 'color' },
+  fontField('pageTitleFont', 'Page Title Font'),
+]
+
+export const ru3ContactFormFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_layout', label: 'Form Layout', type: 'header' },
+  { key: 'sectionBgColor', label: 'Section Background', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '48' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '24' },
+  { key: 'formMaxWidth', label: 'Form Max Width', type: 'number', unit: 'px', step: 20, placeholder: '640' },
+  { key: 'formAlign', label: 'Form Alignment', type: 'select', options: ['left', 'center', 'right'] },
+
+  { key: '_h_fieldstyle', label: 'Field Style', type: 'header' },
+  { key: 'labelColor', label: 'Label Colour', type: 'color' },
+  fontField('labelFont', 'Label Font'),
+  { key: 'requiredColor', label: 'Required Asterisk Colour', type: 'color' },
+  { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
+  { key: 'inputBgColor', label: 'Input Background', type: 'color' },
+  { key: 'inputTextColor', label: 'Input Text Colour', type: 'color' },
+  { key: 'inputRadius', label: 'Input Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '4' },
+
+  { key: '_h_submit', label: 'Submit Button', type: 'header' },
+  { key: 'submitLabel', label: 'Button Text', type: 'text', placeholder: 'e.g. Submit' },
+  { key: 'submitBgColor', label: 'Button Background', type: 'color' },
+  { key: 'submitTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'submitWidthMode', label: 'Button Width', type: 'select', options: ['full', 'auto'] },
+  { key: 'submitAlign', label: 'Button Alignment', type: 'select', options: ['left', 'center', 'right'], visibleIf: (d) => d.submitWidthMode === 'auto' },
+  { key: 'submitRadius', label: 'Button Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '4' },
+  fontField('buttonFont', 'Button Font'),
+  { key: 'submitFromEmail', label: 'Email From', type: 'text', placeholder: 'e.g. noreply@yourstore.com' },
+  { key: 'submitToEmail', label: 'Email To', type: 'text', placeholder: 'e.g. sales@yourstore.com' },
+
+  // Placed at the bottom of the panel — layout/style are set up first, then
+  // the actual fields are added/edited/reordered last.
+  { key: '_h_fields', label: 'Form Fields', type: 'header' },
+  { key: 'fields', label: 'Form Fields', type: 'list', listFields: contactFormFieldListConfig },
+]
 
 export const ru3FormBannerFields: FieldConfig[] = [
   { key: '_h_font', label: 'Font', type: 'header' },
@@ -1828,10 +1996,13 @@ export const ru3FormBannerFields: FieldConfig[] = [
   // Placed at the bottom of the panel — banner/layout/style are set up first,
   // then the actual fields are added/edited/reordered last.
   { key: '_h_fields', label: 'Form Fields', type: 'header' },
-  { key: 'fields', label: 'Form Fields', type: 'list', listFields: ru3ContactFormFieldListConfig },
+  { key: 'fields', label: 'Form Fields', type: 'list', listFields: contactFormFieldListConfig },
 ]
 
-export function renderRu3FormBanner(data: Ru3FormBannerData): string {
+// Returns just the banner + breadcrumb + page title markup (no <section>
+// wrapper) — shared by the standalone Ru3-Banner block and the combined
+// Ru3-Form + Banner block so they can never render this differently.
+function buildRu3BannerHtml(data: Ru3BannerData): string {
   const bannerAlignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
   const bannerItems = bannerAlignMap[data.bannerTitleAlign] ?? 'flex-start'
   const bannerTextAlign = data.bannerTitleAlign ?? 'left'
@@ -1865,6 +2036,20 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
     ? `<h1 style="max-width:80rem;margin:0 auto;padding:1rem 2rem 0;font-size:min(2.25rem,7vw);font-weight:700;color:${data.pageTitleColor};${fontCss(data.pageTitleFont, data.fontFamily)}">${data.pageTitle}</h1>`
     : ''
 
+  return `<div style="${bannerBg}${bannerAspect}min-height:${data.bannerHeight}px;padding:2.5rem 0;display:flex;flex-direction:column;justify-content:flex-end;box-sizing:border-box;">
+    <div style="max-width:80rem;margin:0 auto;padding:0 2rem;display:flex;flex-direction:column;align-items:${bannerItems};text-align:${bannerTextAlign};width:100%;box-sizing:border-box;">
+      <h2 style="font-size:min(2.75rem,9vw);font-weight:800;color:${data.bannerTitleColor};margin:0;line-height:1.1;${fontCss(data.bannerTitleFont, data.fontFamily)}">${data.bannerTitle}</h2>
+    </div>
+  </div>
+  ${breadcrumbHtml}
+  ${pageTitleHtml}`
+}
+
+// Returns just the form-layout wrapper + <form> markup (no <section>
+// wrapper), plus the fields resolved for data-component-props — shared by
+// the standalone Ru3-Contact-Form block and the combined Ru3-Form + Banner
+// block so they can never render or serialize this differently.
+function buildRu3ContactFormHtml(data: Ru3ContactFormData): { html: string; resolvedFields: Ru3FormBannerFieldItem[] } {
   const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:${data.inputRadius ?? 4}px;background:${data.inputBgColor};padding:0.625rem 0.875rem;font-size:0.9375rem;color:${data.inputTextColor};border:1px solid ${data.inputBorderColor};outline:none;`
   const labelStyle = `display:block;font-size:0.875rem;font-weight:600;color:${data.labelColor};margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
 
@@ -1872,10 +2057,10 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
   // for pages saved before the new field shape (name/field_type/is_required/
   // default_value/values) existed. `name` is always resolved here (falling
   // back to a slug of the label) rather than left to admin input — see
-  // slugifyRu3FieldName above.
-  const ru3Fields = ((data.fields && data.fields.length) ? data.fields : ru3FormBannerDefaults.fields)
-    .map(f => ({ ...f, name: f.name || slugifyRu3FieldName(f.label) }))
-  const fieldsHtml = ru3Fields.map((f) => {
+  // slugifyContactFieldName above.
+  const resolvedFields = dedupeContactFieldNames(((data.fields && data.fields.length) ? data.fields : ru3ContactFormDefaults.fields)
+    .map(f => ({ ...f, name: f.name || slugifyContactFieldName(f.label) })))
+  const fieldsHtml = resolvedFields.map((f) => {
     const requiredMark = f.is_required ? ` <span style="color:${data.requiredColor};">*</span>` : ''
     const req = f.is_required ? ' required' : ''
     const value = f.default_value ? ` value="${f.default_value}"` : ''
@@ -1886,13 +2071,9 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
       const opts = (f.values ?? '').split(',').map(v => v.trim()).filter(Boolean)
       control = `<select name="${f.name}" style="${inputStyle}"${req}>${opts.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`
     } else if (f.field_type === 'checkbox') {
-      const opts = (f.values ?? '').split(',').map(v => v.trim()).filter(Boolean)
-      const checked = (f.default_value ?? '').split(',').map(v => v.trim()).filter(Boolean)
-      control = `<div style="display:flex;flex-direction:column;gap:0.5rem;">${opts.map(o => `<label style="display:flex;align-items:center;gap:0.5rem;font-size:0.9375rem;color:${data.inputTextColor};font-weight:400;"><input type="checkbox" name="${f.name}[]" value="${o}"${checked.includes(o) ? ' checked' : ''} />${o}</label>`).join('')}</div>`
+      control = renderCheckboxGroup(f, req, `display:flex;align-items:center;gap:0.5rem;font-size:0.9375rem;color:${data.inputTextColor};font-weight:400;`)
     } else if (f.field_type === 'file') {
-      const buttonLabel = f.default_value || 'Upload Image'
-      const buttonBg = f.button_bg_color || data.submitBgColor
-      control = `<label style="display:inline-flex;align-items:center;border-radius:${data.inputRadius ?? 4}px;padding:0.625rem 1.25rem;font-size:0.9375rem;font-weight:600;color:${data.submitTextColor};background:${buttonBg};cursor:pointer;">${buttonLabel}<input type="file" name="${f.name}" accept="image/*" style="display:none;"${req} /></label>`
+      control = renderFileUploadButton(f, req, null, data.submitBgColor, `display:inline-flex;align-items:center;border-radius:${data.inputRadius ?? 4}px;padding:0.625rem 1.25rem;font-size:0.9375rem;font-weight:600;color:${data.submitTextColor};cursor:pointer;`, data.inputTextColor)
     } else {
       control = `<input type="${f.field_type || 'text'}" name="${f.name}" style="${inputStyle}"${value}${req} />`
     }
@@ -1918,17 +2099,8 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
   // Duplicating them into this metadata array made a downstream renderer
   // that walks `fields` show a visible "Email From"/"Email To" label for
   // every entry regardless of field_type.
-  const dataForProps = withFieldSequence({ ...data, fields: ru3Fields })
-  return `<section data-component-title="Ru3-Form + Banner" data-component-props="${encodeURIComponent(JSON.stringify(dataForProps))}" style="background:${data.sectionBgColor};${fontCss(undefined, data.fontFamily)}">
-  <div style="${bannerBg}${bannerAspect}min-height:${data.bannerHeight}px;padding:2.5rem 0;display:flex;flex-direction:column;justify-content:flex-end;box-sizing:border-box;">
-    <div style="max-width:80rem;margin:0 auto;padding:0 2rem;display:flex;flex-direction:column;align-items:${bannerItems};text-align:${bannerTextAlign};width:100%;box-sizing:border-box;">
-      <h2 style="font-size:min(2.75rem,9vw);font-weight:800;color:${data.bannerTitleColor};margin:0;line-height:1.1;${fontCss(data.bannerTitleFont, data.fontFamily)}">${data.bannerTitle}</h2>
-    </div>
-  </div>
-  ${breadcrumbHtml}
-  ${pageTitleHtml}
-  <div style="padding:${data.paddingY}px min(${data.paddingX}px,6vw);">
-    <form style="width:100%;max-width:${data.formMaxWidth ?? 640}px;margin:${formMargin};box-sizing:border-box;">
+  const html = `<div style="padding:${data.paddingY}px min(${data.paddingX}px,6vw);">
+    <form enctype="multipart/form-data" style="width:100%;max-width:${data.formMaxWidth ?? 640}px;margin:${formMargin};box-sizing:border-box;">
       <input type="hidden" name="email_from" value="${data.submitFromEmail ?? ''}" />
       <input type="hidden" name="email_to" value="${data.submitToEmail ?? ''}" />
       ${fieldsHtml}
@@ -1936,7 +2108,31 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
         <button type="submit" style="${submitBtnStyle}">${data.submitLabel}</button>
       </div>
     </form>
-  </div>
+  </div>`
+
+  return { html, resolvedFields }
+}
+
+export function renderRu3Banner(data: Ru3BannerData): string {
+  return `<section data-component-title="Ru3-Banner" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
+  ${buildRu3BannerHtml(data)}
+</section>`
+}
+
+export function renderRu3ContactForm(data: Ru3ContactFormData): string {
+  const { html, resolvedFields } = buildRu3ContactFormHtml(data)
+  const dataForProps = withFieldSequence({ ...data, fields: resolvedFields })
+  return `<section data-component-title="Ru3-Contact-Form" data-component-props="${encodeURIComponent(JSON.stringify(dataForProps))}" style="background:${data.sectionBgColor};${fontCss(undefined, data.fontFamily)}">
+  ${html}
+</section>`
+}
+
+export function renderRu3FormBanner(data: Ru3FormBannerData): string {
+  const { html: formHtml, resolvedFields } = buildRu3ContactFormHtml(data)
+  const dataForProps = withFieldSequence({ ...data, fields: resolvedFields })
+  return `<section data-component-title="Ru3-Form + Banner" data-component-props="${encodeURIComponent(JSON.stringify(dataForProps))}" style="background:${data.sectionBgColor};${fontCss(undefined, data.fontFamily)}">
+  ${buildRu3BannerHtml(data)}
+  ${formHtml}
 </section>`
 }
 

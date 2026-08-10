@@ -37,6 +37,14 @@ import {
   ru3FormBannerFields,
   ru3FormBannerSvg,
   renderRu3FormBanner,
+  ru3BannerDefaults,
+  ru3BannerFields,
+  ru3BannerSvg,
+  renderRu3Banner,
+  ru3ContactFormDefaults,
+  ru3ContactFormFields,
+  ru3ContactFormSvg,
+  renderRu3ContactForm,
   ru1FooterDefaults,
   ru1FooterFields,
   ru1FooterSvg,
@@ -290,6 +298,18 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       cover_image: ru3FormBannerSvg,
       html_code: renderRu3FormBanner(ru3FormBannerDefaults),
     },
+    {
+      title: 'Ru3-Banner',
+      category: 'Contact',
+      cover_image: ru3BannerSvg,
+      html_code: renderRu3Banner(ru3BannerDefaults),
+    },
+    {
+      title: 'Ru3-Contact-Form',
+      category: 'Contact',
+      cover_image: ru3ContactFormSvg,
+      html_code: renderRu3ContactForm(ru3ContactFormDefaults),
+    },
   ],
   'About Us': [
     {
@@ -488,6 +508,18 @@ export function useLayouts() {
     defaults: ru3FormBannerDefaults,
     fields: ru3FormBannerFields,
     render: renderRu3FormBanner,
+  })
+
+  blockRegistry.register('Ru3-Banner', {
+    defaults: ru3BannerDefaults,
+    fields: ru3BannerFields,
+    render: renderRu3Banner,
+  })
+
+  blockRegistry.register('Ru3-Contact-Form', {
+    defaults: ru3ContactFormDefaults,
+    fields: ru3ContactFormFields,
+    render: renderRu3ContactForm,
   })
 
   blockRegistry.register('Ru1-About', {
