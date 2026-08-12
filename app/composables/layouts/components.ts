@@ -4964,6 +4964,14 @@ export const ru5ImageCarouselFields: FieldConfig[] = [
 export function renderRu5ImageCarousel(data: Ru5ImageCarouselData): string {
   const uid = 'rbx-slider-' + Math.random().toString(36).slice(2, 7)
 
+  // Configured height is the target at a ~1280px (laptop) viewport width;
+  // scales up via vw for large/4K screens, clamped between 0.55x and 1.7x that target.
+  const baseHeight = data.height ?? 560
+  const minHeight = Math.round(baseHeight * 0.55)
+  const maxHeight = Math.round(baseHeight * 1.7)
+  const vwRatio = (baseHeight / 1280) * 100
+  const responsiveHeight = `clamp(${minHeight}px, ${vwRatio.toFixed(2)}vw, ${maxHeight}px)`
+
   const positionMap: Record<string, string> = {
     'center-left':   'align-items:center;justify-content:flex-start;',
     'center':        'align-items:center;justify-content:center;',
@@ -4976,7 +4984,7 @@ export function renderRu5ImageCarousel(data: Ru5ImageCarouselData): string {
   const slidesHtml = (data.slides ?? []).map((slide, i) => {
     const overlayOpacity = Math.min(100, Math.max(0, slide.overlayOpacity ?? 40)) / 100
     const bgStyle = slide.bgImage
-      ? `background-image:url('${slide.bgImage}');background-size:cover;background-position:center;background-repeat:no-repeat;`
+      ? `background-image:url('${slide.bgImage}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;`
       : `background-color:#1f2937;`
     const overlayStyle = `position:absolute;inset:0;background:${slide.overlayColor ?? '#000'};opacity:${overlayOpacity};pointer-events:none;`
     const ctaHtml = slide.showCta !== false
@@ -5005,7 +5013,7 @@ export function renderRu5ImageCarousel(data: Ru5ImageCarouselData): string {
     </div>` : ''
 
   return `<section data-component-title="Ru5-Image-Carousel" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;overflow:hidden;${fontCss(undefined, data.fontFamily)}">
-  <div data-rubikx-component="HeroSlider" data-on-mount="loadSlider" data-autoplay="${data.autoPlay !== false ? 'true' : 'false'}" data-interval="${(data.autoPlayInterval ?? 4) * 1000}" style="position:relative;height:${data.height}px;overflow:hidden;">
+  <div data-rubikx-component="HeroSlider" data-on-mount="loadSlider" data-autoplay="${data.autoPlay !== false ? 'true' : 'false'}" data-interval="${(data.autoPlayInterval ?? 4) * 1000}" style="position:relative;height:${responsiveHeight};overflow:hidden;">
     ${slidesHtml}
     ${arrowsHtml}
     ${dotsHtml}
