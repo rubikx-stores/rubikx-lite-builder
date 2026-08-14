@@ -2,6 +2,7 @@
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { usePageBuilderStateStore, sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
 import ProductsEditor from '../ProductsEditor.client.vue'
+import FaqAnswerEditorModal from './FaqAnswerEditorModal.client.vue'
 import { useBlockRegistry } from '~/composables/editor/useBlockRegistry'
 import type { FieldConfig } from '~/composables/editor/useBlockRegistry'
 import { productImageSrc } from '~/composables/useProductImageSrc'
@@ -380,6 +381,33 @@ function debouncedUpdateBlockListItem(listKey: string, idx: number, itemKey: str
   _listItemDebounceTimer = window.setTimeout(() => {
     updateBlockListItem(listKey, idx, itemKey, value)
   }, 50)
+}
+
+// FAQ answer: the plain single-line input is too small to read and can't
+// hold a hyperlink/button, so it opens a bigger modal editor instead (see
+// FaqAnswerEditorModal.client.vue). The sidebar row itself just shows a
+// stripped-text preview + an "Edit" button.
+const showFaqAnswerModal = ref(false)
+const faqAnswerModalInitial = ref('')
+const faqAnswerModalTarget = ref<{ listKey: string; idx: number; itemKey: string } | null>(null)
+
+function stripHtml(html: any): string {
+  if (typeof html !== 'string' || !html) return ''
+  const div = document.createElement('div')
+  div.innerHTML = html
+  return div.textContent || ''
+}
+
+function openFaqAnswerModal(listKey: string, idx: number, itemKey: string, currentValue: any) {
+  faqAnswerModalTarget.value = { listKey, idx, itemKey }
+  faqAnswerModalInitial.value = typeof currentValue === 'string' ? currentValue : ''
+  showFaqAnswerModal.value = true
+}
+
+function handleFaqAnswerSave(html: string) {
+  if (!faqAnswerModalTarget.value) return
+  const { listKey, idx, itemKey } = faqAnswerModalTarget.value
+  updateBlockListItem(listKey, idx, itemKey, html)
 }
 
 // Ru7-Hero-Category-Collection: typing the Category Name auto-fills the
@@ -1051,6 +1079,20 @@ onUnmounted(() => {
                           @input="onRu7CategoryNameInput(idx, ($event.target as HTMLInputElement).value)" />
                       </template>
 
+                      <!-- FAQ answer: too small/plain as a single-line input, and
+                           needs to support inline hyperlinks/buttons — opens a
+                           bigger modal editor instead of an inline field. -->
+                      <template v-else-if="field.key === 'faqs' && subField.key === 'answer'">
+                        <div class="flex items-center gap-1.5">
+                          <div class="flex-1 min-w-0 truncate rounded border border-gray-200 px-2 py-1 text-xs" :class="item.answer ? 'text-gray-600' : 'text-gray-400'" :title="stripHtml(item.answer)">
+                            {{ stripHtml(item.answer) || 'Click Edit to add an answer…' }}
+                          </div>
+                          <button type="button"
+                            class="shrink-0 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100"
+                            @click="openFaqAnswerModal(field.key, idx, subField.key, item.answer)">Edit</button>
+                        </div>
+                      </template>
+
                       <!-- text / url / number: instant update on every keystroke -->
                       <template v-else>
                         <div class="relative">
@@ -1299,4 +1341,10 @@ onUnmounted(() => {
 
     </template>
   </Teleport>
+
+  <FaqAnswerEditorModal
+    v-model="showFaqAnswerModal"
+    :initial-html="faqAnswerModalInitial"
+    @save="handleFaqAnswerSave"
+  />
 </template>

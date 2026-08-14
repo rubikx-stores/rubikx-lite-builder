@@ -5,7 +5,7 @@ import BuilderPanel from './BuilderPanel.client.vue'
 import EditorSidebar from './EditorSidebar.client.vue'
 import ThemeColorsModal from './ThemeColorsModal.client.vue'
 import { productImageSrc } from '~/composables/useProductImageSrc'
-import { NAVBAR_TITLES, FOOTER_TITLES } from '~/composables/useGlobalSections'
+import { NAVBAR_TITLES, FOOTER_TITLES, GLOBAL_OWNER_PAGES } from '~/composables/useGlobalSections'
 import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
 import { sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
 import { useBlockRegistry } from '~/composables/editor/useBlockRegistry'
@@ -124,12 +124,21 @@ async function confirmSave() {
       `<style>@import url('${GOOGLE_FONTS_STYLESHEET_URL}');</style>\n<script>${SLIDER_SCRIPT}<\/script>\n` + secs.map(s => s.outerHTML).join('\n')
     const version = String(selectedVersion.value)
     const commonBody = { updatedBy: 'editor', updatedOn: new Date().toISOString(), version, ...(props.companyId ? { companyId: props.companyId } : {}) }
-    const globalBody = { ...commonBody, state: 'published' as const }
+    // Global header/footer are only ever saved as draft here — they go live
+    // (state: 'published') only when the owning page is actually Published,
+    // via publishPage() in index.vue. Otherwise every intermediate Save while
+    // iterating on a design would push straight to the live site.
+    const globalBody = { ...commonBody, state: 'draft' as const }
     const pageBody   = { ...commonBody, state: 'draft' as const }
+
+    // Only home/shop own the site-wide global header/footer. Every other page
+    // still gets them stitched onto its canvas for preview (see onMounted
+    // below), but must not re-publish them back to the global CMS keys.
+    const canEditGlobals = !!props.pageId && GLOBAL_OWNER_PAGES.includes(props.pageId)
 
     const saves: Promise<any>[] = []
 
-    if (navbarSections.length > 0) {
+    if (canEditGlobals && navbarSections.length > 0) {
       saves.push($fetch<any>('/api/proxy/odoo/cms', {
         method: 'POST',
         body: { ...globalBody, key: 'global-header', value: toHtml(navbarSections) },
@@ -143,7 +152,7 @@ async function confirmSave() {
       }))
     }
 
-    if (footerSections.length > 0) {
+    if (canEditGlobals && footerSections.length > 0) {
       saves.push($fetch<any>('/api/proxy/odoo/cms', {
         method: 'POST',
         body: { ...globalBody, key: 'global-footer', value: toHtml(footerSections) },
@@ -163,9 +172,9 @@ async function confirmSave() {
     // HTML even if pages.value in index.vue is stale (e.g. global-header was just
     // created for the first time and hasn't propagated to the pages list yet).
     const pageHtmlCache = usePageHtmlCache()
-    if (navbarSections.length > 0)  pageHtmlCache.value['global-header'] = toHtml(navbarSections)
-    if (contentSections.length > 0) pageHtmlCache.value[props.pageId]    = toHtml(contentSections)
-    if (footerSections.length > 0)  pageHtmlCache.value['global-footer'] = toHtml(footerSections)
+    if (canEditGlobals && navbarSections.length > 0) pageHtmlCache.value['global-header'] = toHtml(navbarSections)
+    if (contentSections.length > 0)                  pageHtmlCache.value[props.pageId]    = toHtml(contentSections)
+    if (canEditGlobals && footerSections.length > 0) pageHtmlCache.value['global-footer'] = toHtml(footerSections)
 
     showVersionModal.value = false
   } catch (error) {

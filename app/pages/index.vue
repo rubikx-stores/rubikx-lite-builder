@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useSiteConfig } from '~/composables/useSiteConfig'
-import { splitShopSectionsForPublish } from '~/composables/useGlobalSections'
+import { splitShopSectionsForPublish, GLOBAL_OWNER_PAGES } from '~/composables/useGlobalSections'
 import { resetThemeToDefaults } from '~/composables/editor/useThemeColors'
 
 definePageMeta({ layout: 'dashboard' })
@@ -109,10 +109,26 @@ async function publishPage(page: Page) {
   }
   const publishPayload = { key: page.id, value: mainHtml, ...commonFields }
 
+  // Only home/shop own the site-wide global header/footer (see confirmSave()
+  // in PageBuilderWrapper.client.vue, which only ever saves them as draft).
+  // Publishing either one promotes whatever the latest saved draft of
+  // global-header/global-footer currently is to 'published', at that same
+  // version — the CMS read path already breaks version ties in favor of
+  // 'published' (see server/api/pages/index.get.ts), so this is what makes
+  // the pending design go live instead of every intermediate Save.
+  const globalPromotions: { key: string; value: string; version: number }[] = []
+  if (GLOBAL_OWNER_PAGES.includes(page.id)) {
+    for (const key of ['global-header', 'global-footer']) {
+      const latest = pages.value.find((p) => p.id === key)?.versions[0]
+      if (latest) globalPromotions.push({ key, value: latest.value, version: latest.version })
+    }
+  }
+
   console.log('====================================================')
   console.log(`[PUBLISH PAGE] Publishing page "${page.id}":`, publishPayload)
   if (shopHeaderHtml) console.log('[PUBLISH PAGE] Also publishing "shop-header":', shopHeaderHtml)
   if (shopFooterHtml) console.log('[PUBLISH PAGE] Also publishing "shop-footer":', shopFooterHtml)
+  globalPromotions.forEach((g) => console.log(`[PUBLISH PAGE] Also promoting "${g.key}" (v${g.version}) to published`))
   console.log('====================================================')
   try {
     const posts = [$fetch('/api/proxy/odoo/cms', { method: 'POST', body: publishPayload })]
@@ -128,6 +144,12 @@ async function publishPage(page: Page) {
         body: { ...commonFields, key: 'shop-footer', value: shopFooterHtml },
       }))
     }
+    for (const g of globalPromotions) {
+      posts.push($fetch('/api/proxy/odoo/cms', {
+        method: 'POST',
+        body: { ...commonFields, key: g.key, value: g.value, version: g.version },
+      }))
+    }
     const res = await Promise.all(posts)
     console.log('[PUBLISH] response:', res)
     const target = pages.value.find((p) => p.id === page.id)
@@ -136,6 +158,14 @@ async function publishPage(page: Page) {
       const vNum = selectedVersions.value[page.id]
       const targetVersion = target.versions.find((v) => v.version === vNum) ?? target.versions[0]
       if (targetVersion) targetVersion.status = 'published'
+    }
+    for (const g of globalPromotions) {
+      const gTarget = pages.value.find((p) => p.id === g.key)
+      if (gTarget) {
+        gTarget.status = 'published'
+        const gVersion = gTarget.versions.find((v) => v.version === g.version)
+        if (gVersion) gVersion.status = 'published'
+      }
     }
   } finally {
     publishing.value[page.id] = false
