@@ -9,13 +9,13 @@ const props = defineProps({
   blockData: { type: Object, default: null },
 })
 
-const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Show Featured Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products', 'Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail', 'Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 4 Products Centered']
+const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1-Show-Featured-Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products', 'Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail', 'Ru3-Show-Single-Products', 'Ru2-Show-Multiple-Products']
 // Blocks that store selected IDs as a comma-separated productIds field (not a products array)
 const PRODUCT_IDS_BLOCKS = ['Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail']
 // Blocks that support pagination — allow many products across multiple pages
 const PAGINATED_BLOCKS = ['Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products']
 // Blocks with a fixed product count that isn't derived from columns × rows fields
-const FIXED_SELECTION_BLOCKS = { 'Show Single Product': 1, 'Show 4 Products Centered': 4 }
+const FIXED_SELECTION_BLOCKS = { 'Ru3-Show-Single-Products': 1 }
 
 function debounce(fn, delay) {
   let timer

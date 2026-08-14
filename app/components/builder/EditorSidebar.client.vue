@@ -95,7 +95,7 @@ function nextSubToggleValue(item: Record<string, any>, subField: FieldConfig): b
 
 // ── Product block flag ────────────────────────────────────────────────────────
 // Legacy blocks that pre-date the block registry
-const _LEGACY_PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 4 Products Centered']
+const _LEGACY_PRODUCT_TITLES = ['Ru3-Show-Single-Products', 'Ru2-Show-Multiple-Products']
 
 const _blockRegistry = useBlockRegistry()
 
