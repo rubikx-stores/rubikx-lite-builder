@@ -1,6 +1,11 @@
 export const NAVBAR_TITLES = ['Mega-menu-Header', 'Ru2-Mega-Menu-Header', 'Ru3-Mega-Header', 'Ru4-Navbar', 'Ru1 Techwire Navbar', 'Ru1 Homepage Navbar', 'Ru1-Navbar', 'Ru2-Home-Navbar', 'Ru3-Home-Navbar', 'Ru4 Homepage Navbar']
 export const FOOTER_TITLES = ['Ru1 Techwire Footer', 'Footer-1', 'Ru1 Homepage Footer', 'Ru1-Footer', 'Ru2-Footer', 'Ru3-Footer', 'Ru4-Footer', 'Ru5-Footer', 'Ru2-Home-Footer', 'Ru3-Home-Footer', 'Ru4 Homepage Footer']
 
+// Only these pages are allowed to write the site-wide global-header/global-footer
+// CMS records. Every other page still gets global-header/global-footer stitched
+// onto its editor canvas for preview, but must never re-publish them on save.
+export const GLOBAL_OWNER_PAGES = ['home', 'shop']
+
 // Shop theme mockup blocks (product grid/filters/breadcrumb) — live product data
 // replaces these on the real storefront, so they're stripped out at publish time.
 export const SHOP_TITLES = ['Ru1 Shop Hero', 'Ru1 Shop Content', 'Ru2 Shop Header', 'Ru2 Shop Filters', 'Ru2 Shop Products']
