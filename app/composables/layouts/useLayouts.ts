@@ -89,6 +89,10 @@ import {
   ru9MultiBannerGridFields,
   ru9MultiBannerGridSvg,
   renderRu9MultiBannerGrid,
+  ru10ShopByCategoryDefaults,
+  ru10ShopByCategoryFields,
+  ru10ShopByCategorySvg,
+  renderRu10ShopByCategory,
   ru1StatsDefaults,
   ru1StatsFields,
   ru1StatsSvg,
@@ -277,6 +281,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Banner',
       cover_image: ru9MultiBannerGridSvg,
       html_code: renderRu9MultiBannerGrid(ru9MultiBannerGridDefaults),
+    },
+    {
+      title: 'Ru10-Shop-By-Category',
+      category: 'Banner',
+      cover_image: ru10ShopByCategorySvg,
+      html_code: renderRu10ShopByCategory(ru10ShopByCategoryDefaults),
     },
   ],
   Contact: [
@@ -592,6 +602,12 @@ export function useLayouts() {
     defaults: ru9MultiBannerGridDefaults,
     fields: ru9MultiBannerGridFields,
     render: renderRu9MultiBannerGrid,
+  })
+
+  blockRegistry.register('Ru10-Shop-By-Category', {
+    defaults: ru10ShopByCategoryDefaults,
+    fields: ru10ShopByCategoryFields,
+    render: renderRu10ShopByCategory,
   })
 
   blockRegistry.register('Ru1-Footer', {

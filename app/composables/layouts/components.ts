@@ -284,7 +284,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
       }).join('')
     : ''
   const buttonsEl = (signInEl || cartEl || ctaEl)
-    ? `<div style="display:flex;align-items:center;gap:0.5rem;">${signInEl}${ctaEl}${cartEl}</div>`
+    ? `<div style="display:flex;align-items:center;gap:1rem;">${signInEl}${ctaEl}${cartEl}</div>`
     : ''
 
   const lowerJustifyMap: Record<string, string> = {
@@ -381,7 +381,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
 </style>
 <nav style="${navStyle}">
   ${mobileNav}
-  <div data-nav-desktop="true" style="max-width:80rem;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
+  <div data-nav-desktop="true" style="max-width:90rem;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
     ${zone(cols.left,   'flex-start')}
     ${zone(cols.center, 'center')}
     ${zone(cols.right,  'flex-end')}
@@ -2023,7 +2023,7 @@ function buildRu3BannerHtml(data: Ru3BannerData): string {
     : `background:${data.bannerBgColor};`
 
   const breadcrumbHtml = data.showBreadcrumb !== false
-    ? `<nav style="max-width:80rem;margin:0 auto;padding:1.25rem 2rem 0;display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;color:${data.breadcrumbColor};">
+    ? `<nav style="max-width:100rem;margin:0 auto;padding:1.25rem 2rem 0;display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;color:${data.breadcrumbColor};">
         <a href="${data.breadcrumbHomeHref}" aria-label="Home" style="display:inline-flex;color:${data.breadcrumbColor};text-decoration:none;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 3l9 7.5M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
@@ -2033,7 +2033,7 @@ function buildRu3BannerHtml(data: Ru3BannerData): string {
     : ''
 
   const pageTitleHtml = data.showPageTitle !== false
-    ? `<h1 style="max-width:80rem;margin:0 auto;padding:1rem 2rem 0;font-size:min(2.25rem,7vw);font-weight:700;color:${data.pageTitleColor};${fontCss(data.pageTitleFont, data.fontFamily)}">${data.pageTitle}</h1>`
+    ? `<h1 style="max-width:100rem;margin:0 auto;padding:1rem 2rem 0;font-size:min(2.25rem,7vw);font-weight:700;color:${data.pageTitleColor};${fontCss(data.pageTitleFont, data.fontFamily)}">${data.pageTitle}</h1>`
     : ''
 
   return `<div style="${bannerBg}${bannerAspect}min-height:${data.bannerHeight}px;padding:2.5rem 0;display:flex;flex-direction:column;justify-content:flex-end;box-sizing:border-box;">
@@ -4228,6 +4228,293 @@ export function renderRu9MultiBannerGrid(data: Ru9MultiBannerGridData): string {
   <div style="max-width:90rem;margin:0 auto;width:100%;">
     ${gridHtml}
   </div>
+</section>`
+}
+
+// ─── Ru10-Shop-By-Category ─────────────────────────────────────────────────────
+
+export const ru10ShopByCategorySvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
+  <rect fill="#1f2937" width="277.5" height="80"/>
+  <rect fill="#9ca3af" x="10" y="10" width="90" height="9" rx="1"/>
+  <rect fill="#4b5563" x="216" y="8" width="52" height="16" rx="8"/>
+  <rect fill="#374151" x="10" y="32" width="42" height="42" rx="6"/>
+  <rect fill="#374151" x="60" y="32" width="42" height="42" rx="6"/>
+  <rect fill="#374151" x="110" y="32" width="42" height="42" rx="6"/>
+  <rect fill="#374151" x="160" y="32" width="42" height="42" rx="6"/>
+  <rect fill="#374151" x="210" y="32" width="42" height="42" rx="6"/>
+</svg>`
+
+export interface Ru10CategoryItem {
+  imageUrl: string
+  name: string
+  categoryUrl: string
+}
+
+export interface Ru10ShopByCategoryData {
+  bgColor: string
+  bgImageUrl: string
+  overlayColor: string
+  overlayOpacity: number
+  paddingY: number
+  paddingX: number
+  fontFamily: string
+
+  title: string
+  titleFontSize: number
+  titleFontWeight: string
+  titleColor: string
+  titleFont: string
+
+  showCta: boolean
+  ctaLabel: string
+  ctaHref: string
+  ctaBgColor: string
+  ctaTextColor: string
+  ctaBorderRadius: number
+  ctaFont: string
+
+  categoryLayout: string
+  maxCategories: number
+  cardGap: number
+  cardBorderRadius: number
+  cardAspectRatio: string
+  categoryFontSize: number
+  categoryFontWeight: string
+  categoryColor: string
+  categoryFont: string
+
+  categories: Ru10CategoryItem[]
+}
+
+export const ru10ShopByCategoryDefaults: Ru10ShopByCategoryData = {
+  bgColor: '#ffffff',
+  bgImageUrl: '',
+  overlayColor: '#000000',
+  overlayOpacity: 0,
+  paddingY: 48,
+  paddingX: 32,
+  fontFamily: '',
+
+  title: 'Shop by Category',
+  titleFontSize: 28,
+  titleFontWeight: '700',
+  titleColor: '#111827',
+  titleFont: '',
+
+  showCta: true,
+  ctaLabel: 'Browse all products →',
+  ctaHref: '/shop',
+  ctaBgColor: '#16a34a',
+  ctaTextColor: '#ffffff',
+  ctaBorderRadius: 999,
+  ctaFont: '',
+
+  categoryLayout: 'Wrap to Rows',
+  maxCategories: 5,
+  cardGap: 16,
+  cardBorderRadius: 12,
+  cardAspectRatio: '1 / 1',
+  categoryFontSize: 15,
+  categoryFontWeight: '600',
+  categoryColor: '#111827',
+  categoryFont: '',
+
+  categories: [],
+}
+
+export const ru10ShopByCategoryFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_section', label: 'Section', type: 'header' },
+  { key: 'bgImageUrl', label: 'Background Image', type: 'image', noAspectRatio: true },
+  { key: 'bgColor', label: 'Background Colour (fallback / overlay base)', type: 'color' },
+  { key: 'overlayColor', label: 'Overlay Colour', type: 'color' },
+  { key: 'overlayOpacity', label: 'Overlay Opacity (%)', type: 'number', unit: '%', step: 5, placeholder: '0' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '48' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '32' },
+
+  { key: '_h_title', label: 'Title', type: 'header' },
+  { key: 'title', label: 'Title', type: 'text', placeholder: 'e.g. Shop by Category' },
+  { key: 'titleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '28' },
+  { key: 'titleFontWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
+  { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  fontField('titleFont', 'Title Font'),
+
+  { key: '_h_cta', label: 'CTA Button', type: 'header' },
+  { key: 'showCta', label: 'Show CTA Button', type: 'toggle' },
+  { key: 'ctaLabel', label: 'Button Text', type: 'text', placeholder: 'e.g. Browse all products →' },
+  { key: 'ctaHref', label: 'Button URL', type: 'url', placeholder: '/shop' },
+  { key: 'ctaBgColor', label: 'Button Background', type: 'color' },
+  { key: 'ctaTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'ctaBorderRadius', label: 'Button Border Radius (px)', type: 'number', placeholder: '999' },
+  fontField('ctaFont', 'Button Font'),
+
+  { key: '_h_grid', label: 'Card Style', type: 'header' },
+  { key: 'categoryLayout', label: 'Layout', type: 'select', options: ['Wrap to Rows', 'Horizontal Scroll'] },
+  { key: 'maxCategories', label: 'Categories Per Row', type: 'number', placeholder: '5' },
+  { key: 'cardGap', label: 'Card Gap (px)', type: 'number', placeholder: '16' },
+  { key: 'cardBorderRadius', label: 'Card Border Radius (px)', type: 'number', placeholder: '12' },
+  { key: 'cardAspectRatio', label: 'Card Image Aspect Ratio', type: 'select', options: ['1 / 1', '4 / 5', '3 / 4', '16 / 9'] },
+  { key: 'categoryFontSize', label: 'Category Name Size (px)', type: 'number', placeholder: '15' },
+  { key: 'categoryFontWeight', label: 'Category Name Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
+  { key: 'categoryColor', label: 'Category Name Colour', type: 'color' },
+  fontField('categoryFont', 'Category Name Font'),
+
+  { key: '_h_categories', label: 'Categories', type: 'header' },
+  { key: 'syncRu10CategoriesFromApi', label: 'Sync Categories from API', type: 'button' },
+  {
+    key: 'categories', label: 'Categories', type: 'list',
+    listFields: [
+      { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
+      { key: 'name', label: 'Category Name', type: 'text', placeholder: 'e.g. Apparel' },
+      { key: 'categoryUrl', label: 'Categories url', type: 'text', placeholder: '/shop?category=apparel' },
+    ],
+  },
+]
+
+// Categories are a static list, synced on-demand from /api/categories via the
+// "Sync Categories from API" button — identical mechanism to
+// Ru7-Hero-Category-Collection's syncRu7CategoriesFromApi (see
+// EditorSidebar.client.vue), not a live per-page-load fetch. This keeps full
+// per-card image/URL control and needs no client-side hydration handler.
+//
+// Cards are sized as a fixed fraction of the row (1 / maxCategories) via
+// flexbox rather than a stretch-to-fill CSS grid, so syncing fewer categories
+// than maxCategories (e.g. 2-3 instead of 5) keeps the cards the same
+// compact size instead of blowing them up to fill the empty space — they
+// just leave the row partially empty, left-aligned.
+export function renderRu10ShopByCategory(data: Ru10ShopByCategoryData): string {
+  const maxCategories = Number(data.maxCategories) || 5
+  const gap = data.cardGap ?? 16
+
+  // A background image switches this from the default left-title/right-button
+  // row into a centered hero-style layout — title, button and the category
+  // row all centered over the image, matching a banner-with-photo look
+  // rather than a plain toolbar-style header.
+  const bgImgSrc = productImageSrc(data.bgImageUrl)
+  const hasBgImage = !!bgImgSrc
+
+  const titleHtml = data.title
+    ? `<h2 style="margin:0;font-size:min(${data.titleFontSize}px,7vw);font-weight:${data.titleFontWeight};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>`
+    : ''
+
+  const ctaHtml = data.showCta !== false
+    ? `<a href="${data.ctaHref}" style="display:inline-block;flex-shrink:0;padding:0.7rem 1.5rem;background:${data.ctaBgColor};color:${data.ctaTextColor};border-radius:${data.ctaBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:600;white-space:nowrap;${fontCss(data.ctaFont, data.fontFamily)}">${data.ctaLabel}</a>`
+    : ''
+
+  // Title always sits left, CTA button always sits right — this never
+  // changes based on the background image, only the category cards below
+  // switch to a centered layout when one is set.
+  const headerHtml = (titleHtml || ctaHtml)
+    ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:24px;">${titleHtml}${ctaHtml}</div>`
+    : ''
+
+  const fallbackIcon = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`
+  const fallbackBg = '#374151'
+
+  // Before the admin ever clicks "Sync Categories from API", data.categories
+  // is empty — show 5 placeholder cards (dark-grey fallback icon, generic
+  // label) so the block isn't a blank strip in the builder. The moment a
+  // sync happens, this placeholder set is fully replaced by whatever real
+  // categories the company actually has.
+  //
+  // maxCategories is "categories per row", not a hard cap on how many show
+  // in total — every synced category is rendered (nothing is ever silently
+  // hidden just because a company has more categories than one row holds);
+  // the grid's flex-wrap below carries the extras onto additional rows at
+  // the same fixed per-card size instead of truncating or stretching.
+  const rawCategories = Array.isArray(data.categories) ? data.categories : []
+  const categories = rawCategories.length > 0
+    ? rawCategories
+    : Array.from({ length: 5 }, () => ({ imageUrl: '', name: 'Category', categoryUrl: '#' }))
+
+  // "Wrap to Rows" (default): extras beyond maxCategories flow onto additional
+  // rows at the same fixed per-card size — see the responsive shrink rules
+  // below, which reduce cards-per-row (not card count shown) on narrower
+  // screens.
+  // "Horizontal Scroll": extras never wrap or push the section taller —
+  // the row becomes a swipeable/scrollable strip instead, and precisely
+  // because there's always horizontal room to scroll into, card size stays
+  // exactly as configured at every screen width (no responsive shrink rules
+  // are emitted for this mode at all).
+  const isSlider = data.categoryLayout === 'Horizontal Scroll'
+
+  // Fixed per-card width: as if the row always held `maxCategories` cards —
+  // this is what keeps fewer real categories compact instead of stretched.
+  const cardBasis = (count: number) => `calc((100% - ${(count - 1) * gap}px) / ${count})`
+
+  const cards = categories.map((cat) => {
+    const name = cat.name || 'Category'
+    const slug = name.trim().toLowerCase().replace(/\s+/g, '-')
+    const href = cat.categoryUrl?.trim() || (slug ? `/shop?category=${slug}` : '#')
+    const imgSrc = productImageSrc(cat.imageUrl)
+    const imageHtml = imgSrc
+      ? `<img src="${imgSrc}" alt="${name}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s ease;will-change:transform;" />`
+      : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">${fallbackIcon}</div>`
+
+    const cardSizeStyle = isSlider
+      ? `flex:0 0 ${cardBasis(maxCategories)};max-width:${cardBasis(maxCategories)};scroll-snap-align:start;`
+      : `flex:0 0 ${cardBasis(maxCategories)};max-width:${cardBasis(maxCategories)};`
+
+    return `<a data-ru10-card href="${href}" style="${cardSizeStyle}min-width:0;display:flex;flex-direction:column;align-items:center;gap:10px;text-decoration:none;">
+      <div style="width:100%;aspect-ratio:${data.cardAspectRatio || '1 / 1'};border-radius:${data.cardBorderRadius}px;overflow:hidden;background:${fallbackBg};">${imageHtml}</div>
+      <p style="margin:0;width:100%;font-size:${data.categoryFontSize}px;font-weight:${data.categoryFontWeight};color:${data.categoryColor};text-align:center;overflow-wrap:break-word;${fontCss(data.categoryFont, data.fontFamily)}">${name}</p>
+    </a>`
+  }).join('')
+
+  // Cards keep shrinking to fit as the viewport narrows: desktop shows the
+  // full configured maxCategories per row, then progressively fewer per row
+  // (capped, never stretched) down to 2-up on the smallest phones — same
+  // fixed-basis-not-stretch approach as the base layout, just at a smaller
+  // per-breakpoint count. Only applies in "Wrap to Rows" mode — the whole
+  // point of "Horizontal Scroll" is that card size never has to change,
+  // there's always room to scroll into instead.
+  const basisAt = (count: number) => cardBasis(Math.min(maxCategories, count))
+  const styleRules = [
+    // Hovering a card zooms its image in slightly — clipped to the card's
+    // own rounded corners since the image sits inside an overflow:hidden
+    // container, so it never spills outside the card.
+    `[data-ru10-card]:hover img{transform:scale(1.08);}`,
+    ...(isSlider
+      ? []
+      : [
+          `@media(max-width:1024px){[data-ru10-grid] [data-ru10-card]{flex-basis:${basisAt(4)}!important;max-width:${basisAt(4)}!important;}}`,
+          `@media(max-width:768px){[data-ru10-grid] [data-ru10-card]{flex-basis:${basisAt(3)}!important;max-width:${basisAt(3)}!important;}}`,
+          `@media(max-width:480px){[data-ru10-grid] [data-ru10-card]{flex-basis:${basisAt(2)}!important;max-width:${basisAt(2)}!important;}}`,
+        ]),
+  ]
+
+  // Responsive on every axis: horizontal/vertical padding both scale down
+  // via vw-clamping (not just a fixed px value) so the section never keeps
+  // oversized whitespace on narrow screens, and the background image always
+  // fills the section (fixed center/cover — no separate position/size
+  // fields to misconfigure) and re-crops naturally as the viewport changes —
+  // no fixed section height is ever imposed, so it grows/shrinks with content.
+  const sectionBgStyle = hasBgImage
+    ? `background:url('${bgImgSrc}') center/cover no-repeat;background-color:${data.bgColor};position:relative;`
+    : `background:${data.bgColor};`
+
+  const overlayOpacity = Math.min(100, Math.max(0, data.overlayOpacity ?? 0)) / 100
+  const overlayHtml = hasBgImage && overlayOpacity > 0
+    ? `<div style="position:absolute;inset:0;background:${hexToRgba(data.overlayColor, overlayOpacity)};pointer-events:none;"></div>`
+    : ''
+
+  const gridStyle = isSlider
+    ? `display:flex;flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:${gap}px;padding-bottom:4px;`
+    : `display:flex;flex-wrap:wrap;gap:${gap}px;${hasBgImage ? 'justify-content:center;' : ''}`
+
+  const innerHtml = `<div style="max-width:90rem;margin:0 auto;${hasBgImage ? 'position:relative;z-index:1;' : ''}">
+    ${headerHtml}
+    <div data-ru10-grid style="${gridStyle}">
+      ${cards}
+    </div>
+  </div>`
+
+  return `<section data-component-title="Ru10-Shop-By-Category" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionBgStyle}padding:min(${data.paddingY}px,10vw) min(${data.paddingX}px,6vw);${fontCss(undefined, data.fontFamily)}">
+  <style>${styleRules.join('')}</style>
+  ${overlayHtml}
+  ${innerHtml}
 </section>`
 }
 
