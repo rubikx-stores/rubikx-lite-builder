@@ -95,7 +95,7 @@ function nextSubToggleValue(item: Record<string, any>, subField: FieldConfig): b
 
 // ── Product block flag ────────────────────────────────────────────────────────
 // Legacy blocks that pre-date the block registry
-const _LEGACY_PRODUCT_TITLES = ['Show Single Product', 'Show Multiple Products', 'Show 6 Products', 'Show 4 Products Centered']
+const _LEGACY_PRODUCT_TITLES = ['Ru3-Show-Single-Products', 'Ru2-Show-Multiple-Products']
 
 const _blockRegistry = useBlockRegistry()
 
@@ -260,9 +260,51 @@ async function syncRu7CategoriesFromApi() {
   }
 }
 
+// Sync Categories from API (Ru10-Shop-By-Category): identical logic to
+// syncRu7CategoriesFromApi above — same "categories" list shape, so the two
+// blocks share this exact sync behaviour independently per-instance.
+async function syncRu10CategoriesFromApi() {
+  const data = blockData.value
+  if (!data) return
+  buttonFieldBusy.value.syncRu10CategoriesFromApi = true
+  buttonFieldError.value.syncRu10CategoriesFromApi = ''
+  try {
+    const flat = await $fetch<FlatCategory[]>('/api/categories', {
+      query: { companyId: selectedCompanyId.value ?? undefined },
+    })
+    const tree = buildCategoryTree(flat)
+    const labelFor = (c: FlatCategory) => String(c.headlessName || c.displayName || c.name)
+
+    const existingCategories = (data.categories ?? []) as Array<{ imageUrl: string; name: string; categoryUrl?: string }>
+    const existingByName = new Map(existingCategories.map(c => [c.name, c]))
+
+    const synced = tree.map(cat => {
+      const label = labelFor(cat)
+      const existing = existingByName.get(label)
+      // Slug always derived from the same label shown as this category's
+      // name (not the backend's separate headlessName) — so the URL always
+      // matches whatever name is visible in the editor for this category.
+      const slug = label.trim().toLowerCase().replace(/\s+/g, '-')
+      return {
+        imageUrl: existing?.imageUrl ?? '',
+        name: label,
+        categoryUrl: existing?.categoryUrl ?? `/shop?category=${slug}`,
+      }
+    })
+
+    await updateBlockField('categories', synced)
+  } catch (e) {
+    console.error('[Sync Ru10 Categories from API] failed', e)
+    buttonFieldError.value.syncRu10CategoriesFromApi = 'Failed to fetch categories — check console.'
+  } finally {
+    buttonFieldBusy.value.syncRu10CategoriesFromApi = false
+  }
+}
+
 function onButtonField(fieldKey: string) {
   if (fieldKey === 'syncCategoriesFromApi') syncCategoriesFromApi()
   if (fieldKey === 'syncRu7CategoriesFromApi') syncRu7CategoriesFromApi()
+  if (fieldKey === 'syncRu10CategoriesFromApi') syncRu10CategoriesFromApi()
 }
 
 // Ru7-Hero-Category-Collection: Card Height defaults to 0 ("auto" — use Card

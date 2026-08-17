@@ -44,8 +44,6 @@ A visual page builder for RubikX stores. Build, edit, and publish store pages wi
 ### Product Sections
 - **Show 1 Product** — single product, large and prominent
 - **Show 3 Products** — three products in a row
-- **Show 6 Products** — six products in a grid
-- **Show 4 Products Centered** — four products centered
 - Search and pick exactly which products appear
 - Live preview updates as you select products
 - 3 card layouts — Default, Inline, Centered

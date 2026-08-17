@@ -627,7 +627,7 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   hoverAmount: 6,
   animationDuration: 300,
   showAddToCart: true,
-  addToCartLabel: 'Add to Cart',
+  addToCartLabel: 'View Product',
   addToCartRadius: 6,
   showViewProduct: true,
   viewProductLabel: 'View Product',
@@ -704,7 +704,7 @@ export const ru1ProductsFields: FieldConfig[] = [
   fontField('priceFont', 'Price Font'),
   fontField('productNameFont', 'Product Name Font'),
   { key: 'showAddToCart', label: 'Show Add to Cart Button', type: 'toggle' },
-  { key: 'addToCartLabel', label: 'Add to Cart Button Text', type: 'text', placeholder: 'Add to Cart' },
+  { key: 'addToCartLabel', label: 'Add to Cart Button Text', type: 'text', placeholder: 'View Product' },
   { key: 'buttonBgColor', label: 'Button Background', type: 'color' },
   { key: 'buttonTextColor', label: 'Button Text Color', type: 'color' },
   { key: 'addToCartRadius', label: 'Button Border Radius', type: 'number', unit: 'px', step: 2, placeholder: '6' },
@@ -821,7 +821,7 @@ export function renderRu1Products(data: Ru1ProductsData, title = 'Ru1 Homepage F
           <p title="${p.name}" style="font-weight:600;font-size:0.875rem;line-height:1.3;min-height:36px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all;overflow-wrap:anywhere;color:${data.productNameColor ?? '#111827'};${fontCss(data.productNameFont, data.fontFamily)}">${p.name}</p>
           ${priceRow}
           ${colorsHtml}
-          ${data.showAddToCart !== false ? `<a href="${p.buttonUrl}" class="shop-btn" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.addToCartRadius ?? 6}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block;${fontCss(data.buttonFont, data.fontFamily)}">${title === 'Show Featured Products' ? 'View Product' : (data.addToCartLabel || 'Add to Cart')}</a>` : ''}
+          ${data.showAddToCart !== false ? `<a href="${p.buttonUrl}" class="shop-btn" style="background:${data.buttonBgColor};color:${data.buttonTextColor};border-radius:${data.addToCartRadius ?? 6}px;margin-top:auto;text-align:center;font-size:0.875rem;font-weight:500;padding:0.5rem 1rem;text-decoration:none;display:block;${fontCss(data.buttonFont, data.fontFamily)}">${title === 'Ru1-Show-Featured-Products' ? 'View Product' : (data.addToCartLabel || 'View Product')}</a>` : ''}
           ${bottomRow}
         </div>
       </div>`
@@ -852,7 +852,7 @@ ${animStyle}
 </section>`
 }
 
-// ─── Show Featured Products (Products category) ──────────────────────────────
+// ─── Ru1-Show-Featured-Products (Products category) ───────────────────────────
 // Same block as "Ru1 Homepage Featured Products" — shares its defaults, fields
 // and render — but registered under a distinct title so it can live in the
 // builder's Products category. renderRu1Products stamps the title into both the
@@ -870,7 +870,7 @@ export const showFeaturedProductsFields: FieldConfig[] = ru1ProductsFields
   .map(f => f.key === 'showAddToCart' ? { ...f, label: 'Show View Product Button' } : f)
 
 export function renderShowFeaturedProducts(data: Ru1ProductsData): string {
-  return renderRu1Products(data, 'Show Featured Products')
+  return renderRu1Products(data, 'Ru1-Show-Featured-Products')
 }
 
 export const showFeaturedProductsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 233 90">

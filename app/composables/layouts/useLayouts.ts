@@ -89,6 +89,10 @@ import {
   ru9MultiBannerGridFields,
   ru9MultiBannerGridSvg,
   renderRu9MultiBannerGrid,
+  ru10ShopByCategoryDefaults,
+  ru10ShopByCategoryFields,
+  ru10ShopByCategorySvg,
+  renderRu10ShopByCategory,
   ru1StatsDefaults,
   ru1StatsFields,
   ru1StatsSvg,
@@ -149,14 +153,6 @@ import {
   showMultipleProductsFields,
   showMultipleProductsSvg,
   renderShowMultipleProducts,
-  show6ProductsDefaults,
-  show6ProductsFields,
-  show6ProductsSvg,
-  renderShow6Products,
-  show4ProductsCenteredDefaults,
-  show4ProductsCenteredFields,
-  show4ProductsCenteredSvg,
-  renderShow4ProductsCentered,
   ru1AnnouncementBarDefaults,
   ru1AnnouncementBarFields,
   ru1AnnouncementBarSvg,
@@ -277,6 +273,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Banner',
       cover_image: ru9MultiBannerGridSvg,
       html_code: renderRu9MultiBannerGrid(ru9MultiBannerGridDefaults),
+    },
+    {
+      title: 'Ru10-Shop-By-Category',
+      category: 'Banner',
+      cover_image: ru10ShopByCategorySvg,
+      html_code: renderRu10ShopByCategory(ru10ShopByCategoryDefaults),
     },
   ],
   Contact: [
@@ -419,34 +421,22 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
   ],
   Products: [
     {
-      title: 'Show Featured Products',
+      title: 'Ru1-Show-Featured-Products',
       category: 'Products',
       cover_image: showFeaturedProductsSvg,
       html_code: renderShowFeaturedProducts(showFeaturedProductsDefaults),
     },
     {
-      title: 'Show Single Product',
-      category: 'Products',
-      cover_image: showSingleProductSvg,
-      html_code: renderShowSingleProduct(showSingleProductDefaults),
-    },
-    {
-      title: 'Show Multiple Products',
+      title: 'Ru2-Show-Multiple-Products',
       category: 'Products',
       cover_image: showMultipleProductsSvg,
       html_code: renderShowMultipleProducts(showMultipleProductsDefaults),
     },
     {
-      title: 'Show 6 Products',
+      title: 'Ru3-Show-Single-Products',
       category: 'Products',
-      cover_image: show6ProductsSvg,
-      html_code: renderShow6Products(show6ProductsDefaults),
-    },
-    {
-      title: 'Show 4 Products Centered',
-      category: 'Products',
-      cover_image: show4ProductsCenteredSvg,
-      html_code: renderShow4ProductsCentered(show4ProductsCenteredDefaults),
+      cover_image: showSingleProductSvg,
+      html_code: renderShowSingleProduct(showSingleProductDefaults),
     },
   ],
   'Announcement Bar': [
@@ -594,6 +584,12 @@ export function useLayouts() {
     render: renderRu9MultiBannerGrid,
   })
 
+  blockRegistry.register('Ru10-Shop-By-Category', {
+    defaults: ru10ShopByCategoryDefaults,
+    fields: ru10ShopByCategoryFields,
+    render: renderRu10ShopByCategory,
+  })
+
   blockRegistry.register('Ru1-Footer', {
     defaults: ru1FooterDefaults,
     fields: ru1FooterFields,
@@ -666,34 +662,22 @@ export function useLayouts() {
     render: renderRu4Stats,
   })
 
-  blockRegistry.register('Show Featured Products', {
+  blockRegistry.register('Ru1-Show-Featured-Products', {
     defaults: showFeaturedProductsDefaults,
     fields: showFeaturedProductsFields,
     render: renderShowFeaturedProducts,
   })
 
-  blockRegistry.register('Show Single Product', {
-    defaults: showSingleProductDefaults,
-    fields: showSingleProductFields,
-    render: renderShowSingleProduct,
-  })
-
-  blockRegistry.register('Show Multiple Products', {
+  blockRegistry.register('Ru2-Show-Multiple-Products', {
     defaults: showMultipleProductsDefaults,
     fields: showMultipleProductsFields,
     render: renderShowMultipleProducts,
   })
 
-  blockRegistry.register('Show 6 Products', {
-    defaults: show6ProductsDefaults,
-    fields: show6ProductsFields,
-    render: renderShow6Products,
-  })
-
-  blockRegistry.register('Show 4 Products Centered', {
-    defaults: show4ProductsCenteredDefaults,
-    fields: show4ProductsCenteredFields,
-    render: renderShow4ProductsCentered,
+  blockRegistry.register('Ru3-Show-Single-Products', {
+    defaults: showSingleProductDefaults,
+    fields: showSingleProductFields,
+    render: renderShowSingleProduct,
   })
 
   blockRegistry.register('Ru1-Announcement Bar', {
