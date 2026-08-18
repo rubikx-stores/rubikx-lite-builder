@@ -150,9 +150,21 @@ function debouncedUpdateBlockField(fieldKey: string, value: any) {
   }, 50)
 }
 
+const CATEGORY_DROPDOWN_STYLE_FIELDS = ['dynamicCategoriesFloating', 'dynamicCategoriesInline'] as const
+
 async function onToggleField(fieldKey: string, newValue: boolean) {
   await updateBlockField(fieldKey, newValue)
-  if (fieldKey === 'dynamicCategories' && newValue === true) {
+
+  if ((CATEGORY_DROPDOWN_STYLE_FIELDS as readonly string[]).includes(fieldKey)) {
+    // Floating and inline are mutually exclusive — switching one on turns
+    // the other off, so data-category-dropdown-style on the shell is never
+    // ambiguous. Re-hydrating on every flip (not just the first enable) is
+    // what lets a merchant switch styles live instead of having to disable
+    // and re-enable the toggle to force loadCategories to re-run.
+    if (newValue) {
+      const other = fieldKey === 'dynamicCategoriesFloating' ? 'dynamicCategoriesInline' : 'dynamicCategoriesFloating'
+      await updateBlockField(other, false)
+    }
     await nextTick()
     document.querySelectorAll('[data-rubikx-component="CategoryNav"]').forEach(el => {
       (el as HTMLElement).removeAttribute('data-hydrated')

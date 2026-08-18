@@ -93,7 +93,8 @@ export interface Ru1NavbarData {
   searchAlign: string
   searchWidth: number
   navLinks: NavLink[]
-  dynamicCategories: boolean
+  dynamicCategoriesFloating: boolean
+  dynamicCategoriesInline: boolean
   navLinksAlign: string
   linkColor: string
   linkFontSize: number
@@ -139,7 +140,8 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
     { label: 'Shop', url: '/shop', visible: true },
     { label: 'About Us', url: '/aboutus', visible: true },
   ],
-  dynamicCategories: true,
+  dynamicCategoriesFloating: true,
+  dynamicCategoriesInline: false,
   navLinksAlign: 'lower-left',
   linkColor: '#111827',
   linkFontSize: 14,
@@ -191,7 +193,8 @@ export const ru1NavbarFields: FieldConfig[] = [
     ],
   },
   { key: 'navLinksAlign', label: 'Links Position', type: 'select', options: ['left', 'center', 'right', 'lower-left', 'lower-center', 'lower-right'] },
-  { key: 'dynamicCategories', label: 'Dynamic Categories', type: 'toggle' },
+  { key: 'dynamicCategoriesFloating', label: 'Dynamic Categories (Floating)', type: 'toggle' },
+  { key: 'dynamicCategoriesInline', label: 'Dynamic Categories (Inline)', type: 'toggle' },
   { key: 'linkColor', label: 'Link Colour', type: 'color' },
   { key: 'linkFontSize', label: 'Link Font Size (px)', type: 'number', step: 1, placeholder: '14' },
   { key: 'linkFontWeight', label: 'Link Font Weight', type: 'select', options: ['300', '400', '500', '600', '700', '800'] },
@@ -270,7 +273,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 
   const visibleNavLinks = data.navLinks.filter(l => l.visible !== false)
   const staticLinks = visibleNavLinks.map(l => `<div style="position:relative;"><a href="${l.url}" style="${linkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a></div>`).join('')
-  const dynamicPlaceholder = data.dynamicCategories
+  const dynamicPlaceholder = (data.dynamicCategoriesFloating || data.dynamicCategoriesInline)
     ? `<div
         data-rubikx-component='CategoryNav'
         data-on-mount='loadCategories'
@@ -278,6 +281,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
         data-link-color='${data.linkColor}'
         data-font-size='${data.linkFontSize}'
         data-font-weight='${data.linkFontWeight}'
+        data-category-dropdown-style='${data.dynamicCategoriesInline ? 'inline' : 'floating'}'
         style='position:relative;display:inline-block;' data-cat-nav='true'
       >
         <a style='${linkStyle}cursor:pointer;'>Categories ▾</a>
@@ -357,7 +361,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   ${mobileSearchEl}
   <div style="display:flex;flex-direction:column;">
     ${mobileDrawerLinks}
-    ${data.dynamicCategories ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;cursor:pointer;">Categories</a>` : ''}
+    ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;cursor:pointer;">Categories</a>` : ''}
   </div>
   <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
     ${data.showContactUs ? `<a href="${data.contactUsUrl}" style="display:flex;align-items:center;justify-content:center;border:1px solid ${btnAccent};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${btnAccent};text-decoration:none;${fontCss(data.buttonFont, data.fontFamily)}">${data.contactUsLabel}</a>` : ''}
@@ -2154,7 +2158,7 @@ export const ru2HomeNavbarDefaults = {
   linkColor: '#d1d5db',
   bottomBorderColor: '#1c2e3e',
   showBottomBorder: true,
-  dynamicCategories: true,
+  dynamicCategoriesFloating: true,
   ctaButtons: [
     { label: 'Sign In', href: '/login', style: 'outline', textColor: '#f59e0b', bgColor: 'transparent', borderColor: '#f59e0b' },
     { label: 'Shop Now', href: '/shop', style: 'filled', textColor: '#0f1923', bgColor: '#f59e0b', borderColor: '#f59e0b' },
@@ -2284,7 +2288,7 @@ export const ru3HomeNavbarDefaults = {
   linkColor: '#374151',
   bottomBorderColor: '#e5e7eb',
   showBottomBorder: true,
-  dynamicCategories: true,
+  dynamicCategoriesFloating: true,
   ctaButtons: [
     { label: 'Sign In', href: '/login', style: 'outline', textColor: '#0f2d4a', bgColor: 'transparent', borderColor: '#0f2d4a' },
     { label: 'Browse Gear', href: '/shop', style: 'filled', textColor: '#ffffff', bgColor: '#0f2d4a', borderColor: '#0f2d4a' },
@@ -2446,7 +2450,7 @@ export const ru4HomeNavbarDefaults = {
   linkColor: '#4a4440',
   bottomBorderColor: '#e8e2da',
   showBottomBorder: true,
-  dynamicCategories: true,
+  dynamicCategoriesFloating: true,
   ctaButtons: [
     { label: 'Sign In', href: '/login', style: 'outline', textColor: '#1a1a1a', bgColor: 'transparent', borderColor: '#1a1a1a' },
     { label: 'Shop Now', href: '/shop', style: 'filled', textColor: '#ffffff', bgColor: '#e85d26', borderColor: '#e85d26' },

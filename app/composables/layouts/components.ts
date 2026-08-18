@@ -37,7 +37,8 @@ export interface MegaMenuHeaderData {
   brandFontWeight: string
   navLinks: NavLink[]
   navLinksAlign: string
-  dynamicCategories: boolean
+  dynamicCategoriesFloating: boolean
+  dynamicCategoriesInline: boolean
   linkFontSize: number
   linkFontWeight: string
   linkColor: string
@@ -82,7 +83,8 @@ export const megaMenuHeaderDefaults: MegaMenuHeaderData = {
     { label: 'Contact', href: '/contactus' },
   ],
   navLinksAlign: 'center',
-  dynamicCategories: true,
+  dynamicCategoriesFloating: true,
+  dynamicCategoriesInline: false,
   linkFontSize: 14,
   linkFontWeight: '500',
   linkColor: '#1f2937',
@@ -158,7 +160,8 @@ export const megaMenuHeaderFields: FieldConfig[] = [
   fontField('megaProductPriceFont', 'Mega Menu Product Price Font'),
 
   { key: 'showSearch',        label: 'Show Search Bar',               type: 'toggle'  },
-  { key: 'dynamicCategories', label: 'Dynamic Categories',  type: 'toggle'  },
+  { key: 'dynamicCategoriesFloating', label: 'Dynamic Categories (Floating)', type: 'toggle'  },
+  { key: 'dynamicCategoriesInline', label: 'Dynamic Categories (Inline)', type: 'toggle'  },
   { key: 'searchPlaceholder', label: 'Search Placeholder',  type: 'text',
     placeholder: 'e.g. Search products…'                                    },
   { key: 'searchAlign',     label: 'Search Position',       type: 'select',
@@ -247,7 +250,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
       }).join('')
     : ''
 
-  const dynamicPlaceholder = data.dynamicCategories
+  const dynamicPlaceholder = (data.dynamicCategoriesFloating || data.dynamicCategoriesInline)
     ? `<div
         data-rubikx-component='CategoryNav'
         data-on-mount='loadCategories'
@@ -256,6 +259,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
         data-link-color='${data.linkColor}'
         data-font-size='${data.linkFontSize}'
         data-font-weight='${data.linkFontWeight}'
+        data-category-dropdown-style='${data.dynamicCategoriesInline ? 'inline' : 'floating'}'
         style='position:relative;display:inline-block;' data-cat-nav='true'
       >
         <a style='${linkStyle}cursor:pointer;'>Categories ▾</a>
@@ -357,7 +361,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
   ${mobileSearchEl}
   <div style="display:flex;flex-direction:column;">
     ${mobileDrawerLinks}
-    ${data.dynamicCategories ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;cursor:pointer;">Categories</a>` : ''}
+    ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;cursor:pointer;">Categories</a>` : ''}
   </div>
   <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
     ${mobileCTAButtons}
