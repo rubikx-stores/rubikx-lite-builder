@@ -15,16 +15,20 @@ function renderCategoryTree(
 ): string {
   return categories
     .map((cat) => {
-      const slug =
-        cat.headlessName || cat.name.toLowerCase().replace(/\s+/g, '-')
+      // Matches the live storefront's /shop?category=<name> convention
+      // (mountCmsCategoryNav) rather than a /<slug> route, so clicking a
+      // category in the builder preview resolves the same way it will once
+      // published — including synthesized parents with no real slug.
+      const categoryQuery = cat.headlessName || cat.displayName || cat.name
+      const href = `/shop?category=${encodeURIComponent(categoryQuery)}`
       const label = cat.displayName.includes(' / ')
         ? cat.displayName.split(' / ').pop()!
         : cat.displayName
       if (!cat.children || cat.children.length === 0) {
-        return `<a href='/${slug}' style='display:block;padding:6px 16px;${linkStyle}text-decoration:none;white-space:nowrap;'>${label}</a>`
+        return `<a href='${href}' style='display:block;padding:6px 16px;${linkStyle}text-decoration:none;white-space:nowrap;'>${label}</a>`
       }
       return `<div data-cat-parent='true' style='position:relative;'>
-      <a href='/${slug}' style='display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 16px;${linkStyle}text-decoration:none;font-weight:600;white-space:nowrap;'>${label}<span style='font-size:16px;opacity:.9;'>▸</span></a>
+      <a href='${href}' aria-haspopup='true' aria-expanded='false' style='display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 16px;${linkStyle}text-decoration:none;font-weight:600;white-space:nowrap;'>${label}<span aria-hidden='true' style='font-size:16px;opacity:.9;'>▸</span></a>
       <div data-cat-flyout='true' style='display:none;position:absolute;left:100%;top:0;margin-left:-10px;padding:8px 0 8px 10px;z-index:101;pointer-events:none;'>
         <div style='background:#fff;min-width:180px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;pointer-events:auto;'>
           ${renderCategoryTree(cat.children, linkStyle)}
@@ -35,6 +39,138 @@ function renderCategoryTree(
     .join('')
 }
 
+// The CSS rule `[data-cat-parent]:hover > [data-cat-flyout]` (below, in the
+// injected stylesheet) is mouse-only — a keyboard or screen-reader user has
+// no way to reach a 2nd/3rd-level category, which matters more now that
+// buildCategoryTree actually supports arbitrary depth (previously nesting
+// past one level didn't really exist, so nothing meaningful was gated
+// behind hover). Adds the keyboard-equivalent (focusin/focusout, which
+// bubble from any descendant, unlike focus/blur) plus viewport-edge
+// flipping — each flyout previously hardcoded left:100%, which now that
+// deep nesting is real can push a 3rd/4th-level flyout off the right edge
+// of the screen. Runs once per hydration alongside renderCategoryTree, not
+// delegated, since each row's own flyout position must be measured
+// independently.
+function bindFlyoutAccessibility(dropdown: HTMLElement) {
+  dropdown.querySelectorAll<HTMLElement>('[data-cat-parent]').forEach((row) => {
+    const trigger = row.querySelector<HTMLAnchorElement>(':scope > a')
+    const flyout = row.querySelector<HTMLElement>(':scope > [data-cat-flyout]')
+    if (!trigger || !flyout) return
+
+    const position = () => {
+      flyout.style.left = '100%'
+      flyout.style.right = 'auto'
+      flyout.style.marginLeft = '-10px'
+      flyout.style.marginRight = ''
+      if (flyout.getBoundingClientRect().right > window.innerWidth) {
+        flyout.style.left = 'auto'
+        flyout.style.right = '100%'
+        flyout.style.marginLeft = ''
+        flyout.style.marginRight = '-10px'
+      }
+    }
+    const open = () => {
+      flyout.style.display = 'block'
+      position()
+      trigger.setAttribute('aria-expanded', 'true')
+    }
+    const close = () => {
+      // Explicitly 'none', not '' — clearing the property via '' removes the
+      // JS override entirely rather than reverting to the div's original
+      // inline display:none, so the element would fall through to its
+      // default display:block and stay visibly open after the mouse/focus
+      // actually leaves.
+      flyout.style.display = 'none'
+      trigger.setAttribute('aria-expanded', 'false')
+    }
+
+    row.addEventListener('mouseenter', open)
+    row.addEventListener('mouseleave', close)
+    row.addEventListener('focusin', open)
+    row.addEventListener('focusout', (e: FocusEvent) => {
+      if (!row.contains(e.relatedTarget as Node | null)) close()
+    })
+  })
+}
+
+// "Inline" alternative to renderCategoryTree — a category with children
+// renders as a toggle row (label + chevron, not a link) whose own children
+// sit directly beneath it in normal document flow, indented one level per
+// depth, instead of popping out as an absolutely-positioned flyout. Matches
+// the accordion pattern the mobile drawer already uses, just for desktop.
+// Only leaf categories are clickable links; a parent row exists purely to
+// expand/collapse — clicking it never navigates.
+//
+// Starts pre-expanded (every level open the moment the dropdown appears, so
+// the full tree is visible with no clicking) but stays collapsible — the
+// chevron still toggles a branch closed if a shopper wants to shrink it.
+function renderCategoryTreeInline(
+  categories: CategoryNode[],
+  linkStyle: string,
+  depth = 0
+): string {
+  return categories
+    .map((cat) => {
+      const categoryQuery = cat.headlessName || cat.displayName || cat.name
+      const href = `/shop?category=${encodeURIComponent(categoryQuery)}`
+      const label = cat.displayName.includes(' / ')
+        ? cat.displayName.split(' / ').pop()!
+        : cat.displayName
+      const indent = 16 + depth * 16
+      if (!cat.children || cat.children.length === 0) {
+        return `<a href='${href}' style='display:block;padding:6px 16px 6px ${indent}px;${linkStyle}text-decoration:none;white-space:nowrap;'>${label}</a>`
+      }
+      return `<div data-cat-inline-parent='true'>
+      <div data-cat-inline-toggle='true' style='display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 16px 6px ${indent}px;${linkStyle}font-weight:600;white-space:nowrap;cursor:pointer;'>${label}<span data-cat-inline-chevron='true' style='font-size:11px;opacity:.6;transition:transform .15s;display:inline-block;transform:rotate(180deg);'>▾</span></div>
+      <div data-cat-inline-children='true' style='display:block;'>
+        ${renderCategoryTreeInline(cat.children, linkStyle, depth + 1)}
+      </div>
+    </div>`
+    })
+    .join('')
+}
+
+// Renders a mega-grid column's items, any depth deep — a child that itself
+// has children (now that buildCategoryTree supports arbitrary depth, not
+// just one level) gets its own grandchildren listed indented directly
+// beneath it in the same column, rather than the grandchildren being
+// silently omitted because the mega-grid map only ever read cat.children,
+// never child.children.
+function renderMegaColumnItems(nodes: CategoryNode[], depth = 0): string {
+  return nodes
+    .map((node) => {
+      const query = node.headlessName || node.displayName || node.name
+      const href = `/shop?category=${encodeURIComponent(query)}`
+      const label = node.displayName.includes(' / ')
+        ? node.displayName.split(' / ').pop()!
+        : node.displayName
+      const nested = (node.children ?? []).length
+        ? `<div style='padding-left:${8 + (depth + 1) * 8}px;'>${renderMegaColumnItems(node.children, depth + 1)}</div>`
+        : ''
+      return `<div class='rubikx-mega-child'><a href='${href}'>${label}</a></div>${nested}`
+    })
+    .join('')
+}
+
+// Click-to-expand wiring for renderCategoryTreeInline's toggle rows — a
+// single delegated listener on the dropdown container rather than one per
+// row, since loadCategories only ever calls this once per hydration
+// (guarded by data-hydrated) and delegation survives any future re-render
+// of the same dropdown without needing to re-bind.
+function bindInlineCategoryToggles(dropdown: HTMLElement) {
+  dropdown.addEventListener('click', (e) => {
+    const toggle = (e.target as HTMLElement).closest<HTMLElement>('[data-cat-inline-toggle]')
+    if (!toggle || !dropdown.contains(toggle)) return
+    const parent = toggle.closest<HTMLElement>('[data-cat-inline-parent]')
+    const children = parent?.querySelector<HTMLElement>(':scope > [data-cat-inline-children]')
+    if (!children) return
+    const isOpen = children.style.display === 'block'
+    children.style.display = isOpen ? 'none' : 'block'
+    const chevron = toggle.querySelector<HTMLElement>('[data-cat-inline-chevron]')
+    if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)'
+  })
+}
+
 // Finds the tree node whose name/displayName/headlessName matches `filter`
 // (case-insensitive), searching every level, not just top-level categories.
 function _findCategoryNode(nodes: CategoryNode[], filter: string): CategoryNode | null {
@@ -43,7 +179,7 @@ function _findCategoryNode(nodes: CategoryNode[], filter: string): CategoryNode 
     if (
       node.name?.toLowerCase() === target ||
       node.displayName?.toLowerCase() === target ||
-      node.headlessName?.toLowerCase() === target
+      (typeof node.headlessName === 'string' && node.headlessName.toLowerCase() === target)
     ) return node
     const found = _findCategoryNode(node.children ?? [], filter)
     if (found) return found
@@ -60,6 +196,7 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
   const fontSize = el.dataset.fontSize ?? '14'
   const fontWeight = el.dataset.fontWeight ?? '400'
   const categoryFilter = el.dataset.categoryFilter ?? ''
+  const dropdownStyle = el.dataset.categoryDropdownStyle === 'inline' ? 'inline' : 'floating'
   const linkStyle = `color:${linkColor};font-size:${fontSize}px;font-weight:${fontWeight};white-space:nowrap;`
 
   const dropdown = el.querySelector<HTMLElement>(
@@ -83,26 +220,23 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
       console.warn(`[Rubikx] Category filter "${categoryFilter}" did not match any category name`)
     }
 
-    if (tree.length > 6) {
+    if (dropdownStyle === 'inline') {
+      // Everything expands in place within the panel — never appropriate
+      // as a horizontal mega-grid, so this bypasses that layout regardless
+      // of how many top-level categories there are.
+      el.removeAttribute('data-mega')
+      dropdown.innerHTML = renderCategoryTreeInline(tree, linkStyle)
+      bindInlineCategoryToggles(dropdown)
+    } else if (tree.length > 6) {
       // Mega menu — horizontal grid layout
       el.setAttribute('data-mega', 'true')
       dropdown.innerHTML = tree
         .map((cat) => {
-          const slug =
-            cat.headlessName || cat.name.toLowerCase().replace(/\s+/g, '-')
-          const childrenHtml = (cat.children ?? [])
-            .map((child) => {
-              const childSlug =
-                child.headlessName ||
-                child.name.toLowerCase().replace(/\s+/g, '-')
-              const childLabel = child.displayName.includes(' / ')
-                ? child.displayName.split(' / ').pop()!
-                : child.displayName
-              return `<div class='rubikx-mega-child'><a href='/${childSlug}'>${childLabel}</a></div>`
-            })
-            .join('')
+          const categoryQuery = cat.headlessName || cat.displayName || cat.name
+          const href = `/shop?category=${encodeURIComponent(categoryQuery)}`
+          const childrenHtml = renderMegaColumnItems(cat.children ?? [])
           return `<div>
-          <div class='rubikx-mega-header'><a href='/${slug}'>${cat.displayName}</a></div>
+          <div class='rubikx-mega-header'><a href='${href}'>${cat.displayName}</a></div>
           ${childrenHtml}
         </div>`
         })
@@ -111,6 +245,7 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
       // Simple vertical dropdown — children reveal as a flyout on hover
       el.removeAttribute('data-mega')
       dropdown.innerHTML = renderCategoryTree(tree, linkStyle)
+      bindFlyoutAccessibility(dropdown)
     }
   } catch (e) {
     console.error('[Rubikx] Failed to load categories:', e)
