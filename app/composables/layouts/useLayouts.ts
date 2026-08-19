@@ -57,6 +57,14 @@ import {
   ru2AboutFields,
   ru2AboutSvg,
   renderRu2About,
+  ru3AboutBannerDefaults,
+  ru3AboutBannerFields,
+  ru3AboutBannerSvg,
+  renderRu3AboutBanner,
+  ru4AboutDefaults,
+  ru4AboutFields,
+  ru4AboutSvg,
+  renderRu4About,
   ru1FaqDefaults,
   ru1FaqFields,
   ru1FaqSvg,
@@ -326,6 +334,18 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       cover_image: ru2AboutSvg,
       html_code: renderRu2About(ru2AboutDefaults),
     },
+    {
+      title: 'Ru3-About + Banner',
+      category: 'About Us',
+      cover_image: ru3AboutBannerSvg,
+      html_code: renderRu3AboutBanner(ru3AboutBannerDefaults),
+    },
+    {
+      title: 'Ru4-About',
+      category: 'About Us',
+      cover_image: ru4AboutSvg,
+      html_code: renderRu4About(ru4AboutDefaults),
+    },
   ],
   FAQs: [
     {
@@ -522,6 +542,18 @@ export function useLayouts() {
     defaults: ru2AboutDefaults,
     fields: ru2AboutFields,
     render: renderRu2About,
+  })
+
+  blockRegistry.register('Ru3-About + Banner', {
+    defaults: ru3AboutBannerDefaults,
+    fields: ru3AboutBannerFields,
+    render: renderRu3AboutBanner,
+  })
+
+  blockRegistry.register('Ru4-About', {
+    defaults: ru4AboutDefaults,
+    fields: ru4AboutFields,
+    render: renderRu4About,
   })
 
   blockRegistry.register('Ru1-FAQ', {

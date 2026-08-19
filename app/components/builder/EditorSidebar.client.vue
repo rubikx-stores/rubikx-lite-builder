@@ -2,7 +2,7 @@
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { usePageBuilderStateStore, sharedPageBuilderStore } from '@myissue/vue-website-page-builder'
 import ProductsEditor from '../ProductsEditor.client.vue'
-import FaqAnswerEditorModal from './FaqAnswerEditorModal.client.vue'
+import RichTextEditorModal from './RichTextEditorModal.client.vue'
 import { useBlockRegistry } from '~/composables/editor/useBlockRegistry'
 import type { FieldConfig } from '~/composables/editor/useBlockRegistry'
 import { productImageSrc } from '~/composables/useProductImageSrc'
@@ -427,11 +427,14 @@ function debouncedUpdateBlockListItem(listKey: string, idx: number, itemKey: str
 
 // FAQ answer: the plain single-line input is too small to read and can't
 // hold a hyperlink/button, so it opens a bigger modal editor instead (see
-// FaqAnswerEditorModal.client.vue). The sidebar row itself just shows a
+// RichTextEditorModal.client.vue). The sidebar row itself just shows a
 // stripped-text preview + an "Edit" button.
+// The same modal/target plumbing is reused for any other rich-text field —
+// list-item (e.g. Ru4-About's card descriptions) or top-level scalar (e.g.
+// Ru4-About's intro paragraphs) — so only one modal instance is needed.
 const showFaqAnswerModal = ref(false)
 const faqAnswerModalInitial = ref('')
-const faqAnswerModalTarget = ref<{ listKey: string; idx: number; itemKey: string } | null>(null)
+const faqAnswerModalTarget = ref<{ listKey: string; idx: number; itemKey: string } | { fieldKey: string } | null>(null)
 
 function stripHtml(html: any): string {
   if (typeof html !== 'string' || !html) return ''
@@ -446,10 +449,20 @@ function openFaqAnswerModal(listKey: string, idx: number, itemKey: string, curre
   showFaqAnswerModal.value = true
 }
 
+function openRichTextFieldModal(fieldKey: string, currentValue: any) {
+  faqAnswerModalTarget.value = { fieldKey }
+  faqAnswerModalInitial.value = typeof currentValue === 'string' ? currentValue : ''
+  showFaqAnswerModal.value = true
+}
+
 function handleFaqAnswerSave(html: string) {
-  if (!faqAnswerModalTarget.value) return
-  const { listKey, idx, itemKey } = faqAnswerModalTarget.value
-  updateBlockListItem(listKey, idx, itemKey, html)
+  const target = faqAnswerModalTarget.value
+  if (!target) return
+  if ('fieldKey' in target) {
+    updateBlockField(target.fieldKey, html)
+  } else {
+    updateBlockListItem(target.listKey, target.idx, target.itemKey, html)
+  }
 }
 
 // Ru7-Hero-Category-Collection: typing the Category Name auto-fills the
@@ -885,6 +898,21 @@ onUnmounted(() => {
               <p v-if="uploadError[field.key]" class="text-xs text-red-500">{{ uploadError[field.key] }}</p>
             </div>
 
+            <!-- Ru4-About intro paragraphs: support inline bold/links, so they
+                 open the same bigger modal editor as the FAQ answer field
+                 instead of a plain textarea. -->
+            <div v-else-if="(field.key === 'description1' || field.key === 'description2') && selectedBlockTitle === 'Ru4-About'" class="mb-2.5">
+              <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
+              <div class="flex items-center gap-1.5">
+                <div class="flex-1 min-w-0 truncate rounded border border-gray-200 px-2 py-1 text-xs" :class="blockData[field.key] ? 'text-gray-600' : 'text-gray-400'" :title="stripHtml(blockData[field.key])">
+                  {{ stripHtml(blockData[field.key]) || field.placeholder || 'Click Edit to add text…' }}
+                </div>
+                <button type="button"
+                  class="shrink-0 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100"
+                  @click="openRichTextFieldModal(field.key, blockData[field.key])">Edit</button>
+              </div>
+            </div>
+
             <!-- textarea -->
             <div v-else-if="field.type === 'textarea'" class="mb-2.5">
               <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
@@ -1174,6 +1202,19 @@ onUnmounted(() => {
                         </div>
                       </template>
 
+                      <!-- Ru4-About card description: same rationale as the FAQ
+                           answer above — supports inline bold/links. -->
+                      <template v-else-if="field.key === 'cards' && subField.key === 'description' && selectedBlockTitle === 'Ru4-About'">
+                        <div class="flex items-center gap-1.5">
+                          <div class="flex-1 min-w-0 truncate rounded border border-gray-200 px-2 py-1 text-xs" :class="item.description ? 'text-gray-600' : 'text-gray-400'" :title="stripHtml(item.description)">
+                            {{ stripHtml(item.description) || 'Click Edit to add a description…' }}
+                          </div>
+                          <button type="button"
+                            class="shrink-0 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100"
+                            @click="openFaqAnswerModal(field.key, idx, subField.key, item.description)">Edit</button>
+                        </div>
+                      </template>
+
                       <!-- text / url / number: instant update on every keystroke -->
                       <template v-else>
                         <div class="relative">
@@ -1423,7 +1464,7 @@ onUnmounted(() => {
     </template>
   </Teleport>
 
-  <FaqAnswerEditorModal
+  <RichTextEditorModal
     v-model="showFaqAnswerModal"
     :initial-html="faqAnswerModalInitial"
     @save="handleFaqAnswerSave"

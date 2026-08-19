@@ -38,6 +38,11 @@ const lineHeightKey = ref('normal')
 const showUrlBar = ref(false)
 const pendingType = ref<'link' | 'button' | null>(null)
 const editingAnchor = ref<HTMLAnchorElement | null>(null)
+// True while editingAnchor is a brand-new button created up-front (see
+// startLinkOrButton) purely so its live preview has something to restyle —
+// it isn't a real, confirmed part of the content yet. cancelUrlBar unwraps
+// it if the admin backs out without clicking "Add".
+const isDraftAnchor = ref(false)
 const urlInput = ref('')
 const buttonBgColor = ref('#111827')
 const buttonTextColor = ref('#ffffff')
@@ -49,10 +54,23 @@ const buttonPaddingY = ref(8)
 const buttonMarginX = ref(0)
 const buttonMarginY = ref(0)
 
+// Live preview: every time a button style value changes while the button
+// panel is open, immediately re-apply it to whatever <a> is being edited —
+// the pre-existing one, or the draft created up-front for a new button.
+watch(
+  [buttonBgColor, buttonTextColor, buttonWidth, buttonHeight, buttonBorderRadius, buttonPaddingX, buttonPaddingY, buttonMarginX, buttonMarginY],
+  () => {
+    if (pendingType.value === 'button' && editingAnchor.value) {
+      editingAnchor.value.setAttribute('style', buttonStyle())
+    }
+  },
+)
+
 watch(() => props.modelValue, async (open) => {
   showUrlBar.value = false
   selectionError.value = ''
   editingAnchor.value = null
+  isDraftAnchor.value = false
   savedRange.value = null
   if (!open) return
   await nextTick()
@@ -95,7 +113,40 @@ function currentMarkedAncestor(selector: string): HTMLElement | null {
   return startMark === endMark ? startMark : null
 }
 
-function wrapSelection(tag: string, attrs: Record<string, string>): boolean {
+// Removes any elements matching `selector` found inside a fragment, keeping
+// their own contents in place — used to scrub old color/size marks out of a
+// selection before rewrapping it (see wrapSelection's clearSelector).
+function stripMarksFromFragment(fragment: DocumentFragment, selector: string) {
+  fragment.querySelectorAll(selector).forEach((mark) => {
+    const parent = mark.parentNode
+    if (!parent) return
+    while (mark.firstChild) parent.insertBefore(mark.firstChild, mark)
+    parent.removeChild(mark)
+  })
+}
+
+// Removes an existing mark of this exact kind around the current selection,
+// if any, returning whether one was found. Used by toggleBold (to flip
+// bold off) and as a fallback for wrapSelection's clearSelector when the
+// selection sits neatly inside a single mark rather than partially
+// overlapping/spanning several (see stripMarksFromFragment for that case).
+function unwrapExistingMark(selector: string): boolean {
+  const existing = currentMarkedAncestor(selector)
+  if (!existing) return false
+  const parent = existing.parentNode
+  if (!parent) return false
+  while (existing.firstChild) parent.insertBefore(existing.firstChild, existing)
+  parent.removeChild(existing)
+  return true
+}
+
+// clearSelector strips any pre-existing mark of the same kind from the whole
+// selection first (not just a single exact-ancestor match) — so applying a
+// new color/size to a sentence that has some already-differently-colored/
+// sized words inside it recolors the WHOLE sentence uniformly, instead of
+// those specific words' own inline style keeping their old value and only
+// the rest of the sentence changing.
+function wrapSelection(tag: string, attrs: Record<string, string>, clearSelector?: string): boolean {
   const range = savedRange.value
   if (!range || range.collapsed) {
     selectionError.value = 'Select some text first.'
@@ -104,7 +155,9 @@ function wrapSelection(tag: string, attrs: Record<string, string>): boolean {
   const wrapper = document.createElement(tag)
   for (const [k, v] of Object.entries(attrs)) wrapper.setAttribute(k, v)
   try {
-    wrapper.appendChild(range.extractContents())
+    const extracted = range.extractContents()
+    if (clearSelector) stripMarksFromFragment(extracted, clearSelector)
+    wrapper.appendChild(extracted)
     range.insertNode(wrapper)
   } catch {
     // Selection spanned something extractContents couldn't handle cleanly —
@@ -117,30 +170,40 @@ function wrapSelection(tag: string, attrs: Record<string, string>): boolean {
 
 function toggleBold() {
   selectionError.value = ''
-  const existing = currentMarkedAncestor('strong[data-faq-mark="bold"]')
-  if (existing) {
-    const parent = existing.parentNode
-    if (!parent) return
-    while (existing.firstChild) parent.insertBefore(existing.firstChild, existing)
-    parent.removeChild(existing)
-    return
-  }
+  if (unwrapExistingMark('strong[data-faq-mark="bold"]')) return
   wrapSelection('strong', { 'data-faq-mark': 'bold' })
 }
 
 function applyTextColor() {
   selectionError.value = ''
-  wrapSelection('span', { 'data-faq-mark': 'color', style: `color:${textColorInput.value};` })
+  wrapSelection('span', { 'data-faq-mark': 'color', style: `color:${textColorInput.value};` }, 'span[data-faq-mark="color"]')
 }
 
 function applyFontSize(key: string) {
   selectionError.value = ''
-  wrapSelection('span', { 'data-faq-mark': 'size', style: `font-size:${FONT_SIZES[key] ?? FONT_SIZES.base};` })
+  wrapSelection('span', { 'data-faq-mark': 'size', style: `font-size:${FONT_SIZES[key] ?? FONT_SIZES.base};` }, 'span[data-faq-mark="size"]')
 }
 
+// Unlike Bold/Color/Size, line-height only visually changes anything when it
+// spans a whole block — wrapping just the selected words in a <span> (the
+// old behavior) has no meaningful effect on line spacing, since a browser's
+// line-box height is governed by the block as a whole. So this always
+// applies to the entire answer, regardless of what's selected, wrapping
+// (or re-using) a single root-level <div> so the value survives into the
+// saved HTML.
 function applyLineHeight(key: string) {
   selectionError.value = ''
-  wrapSelection('span', { 'data-faq-mark': 'lineheight', style: `line-height:${LINE_HEIGHTS[key] ?? LINE_HEIGHTS.normal};` })
+  const el = editorEl.value
+  if (!el) return
+  const value = LINE_HEIGHTS[key] ?? LINE_HEIGHTS.normal
+  let wrapper = el.firstElementChild as HTMLElement | null
+  if (!wrapper || el.children.length !== 1 || wrapper.getAttribute('data-faq-mark') !== 'lineheight') {
+    wrapper = document.createElement('div')
+    wrapper.setAttribute('data-faq-mark', 'lineheight')
+    while (el.firstChild) wrapper.appendChild(el.firstChild)
+    el.appendChild(wrapper)
+  }
+  wrapper.style.lineHeight = value
 }
 
 function rgbToHex(color: string, fallback: string): string {
@@ -157,6 +220,7 @@ function startLinkOrButton(type: 'link' | 'button') {
 
   if (existingAnchor) {
     editingAnchor.value = existingAnchor
+    isDraftAnchor.value = false
     pendingType.value = type
     urlInput.value = existingAnchor.getAttribute('href') || ''
     if (type === 'button') {
@@ -178,7 +242,11 @@ function startLinkOrButton(type: 'link' | 'button') {
     selectionError.value = 'Select some text first.'
     return
   }
+  // Clear the target BEFORE resetting the style refs below — the live-preview
+  // watch fires on every one of those resets, and would otherwise restyle
+  // whatever anchor was being edited in this modal session just before.
   editingAnchor.value = null
+  isDraftAnchor.value = false
   pendingType.value = type
   urlInput.value = ''
   buttonBgColor.value = '#111827'
@@ -190,6 +258,35 @@ function startLinkOrButton(type: 'link' | 'button') {
   buttonPaddingY.value = 8
   buttonMarginX.value = 0
   buttonMarginY.value = 0
+
+  if (type === 'button') {
+    // Wrap the selection right away (with default styles) instead of
+    // waiting for "Add" — this gives the width/height/padding/margin/radius
+    // sliders a live element to restyle as soon as they're moved. Cancel
+    // unwraps this draft again if the admin backs out.
+    const range = savedRange.value
+    const draft = document.createElement('a')
+    draft.setAttribute('data-faq-mark', 'button')
+    draft.setAttribute('style', buttonStyle())
+    try {
+      draft.appendChild(range.extractContents())
+      range.insertNode(draft)
+    } catch {
+      selectionError.value = 'Could not apply a button to that selection.'
+      return
+    }
+    editingAnchor.value = draft
+    isDraftAnchor.value = true
+    // The button draft has already consumed the range (extractContents
+    // above) — clear it so nothing downstream tries to reuse a stale Range.
+    savedRange.value = null
+  } else {
+    // A brand-new LINK still needs savedRange later, in confirmLinkOrButton,
+    // to wrap the selection once the URL is entered — do NOT clear it here.
+    editingAnchor.value = null
+    isDraftAnchor.value = false
+  }
+
   showUrlBar.value = true
 }
 
@@ -205,9 +302,21 @@ function buttonStyle(): string {
   return `display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;width:${buttonWidth.value}px;height:${buttonHeight.value}px;padding:${buttonPaddingY.value}px ${buttonPaddingX.value}px;margin:${buttonMarginY.value}px ${buttonMarginX.value}px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;background:${buttonBgColor.value};color:${buttonTextColor.value};border-radius:${buttonBorderRadius.value}px;text-decoration:none;font-weight:600;`
 }
 
+// A bare domain ("example.com") or bare email ("you@example.com") typed
+// without a scheme resolves as a path relative to the current page instead
+// of navigating anywhere — silently "does nothing" from the admin's point of
+// view. Recognized schemes, root-relative ("/shop"), and in-page ("#faq")
+// links pass through untouched.
+function normalizeHref(raw: string): string {
+  if (/^([a-z][a-z0-9+.-]*:|\/|#)/i.test(raw)) return raw
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)) return `mailto:${raw}`
+  return `https://${raw}`
+}
+
 function confirmLinkOrButton() {
-  const href = urlInput.value.trim()
-  if (!href) return
+  const raw = urlInput.value.trim()
+  if (!raw) return
+  const href = normalizeHref(raw)
   const style = pendingType.value === 'button' ? buttonStyle() : 'color:inherit;text-decoration:underline;cursor:pointer;'
 
   if (editingAnchor.value) {
@@ -215,14 +324,20 @@ function confirmLinkOrButton() {
     a.setAttribute('href', href)
     a.setAttribute('data-faq-mark', pendingType.value === 'button' ? 'button' : 'link')
     a.setAttribute('style', style)
+    if (isDraftAnchor.value) {
+      a.setAttribute('target', '_blank')
+      a.setAttribute('rel', 'noopener')
+    }
   } else {
+    // Only reached for a brand-new LINK — a brand-new button is already a
+    // live editingAnchor by this point (see startLinkOrButton).
     const range = savedRange.value
     if (!range) return
     const anchor = document.createElement('a')
     anchor.setAttribute('href', href)
     anchor.setAttribute('target', '_blank')
     anchor.setAttribute('rel', 'noopener')
-    anchor.setAttribute('data-faq-mark', pendingType.value === 'button' ? 'button' : 'link')
+    anchor.setAttribute('data-faq-mark', 'link')
     anchor.setAttribute('style', style)
     try {
       anchor.appendChild(range.extractContents())
@@ -232,12 +347,24 @@ function confirmLinkOrButton() {
     }
   }
 
+  isDraftAnchor.value = false
   showUrlBar.value = false
   editingAnchor.value = null
   savedRange.value = null
 }
 
 function cancelUrlBar() {
+  // A brand-new button's live-preview draft was only ever provisional —
+  // back out of it exactly like before this element existed at all.
+  if (isDraftAnchor.value && editingAnchor.value) {
+    const el = editingAnchor.value
+    const parent = el.parentNode
+    if (parent) {
+      while (el.firstChild) parent.insertBefore(el.firstChild, el)
+      parent.removeChild(el)
+    }
+  }
+  isDraftAnchor.value = false
   showUrlBar.value = false
   editingAnchor.value = null
 }
@@ -287,7 +414,7 @@ function save() {
           </button>
         </div>
 
-        <p class="mb-2 text-xs text-gray-500 shrink-0">Select text below, then apply a style. "Remove" clears whatever style is under the cursor.</p>
+        <p class="mb-2 text-xs text-gray-500 shrink-0">Select text below, then apply a style. Line Height applies to the whole text instead, since it only affects spacing at that scale. "Remove" clears whatever style is under the cursor.</p>
 
         <!-- Format row -->
         <div class="mb-2 flex flex-wrap items-center gap-2 shrink-0">
@@ -381,8 +508,8 @@ function save() {
             <label class="w-24 shrink-0 text-xs text-gray-600">URL</label>
             <input
               v-model="urlInput"
-              type="url"
-              placeholder="https://example.com"
+              type="text"
+              placeholder="https://example.com, you@example.com, or /shop"
               class="min-w-0 flex-1 rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:border-blue-400"
               @keydown.enter.prevent="confirmLinkOrButton"
             />
