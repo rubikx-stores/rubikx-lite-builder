@@ -3614,6 +3614,495 @@ export function renderRu2About(data: Ru2AboutData): string {
 </section>`
 }
 
+// ─── Ru3-About + Banner ─────────────────────────────────────────────────────
+// Three independently toggleable pieces:
+//  - Breadcrumbs: the breadcrumb nav + a plain page-title heading, bundled
+//    together as one unit. Always renders near the top, unaffected by Banner.
+//  - Banner: a promotional image+heading card with two layouts —
+//    "Inline Card" (default) sits in the body, right after the About Text
+//    paragraph, forming a two-column row with it; "Top Hero" detaches from
+//    that row and becomes a full-width colored/image hero bar above
+//    Breadcrumbs instead.
+//  - About Text: the paragraph body. Renders full width alone whenever
+//    Banner isn't an Inline Card (hidden, or set to Top Hero); shares a
+//    two-column row with the Banner card otherwise.
+
+export const ru3AboutBannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 130">
+  <rect fill="#1f2937" width="277.5" height="130"/>
+  <rect fill="#4b5563" width="277.5" height="34"/>
+  <rect fill="#9ca3af" x="12" y="14" width="90" height="10" rx="1"/>
+  <rect fill="#9ca3af" x="12" y="44" width="10" height="10" rx="2"/>
+  <rect fill="#6b7280" x="26" y="47" width="60" height="4" rx="1"/>
+  <rect fill="#6b7280" x="12" y="66" width="130" height="4" rx="1"/>
+  <rect fill="#6b7280" x="12" y="74" width="120" height="4" rx="1"/>
+  <rect fill="#6b7280" x="12" y="82" width="100" height="4" rx="1"/>
+  <rect fill="#6b7280" x="12" y="94" width="60" height="10" rx="4"/>
+  <rect fill="#374151" stroke="#4b5563" x="160" y="54" width="105" height="64" rx="6"/>
+</svg>`
+
+export interface Ru3AboutBannerData {
+  fontFamily: string
+
+  // Breadcrumbs (bundled with a plain page-title heading) — independent
+  showBreadcrumb: boolean
+  breadcrumbHomeHref: string
+  breadcrumbLabel: string
+  breadcrumbColor: string
+  pageTitle: string
+  pageTitleColor: string
+  pageTitleAlign: string
+  pageTitleFont: string
+
+  // Banner (promotional card) — independent, two layouts
+  showBanner: boolean
+  bannerLayout: string
+  // Top Hero style
+  bannerTitle: string
+  bannerTitleFont: string
+  bannerBgColor: string
+  bannerImage: string
+  bannerTitleColor: string
+  bannerTitleAlign: string
+  bannerHeight: number
+  // Inline Card style
+  cardImage: string
+  cardImageBgColor: string
+  cardImageAspectRatio: string
+  cardImageRadius: number
+
+  // Body layout (shared by About Text and the Inline Card)
+  sectionBgColor: string
+  paddingY: number
+  paddingX: number
+  contentMaxWidth: number
+  columnOrder: string[]
+
+  // About Text — independent
+  showAboutText: boolean
+  aboutText: string
+  aboutTextColor: string
+  aboutTextFont: string
+}
+
+export const ru3AboutBannerDefaults: Ru3AboutBannerData = {
+  fontFamily: '',
+
+  showBreadcrumb: true,
+  breadcrumbHomeHref: '/',
+  breadcrumbLabel: 'About Us',
+  breadcrumbColor: '#6b7280',
+  pageTitle: 'About Us',
+  pageTitleColor: '#111827',
+  pageTitleAlign: 'left',
+  pageTitleFont: '',
+
+  showBanner: true,
+  bannerLayout: 'Inline Card',
+  bannerTitle: 'About Us',
+  bannerTitleFont: '',
+  bannerBgColor: '#0f1b2d',
+  bannerImage: '',
+  bannerTitleColor: '#ffffff',
+  bannerTitleAlign: 'left',
+  bannerHeight: 160,
+  cardImage: '',
+  cardImageBgColor: '#f3f4f6',
+  cardImageAspectRatio: 'Square (1:1)',
+  cardImageRadius: 12,
+
+  sectionBgColor: '#ffffff',
+  paddingY: 64,
+  paddingX: 32,
+  contentMaxWidth: 1450,
+  columnOrder: ['text', 'banner'],
+
+  showAboutText: true,
+  aboutText: 'Write a short introduction about your company here — who you are, what you do, and why customers should trust you.\n\nAdd a second paragraph to expand on your mission, values, or history.',
+  aboutTextColor: '#374151',
+  aboutTextFont: '',
+}
+
+const _ru3ab_showBreadcrumb = (d: Record<string, any>) => d.showBreadcrumb !== false
+const _ru3ab_showBanner = (d: Record<string, any>) => d.showBanner !== false
+const _ru3ab_isTopHero = (d: Record<string, any>) => d.showBanner !== false && d.bannerLayout === 'Top Hero'
+const _ru3ab_isInlineCard = (d: Record<string, any>) => d.showBanner !== false && d.bannerLayout !== 'Top Hero'
+const _ru3ab_showAboutText = (d: Record<string, any>) => d.showAboutText !== false
+
+const _ru3ab_aspectOptions = ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)']
+
+export const ru3AboutBannerFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_breadcrumb', label: 'Breadcrumbs', type: 'header' },
+  { key: 'showBreadcrumb', label: 'Show Breadcrumbs', type: 'toggle' },
+  { key: 'breadcrumbHomeHref', label: 'Home Link', type: 'url', placeholder: '/', visibleIf: _ru3ab_showBreadcrumb },
+  { key: 'breadcrumbLabel', label: 'Breadcrumb Label', type: 'text', placeholder: 'e.g. About Us', visibleIf: _ru3ab_showBreadcrumb },
+  { key: 'breadcrumbColor', label: 'Breadcrumb Colour', type: 'color', visibleIf: _ru3ab_showBreadcrumb },
+  { key: 'pageTitle', label: 'Page Title', type: 'text', placeholder: 'e.g. About Us', visibleIf: _ru3ab_showBreadcrumb },
+  { key: 'pageTitleColor', label: 'Page Title Colour', type: 'color', visibleIf: _ru3ab_showBreadcrumb },
+  { key: 'pageTitleAlign', label: 'Page Title Alignment', type: 'select', options: ['left', 'center', 'right'], visibleIf: _ru3ab_showBreadcrumb },
+  { ...fontField('pageTitleFont', 'Page Title Font'), visibleIf: _ru3ab_showBreadcrumb },
+
+  { key: '_h_banner', label: 'Banner', type: 'header' },
+  { key: 'showBanner', label: 'Show Banner', type: 'toggle' },
+  { key: 'bannerLayout', label: 'Banner Layout', type: 'select', options: ['Inline Card', 'Top Hero'], visibleIf: _ru3ab_showBanner },
+
+  { key: '_h_banner_hero', label: 'Top Hero Style', type: 'header', visibleIf: _ru3ab_isTopHero },
+  { key: 'bannerTitle', label: 'Hero Title', type: 'text', placeholder: 'e.g. About Us', visibleIf: _ru3ab_isTopHero },
+  { ...fontField('bannerTitleFont', 'Hero Title Font'), visibleIf: _ru3ab_isTopHero },
+  { key: 'bannerBgColor', label: 'Hero Background', type: 'color', visibleIf: _ru3ab_isTopHero },
+  { key: 'bannerImage', label: 'Hero Image (URL)', type: 'image', visibleIf: _ru3ab_isTopHero },
+  { key: 'bannerTitleColor', label: 'Hero Title Colour', type: 'color', visibleIf: _ru3ab_isTopHero },
+  { key: 'bannerTitleAlign', label: 'Hero Title Alignment', type: 'select', options: ['left', 'center', 'right'], visibleIf: _ru3ab_isTopHero },
+  { key: 'bannerHeight', label: 'Hero Height', type: 'number', unit: 'px', step: 10, placeholder: '160', visibleIf: _ru3ab_isTopHero },
+
+  { key: '_h_banner_card', label: 'Inline Card Style', type: 'header', visibleIf: _ru3ab_isInlineCard },
+  { key: 'cardImage', label: 'Card Image (URL)', type: 'image', visibleIf: _ru3ab_isInlineCard },
+  { key: 'cardImageBgColor', label: 'Card Image Background', type: 'color', visibleIf: _ru3ab_isInlineCard },
+  { key: 'cardImageAspectRatio', label: 'Card Image Aspect Ratio', type: 'select', options: _ru3ab_aspectOptions, visibleIf: _ru3ab_isInlineCard },
+  { key: 'cardImageRadius', label: 'Card Image Border Radius (px)', type: 'number', placeholder: '12', visibleIf: _ru3ab_isInlineCard },
+
+  { key: '_h_body', label: 'Body Layout', type: 'header' },
+  { key: 'sectionBgColor', label: 'Section Background', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '64' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '32' },
+  { key: 'contentMaxWidth', label: 'Content Max Width (px)', type: 'number', step: 10, placeholder: '1450' },
+  { key: 'columnOrder', label: 'Column Order', type: 'column-order', visibleIf: _ru3ab_isInlineCard },
+
+  { key: '_h_about', label: 'About Text', type: 'header' },
+  { key: 'showAboutText', label: 'Show About Text', type: 'toggle' },
+  { key: 'aboutText', label: 'Text (one paragraph per line)', type: 'textarea', placeholder: 'Write about your company…', visibleIf: _ru3ab_showAboutText },
+  { key: 'aboutTextColor', label: 'Text Colour', type: 'color', visibleIf: _ru3ab_showAboutText },
+  { ...fontField('aboutTextFont', 'Text Font'), visibleIf: _ru3ab_showAboutText },
+]
+
+export function renderRu3AboutBanner(data: Ru3AboutBannerData): string {
+  const aspectRatioMap: Record<string, string> = {
+    'Auto': '',
+    'Wide (16:9)': 'aspect-ratio:16/9;',
+    'Standard (4:3)': 'aspect-ratio:4/3;',
+    'Square (1:1)': 'aspect-ratio:1/1;',
+    'Tall (3:4)': 'aspect-ratio:3/4;',
+    'Cinematic (21:9)': 'aspect-ratio:21/9;',
+  }
+  const maxWidth = data.contentMaxWidth ?? 1450
+  const isTopHero = data.showBanner !== false && data.bannerLayout === 'Top Hero'
+  const isInlineCard = data.showBanner !== false && !isTopHero
+
+  const heroHtml = isTopHero ? (() => {
+    const bannerAlignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
+    const bannerImg = productImageSrc(data.bannerImage)
+    const bannerBg = bannerImg
+      ? `background:url('${bannerImg}') center/cover no-repeat;background-color:${data.bannerBgColor};`
+      : `background:${data.bannerBgColor};`
+    // The background image always fills via cover, so height is set exactly
+    // (not min-height) — an aspect-ratio rule here would otherwise compute
+    // its own height from the box's width and silently override whatever
+    // Hero Height is set to.
+    return `<div style="${bannerBg}height:${data.bannerHeight}px;padding:2.5rem 0;display:flex;flex-direction:column;justify-content:flex-end;box-sizing:border-box;">
+      <div style="max-width:${maxWidth}px;margin:0 auto;padding:0 2rem;display:flex;flex-direction:column;align-items:${bannerAlignMap[data.bannerTitleAlign] ?? 'flex-start'};text-align:${data.bannerTitleAlign || 'left'};width:100%;box-sizing:border-box;">
+        <h2 style="font-size:min(2.75rem,9vw);font-weight:800;color:${data.bannerTitleColor};margin:0;line-height:1.1;${fontCss(data.bannerTitleFont, data.fontFamily)}">${data.bannerTitle}</h2>
+      </div>
+    </div>`
+  })() : ''
+
+  // Breadcrumbs (nav + plain page title) is one bundled, independent unit —
+  // always renders here, below the Top Hero if one is showing.
+  const breadcrumbBlockHtml = data.showBreadcrumb !== false
+    ? `<nav style="max-width:${maxWidth}px;margin:0 auto;padding:1.25rem 2rem 0;display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;color:${data.breadcrumbColor};">
+        <a href="${data.breadcrumbHomeHref || '/'}" aria-label="Home" style="display:inline-flex;color:${data.breadcrumbColor};text-decoration:none;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 3l9 7.5M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <span style="opacity:0.6;">&rsaquo;</span>
+        <span>${data.breadcrumbLabel}</span>
+      </nav>
+      <h1 style="max-width:${maxWidth}px;margin:0 auto;padding:1rem 2rem 0;font-size:min(2.25rem,7vw);font-weight:700;text-align:${data.pageTitleAlign || 'left'};color:${data.pageTitleColor};${fontCss(data.pageTitleFont, data.fontFamily)}">${data.pageTitle}</h1>`
+    : ''
+
+  const cardHtml = isInlineCard ? (() => {
+    const imgSrc = productImageSrc(data.cardImage)
+    const imgAspect = aspectRatioMap[data.cardImageAspectRatio] || aspectRatioMap['Square (1:1)']
+    return `<div style="width:100%;${imgAspect};border-radius:${data.cardImageRadius ?? 12}px;overflow:hidden;background:${data.cardImageBgColor || '#f3f4f6'};display:flex;align-items:center;justify-content:center;">
+      ${imgSrc ? `<img src="${imgSrc}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" />` : ''}
+    </div>`
+  })() : ''
+
+  const textHtml = data.showAboutText !== false ? (() => {
+    const paragraphs = (data.aboutText ?? '').split('\n').map(p => p.trim()).filter(Boolean)
+    return `<div style="display:flex;flex-direction:column;gap:1rem;">
+      ${paragraphs.map(p => `<p style="margin:0;font-size:1rem;line-height:1.75;color:${data.aboutTextColor};${fontCss(data.aboutTextFont, data.fontFamily)}">${p}</p>`).join('')}
+    </div>`
+  })() : ''
+
+  // Inline Card + About Text share a two-column row (reorderable via
+  // columnOrder); if only one of them is showing, it takes the full width
+  // alone instead of leaving an empty column.
+  const bodyInnerHtml = (isInlineCard && data.showAboutText !== false)
+    ? (() => {
+        const colMap: Record<string, string> = { text: textHtml, banner: cardHtml }
+        const order = data.columnOrder ?? ['text', 'banner']
+        return `<div data-ru3ab-grid="true" style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;">
+      ${order.map(k => colMap[k] ?? '').join('')}
+    </div>`
+      })()
+    : (isInlineCard ? cardHtml : textHtml)
+
+  const bodyHtml = (isInlineCard || data.showAboutText !== false)
+    ? `<div style="background:${data.sectionBgColor};">
+      <div style="max-width:${maxWidth}px;margin:0 auto;padding:${data.paddingY ?? 64}px min(${data.paddingX ?? 32}px,6vw);">
+        ${bodyInnerHtml}
+      </div>
+    </div>`
+    : ''
+
+  return `<section data-component-title="Ru3-About + Banner" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:768px){[data-ru3ab-grid]{grid-template-columns:1fr!important;}}
+</style>
+  ${heroHtml}
+  ${breadcrumbBlockHtml}
+  ${bodyHtml}
+</section>`
+}
+
+// ─── Ru4-About ───────────────────────────────────────────────────────────────
+// Intro title + two rich-text paragraphs (inline bold/links authored via the
+// same modal editor as the FAQ answer field — see EditorSidebar.client.vue),
+// a divider, a reorderable-count grid of icon cards (each with its own
+// rich-text description), and a contact highlight strip, finishing with a
+// closing line. Every section is independently toggleable.
+
+export const ru4AboutSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 150">
+  <rect fill="#1f2937" width="277.5" height="150"/>
+  <rect fill="#9ca3af" x="12" y="12" width="90" height="12" rx="1"/>
+  <rect fill="#6b7280" x="12" y="34" width="253.5" height="5" rx="1"/>
+  <rect fill="#6b7280" x="12" y="43" width="230" height="5" rx="1"/>
+  <rect fill="#6b7280" x="12" y="55" width="200" height="5" rx="1"/>
+  <rect fill="#4b5563" x="12" y="68" width="253.5" height="1.5"/>
+  <rect fill="#374151" stroke="#4b5563" x="12" y="80" width="122" height="58" rx="6"/>
+  <rect fill="#374151" stroke="#4b5563" x="143.5" y="80" width="122" height="58" rx="6"/>
+  <rect fill="#6b7280" x="22" y="90" width="18" height="18" rx="5"/>
+  <rect fill="#6b7280" x="153.5" y="90" width="18" height="18" rx="5"/>
+  <rect fill="#9ca3af" x="22" y="115" width="70" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="153.5" y="115" width="70" height="6" rx="1"/>
+  <rect fill="#6b7280" x="22" y="126" width="95" height="4" rx="1"/>
+  <rect fill="#6b7280" x="153.5" y="126" width="95" height="4" rx="1"/>
+</svg>`
+
+export interface Ru4AboutCardItem {
+  icon: string
+  iconBg: string
+  title: string
+  description: string
+}
+
+export interface Ru4AboutData {
+  fontFamily: string
+
+  sectionBgColor: string
+  paddingY: number
+  paddingX: number
+  contentMaxWidth: number
+
+  title: string
+  titleColor: string
+  titleFont: string
+  description1: string
+  description1Color: string
+  description2: string
+  description2Color: string
+  descriptionFont: string
+
+  showDivider: boolean
+  dividerColor: string
+
+  showCards: boolean
+  cards: Ru4AboutCardItem[]
+  cardTitleColor: string
+  cardDescColor: string
+  cardBorderColor: string
+  cardTitleFont: string
+  cardDescFont: string
+
+  showContact: boolean
+  contactBgColor: string
+  contactLabel: string
+  contactLabelColor: string
+  contactEmail: string
+  contactEmailColor: string
+  contactText: string
+  contactTextColor: string
+  contactFont: string
+
+  showClosingText: boolean
+  closingText: string
+  closingTextColor: string
+}
+
+export const ru4AboutDefaults: Ru4AboutData = {
+  fontFamily: '',
+
+  sectionBgColor: '#ffffff',
+  paddingY: 48,
+  paddingX: 32,
+  contentMaxWidth: 900,
+
+  title: 'About Our Company',
+  titleColor: '#111827',
+  titleFont: '',
+  description1: 'Write an introduction paragraph about your company here — who you are, what you offer, and why customers should choose you.',
+  description1Color: '#374151',
+  description2: 'Add a second paragraph with more detail about your products, services, or values.',
+  description2Color: '#6b7280',
+  descriptionFont: '',
+
+  showDivider: true,
+  dividerColor: '#e5e7eb',
+
+  showCards: true,
+  cards: [
+    { icon: '📝', iconBg: '#fef3e2', title: 'Card Title', description: 'Short description for this card — you can make a word <strong>bold</strong> for emphasis.' },
+    { icon: '📄', iconBg: '#e0edfc', title: 'Card Title', description: 'Short description for this card — you can make a word <strong>bold</strong> for emphasis.' },
+  ],
+  cardTitleColor: '#111827',
+  cardDescColor: '#6b7280',
+  cardBorderColor: '#e5e7eb',
+  cardTitleFont: '',
+  cardDescFont: '',
+
+  showContact: true,
+  contactBgColor: '#f9fafb',
+  contactLabel: 'CONTACT US',
+  contactLabelColor: '#6b7280',
+  contactEmail: 'you@example.com',
+  contactEmailColor: '#2563eb',
+  contactText: 'For questions, special requests, or any inquiries — we are here to help.',
+  contactTextColor: '#374151',
+  contactFont: '',
+
+  showClosingText: true,
+  closingText: 'Thank you for choosing us — we look forward to working with you.',
+  closingTextColor: '#6b7280',
+}
+
+const _ru4a_showCards = (d: Record<string, any>) => d.showCards !== false
+const _ru4a_showContact = (d: Record<string, any>) => d.showContact !== false
+const _ru4a_showClosing = (d: Record<string, any>) => d.showClosingText !== false
+
+export const ru4AboutFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'sectionBgColor', label: 'Section Background', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '48' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '32' },
+  { key: 'contentMaxWidth', label: 'Content Max Width (px)', type: 'number', step: 10, placeholder: '900' },
+
+  { key: '_h_intro', label: 'Intro', type: 'header' },
+  { key: 'title', label: 'Title', type: 'text', placeholder: 'e.g. About Our Company' },
+  { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  { ...fontField('titleFont', 'Title Font') },
+  { key: 'description1', label: 'Paragraph 1', type: 'textarea', placeholder: 'Write about your company…' },
+  { key: 'description1Color', label: 'Paragraph 1 Colour', type: 'color' },
+  { key: 'description2', label: 'Paragraph 2', type: 'textarea', placeholder: 'Add more detail…' },
+  { key: 'description2Color', label: 'Paragraph 2 Colour', type: 'color' },
+  { ...fontField('descriptionFont', 'Paragraph Font') },
+
+  { key: '_h_divider', label: 'Divider', type: 'header' },
+  { key: 'showDivider', label: 'Show Divider', type: 'toggle' },
+  { key: 'dividerColor', label: 'Divider Colour', type: 'color', visibleIf: (d) => d.showDivider !== false },
+
+  { key: '_h_cards', label: 'Icon Cards', type: 'header' },
+  { key: 'showCards', label: 'Show Icon Cards', type: 'toggle' },
+  { key: 'cardTitleColor', label: 'Card Title Colour', type: 'color', visibleIf: _ru4a_showCards },
+  { key: 'cardDescColor', label: 'Card Description Colour', type: 'color', visibleIf: _ru4a_showCards },
+  { key: 'cardBorderColor', label: 'Card Border Colour', type: 'color', visibleIf: _ru4a_showCards },
+  { ...fontField('cardTitleFont', 'Card Title Font'), visibleIf: _ru4a_showCards },
+  { ...fontField('cardDescFont', 'Card Description Font'), visibleIf: _ru4a_showCards },
+  {
+    key: 'cards', label: 'Cards', type: 'list', visibleIf: _ru4a_showCards,
+    listFields: [
+      { key: 'icon', label: 'Icon (emoji)', type: 'text', placeholder: 'e.g. 📝' },
+      { key: 'iconBg', label: 'Icon Background', type: 'color' },
+      { key: 'title', label: 'Title', type: 'text', placeholder: 'e.g. Custom Orders' },
+      { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Short description…' },
+    ],
+  },
+
+  { key: '_h_contact', label: 'Contact Strip', type: 'header' },
+  { key: 'showContact', label: 'Show Contact Strip', type: 'toggle' },
+  { key: 'contactBgColor', label: 'Background', type: 'color', visibleIf: _ru4a_showContact },
+  { key: 'contactLabel', label: 'Label', type: 'text', placeholder: 'e.g. CONTACT US', visibleIf: _ru4a_showContact },
+  { key: 'contactLabelColor', label: 'Label Colour', type: 'color', visibleIf: _ru4a_showContact },
+  { key: 'contactEmail', label: 'Email', type: 'text', placeholder: 'e.g. you@example.com', visibleIf: _ru4a_showContact },
+  { key: 'contactEmailColor', label: 'Email Colour', type: 'color', visibleIf: _ru4a_showContact },
+  { key: 'contactText', label: 'Text', type: 'textarea', placeholder: 'e.g. For questions…', visibleIf: _ru4a_showContact },
+  { key: 'contactTextColor', label: 'Text Colour', type: 'color', visibleIf: _ru4a_showContact },
+  { ...fontField('contactFont', 'Font'), visibleIf: _ru4a_showContact },
+
+  { key: '_h_closing', label: 'Closing Text', type: 'header' },
+  { key: 'showClosingText', label: 'Show Closing Text', type: 'toggle' },
+  { key: 'closingText', label: 'Text', type: 'textarea', placeholder: 'e.g. Thank you for choosing us…', visibleIf: _ru4a_showClosing },
+  { key: 'closingTextColor', label: 'Text Colour', type: 'color', visibleIf: _ru4a_showClosing },
+]
+
+export function renderRu4About(data: Ru4AboutData): string {
+  const maxWidth = data.contentMaxWidth ?? 900
+
+  const introHtml = `
+    <h2 style="margin:0 0 1.25rem;font-size:min(2rem,7vw);font-weight:800;color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+    ${data.description1 ? `<div style="margin:0 0 1rem;font-size:1rem;line-height:1.75;color:${data.description1Color};${fontCss(data.descriptionFont, data.fontFamily)}">${data.description1}</div>` : ''}
+    ${data.description2 ? `<div style="margin:0;font-size:0.9375rem;line-height:1.75;color:${data.description2Color};${fontCss(data.descriptionFont, data.fontFamily)}">${data.description2}</div>` : ''}`
+
+  const dividerHtml = data.showDivider !== false
+    ? `<hr style="border:none;border-top:1px solid ${data.dividerColor};margin:2rem 0;" />`
+    : ''
+
+  const cardsHtml = data.showCards !== false ? (() => {
+    const cards = data.cards ?? []
+    if (!cards.length) return ''
+    return `<div data-ru4a-cards="true" style="display:grid;grid-template-columns:repeat(${Math.min(cards.length, 2)},1fr);gap:1.25rem;margin-bottom:2rem;">
+      ${cards.map(c => `<div style="border:1px solid ${data.cardBorderColor};border-radius:0.75rem;padding:1.5rem;">
+        <div style="width:2.75rem;height:2.75rem;border-radius:0.625rem;background:${c.iconBg};display:flex;align-items:center;justify-content:center;font-size:1.25rem;margin-bottom:1rem;">${c.icon || ''}</div>
+        <h3 style="margin:0 0 0.5rem;font-size:1.0625rem;font-weight:700;color:${data.cardTitleColor};${fontCss(data.cardTitleFont, data.fontFamily)}">${c.title}</h3>
+        <div style="font-size:0.9375rem;line-height:1.7;color:${data.cardDescColor};${fontCss(data.cardDescFont, data.fontFamily)}">${c.description}</div>
+      </div>`).join('')}
+    </div>`
+  })() : ''
+
+  const contactHtml = data.showContact !== false
+    ? `<div data-ru4a-contact="true" style="background:${data.contactBgColor};border-radius:0.75rem;padding:1.5rem;display:flex;gap:2rem;align-items:flex-start;margin-bottom:2rem;${fontCss(data.contactFont, data.fontFamily)}">
+        <div style="flex-shrink:0;">
+          <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.05em;color:${data.contactLabelColor};margin-bottom:0.25rem;">${data.contactLabel}</div>
+          <a href="mailto:${data.contactEmail}" style="font-size:0.9375rem;font-weight:700;color:${data.contactEmailColor};text-decoration:none;">${data.contactEmail}</a>
+        </div>
+        <p style="margin:0;font-size:0.9375rem;line-height:1.6;color:${data.contactTextColor};">${data.contactText}</p>
+      </div>`
+    : ''
+
+  const closingHtml = data.showClosingText !== false && data.closingText
+    ? `<p style="margin:0;font-size:0.9375rem;color:${data.closingTextColor};">${data.closingText}</p>`
+    : ''
+
+  return `<section data-component-title="Ru4-About" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.sectionBgColor};${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:640px){
+    [data-ru4a-cards]{grid-template-columns:1fr!important;}
+    [data-ru4a-contact]{flex-direction:column!important;gap:0.75rem!important;}
+  }
+</style>
+  <div style="max-width:${maxWidth}px;margin:0 auto;padding:${data.paddingY ?? 48}px min(${data.paddingX ?? 32}px,6vw);">
+    ${introHtml}
+    ${dividerHtml}
+    ${cardsHtml}
+    ${contactHtml}
+    ${closingHtml}
+  </div>
+</section>`
+}
+
 // ─── Ru1-FAQ ─────────────────────────────────────────────────────────────────
 
 export const ru1FaqSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 120">
