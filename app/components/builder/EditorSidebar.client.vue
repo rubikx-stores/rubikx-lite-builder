@@ -910,10 +910,13 @@ onUnmounted(() => {
               <p v-if="uploadError[field.key]" class="text-xs text-red-500">{{ uploadError[field.key] }}</p>
             </div>
 
-            <!-- Ru4-About intro paragraphs: support inline bold/links, so they
-                 open the same bigger modal editor as the FAQ answer field
-                 instead of a plain textarea. -->
-            <div v-else-if="(field.key === 'description1' || field.key === 'description2') && selectedBlockTitle === 'Ru4-About'" class="mb-2.5">
+            <!-- textarea, rich text: any textarea supports inline bold/color/
+                 size/links by default, opening the bigger modal editor
+                 instead of a plain box — unless it's flagged plainTextarea
+                 (fields whose render logic depends on literal '\n'
+                 characters to split into separate bullets/paragraphs, which
+                 the modal's HTML output can't produce). -->
+            <div v-else-if="field.type === 'textarea' && !field.plainTextarea" class="mb-2.5">
               <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
               <div class="flex items-center gap-1.5">
                 <div class="flex-1 min-w-0 truncate rounded border border-gray-200 px-2 py-1 text-xs" :class="blockData[field.key] ? 'text-gray-600' : 'text-gray-400'" :title="stripHtml(blockData[field.key])">
@@ -925,7 +928,7 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <!-- textarea -->
+            <!-- textarea, plain -->
             <div v-else-if="field.type === 'textarea'" class="mb-2.5">
               <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
               <textarea
@@ -1200,34 +1203,23 @@ onUnmounted(() => {
                           @input="onRu7CategoryNameInput(idx, ($event.target as HTMLInputElement).value)" />
                       </template>
 
-                      <!-- FAQ answer: too small/plain as a single-line input, and
-                           needs to support inline hyperlinks/buttons — opens a
-                           bigger modal editor instead of an inline field. -->
-                      <template v-else-if="field.key === 'faqs' && subField.key === 'answer'">
+                      <!-- textarea, rich text: too small/plain as a single-line
+                           input, and needs to support inline bold/color/size/
+                           links — opens the bigger modal editor instead of an
+                           inline field. Same plainTextarea opt-out as the
+                           top-level textarea case above. -->
+                      <template v-else-if="subField.type === 'textarea' && !subField.plainTextarea">
                         <div class="flex items-center gap-1.5">
-                          <div class="flex-1 min-w-0 truncate rounded border border-gray-200 px-2 py-1 text-xs" :class="item.answer ? 'text-gray-600' : 'text-gray-400'" :title="stripHtml(item.answer)">
-                            {{ stripHtml(item.answer) || 'Click Edit to add an answer…' }}
+                          <div class="flex-1 min-w-0 truncate rounded border border-gray-200 px-2 py-1 text-xs" :class="item[subField.key] ? 'text-gray-600' : 'text-gray-400'" :title="stripHtml(item[subField.key])">
+                            {{ stripHtml(item[subField.key]) || subField.placeholder || 'Click Edit to add text…' }}
                           </div>
                           <button type="button"
                             class="shrink-0 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100"
-                            @click="openFaqAnswerModal(field.key, idx, subField.key, item.answer)">Edit</button>
+                            @click="openFaqAnswerModal(field.key, idx, subField.key, item[subField.key])">Edit</button>
                         </div>
                       </template>
 
-                      <!-- Ru4-About card description: same rationale as the FAQ
-                           answer above — supports inline bold/links. -->
-                      <template v-else-if="field.key === 'cards' && subField.key === 'description' && selectedBlockTitle === 'Ru4-About'">
-                        <div class="flex items-center gap-1.5">
-                          <div class="flex-1 min-w-0 truncate rounded border border-gray-200 px-2 py-1 text-xs" :class="item.description ? 'text-gray-600' : 'text-gray-400'" :title="stripHtml(item.description)">
-                            {{ stripHtml(item.description) || 'Click Edit to add a description…' }}
-                          </div>
-                          <button type="button"
-                            class="shrink-0 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100"
-                            @click="openFaqAnswerModal(field.key, idx, subField.key, item.description)">Edit</button>
-                        </div>
-                      </template>
-
-                      <!-- text / url / number: instant update on every keystroke -->
+                      <!-- text / url / number / plain textarea: instant update on every keystroke -->
                       <template v-else>
                         <div class="relative">
                           <input type="text" :value="typeof item[subField.key] === 'object' ? '' : (item[subField.key] ?? '')"
