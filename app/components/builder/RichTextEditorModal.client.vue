@@ -189,8 +189,13 @@ function applyFontSize(key: string) {
 // old behavior) has no meaningful effect on line spacing, since a browser's
 // line-box height is governed by the block as a whole. So this always
 // applies to the entire answer, regardless of what's selected, wrapping
-// (or re-using) a single root-level <div> so the value survives into the
-// saved HTML.
+// (or re-using) a single root-level element so the value survives into the
+// saved HTML. That wrapper is a <span style="display:block"> rather than a
+// <div> — the saved HTML gets embedded into all sorts of contexts (many
+// inside a <p> tag), and a <div> isn't valid inside a <p> — the browser
+// would silently close the <p> early and break its own styling. A <span>
+// is valid there regardless of its display value, and display:block makes
+// it behave identically to a div for line-height purposes.
 function applyLineHeight(key: string) {
   selectionError.value = ''
   const el = editorEl.value
@@ -198,8 +203,9 @@ function applyLineHeight(key: string) {
   const value = LINE_HEIGHTS[key] ?? LINE_HEIGHTS.normal
   let wrapper = el.firstElementChild as HTMLElement | null
   if (!wrapper || el.children.length !== 1 || wrapper.getAttribute('data-faq-mark') !== 'lineheight') {
-    wrapper = document.createElement('div')
+    wrapper = document.createElement('span')
     wrapper.setAttribute('data-faq-mark', 'lineheight')
+    wrapper.style.display = 'block'
     while (el.firstChild) wrapper.appendChild(el.firstChild)
     el.appendChild(wrapper)
   }

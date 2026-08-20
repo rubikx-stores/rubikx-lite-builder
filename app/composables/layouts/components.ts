@@ -3772,7 +3772,7 @@ export const ru3AboutBannerFields: FieldConfig[] = [
 
   { key: '_h_about', label: 'About Text', type: 'header' },
   { key: 'showAboutText', label: 'Show About Text', type: 'toggle' },
-  { key: 'aboutText', label: 'Text (one paragraph per line)', type: 'textarea', placeholder: 'Write about your company…', visibleIf: _ru3ab_showAboutText },
+  { key: 'aboutText', label: 'Text (one paragraph per line)', type: 'textarea', placeholder: 'Write about your company…', visibleIf: _ru3ab_showAboutText, plainTextarea: true },
   { key: 'aboutTextColor', label: 'Text Colour', type: 'color', visibleIf: _ru3ab_showAboutText },
   { ...fontField('aboutTextFont', 'Text Font'), visibleIf: _ru3ab_showAboutText },
 ]
@@ -4212,7 +4212,7 @@ export const ru1FaqFields: FieldConfig[] = [
     key: 'faqs', label: 'FAQ Items', type: 'list',
     listFields: [
       { key: 'question', label: 'Question', type: 'text', placeholder: 'e.g. What services do you provide?' },
-      { key: 'answer',   label: 'Answer',   type: 'text', placeholder: 'e.g. We offer...' },
+      { key: 'answer',   label: 'Answer',   type: 'textarea', placeholder: 'e.g. We offer...' },
     ],
   },
 ]
@@ -7995,7 +7995,7 @@ export const ru1ProductDetailFields: FieldConfig[] = [
   { key: 'unitPriceNote', label: 'Price Note', type: 'text', placeholder: '* some sizes may vary' },
   { key: 'descriptionTitle', label: 'Description Section Title', type: 'text', placeholder: 'Description' },
   fontField('descriptionTitleFont', 'Description Title Font'),
-  { key: 'description', label: 'Description (one bullet per line)', type: 'textarea', placeholder: 'Enter each bullet point on a new line...' },
+  { key: 'description', label: 'Description (one bullet per line)', type: 'textarea', placeholder: 'Enter each bullet point on a new line...', plainTextarea: true },
   { key: 'descriptionColor', label: 'Description Text Color', type: 'color' },
   fontField('descriptionFont', 'Description Font'),
   fontField('buttonFont', 'Add to Cart Button Font'),
@@ -8289,7 +8289,7 @@ export const ru2ProductDetailFields: FieldConfig[] = [
     key: 'productDetails', label: 'Detail Sections', type: 'list',
     listFields: [
       { key: 'name',  label: 'Section Name',          type: 'text',     placeholder: 'e.g. Features' },
-      { key: 'items', label: 'Items (one per line)',   type: 'textarea', placeholder: 'Multiple strap configurations\nSpacious interior' },
+      { key: 'items', label: 'Items (one per line)',   type: 'textarea', placeholder: 'Multiple strap configurations\nSpacious interior', plainTextarea: true },
     ],
   },
 
@@ -9047,14 +9047,14 @@ export const ru3ProductDetailFields: FieldConfig[] = [
   { key: '_h_desc', label: 'Description', type: 'header' },
   { key: 'descriptionTitle', label: 'Section Title',   type: 'text',     placeholder: 'Description' },
   fontField('descriptionTitleFont', 'Section Title Font'),
-  { key: 'description',      label: 'Description Text', type: 'textarea', placeholder: 'Product description...' },
+  { key: 'description',      label: 'Description Text', type: 'textarea', placeholder: 'Product description...', plainTextarea: true },
   fontField('descriptionFont', 'Description Font'),
 
   { key: '_h_fabric', label: 'Fabric & Care', type: 'header' },
   { key: 'showFabricCare',  label: 'Show Section',       type: 'toggle' },
   { key: 'fabricCareTitle', label: 'Section Title',      type: 'text',     placeholder: 'Fabric & Care' },
   fontField('fabricCareTitleFont', 'Section Title Font'),
-  { key: 'fabricCareItems', label: 'Items (one per line)', type: 'textarea', placeholder: 'Only the best materials\nEthically and locally made' },
+  { key: 'fabricCareItems', label: 'Items (one per line)', type: 'textarea', placeholder: 'Only the best materials\nEthically and locally made', plainTextarea: true },
   fontField('fabricCareItemFont', 'Items Font'),
 
   { key: '_h_policies', label: 'Policies', type: 'header' },
@@ -9075,7 +9075,7 @@ export const ru3ProductDetailFields: FieldConfig[] = [
     { key: 'date',    label: 'Date',             type: 'text',     placeholder: 'May 16, 2021' },
     { key: 'title',   label: 'Review Title',     type: 'text',     placeholder: 'Great product!' },
     { key: 'rating',  label: 'Rating (1–5)',     type: 'number',   step: 1 },
-    { key: 'content', label: 'Content',          type: 'textarea', placeholder: 'Review text...' },
+    { key: 'content', label: 'Content',          type: 'textarea', placeholder: 'Review text...', plainTextarea: true },
   ]},
 
   { key: '_h_related', label: 'Related Products', type: 'header' },

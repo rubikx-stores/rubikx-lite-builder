@@ -19,6 +19,14 @@ export interface FieldConfig {
   // never been set. Defaults to true (matches existing fields like
   // `visible`, where an unset link should still show up).
   default?: boolean
+  // For type: 'textarea' only — opts OUT of the rich text editor modal
+  // (bold/color/size/links), keeping the plain multi-line <textarea> input.
+  // Only needed for fields whose render logic depends on literal '\n'
+  // characters to split the value into separate list items/paragraphs
+  // (e.g. "Description (one bullet per line)") — the modal's contenteditable
+  // never produces those, so its HTML output would break that splitting.
+  // Every other textarea gets the rich editor by default.
+  plainTextarea?: boolean
 }
 
 export interface BlockEditorConfig<T = Record<string, any>> {
