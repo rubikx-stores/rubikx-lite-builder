@@ -91,6 +91,19 @@ function captureSelection() {
   }
 }
 
+// Contenteditable's default Enter behavior inserts a new <div> (or <p>) per
+// line. That's invalid content wherever the saved HTML ends up embedded
+// inside a <p> or <h1>-<h6> tag (both only allow phrasing content, not block
+// elements) — the browser would silently cut that tag short right there,
+// breaking its own styling for everything after the break. Forcing <br>
+// instead keeps every line break valid no matter where this value renders.
+function handleEditorKeydown(e: KeyboardEvent) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault()
+    document.execCommand('insertLineBreak')
+  }
+}
+
 function closestMarkFromNode(node: Node | null, selector: string): HTMLElement | null {
   if (!node) return null
   const el = node.nodeType === Node.TEXT_NODE ? node.parentElement : (node as HTMLElement)
@@ -585,6 +598,7 @@ function save() {
           style="min-height: 16rem;"
           @mouseup="captureSelection"
           @keyup="captureSelection"
+          @keydown="handleEditorKeydown"
         ></div>
 
         <div class="mt-3 flex flex-row gap-2 shrink-0">

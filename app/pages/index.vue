@@ -41,6 +41,11 @@ const deleting = ref<Record<string, boolean>>({})
 
 const showDeleteModal = ref(false)
 const pageToDelete = ref<Page | null>(null)
+const selectedDeleteVersions = ref<number[]>([])
+const deleteInFlight = ref(false)
+const deleteError = ref('')
+const deleteConfirmText = ref('')
+const selectAllCheckboxRef = ref<HTMLInputElement | null>(null)
 // New page modal state
 const showNewPageModal = ref(false)
 const newPageName = ref('')
@@ -87,6 +92,66 @@ function selectedVersionData(page: Page) {
   const vNum = selectedVersions.value[page.id]
   return page.versions.find((v) => v.version === vNum) ?? page.versions[0]
 }
+
+// True once every version the page has is currently checked — whether it
+// started that way (single-version page) or got there via "Select all".
+// This is also the exact condition under which the delete removes the
+// page from the site entirely, the single most destructive thing this
+// modal can do — so it doubles as the trigger for the heavier warning
+// and type-the-name confirmation below, instead of just the checkbox state.
+const allDeleteVersionsSelected = computed(() => {
+  const page = pageToDelete.value
+  if (!page) return false
+  return selectedDeleteVersions.value.length === page.versions.length
+})
+
+const deleteHasPublishedWarning = computed(() => {
+  const page = pageToDelete.value
+  if (!page) return false
+  return page.versions.some((v) => selectedDeleteVersions.value.includes(v.version) && v.status === 'published')
+})
+
+const deleteConfirmDisabled = computed(() => {
+  if (!selectedDeleteVersions.value.length || deleteInFlight.value) return true
+  if (allDeleteVersionsSelected.value) return deleteConfirmText.value.trim() !== pageToDelete.value?.name
+  return false
+})
+
+// Native checkbox indeterminate state can't be set via a template
+// attribute — it has to be poked at the DOM node directly.
+watchEffect(() => {
+  if (selectAllCheckboxRef.value) {
+    selectAllCheckboxRef.value.indeterminate = selectedDeleteVersions.value.length > 0 && !allDeleteVersionsSelected.value
+  }
+})
+
+function toggleSelectAllDeleteVersions() {
+  const page = pageToDelete.value
+  if (!page) return
+  selectedDeleteVersions.value = allDeleteVersionsSelected.value ? [] : page.versions.map((v) => v.version)
+}
+
+function toggleDeleteVersion(version: number) {
+  const idx = selectedDeleteVersions.value.indexOf(version)
+  if (idx === -1) selectedDeleteVersions.value.push(version)
+  else selectedDeleteVersions.value.splice(idx, 1)
+}
+
+function closeDeleteModal() {
+  if (deleteInFlight.value) return
+  showDeleteModal.value = false
+  pageToDelete.value = null
+  deleteError.value = ''
+  deleteConfirmText.value = ''
+}
+
+function onDeleteModalKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') closeDeleteModal()
+}
+watch(showDeleteModal, (open) => {
+  if (open) window.addEventListener('keydown', onDeleteModalKeydown)
+  else window.removeEventListener('keydown', onDeleteModalKeydown)
+})
 
 async function publishPage(page: Page) {
   publishing.value[page.id] = true
@@ -175,22 +240,52 @@ async function publishPage(page: Page) {
 function confirmDeletePage(page: Page) {
   if (page.isDefault) return // nothing persisted yet — no-op until the page is saved
   pageToDelete.value = page
+  deleteError.value = ''
+  deleteConfirmText.value = ''
+  // Defaults to just whichever version is currently active in the card's
+  // own dropdown — least destructive starting point. "Select all" or
+  // individual checkboxes in the modal below let the admin widen or
+  // narrow that before confirming.
+  const defaultVersion = selectedVersions.value[page.id] ?? page.versions[0]?.version
+  selectedDeleteVersions.value = defaultVersion !== undefined ? [defaultVersion] : []
   showDeleteModal.value = true
 }
 
 async function deletePage() {
-  if (!pageToDelete.value) return
+  if (!pageToDelete.value || !selectedDeleteVersions.value.length) return
   const page = pageToDelete.value
-  showDeleteModal.value = false
+  const isAll = selectedDeleteVersions.value.length === page.versions.length
+  deleteInFlight.value = true
+  deleteError.value = ''
   deleting.value[page.id] = true
   try {
-    await $fetch(`/api/pages/${page.id}`, { method: 'DELETE', query: { companyId: selectedWebsiteId.value } })
-    pages.value = pages.value.filter(p => p.id !== page.id)
-  } catch (e: any) {
-    alert(e?.data?.message ?? 'Failed to delete page')
-  } finally {
-    deleting.value[page.id] = false
+    await $fetch(`/api/pages/${page.id}`, {
+      method: 'DELETE',
+      query: {
+        companyId: selectedWebsiteId.value,
+        ...(isAll ? {} : { versions: selectedDeleteVersions.value.join(',') }),
+      },
+    })
+    if (isAll) {
+      // Deleting all of Home's versions cascades its matching global-header/
+      // global-footer versions on the backend (see [key].delete.ts) — refetch
+      // so pages.value picks up the reset default theme instead of leaving
+      // editPage()'s pageHtmlCache seeding stuck on stale cached entries.
+      if (page.id === 'home') {
+        await fetchPages()
+      } else {
+        pages.value = pages.value.filter(p => p.id !== page.id)
+      }
+    } else {
+      await fetchPages()
+    }
+    showDeleteModal.value = false
     pageToDelete.value = null
+  } catch (e: any) {
+    deleteError.value = e?.data?.message ?? 'Failed to delete page'
+  } finally {
+    deleteInFlight.value = false
+    deleting.value[page.id] = false
   }
 }
 
@@ -504,26 +599,152 @@ function handleModalKeydown(e: KeyboardEvent) {
 
     <!-- Delete confirmation modal -->
     <Teleport to="body">
-      <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
-          <h3 class="text-base font-semibold text-gray-900 mb-2">Delete page</h3>
-          <p class="text-sm text-gray-500 mb-6">Are you sure you want to delete <span class="font-medium text-gray-900">{{ pageToDelete?.name }}</span>? This cannot be undone.</p>
-          <div class="flex gap-3">
-            <button
-              class="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-              @click="showDeleteModal = false; pageToDelete = null"
+      <Transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition duration-100 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="showDeleteModal"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          @click.self="closeDeleteModal"
+        >
+          <Transition
+            appear
+            enter-active-class="transition duration-150 ease-out"
+            enter-from-class="opacity-0 scale-95"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="transition duration-100 ease-in"
+            leave-from-class="opacity-100 scale-100"
+            leave-to-class="opacity-0 scale-95"
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="delete-modal-title"
+              class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
             >
-              Cancel
-            </button>
-            <button
-              class="flex-1 rounded-xl bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-              @click="deletePage()"
-            >
-              Delete
-            </button>
-          </div>
+              <div class="flex items-start gap-3">
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </span>
+                <div class="min-w-0 pt-0.5">
+                  <h3 id="delete-modal-title" class="text-base font-semibold text-gray-900">Delete page</h3>
+                  <p class="mt-0.5 text-sm text-gray-500">
+                    <span class="font-medium text-gray-900">{{ pageToDelete?.name }}</span> will be permanently removed. This cannot be undone.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                v-if="pageToDelete && pageToDelete.versions.length > 1"
+                class="mt-5"
+                :class="{ 'pointer-events-none opacity-60': deleteInFlight }"
+              >
+                <label class="flex cursor-pointer items-center justify-between rounded-lg border border-gray-200 px-3 py-2 hover:bg-gray-50">
+                  <span class="flex items-center gap-2.5">
+                    <input
+                      ref="selectAllCheckboxRef"
+                      type="checkbox"
+                      :checked="allDeleteVersionsSelected"
+                      class="cursor-pointer accent-gray-900"
+                      @change="toggleSelectAllDeleteVersions"
+                    />
+                    <span class="text-sm font-medium text-gray-900">Select all</span>
+                  </span>
+                  <span class="text-xs text-gray-400">{{ selectedDeleteVersions.length }} of {{ pageToDelete.versions.length }} selected</span>
+                </label>
+
+                <div class="mt-2 max-h-44 space-y-1 overflow-y-auto rounded-lg border border-gray-100 p-1.5">
+                  <label
+                    v-for="v in pageToDelete.versions"
+                    :key="v.version"
+                    class="flex cursor-pointer items-center justify-between gap-2 rounded-md border px-2.5 py-2 transition-colors"
+                    :class="selectedDeleteVersions.includes(v.version) ? 'border-gray-900 bg-gray-50' : 'border-transparent hover:bg-gray-50'"
+                  >
+                    <span class="flex items-center gap-2.5">
+                      <input
+                        type="checkbox"
+                        :checked="selectedDeleteVersions.includes(v.version)"
+                        class="cursor-pointer accent-gray-900"
+                        @change="toggleDeleteVersion(v.version)"
+                      />
+                      <span class="text-sm text-gray-900">v{{ v.version }}</span>
+                    </span>
+                    <span
+                      class="rounded-full px-2 py-0.5 text-xs font-medium"
+                      :class="v.status === 'published' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'"
+                    >
+                      {{ v.status }}
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Full page removal: the whole page is coming off the site —
+                   this is the most destructive path through this modal, so
+                   it gets a harder-to-miss warning and a type-to-confirm
+                   gate instead of just an informational note. -->
+              <div v-if="allDeleteVersionsSelected" class="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-3">
+                <div class="flex items-start gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-4 w-4 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                  </svg>
+                  <p class="text-xs font-medium leading-relaxed text-red-700">
+                    This permanently deletes <span class="font-semibold">{{ pageToDelete?.name }}</span> and removes it from your live site.
+                  </p>
+                </div>
+                <div class="mt-2.5">
+                  <label class="block text-xs text-red-700">
+                    Type <span class="font-mono font-semibold">{{ pageToDelete?.name }}</span> to confirm
+                  </label>
+                  <input
+                    v-model="deleteConfirmText"
+                    type="text"
+                    autocomplete="off"
+                    :disabled="deleteInFlight"
+                    class="mt-1.5 w-full rounded-lg border border-red-300 bg-white px-2.5 py-1.5 text-sm text-gray-900 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                  />
+                </div>
+              </div>
+
+              <!-- Partial deletion that still touches a published version —
+                   softer, informational note since the page itself survives. -->
+              <div v-else-if="deleteHasPublishedWarning" class="mt-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-4 w-4 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-8.25 3h.008v.008h-.008V15z" />
+                </svg>
+                <p class="text-xs leading-relaxed text-amber-700">This will remove a version that is currently live on your site.</p>
+              </div>
+
+              <p v-if="deleteError" class="mt-4 text-xs text-red-600">{{ deleteError }}</p>
+
+              <div class="mt-6 flex gap-2">
+                <button
+                  class="flex-1 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40"
+                  :disabled="deleteInFlight"
+                  @click="closeDeleteModal"
+                >
+                  Cancel
+                </button>
+                <button
+                  class="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600 disabled:opacity-40"
+                  :disabled="deleteConfirmDisabled"
+                  @click="deletePage()"
+                >
+                  <span v-if="deleteInFlight" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  {{ deleteInFlight ? 'Deleting…' : 'Delete' }}
+                </button>
+              </div>
+            </div>
+          </Transition>
         </div>
-      </div>
+      </Transition>
     </Teleport>
   </div>
 </template>
