@@ -1,4 +1,4 @@
-export const NAVBAR_TITLES = ['Mega-menu-Header', 'Ru2-Mega-Menu-Header', 'Ru3-Mega-Header', 'Ru4-Navbar', 'Ru1 Techwire Navbar', 'Ru1 Homepage Navbar', 'Ru1-Navbar', 'Ru2-Home-Navbar', 'Ru3-Home-Navbar', 'Ru4 Homepage Navbar']
+export const NAVBAR_TITLES = ['Mega-menu-Header', 'Ru2-Mega-Menu-Header', 'Ru3-Mega-Header', 'Ru4-Navbar', 'Ru5-Dynamic-Navbar', 'Ru1 Techwire Navbar', 'Ru1 Homepage Navbar', 'Ru1-Navbar', 'Ru2-Home-Navbar', 'Ru3-Home-Navbar', 'Ru4 Homepage Navbar']
 export const FOOTER_TITLES = ['Ru1 Techwire Footer', 'Footer-1', 'Ru1 Homepage Footer', 'Ru1-Footer', 'Ru2-Footer', 'Ru3-Footer', 'Ru4-Footer', 'Ru5-Footer', 'Ru2-Home-Footer', 'Ru3-Home-Footer', 'Ru4 Homepage Footer']
 
 // Only these pages are allowed to write the site-wide global-header/global-footer

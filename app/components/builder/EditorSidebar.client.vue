@@ -351,18 +351,20 @@ async function onSelectField(fieldKey: string, value: string | number) {
 // The watcher calls hydrateComponents so the fresh element gets its carousel wired.
 // Other ProductDetail blocks keep their data-hydrated and are skipped automatically.
 //
-// Ru3-Mega-Header gets the same treatment: it has several hydrated shells
-// (AccountMenu, CartBadge, CategoryNav, HeaderSearch) that all
-// lose their click/hover wiring the same way on every field edit — without
-// this, e.g. the Account dropdown stops opening the moment you touch any
-// other field on the block.
+// Ru3-Mega-Header and Ru5-Dynamic-Navbar get the same treatment: both have
+// several hydrated shells (AccountMenu, CartBadge, CategoryNav/DynamicCategoryNav,
+// HeaderSearch) that all lose their click/hover wiring the same way on every
+// field edit — without this, e.g. the Account dropdown stops opening (Ru3) or
+// the nav row gets stuck on its "Loading categories…" placeholder (Ru5) the
+// moment you touch any other field on the block.
 let _carouselRewireTimer = 0
+const REWIRE_ON_ANY_FIELD_TITLES = ['Ru3-Mega-Header', 'Ru5-Dynamic-Navbar']
 watch(
   blockData,
   async (newData) => {
     const isCarouselLayout3 = !!newData && (newData as Record<string, any>).galleryLayout === 'layout3'
-    const isRu3MegaHeader = selectedBlockTitle.value === 'Ru3-Mega-Header'
-    if (!isCarouselLayout3 && !isRu3MegaHeader) return
+    const needsFullRewire = REWIRE_ON_ANY_FIELD_TITLES.includes(selectedBlockTitle.value ?? '')
+    if (!isCarouselLayout3 && !needsFullRewire) return
     if (!document.getElementById('page-builder-wrapper')) return
     clearTimeout(_carouselRewireTimer)
     _carouselRewireTimer = window.setTimeout(async () => {
@@ -739,6 +741,63 @@ function applyMegaMenuToLink() {
   links[idx] = { ...links[idx], megaMenu }
   updateBlockField('navLinks', links)
   closeMegaMenuEditor()
+}
+
+
+// ── Logo nav link picker (Ru5-Dynamic-Navbar logoNavLinks only) ───────────────
+interface LogoOption { id: number; name: string }
+
+const logoPickerIdx   = ref(-1)          // which logoNavLinks row is open
+const logoAllOptions  = ref<LogoOption[]>([])
+const logoSearch      = ref('')
+const logoLoading     = ref(false)
+const selectedLogoIds = ref(new Set<number>())
+
+const logoFiltered = computed(() =>
+  logoSearch.value.trim()
+    ? logoAllOptions.value.filter(l => l.name.toLowerCase().includes(logoSearch.value.toLowerCase()))
+    : logoAllOptions.value
+)
+
+async function openLogoPicker(idx: number) {
+  logoPickerIdx.value = idx
+  logoSearch.value = ''
+  logoLoading.value = true
+  try {
+    logoAllOptions.value = await $fetch<LogoOption[]>('/api/logos', {
+      query: { companyId: selectedCompanyId.value ?? undefined },
+    })
+  } finally {
+    logoLoading.value = false
+  }
+  const links: any[] = (blockData.value as any)?.logoNavLinks ?? []
+  selectedLogoIds.value = new Set(((links[idx]?.logos ?? []) as LogoOption[]).map(l => l.id))
+}
+
+function closeLogoPicker() {
+  logoPickerIdx.value = -1
+  logoAllOptions.value = []
+  logoSearch.value = ''
+  selectedLogoIds.value = new Set()
+}
+
+function toggleLogo(id: number) {
+  const s = new Set(selectedLogoIds.value)
+  s.has(id) ? s.delete(id) : s.add(id)
+  selectedLogoIds.value = s
+}
+
+function applyLogoSelection() {
+  const idx = logoPickerIdx.value
+  if (idx < 0) return
+  // Store {id, name} pairs, not bare ids — the render function emits the
+  // logo name as a static column heading with no runtime lookup, so the
+  // name has to be captured here at selection time.
+  const logos = logoAllOptions.value.filter(l => selectedLogoIds.value.has(l.id))
+  const links: any[] = [...((blockData.value as any)?.logoNavLinks ?? [])]
+  links[idx] = { ...links[idx], logos }
+  updateBlockField('logoNavLinks', links)
+  closeLogoPicker()
 }
 
 
@@ -1333,6 +1392,49 @@ onUnmounted(() => {
                           class="text-xs text-gray-400 truncate">• {{ g.label }} ({{ (g.products as any[])?.length ?? 0 }})</div>
                         <div v-if="(item.megaMenu as any[]).length > 3" class="text-xs text-gray-400">
                           + {{ (item.megaMenu as any[]).length - 3 }} more
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- Logo picker: only for Ru5-Dynamic-Navbar logoNavLinks -->
+                  <template v-if="selectedBlockTitle === 'Ru5-Dynamic-Navbar' && field.key === 'logoNavLinks'">
+                    <div class="mt-1.5 pt-1.5 border-t border-gray-100">
+                      <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs text-gray-400">Logos</span>
+                        <button type="button"
+                          @click="logoPickerIdx === idx ? closeLogoPicker() : openLogoPicker(idx)"
+                          class="text-xs border border-gray-200 rounded px-1.5 py-0.5 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
+                          {{ (item.logos as LogoOption[])?.length ? `${(item.logos as LogoOption[]).length} logos ✎` : '+ Select Logos' }}
+                        </button>
+                      </div>
+
+                      <div v-if="logoPickerIdx === idx" class="border border-gray-200 rounded-md overflow-hidden text-xs mt-1">
+                        <div class="px-2 py-1.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                          <span class="font-medium text-gray-600">Select Logos
+                            <span v-if="selectedLogoIds.size" class="text-blue-500">({{ selectedLogoIds.size }})</span>
+                          </span>
+                          <button type="button" @click="closeLogoPicker" class="text-gray-400 hover:text-gray-600 bg-transparent border-none cursor-pointer">✕</button>
+                        </div>
+                        <div class="px-2 py-1.5 border-b border-gray-100">
+                          <input type="text" v-model="logoSearch" placeholder="Search logos…"
+                            class="w-full border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-blue-400" />
+                        </div>
+                        <div v-if="logoLoading" class="px-2 py-3 text-gray-400 text-center">Loading…</div>
+                        <div v-else class="max-h-52 overflow-y-auto">
+                          <label v-for="logo in logoFiltered" :key="logo.id"
+                            class="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 cursor-pointer border-b border-gray-50">
+                            <input type="checkbox" :checked="selectedLogoIds.has(logo.id)"
+                              @change="toggleLogo(logo.id)" class="cursor-pointer shrink-0" />
+                            <div class="flex-1 min-w-0 text-gray-700 truncate">{{ logo.name }}</div>
+                          </label>
+                          <div v-if="!logoFiltered.length" class="px-2 py-2 text-gray-400 text-center">No logos found</div>
+                        </div>
+                        <div class="px-2 py-1.5 bg-gray-50 border-t border-gray-100">
+                          <button type="button" @click="applyLogoSelection"
+                            class="w-full text-xs border border-gray-900 rounded px-2 py-1 bg-gray-900 text-white hover:bg-gray-700 cursor-pointer">
+                            Done
+                          </button>
                         </div>
                       </div>
                     </div>

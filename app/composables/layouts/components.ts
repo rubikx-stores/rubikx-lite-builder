@@ -1067,6 +1067,477 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
 </section>`
 }
 
+export const ru5DynamicNavbarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 48">
+  <rect fill="#ffffff" x="0" y="0" width="277.5" height="48"/>
+  <circle fill="#394152" cx="14" cy="12" r="6"/>
+  <rect fill="#394152" x="24" y="9" width="50" height="6" rx="1"/>
+  <rect fill="#e5e7eb" x="120" y="8" width="90" height="9" rx="4"/>
+  <rect fill="#394152" x="222" y="7" width="24" height="10" rx="2"/>
+  <rect fill="#1e3a5f" x="250" y="7" width="24" height="10" rx="2"/>
+  <line x1="0" y1="24" x2="277.5" y2="24" stroke="#e5e7eb" stroke-width="1"/>
+  <rect fill="#718096" x="8" y="32" width="24" height="6"/>
+  <rect fill="#9ca3af" x="42" y="32" width="20" height="6"/>
+  <rect fill="#9ca3af" x="70" y="32" width="34" height="6"/>
+  <rect fill="#9ca3af" x="112" y="32" width="26" height="6"/>
+  <rect fill="#9ca3af" x="146" y="32" width="20" height="6"/>
+  <rect fill="#9ca3af" x="174" y="32" width="16" height="6"/>
+</svg>`
+
+// A hand-authored nav link whose dropdown shows one column per selected
+// decoration/imprint logo (Odoo StoreProductTemplate.productVariants[].
+// logoIds) — e.g. a "Shop by Brand" link where each selected logo is a
+// column heading. The column CONTENT is not scoped to that logo's own
+// products — every column shows the same flat, parent-only category list
+// (the site's regular top-level categories, same data /api/categories
+// already provides for the auto-generated category row). `logos` is picked
+// via the EditorSidebar logo picker (name stored alongside id at selection
+// time so the column headers need no extra runtime lookup); label/href/
+// newTab are plain hand-typed fields like Ru3NavLink's.
+export interface Ru5LogoNavLink {
+  label: string
+  href: string        // fallback target when not logo-filtering (plain-link mode)
+  logos: Array<{ id: number, name: string }>   // [] = not logo-enabled yet
+  newTab?: boolean
+}
+
+export interface Ru5DynamicNavbarData {
+  logoUrl: string
+  logoText: string
+  logoWidth: number
+  brandFontSize: number
+  brandFontWeight: string
+  fontFamily: string
+  brandFont: string
+  // Read directly by this render function to decide whether logoNavLinks
+  // dropdowns are logo-scoped or fall back to plain links (see
+  // renderLogoNavLinkShell) — also still carried through as a plain
+  // data-logo-filter-by-category attribute on the <nav> shell (the same
+  // element data-rubikx-component="DynamicCategoryNav" lives on) so a
+  // headless consumer can read it there with no extra DOM traversal.
+  logoFilterByCategory: boolean
+
+  homeLabel: string
+  homeHref: string
+  showDynamicCategories: boolean
+  maxCategories: number
+  // Hand-authored links, rendered between Home and the auto-generated
+  // category row. A link is only logo-scoped when it has logoIds selected
+  // AND logoFilterByCategory is on — otherwise it renders as a plain link.
+  logoNavLinks: Ru5LogoNavLink[]
+
+  linkColor: string
+  linkFontSize: number
+  linkFontWeight: string
+  linkFont: string
+
+  showSearch: boolean
+  searchPlaceholder: string
+  searchFont: string
+
+  // Pulled out of ctaButtons rather than flagging one of its entries —
+  // CtaButton is a shared shape other components use too, and this needs to
+  // render as the data-auth-signin-btn + AuthState shell pair
+  // mountCmsAuthState (headless) / loadAuthState (builder preview) already
+  // know how to swap for a logged-in profile icon + sign-out dropdown, same
+  // pattern Ru2-Mega-Menu-Header already uses.
+  showSignIn: boolean
+  signInLabel: string
+  signInUrl: string
+
+  ctaButtons: CtaButton[]
+  buttonBorderRadius: number
+  buttonFont: string
+
+  showCart: boolean
+  cartUrl: string
+
+  bgColor: string
+  textColor: string
+  paddingY: number
+  paddingX: number
+  sticky: boolean
+  showBottomBorder: boolean
+  bottomBorderColor: string
+}
+
+export const ru5DynamicNavbarDefaults: Ru5DynamicNavbarData = {
+  logoUrl: '',
+  logoText: 'Brand',
+  logoWidth: 140,
+  brandFontSize: 20,
+  brandFontWeight: '700',
+  fontFamily: '',
+  brandFont: '',
+  logoFilterByCategory: false,
+
+  homeLabel: 'Home',
+  homeHref: '/',
+  showDynamicCategories: true,
+  maxCategories: 8,
+  logoNavLinks: [],
+
+  linkColor: '#1f2937',
+  linkFontSize: 14,
+  linkFontWeight: '500',
+  linkFont: '',
+
+  showSearch: true,
+  searchPlaceholder: 'Search...',
+  searchFont: '',
+
+  showSignIn: true,
+  signInLabel: 'Sign in',
+  signInUrl: '/login',
+
+  ctaButtons: [
+    { label: 'Contact Us', href: '/contactus', style: 'filled', textColor: '#ffffff', bgColor: '#1e3a5f', borderColor: '#1e3a5f' },
+  ],
+  buttonBorderRadius: 6,
+  buttonFont: '',
+
+  showCart: true,
+  cartUrl: '/cart',
+
+  bgColor: '#ffffff',
+  textColor: '#1f2937',
+  paddingY: 16,
+  paddingX: 24,
+  sticky: false,
+  showBottomBorder: true,
+  bottomBorderColor: '#e5e7eb',
+}
+
+export const ru5DynamicNavbarFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: 'logoUrl',         label: 'Logo Image',           type: 'image',
+    placeholder: 'https://example.com/logo.png', noAspectRatio: true       },
+  { key: 'logoText',        label: 'Brand Name',           type: 'text',
+    placeholder: 'e.g. Acme Co'                                             },
+  { key: 'logoWidth',       label: 'Logo Width (px)',      type: 'number',
+    placeholder: '140'                                                      },
+  { key: 'brandFontSize',   label: 'Brand Font Size (px)', type: 'number',
+    placeholder: '20 — size of the brand text when no logo image is set'    },
+  { key: 'brandFontWeight', label: 'Brand Font Weight',    type: 'select',
+    options: ['400', '500', '600', '700', '800']                            },
+  fontField('brandFont', 'Brand Font'),
+
+  { key: '_h_nav', label: 'Navigation', type: 'header' },
+  { key: 'homeLabel', label: 'Home Link Label', type: 'text', placeholder: 'Home' },
+  { key: 'homeHref',  label: 'Home Link URL',   type: 'url',  placeholder: '/'    },
+  { key: 'showDynamicCategories', label: 'Show Dynamic Categories', type: 'toggle' },
+  { key: 'maxCategories', label: 'Max Categories Shown', type: 'number',
+    placeholder: '8 — the nav row is built automatically from your live category tree, one item per top-level category (each with its own mega dropdown); it grows or shrinks with your data, nothing to configure by hand' },
+  {
+    key: 'logoNavLinks', label: 'Logo/Brand Nav Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Shop by Brand' },
+      { key: 'href',  label: 'Fallback URL', type: 'url', placeholder: 'used if no logos selected or logo filtering is off' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
+    ],
+  },
+  { key: 'logoFilterByCategory', label: 'Show Logo/Brand Nav Link Dropdowns', type: 'toggle',
+    placeholder: 'Must be on for any Logo/Brand Nav Link above to show its dropdown — off shows those links as plain links instead' },
+  { key: 'linkColor',       label: 'Link Colour',            type: 'color'   },
+  { key: 'linkFontSize',    label: 'Link Font Size (px)',    type: 'number',
+    placeholder: '14'                                                        },
+  { key: 'linkFontWeight',  label: 'Link Font Weight',       type: 'select',
+    options: ['400', '500', '600', '700']                                    },
+  fontField('linkFont', 'Link Font'),
+
+  { key: 'showSearch',    label: 'Show Search Bar',    type: 'toggle' },
+  { key: 'searchPlaceholder', label: 'Search Placeholder', type: 'text',
+    placeholder: 'Search...'                                                 },
+  fontField('searchFont', 'Search Font'),
+
+  { key: 'showSignIn',   label: 'Show Sign In',       type: 'toggle' },
+  { key: 'signInLabel',  label: 'Sign In Label',      type: 'text', placeholder: 'Sign in' },
+  { key: 'signInUrl',    label: 'Sign In URL',        type: 'url',  placeholder: '/login' },
+
+  {
+    key: 'ctaButtons', label: 'Top Bar Buttons', type: 'list',
+    listFields: [
+      { key: 'label',       label: 'Label',        type: 'text',   placeholder: 'e.g. Contact Us'     },
+      { key: 'href',        label: 'URL',           type: 'url',    placeholder: 'e.g. /contactus'     },
+      { key: 'style',       label: 'Style',         type: 'select', options: ['outline', 'filled']     },
+      { key: 'textColor',   label: 'Text Colour',   type: 'color'                                      },
+      { key: 'bgColor',     label: 'BG Colour',     type: 'color'                                      },
+      { key: 'borderColor', label: 'Border Colour', type: 'color'                                      },
+    ],
+  },
+  { key: 'buttonBorderRadius', label: 'Button Radius (px)', type: 'number',
+    placeholder: '6'                                                        },
+  fontField('buttonFont', 'Button Font'),
+
+  { key: 'showCart',    label: 'Show Cart Icon',  type: 'toggle' },
+  { key: 'cartUrl',     label: 'Cart URL',        type: 'url'    },
+
+  { key: 'bgColor',         label: 'Background Colour',       type: 'color'   },
+  { key: 'paddingY',        label: 'Vertical Padding (px)',   type: 'number',
+    placeholder: '16'                                                        },
+  { key: 'paddingX',        label: 'Horizontal Padding (px)', type: 'number',
+    placeholder: '24'                                                        },
+  { key: 'sticky',          label: 'Sticky Navbar (stays fixed while scrolling)', type: 'toggle' },
+  { key: 'showBottomBorder', label: 'Show Bottom Border',     type: 'toggle'  },
+  { key: 'bottomBorderColor', label: 'Bottom Border Colour',  type: 'color'   },
+]
+
+// Unlike Ru1–Ru4's Headers, this navbar's category items are never hand-authored
+// as a `navLinks` list — the nav row is rebuilt entirely from the live category
+// tree at hydration time (loadDynamicNav in rubikx-hydration.client.ts), so it
+// automatically grows or shrinks to whatever top-level categories the backend
+// returns (one, five, nine — no per-site config). Each top-level category with
+// children gets its own mega dropdown (one column per brand/sub-category, or a
+// single column headed by the category's own name when it has no such grouping
+// level — see renderMegaColumn); a childless category renders as a plain link.
+//
+// Builder-preview only, same split as loadCategories/loadNavOverflow elsewhere
+// in this file: the published Odoo page doesn't run this app's Nuxt plugin, so
+// the live storefront needs its own equivalent mount function in the headless
+// repo. This function only emits the static shell + placeholder the handler
+// replaces.
+export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
+  const navStyle = [
+    `background:${data.bgColor}`,
+    `color:${data.textColor}`,
+    data.showBottomBorder ? `border-bottom:1px solid ${data.bottomBorderColor}` : '',
+  ].filter(Boolean).join(';')
+
+  const logoInner = data.logoUrl
+    ? `<img src="${data.logoUrl}" alt="${data.logoText}" style="width:${data.logoWidth}px;height:auto;display:block;" />`
+    : `<span data-field-key="logoText" style="font-size:${data.brandFontSize}px;font-weight:${data.brandFontWeight};color:inherit;${fontCss(data.brandFont, data.fontFamily)}">${data.logoText}</span>`
+  const logoEl = `<a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;">${logoInner}</a>`
+
+  const searchEl = data.showSearch
+    ? `<div style="display:flex;flex:1;max-width:640px;">
+        <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="flex:1;min-width:0;border:1px solid #d1d5db;border-radius:0.375rem 0 0 0.375rem;padding:0.6rem 1rem;font-size:0.875rem;outline:none;${fontCss(data.searchFont, data.fontFamily)}" />
+        <button type="button" style="background:#ffffff;border:1px solid #d1d5db;border-left:none;border-radius:0 0.375rem 0.375rem 0;padding:0 1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${icon('magnifyingGlass', { size: 18, stroke: data.linkColor })}</button>
+      </div>`
+    : ''
+
+  const linkStyle = `color:${data.linkColor};text-decoration:none;font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}`
+
+  // ?? 6 (not left bare) so a stale saved instance with no buttonBorderRadius
+  // key — or any other path where it ends up undefined — doesn't render the
+  // literal invalid CSS text "border-radius:undefinedpx", which the browser
+  // silently drops, defaulting to square corners instead of ru5DynamicNavbar
+  // Defaults' actual buttonBorderRadius: 6.
+  const buttonBorderRadius = data.buttonBorderRadius ?? 6
+  const renderCtaButtons = () => data.ctaButtons.map((btn) => {
+    const bg = btn.style === 'outline' ? (btn.bgColor || 'transparent') : btn.bgColor
+    return `<a href="${btn.href}" style="display:inline-flex;align-items:center;justify-content:center;padding:0.5rem 1.25rem;border-radius:${buttonBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:600;white-space:nowrap;background:${bg};color:${btn.textColor};border:1.5px solid ${btn.borderColor};${fontCss(data.buttonFont, data.fontFamily)}">${btn.label}</a>`
+  }).join('')
+
+  // data-auth-signin-btn + the adjacent AuthState shell is the exact pair
+  // mountCmsAuthState (headless) / loadAuthState (builder preview) already
+  // look for — hiding the link and swapping in a profile trigger + dropdown
+  // once a shopper is logged in. data-auth-trigger-style/data-account-label/
+  // data-logout-label are Ru5-specific opt-ins: mountCmsAuthState (headless)
+  // must fall back to its current icon-only trigger + "Your Profile"/"Sign
+  // out" labels whenever these are absent, so every other navbar using this
+  // same shell keeps behaving exactly as it does today — only a shell that
+  // sets data-auth-trigger-style="name" (this one) gets the username+chevron
+  // trigger and "My Account"/"Logout" labels.
+  // !== false (not truthy) so a block instance saved before this field
+  // existed — whose stored data has no showSignIn key at all — still
+  // defaults to on, matching ru5DynamicNavbarDefaults, instead of an
+  // absent key silently reading as "off" and falling back to whatever
+  // static, non-auth-aware entry happened to already be sitting in that
+  // instance's ctaButtons list. Same class of bug as showDynamicCategories
+  // earlier — see that fix's comment for the full explanation.
+  // Same staleness concern applies to the URL/label themselves — a stale
+  // instance has these as undefined too, which would otherwise render a
+  // literal href="undefined" and button text "undefined" the moment the
+  // fix above starts showing this shell for it.
+  const signInUrl = data.signInUrl ?? '/login'
+  const signInLabel = data.signInLabel ?? 'Sign in'
+  const signInBtnStyle = `display:inline-flex;align-items:center;justify-content:center;padding:0.5rem 1.25rem;border-radius:${buttonBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:600;white-space:nowrap;border:1.5px solid ${data.textColor};color:${data.textColor};background:transparent;${fontCss(data.buttonFont, data.fontFamily)}`
+  // showSignIn only controls the static logged-out CTA — the AuthState span
+  // always renders regardless, since it's the shell an already-authenticated
+  // shopper needs to reach their account/logout menu, and it already
+  // self-hides when nobody's logged in (mountCmsAuthState/loadAuthState both
+  // set display:none in that case). Gating both together under one flag
+  // would strand a logged-in shopper with no way back to their account on
+  // any store that turns showSignIn off (e.g. SSO-only, where
+  // mountCmsAuthState already has explicit isSSOStore handling to hide just
+  // the login CTA while still showing account/logout once authenticated).
+  const signInLinkEl = data.showSignIn !== false
+    ? `<a href="${signInUrl}" data-auth-signin-btn="true" style="${signInBtnStyle}">${signInLabel}</a>`
+    : ''
+  const authStateEl = `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${signInUrl}" data-profile-url="/me/personal" data-auth-trigger-style="name" data-account-label="My Account" data-logout-label="Logout" style="position:relative;display:none;align-items:center;"></span>`
+  const signInEl = signInLinkEl + authStateEl
+
+  const renderTopBarButtons = () => signInEl + renderCtaButtons()
+
+  const cartEl = data.showCart
+    ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
+    : ''
+
+  const homeLinkStyle = `${linkStyle}font-weight:600;`
+
+  // logoNavLinks — hand-authored links whose dropdown shows one column per
+  // selected decoration/imprint logo (picked via the EditorSidebar logo
+  // picker, see Ru5LogoNavLink). The logo is purely a column heading, not a
+  // filter — every column's content is the same flat, parent-only category
+  // list (loadLogoNav fills [data-logo-col-items] with the site's top-level
+  // categories, identically in every column). Headers are known at render
+  // time (name is stored alongside id when picked) so they're emitted here
+  // directly — hydration only has to supply the shared category content.
+  // A link only gets a live dropdown when it has logos selected AND the
+  // whole-navbar logoFilterByCategory toggle is on — off (or no logos
+  // selected yet) falls back to a plain link using its own href, same
+  // pattern as navHydrationAttrs omitting data-on-mount entirely below
+  // rather than mounting a handler with nothing to do.
+  const logoNavLinks = data.logoNavLinks ?? []
+  const logoFilterOn = data.logoFilterByCategory === true
+  // Desktop uses the same hover-flyout data-cat-nav/data-cat-dropdown shell
+  // the auto-generated category row uses (renderMegaColumn's consumer,
+  // _renderDynamicNavResults). Mobile can't reuse that shell as-is — it's a
+  // CSS :hover flyout, meaningless on touch — so it instead follows
+  // renderCategoryTreeInline's tap-to-expand convention (data-cat-inline-*),
+  // matching how Ru5's own auto-generated mobile items already behave.
+  const renderLogoNavLinkShell = (link: Ru5LogoNavLink, idx: number, forMobile: boolean) => {
+    const logos = link.logos ?? []
+    const target = link.newTab ? ` target="_blank" rel="noopener"` : ''
+    // font-weight:600 appended last so it wins over linkStyle's own
+    // font-weight:${data.linkFontWeight} for the same inline style attribute
+    // — matches homeLinkStyle's identical pattern, so logoNavLinks read the
+    // same weight as the Home link instead of the auto-category row's
+    // lighter default.
+    const shellLinkStyle = forMobile ? `${linkStyle}display:block;padding:0.7rem 0;font-weight:600;` : `${linkStyle}font-weight:600;`
+    if (!logos.length || !logoFilterOn) {
+      return `<a href="${link.href}" style="${shellLinkStyle}"${target}>${link.label}</a>`
+    }
+    const hydrationAttrs = ` data-rubikx-component="LogoNav" data-on-mount="loadLogoNav" data-logo-nav-index="${idx}" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}"`
+    if (forMobile) {
+      const columnsHtml = logos.map((logo) => `<div style="padding:6px 16px;font-weight:600;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">${logo.name}</div><div data-logo-col-items></div>`).join('')
+      return `<div data-cat-inline-parent="true"${hydrationAttrs} data-logo-nav-mobile="true">
+        <div data-cat-inline-toggle="true" style="display:flex;align-items:center;justify-content:space-between;gap:12px;${shellLinkStyle}cursor:pointer;">${link.label}<span data-cat-inline-chevron="true" style="font-size:11px;opacity:.6;transition:transform .15s;display:inline-block;">▾</span></div>
+        <div data-cat-inline-children="true" style="display:none;">${columnsHtml}</div>
+      </div>`
+    }
+    // href="/shop" so the header isn't a dead/unfocusable element despite
+    // inheriting the same hover-affordance styling every other mega-header
+    // link has — matches "View All Products"' own destination, since a
+    // logo column has no real per-logo scope to link to.
+    const columnsHtml = logos.map((logo) => `<div><div class='rubikx-mega-header'><a href='/shop' style='text-decoration:none;'>${logo.name}</a></div><div data-logo-col-items></div></div>`).join('')
+    return `<div data-cat-nav="true" data-mega="true" style="position:relative;display:inline-block;"${hydrationAttrs} data-logo-nav-mobile="false">
+      <a href="${link.href}" style="${shellLinkStyle}cursor:pointer;"${target}>${link.label} ▾</a>
+      <div data-cat-dropdown="true" style="display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;">${columnsHtml}</div>
+    </div>`
+  }
+  const desktopLogoLinksEl = logoNavLinks.map((l, i) => renderLogoNavLinkShell(l, i, false)).join('')
+  const mobileLogoLinksEl = logoNavLinks.map((l, i) => renderLogoNavLinkShell(l, i, true)).join('')
+
+  // Placeholder shown until loadDynamicNav replaces it with one nav item per
+  // top-level category — keeps the palette preview / freshly-dropped block
+  // non-empty instead of a bare row before hydration runs.
+  const desktopPlaceholder = `<span style="color:#9ca3af;font-size:13px;font-style:italic;">⟳ Loading categories…</span>`
+  const mobilePlaceholder = `<span style="display:block;padding:6px 0;color:#9ca3af;font-size:13px;font-style:italic;">⟳ Loading categories…</span>`
+
+  // !== false (not === true) so a block instance saved before this field
+  // existed — whose stored data has no showDynamicCategories key at all —
+  // still defaults to on, matching ru5DynamicNavbarDefaults, instead of an
+  // absent key silently reading as "off" and dropping categories the next
+  // time the block re-renders from that stale data.
+  const desktopItemsEl = data.showDynamicCategories !== false
+    ? `<div data-ru5-desktop-items style="display:flex;align-items:center;gap:1.75rem;">${desktopPlaceholder}</div>`
+    : ''
+
+  const desktopNavRow = `<div data-ru5-desktop-nav style="max-width:90rem;margin:0 auto;width:100%;align-items:center;justify-content:space-between;gap:1.5rem;padding:0.625rem ${data.paddingX}px;${data.showBottomBorder ? `border-top:1px solid ${data.bottomBorderColor};` : ''}">
+    <div style="display:flex;align-items:center;gap:1.75rem;flex:1;min-width:0;">
+      <a href="${data.homeHref}" style="${homeLinkStyle}">${data.homeLabel}</a>
+      ${desktopLogoLinksEl}
+      ${desktopItemsEl}
+    </div>
+    ${cartEl}
+  </div>`
+
+  const mobileBar = `<div data-ru5-mobile-bar style="align-items:center;justify-content:space-between;padding:0.75rem ${data.paddingX}px;${data.showBottomBorder ? `border-top:1px solid ${data.bottomBorderColor};` : ''}">
+    <button type="button" data-active-border-color="${String(data.textColor).replace(/"/g, '&quot;')}" onclick="(function(btn){var sec=btn.closest('section');var panel=sec.querySelector('[data-ru5-mobile-panel]');var ctas=sec.querySelector('[data-ru5-mobile-bar-ctas]');var open=panel.style.display==='block';panel.style.display=open?'none':'block';if(ctas){ctas.style.display=open?'flex':'none';}btn.style.background=open?'none':'rgba(0,0,0,0.04)';btn.style.borderColor=open?'transparent':btn.dataset.activeBorderColor;})(this)" style="background:none;border:1.5px solid transparent;border-radius:6px;cursor:pointer;padding:6px;display:inline-flex;align-items:center;flex-shrink:0;">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="${data.textColor}" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div data-ru5-mobile-bar-ctas style="display:flex;align-items:center;gap:0.6rem;">${renderTopBarButtons()}</div>
+  </div>`
+
+  // In-place expanding panel (pushes page content down), not a slide-in
+  // overlay drawer — intentionally different from Ru2/Ru3/Ru4's mobile
+  // pattern to match this component's reference design.
+  const mobileItemsEl = data.showDynamicCategories !== false
+    ? `<div data-ru5-mobile-items style="display:flex;flex-direction:column;">${mobilePlaceholder}</div>`
+    : ''
+
+  const mobilePanel = `<div data-ru5-mobile-panel style="display:none;padding:0.25rem ${data.paddingX}px 1.25rem;">
+    <a href="${data.homeHref}" style="display:block;padding:0.7rem 0;${homeLinkStyle}">${data.homeLabel}</a>
+    ${mobileLogoLinksEl}
+    ${mobileItemsEl}
+    <div style="padding:0.75rem 0;">${cartEl}</div>
+    <div style="display:flex;justify-content:flex-end;flex-wrap:wrap;gap:0.75rem;margin-top:0.75rem;">${renderTopBarButtons()}</div>
+  </div>`
+
+  const responsiveStyle = `<style>
+  [data-ru5-desktop-nav] { display: flex; }
+  [data-ru5-mobile-bar] { display: none; }
+  @media (max-width: 1024px) {
+    [data-ru5-desktop-nav] { display: none !important; }
+    [data-ru5-mobile-bar] { display: flex !important; }
+  }
+  /* The mobile panel's open/closed state lives purely in an inline
+     style.display the hamburger's onclick sets — nothing else ever resets
+     it. Without this, opening it at mobile width then resizing to desktop
+     leaves that inline display:block in place with no CSS touching it, so
+     it renders stacked alongside the desktop nav row instead of closing.
+     min-width (not the max-width:1024px block above) so it only forces the
+     panel shut once we're past the breakpoint the hamburger itself is
+     hidden at — inline JS-controlled open/close at mobile width is
+     untouched, since this rule doesn't apply there at all. */
+  @media (min-width: 1025px) {
+    [data-ru5-mobile-panel] { display: none !important; }
+  }
+</style>`
+
+  const sectionStyle = `width:100%;display:block;${fontCss(undefined, data.fontFamily)}${data.sticky ? 'position:sticky;top:0;z-index:9999;' : ''}`
+
+  // data-rubikx-component="DynamicCategoryNav" is emitted unconditionally
+  // (moved off the showDynamicCategories toggle below) because the hydration
+  // plugin's Ru5 full-width mega-dropdown CSS override is scoped to
+  // nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega]
+  // — logoNavLinks' own mega-dropdowns (renderLogoNavLinkShell) use that same
+  // [data-cat-nav][data-mega] shell and need that scoping regardless of
+  // whether the auto-generated category row is on. loadDynamicNav itself is
+  // still fully gated: it only ever runs when data-on-mount="loadDynamicNav"
+  // is present, which stays conditional on showDynamicCategories below — with
+  // it off there's nothing for loadDynamicNav to wire up, so only its own
+  // data-on-mount + sibling attrs are skipped, not the whole shell.
+  const navHydrationAttrs = data.showDynamicCategories !== false
+    ? `data-on-mount="loadDynamicNav"
+  data-max-categories="${data.maxCategories}"
+  data-link-color="${data.linkColor}"
+  data-font-size="${data.linkFontSize}"
+  data-font-weight="${data.linkFontWeight}"`
+    : ''
+
+  return `<section data-component-title="Ru5-Dynamic-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
+${responsiveStyle}
+<nav
+  style="${navStyle}"
+  data-rubikx-component="DynamicCategoryNav"
+  data-logo-filter-by-category="${data.logoFilterByCategory}"
+  ${navHydrationAttrs}
+>
+  <div style="max-width:90rem;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding:${data.paddingY}px ${data.paddingX}px;">
+    <div style="flex-shrink:0;">${logoEl}</div>
+    ${searchEl}
+    <div data-ru5-desktop-nav style="flex-shrink:0;align-items:center;gap:0.75rem;">${renderTopBarButtons()}</div>
+  </div>
+  ${desktopNavRow}
+  ${mobileBar}
+  ${mobilePanel}
+</nav>
+</section>`
+}
+
 export const ru1FormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
   <rect fill="#394152" x="0" y="10" width="88" height="7"/>
   <rect fill="#394152" x="0" y="24" width="118" height="3"/>

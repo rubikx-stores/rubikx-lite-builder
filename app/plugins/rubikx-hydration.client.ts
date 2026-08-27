@@ -152,6 +152,47 @@ function renderMegaColumnItems(nodes: CategoryNode[], depth = 0): string {
     .join('')
 }
 
+// Builds one mega-grid column: a bold header (linking to that node's own
+// category page), its items via renderMegaColumnItems, and a synthesized
+// "View All Products" link at the bottom (not a real category — always
+// points at the column's own header link) matching the brand-column mega
+// menu reference design (e.g. Water Innovations → Moen / Must Be A Moen,
+// each column repeating the same product-type list).
+function renderMegaColumn(header: CategoryNode, items: CategoryNode[]): string {
+  const query = header.headlessName || header.displayName || header.name
+  const href = `/shop?category=${encodeURIComponent(query)}`
+  const label = header.displayName.includes(' / ')
+    ? header.displayName.split(' / ').pop()!
+    : header.displayName
+  const itemsHtml = renderMegaColumnItems(items)
+  return `<div>
+    <div class='rubikx-mega-header'><a href='${href}'>${label}</a></div>
+    ${itemsHtml}
+    <div class='rubikx-mega-child'><a href='${href}'>View All Products</a></div>
+  </div>`
+}
+
+// For Ru5's logoNavLinks — the logo columns are headings only (rendered
+// statically by renderLogoNavLinkShell, name known at pick time), not a
+// products filter, so unlike renderMegaColumn there's no per-logo tree to
+// walk: every column shows this same flat, parent-only list, plus a
+// trailing "View All Products" link (restored to match the original
+// per-logo mega-column design) pointing at the general shop page rather
+// than a per-logo filter, since a logo isn't a real scope here.
+function renderFlatParentCategoryLinks(roots: CategoryNode[]): string {
+  const itemsHtml = roots.map((root) => {
+    const query = root.headlessName || root.displayName || root.name
+    const href = `/shop?category=${encodeURIComponent(query)}`
+    // text-decoration set inline, not left to the ambient [data-cat-dropdown]
+    // a CSS rule — this same markup also lands inside [data-cat-inline-
+    // children] on mobile (not a [data-cat-dropdown] descendant at all), so
+    // relying on that rule alone left mobile showing a default underline.
+    return `<div class='rubikx-mega-child'><a href='${href}' style='text-decoration:none;'>${root.displayName}</a></div>`
+  }).join('')
+  const viewAll = `<div class='rubikx-mega-child'><a href='/shop' style='text-decoration:none;'>View All Products</a></div>`
+  return itemsHtml + viewAll
+}
+
 // Click-to-expand wiring for renderCategoryTreeInline's toggle rows — a
 // single delegated listener on the dropdown container rather than one per
 // row, since loadCategories only ever calls this once per hydration
@@ -228,7 +269,9 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
       dropdown.innerHTML = renderCategoryTreeInline(tree, linkStyle)
       bindInlineCategoryToggles(dropdown)
     } else if (tree.length > 6) {
-      // Mega menu — horizontal grid layout
+      // Mega menu — horizontal grid layout (unscoped: every top-level
+      // category as its own column, no "View All Products" line since
+      // there's no single brand/category this dropdown is scoped to)
       el.setAttribute('data-mega', 'true')
       dropdown.innerHTML = tree
         .map((cat) => {
@@ -250,6 +293,194 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
   } catch (e) {
     console.error('[Rubikx] Failed to load categories:', e)
     if (dropdown) dropdown.innerHTML = ''
+  }
+}
+
+// Ru5-Dynamic-Navbar's nav row — unlike loadCategories above (which fills a
+// single hand-configured nav link's dropdown), this builds the entire row of
+// top-level nav items itself, one per root category the backend returns, so
+// the navbar's item count tracks the live category tree with nothing to
+// configure per-site: one category in, one item shown; nine in, nine shown.
+// A root with children renders as a mega-dropdown item (one column per
+// grouping level under it, or a single column headed by its own name when it
+// has no such grouping — see renderMegaColumn); a childless root renders as
+// a plain link. Populates both the desktop row and the mobile accordion
+// panel from one fetch, matching Home (already static in the shell markup)
+// on each side.
+//
+// Builder-preview only, same split as loadCategories/loadNavOverflow above —
+// the published Odoo page doesn't run this app's Nuxt plugin, so the live
+// storefront needs its own equivalent mount function in the headless repo.
+//
+// Always re-fetches on every hydration call, same as loadCategories above —
+// deliberately no cache. A module-level cache was tried here and reverted:
+// it made this navbar populate near-instantly on later hydrations while
+// every other dynamic-category shell on the page stayed fetch-driven, so it
+// visibly rendered first while the rest of the page was still loading
+// (behavior other navbar components don't have) — and being keyed by
+// companyId with no invalidation, switching between company sites within
+// the same session without a full reload could surface one company's
+// categories on another's navbar. Consistency with loadCategories's
+// always-fetch behavior matters more here than avoiding the refetch.
+function _renderDynamicNavResults(
+  roots: CategoryNode[],
+  desktopContainer: HTMLElement | null,
+  mobileContainer: HTMLElement | null,
+  linkStyle: string
+) {
+  const emptyState = `<span style='display:block;padding:6px 0;color:#9ca3af;font-size:13px;font-style:italic;'>No categories found</span>`
+
+  if (desktopContainer) {
+    desktopContainer.innerHTML = roots.length
+      ? roots.map((root) => {
+          const query = root.headlessName || root.displayName || root.name
+          const href = `/shop?category=${encodeURIComponent(query)}`
+          const children = root.children ?? []
+          if (!children.length) {
+            return `<a href='${href}' style='${linkStyle}text-decoration:none;'>${root.displayName}</a>`
+          }
+          const hasGrouping = children.some((c) => (c.children ?? []).length > 0)
+          const dropInner = hasGrouping
+            ? children.map((c) => renderMegaColumn(c, c.children ?? [])).join('')
+            : renderMegaColumn(root, children)
+          return `<div data-cat-nav='true' data-mega='true' style='position:relative;display:inline-block;'>
+            <a href='${href}' style='${linkStyle}text-decoration:none;cursor:pointer;'>${root.displayName} ▾</a>
+            <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
+              ${dropInner}
+            </div>
+          </div>`
+        }).join('')
+      : emptyState
+  }
+
+  if (mobileContainer) {
+    if (roots.length) {
+      mobileContainer.innerHTML = renderCategoryTreeInline(roots, linkStyle)
+      bindInlineCategoryToggles(mobileContainer)
+      // renderCategoryTreeInline defaults to pre-expanded (right for
+      // CategoryNav's own floating panel) — this reference design shows
+      // every top-level category collapsed until tapped, so close them
+      // immediately after render instead.
+      mobileContainer.querySelectorAll<HTMLElement>('[data-cat-inline-children]').forEach((c) => {
+        c.style.display = 'none'
+      })
+      mobileContainer.querySelectorAll<HTMLElement>('[data-cat-inline-chevron]').forEach((c) => {
+        c.style.transform = ''
+      })
+    } else {
+      mobileContainer.innerHTML = emptyState
+    }
+  }
+}
+
+async function loadDynamicNav(el: HTMLElement, companyId?: number) {
+  if (el.dataset.hydrated === 'true') return
+  el.dataset.hydrated = 'true'
+
+  // || 20 (not just ?? on the attribute read above) so a cleared/invalid
+  // Max Categories input — which saves as 0, not absent — doesn't slice the
+  // live tree to nothing and empty out the entire primary nav row.
+  const maxCategories = parseInt(el.dataset.maxCategories ?? '20') || 20
+  const linkColor = el.dataset.linkColor ?? '#1f2937'
+  const fontSize = el.dataset.fontSize ?? '14'
+  const fontWeight = el.dataset.fontWeight ?? '500'
+  const linkStyle = `color:${linkColor};font-size:${fontSize}px;font-weight:${fontWeight};white-space:nowrap;`
+
+  const desktopContainer = el.querySelector<HTMLElement>('[data-ru5-desktop-items]')
+  const mobileContainer = el.querySelector<HTMLElement>('[data-ru5-mobile-items]')
+  if (!desktopContainer && !mobileContainer) return
+
+  // Editing ANY field on ANY block ends with _applyBlockRender calling
+  // _syncBuilderWithListeners → builder.syncDomToStoreOnly(), which does
+  // `this.components = []` then repopulates on the next tick — a full
+  // teardown-and-rebuild of every <section> on the canvas, not just the one
+  // that was edited (confirmed via logging: a captured <section> reference
+  // stays the *same object* across this — section.querySelector(...) still
+  // finds "the same node" relative to it — but that whole subtree is
+  // orphaned; isConnected is false because a brand new section replaced it
+  // in the live DOM). So no DOM reference captured before the fetch below —
+  // not even an ancestor — can be trusted once the fetch resolves. Only the
+  // `data-componentid` *string* survives the rebuild (the new section is
+  // re-assigned the same id), so that's what gets captured, and the actual
+  // container lookup happens fresh from `document` after the fetch.
+  const componentId = el.closest('section')?.getAttribute('data-componentid') ?? null
+
+  try {
+    const flat = await $fetch<FlatCategory[]>('/api/categories', {
+      query: { companyId },
+    })
+    const roots = buildCategoryTree(flat).slice(0, maxCategories)
+
+    const liveSection = componentId
+      ? document.querySelector<HTMLElement>(`section[data-componentid="${componentId}"]`)
+      : el.closest('section')
+    const liveDesktop = liveSection?.querySelector<HTMLElement>('[data-ru5-desktop-items]') ?? desktopContainer
+    const liveMobile = liveSection?.querySelector<HTMLElement>('[data-ru5-mobile-items]') ?? mobileContainer
+    if (!liveDesktop?.isConnected && !liveMobile?.isConnected) return
+
+    _renderDynamicNavResults(roots, liveDesktop, liveMobile, linkStyle)
+  } catch (e) {
+    console.error('[Rubikx] Failed to load dynamic nav categories:', e)
+    const liveSection = componentId
+      ? document.querySelector<HTMLElement>(`section[data-componentid="${componentId}"]`)
+      : el.closest('section')
+    const liveDesktop = liveSection?.querySelector<HTMLElement>('[data-ru5-desktop-items]') ?? desktopContainer
+    const liveMobile = liveSection?.querySelector<HTMLElement>('[data-ru5-mobile-items]') ?? mobileContainer
+    if (liveDesktop) liveDesktop.innerHTML = ''
+    if (liveMobile) liveMobile.innerHTML = ''
+  }
+}
+
+// Ru5-Dynamic-Navbar's logoNavLinks — a hand-authored nav link with one
+// column per selected decoration/imprint logo (see Ru5LogoNavLink in
+// components.ts). The logo is a column heading only, not a filter — every
+// column shows the same flat, parent-only category list, so this just needs
+// the site's regular top-level categories (the same /api/categories call
+// loadDynamicNav already uses) and writes that identical content into every
+// [data-logo-col-items] placeholder the shell already has (headers are
+// static, rendered directly by renderLogoNavLinkShell — nothing to fetch
+// for those). Structured like loadDynamicNav above, including its
+// documented re-find-after-rebuild workaround (editing ANY field on the
+// block tears down and rebuilds every <section>, orphaning any DOM
+// reference captured before the fetch resolves — see loadDynamicNav's
+// comment for the full explanation), keyed by data-logo-nav-index instead of
+// data-componentid alone since a navbar can have several logoNavLinks shells
+// in the same section.
+async function loadLogoNav(el: HTMLElement, companyId?: number) {
+  if (el.dataset.hydrated === 'true') return
+  el.dataset.hydrated = 'true'
+
+  const idx = el.dataset.logoNavIndex
+  const isMobile = el.dataset.logoNavMobile === 'true'
+
+  const componentId = el.closest('section')?.getAttribute('data-componentid') ?? null
+
+  const findLiveShell = () => {
+    const liveSection = componentId
+      ? document.querySelector<HTMLElement>(`section[data-componentid="${componentId}"]`)
+      : el.closest('section')
+    return liveSection?.querySelector<HTMLElement>(`[data-logo-nav-index="${idx}"][data-logo-nav-mobile="${isMobile}"]`) ?? el
+  }
+
+  try {
+    const flat = await $fetch<FlatCategory[]>('/api/categories', { query: { companyId } })
+    const roots = buildCategoryTree(flat)
+    const itemsHtml = renderFlatParentCategoryLinks(roots)
+
+    const liveShell = findLiveShell()
+    if (!liveShell.isConnected) return
+
+    liveShell.querySelectorAll<HTMLElement>('[data-logo-col-items]').forEach((col) => {
+      col.innerHTML = itemsHtml
+    })
+
+    if (isMobile) bindInlineCategoryToggles(liveShell)
+  } catch (e) {
+    console.error('[Rubikx] Failed to load logo nav categories:', e)
+    const liveShell = findLiveShell()
+    if (liveShell.isConnected) {
+      liveShell.querySelectorAll<HTMLElement>('[data-logo-col-items]').forEach((col) => { col.innerHTML = '' })
+    }
   }
 }
 
@@ -791,6 +1022,8 @@ function loadSearch(el: HTMLElement, companyId?: number) {
 const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> =
   {
     loadCategories,
+    loadDynamicNav,
+    loadLogoNav,
     loadNavOverflow,
     loadSlider,
     loadCartCount,
@@ -862,11 +1095,31 @@ export function hydrateComponents(companyId?: number) {
   [data-cat-nav][data-mega]:hover [data-cat-dropdown] { display: flex !important; flex-wrap: wrap; min-width: 500px; padding: 12px; gap: 0; }
   [data-cat-nav]:not([data-mega]):hover [data-cat-dropdown] { display: block !important; min-width: 200px; padding: 8px 0; }
   [data-cat-nav][data-mega] [data-cat-dropdown] > div { min-width: 150px; flex: 1 1 150px; padding: 4px 8px; }
-  [data-cat-nav][data-mega] [data-cat-dropdown] > div > a { font-weight: 600; font-size: 13px; padding: 4px 8px 2px; display: block; border-bottom: 1px solid #f0f0f0; margin-bottom: 4px; }
+  [data-cat-nav][data-mega] [data-cat-dropdown] .rubikx-mega-header a { font-weight: 600; font-size: 13px; padding: 4px 8px 2px; display: block; border-bottom: 1px solid #f0f0f0; margin-bottom: 4px; color: #111; }
   [data-cat-nav][data-mega] [data-cat-dropdown] > div > div a { font-size: 12px; color: #555; padding: 2px 8px; display: block; }
   [data-cat-nav] [data-cat-dropdown] a { text-decoration: none; color: #111; font-size: 13px; }
   [data-cat-nav] [data-cat-dropdown] a:hover { color: #000; opacity: 0.7; }
   [data-cat-parent]:hover > [data-cat-flyout] { display: block !important; }
+  /* Ru5-Dynamic-Navbar only (scoped via the nav[data-rubikx-component=
+     "DynamicCategoryNav"] ancestor) — the mega dropdown spans the full
+     header width instead of only as wide as its own columns, matching the
+     reference design. Scoped rather than widened on the shared
+     [data-cat-nav][data-mega] rule above so Ru3-Mega-Header's own
+     (unscoped, >6-category) mega dropdown keeps its current content-width
+     sizing and local positioning untouched. */
+  nav[data-rubikx-component="DynamicCategoryNav"] { position: relative; }
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega] { position: static !important; }
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega]:hover [data-cat-dropdown] { left: 0 !important; right: 0 !important; width: 100% !important; min-width: 0 !important; }
+  /* Full-width box shouldn't carry the shared rule's rounded corners — at
+     edge-to-edge width only the two far corners would show any rounding at
+     all, which read as a mistake rather than a deliberate radius. */
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-dropdown] { border-radius: 0 !important; }
+  /* Larger type and more vertical breathing room between category rows,
+     scoped to Ru5 only so Ru3-Mega-Header's own unscoped mega dropdown
+     (shares .rubikx-mega-child/-header via the same >6-category branch in
+     loadCategories) keeps its current sizing untouched. */
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-dropdown] .rubikx-mega-header a { font-size: 15px !important; }
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-dropdown] > div > div a { font-size: 14px !important; padding: 6px 8px !important; }
 `
     document.head.appendChild(style)
   }
