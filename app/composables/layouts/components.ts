@@ -4745,7 +4745,7 @@ export const bannerFields: FieldConfig[] = [
   { key: '_h_font', label: 'Font', type: 'header' },
   fontField('fontFamily', 'Font Family'),
 
-  { key: 'title',    label: 'Title',    type: 'text',  placeholder: 'e.g. Welcome to Our Store' },
+  { key: 'title',    label: 'Title',    type: 'textarea',  placeholder: 'e.g. Welcome to Our Store' },
   fontField('titleFont', 'Title Font'),
   { key: 'subtitle', label: 'Subtitle', type: 'text',  placeholder: 'Short supporting line…' },
   fontField('subtitleFont', 'Subtitle Font'),
@@ -7240,9 +7240,9 @@ export const ru3TextImageHeroFields: FieldConfig[] = [
   { key: 'bgColor',   label: 'Background Color',   type: 'color' },
   { key: 'bgOpacity', label: 'Background Opacity', type: 'number', unit: '%', step: 5, placeholder: '100' },
   { key: '_h_content',  label: 'Content',  type: 'header' },
-  { key: 'heading',     label: 'Heading',  type: 'text', placeholder: 'e.g. Welcome to your Locker' },
-  { key: 'subheading',  label: 'Subheading', type: 'text', placeholder: 'e.g. Fresh gear, picked for the team.' },
-  { key: 'description', label: 'Description', type: 'text', placeholder: 'Short body copy…' },
+  { key: 'heading',     label: 'Heading',  type: 'textarea', placeholder: 'e.g. Welcome to your Locker' },
+  { key: 'subheading',  label: 'Subheading', type: 'textarea', placeholder: 'e.g. Fresh gear, picked for the team.' },
+  { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Short body copy…' },
   { key: '_h_cta', label: 'CTA Button', type: 'header' },
   { key: 'ctaText',  label: 'Button Text',  type: 'text', placeholder: 'e.g. Shop Now' },
   { key: 'ctaUrl',   label: 'Button URL',   type: 'url',  placeholder: '/shop' },
@@ -8085,7 +8085,7 @@ export const ru4OverlayPanelFields: FieldConfig[] = [
   { key: 'panelBorderRadius', label: 'Border Radius (px) — used when cut is none', type: 'number', placeholder: '8' },
 
   { key: '_h_content', label: 'Content', type: 'header' },
-  { key: 'heading', label: 'Heading', type: 'text', placeholder: 'Heading text' },
+  { key: 'heading', label: 'Heading', type: 'textarea', placeholder: 'Heading text' },
   { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Supporting description' },
   { key: 'contentAlign', label: 'Content Alignment', type: 'select', options: ['left', 'center', 'right'] },
 
@@ -10473,9 +10473,12 @@ export function renderRu1AnnouncementBar(data: Ru1AnnouncementBarData): string {
   const weightMap: Record<string, string> = { Normal: '400', Medium: '500', Semibold: '600', Bold: '700' }
   const weight = weightMap[data.fontWeight] ?? '500'
 
+  // Font size clamps down on narrow viewports (min(px, vw)) so a large
+  // configured size never overflows a phone screen, and the message wraps
+  // safely instead of forcing horizontal scroll on a long single line.
   return `<section data-component-title="Ru1-Announcement Bar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
-  <div style="background:${data.bgColor};padding:${data.paddingY}px 1rem;display:flex;justify-content:${justify};align-items:center;text-align:center;box-sizing:border-box;">
-    <span style="color:${data.textColor};font-size:${data.fontSize}px;font-weight:${weight};line-height:1.4;${fontCss(data.textFont, data.fontFamily)}">${data.message}</span>
+  <div style="background:${data.bgColor};padding:${data.paddingY}px min(1rem,4vw);display:flex;justify-content:${justify};align-items:center;text-align:center;box-sizing:border-box;">
+    <span style="color:${data.textColor};font-size:min(${data.fontSize}px,5vw);font-weight:${weight};line-height:1.4;max-width:100%;overflow-wrap:break-word;${fontCss(data.textFont, data.fontFamily)}">${data.message}</span>
   </div>
 </section>`
 }

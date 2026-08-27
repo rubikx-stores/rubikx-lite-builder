@@ -308,8 +308,12 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   put(data.searchAlign,  searchEl)
   put(data.buttonsAlign, buttonsEl)
 
+  // min-width:0 lets this zone actually shrink inside its grid column
+  // instead of forcing an overflow when a wide search box or long button
+  // row doesn't fit — a bare flex/grid item defaults to a min size based
+  // on its content, which silently blocks shrinking without this.
   const zone = (items: string[], justify: string) =>
-    `<div style="display:flex;align-items:center;gap:0.75rem;justify-content:${justify};">${items.join('')}</div>`
+    `<div style="display:flex;align-items:center;gap:0.75rem;justify-content:${justify};min-width:0;">${items.join('')}</div>`
 
   const lowerRow = isLowerLinks && linksEl
     ? `<div style="margin:0 auto;display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding:0.5rem 0;gap:0.75rem;">${linksEl}</div>`
@@ -375,7 +379,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   return `<section data-component-title="Ru1-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 <nav style="${navStyle}">
   ${mobileNav}
-  <div data-nav-desktop="true" style="display:grid;margin:0 auto;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;height:80px;${topRowBorder}">
+  <div data-nav-desktop="true" style="display:grid;margin:0 auto;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);align-items:center;gap:1rem;height:80px;${topRowBorder}">
     ${zone(cols.left,   'flex-start')}
     ${zone(cols.center, 'center')}
     ${zone(cols.right,  'flex-end')}
@@ -910,6 +914,11 @@ export interface Ru1FooterData {
   usefulLinks: { label: string; url: string; newTab?: boolean }[]
   contactEmail: string
   contactPhone: string
+  contactUsLabel: string
+  contactUsUrl: string
+  showConnectIcons: boolean
+  connectIconColor: string
+  connectIconStyle: 'outline' | 'filled'
   showSocials: boolean
   socials: { href: string }[]
   copyright: string
@@ -936,6 +945,8 @@ export interface Ru1FooterData {
   headingFont: string
   bodyFont: string
   copyrightFont: string
+  headingFontSize: number
+  textFontSize: number
 }
 
 export const ru1FooterDefaults: Ru1FooterData = {
@@ -948,6 +959,11 @@ export const ru1FooterDefaults: Ru1FooterData = {
   ],
   contactEmail: 'support@yourdomain.com',
   contactPhone: '+1 000-000-0000',
+  contactUsLabel: 'Contact us',
+  contactUsUrl: '/contactus',
+  showConnectIcons: false,
+  connectIconColor: '',
+  connectIconStyle: 'outline',
   showSocials: true,
   socials: [],
   copyright: '© Your Store. All rights reserved.',
@@ -974,6 +990,8 @@ export const ru1FooterDefaults: Ru1FooterData = {
   headingFont: '',
   bodyFont: '',
   copyrightFont: '',
+  headingFontSize: 12,
+  textFontSize: 14,
 }
 
 export const ru1FooterFields: FieldConfig[] = [
@@ -981,8 +999,13 @@ export const ru1FooterFields: FieldConfig[] = [
   fontField('fontFamily', 'Font Family'),
 
   { key: '_h_content', label: 'Content', type: 'header' },
+  { key: 'contactUsLabel', label: 'Contact Us Label', type: 'text' },
+  { key: 'contactUsUrl', label: 'Contact Us URL', type: 'url' },
   { key: 'contactEmail', label: 'Contact Email', type: 'text' },
   { key: 'contactPhone', label: 'Contact Phone', type: 'text' },
+  { key: 'showConnectIcons', label: 'Show Icons', type: 'toggle' },
+  { key: 'connectIconColor', label: 'Icon Color', type: 'color', visibleIf: (d: any) => d.showConnectIcons === true },
+  { key: 'connectIconStyle', label: 'Icon Style', type: 'select', options: ['outline', 'filled'], visibleIf: (d: any) => d.showConnectIcons === true },
   { key: 'copyright', label: 'Copyright Text', type: 'textarea' },
   { key: 'copyrightAlign', label: 'Align Text', type: 'select', options: ['left', 'center', 'right'] },
   fontField('copyrightFont', 'Copyright Font'),
@@ -1032,7 +1055,22 @@ export const ru1FooterFields: FieldConfig[] = [
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '48' },
   { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '16' },
+
+  { key: '_h_textsize', label: 'Text Size', type: 'header' },
+  { key: 'headingFontSize', label: 'Heading Text Size', type: 'number', unit: 'px', step: 1, placeholder: '12' },
+  { key: 'textFontSize', label: 'Body Text Size', type: 'number', unit: 'px', step: 1, placeholder: '14' },
 ]
+
+const ru1FooterIconStyle = 'height:16px;width:16px;flex-shrink:0;'
+// Outline (stroke-only) variant — used when Icon Style is "outline".
+const ru1FooterIconChatOutline = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="${ru1FooterIconStyle}" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/></svg>`
+const ru1FooterIconEnvelopeOutline = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="${ru1FooterIconStyle}" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>`
+const ru1FooterIconPhoneOutline = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="${ru1FooterIconStyle}" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 6.75Z"/></svg>`
+// Filled (solid) variant — used when Icon Style is "filled", the inner
+// shape is solid-colored instead of just an outlined stroke.
+const ru1FooterIconChatFilled = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="${ru1FooterIconStyle}" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 0 0 6 21.75a6.721 6.721 0 0 0 3.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.73 3.73 0 0 1-.814 1.686.75.75 0 0 0 .44 1.223ZM8.25 10.875a1.125 1.125 0 1 0 0 2.25 1.125 1.125 0 0 0 0-2.25ZM10.875 12a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0Zm4.125-1.125a1.125 1.125 0 1 0 0 2.25 1.125 1.125 0 0 0 0-2.25Z"/></svg>`
+const ru1FooterIconEnvelopeFilled = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="${ru1FooterIconStyle}" aria-hidden="true"><path d="M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3 3 0 0 1-3.144 0L1.5 8.67Z"/><path d="M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908Z"/></svg>`
+const ru1FooterIconPhoneFilled = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="${ru1FooterIconStyle}" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 4.5a3 3 0 0 1 3-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 0 1-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 0 0 6.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 0 1 1.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 0 1-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5Z"/></svg>`
 
 export function renderRu1Footer(data: Ru1FooterData): string {
   const bg = data.bgColor || '#f9fafb'
@@ -1047,9 +1085,11 @@ export function renderRu1Footer(data: Ru1FooterData): string {
     data.borderStyle !== 'none' ? `border-top:${data.borderWidth}px ${data.borderStyle} ${data.borderColor}` : '',
   ].filter(Boolean).join(';')
 
-  const hStyle = `font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:${heading};margin-bottom:1rem;${fontCss(data.headingFont, data.fontFamily)}`
-  const pStyle = `font-size:0.875rem;color:${text};line-height:1.625;${fontCss(data.bodyFont, data.fontFamily)}`
-  const aStyle = `font-size:0.875rem;color:${link};text-decoration:none;${fontCss(data.bodyFont, data.fontFamily)}`
+  const headingFontSize = data.headingFontSize || 12
+  const textFontSize = data.textFontSize || 14
+  const hStyle = `font-size:${headingFontSize}px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:${heading};margin-bottom:1rem;${fontCss(data.headingFont, data.fontFamily)}`
+  const pStyle = `font-size:${textFontSize}px;color:${text};line-height:1.625;${fontCss(data.bodyFont, data.fontFamily)}`
+  const aStyle = `font-size:${textFontSize}px;color:${link};text-decoration:none;${fontCss(data.bodyFont, data.fontFamily)}`
 
   const linksCol = `<div style="max-width:20rem;">
         <h3 style="${hStyle}">Useful Links</h3>
@@ -1070,11 +1110,19 @@ export function renderRu1Footer(data: Ru1FooterData): string {
   const socialRow = data.showSocials !== false && socialIcons.length
     ? `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:1.25rem;">${socialIcons.join('')}</div>`
     : ''
+  const connectIconsOn = data.showConnectIcons === true
+  const connectIconColor = data.connectIconColor || link
+  const connectIcons = data.connectIconStyle === 'filled'
+    ? { chat: ru1FooterIconChatFilled, envelope: ru1FooterIconEnvelopeFilled, phone: ru1FooterIconPhoneFilled }
+    : { chat: ru1FooterIconChatOutline, envelope: ru1FooterIconEnvelopeOutline, phone: ru1FooterIconPhoneOutline }
+  const connectRow = (iconSvg: string, href: string, label: string) =>
+    `<li style="list-style:none;display:flex;align-items:center;gap:0.5rem;">${connectIconsOn ? `<span style="color:${connectIconColor};display:inline-flex;">${iconSvg}</span>` : ''}<a href="${href}" style="${aStyle}">${label}</a></li>`
   const contactCol = `<div style="max-width:20rem;">
         <h3 style="${hStyle}">Connect with Us</h3>
-        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.2rem;">
-          <li style="list-style:none;"><a href="mailto:${data.contactEmail}" style="${aStyle}">${data.contactEmail}</a></li>
-          <li style="list-style:none;"><a href="tel:${data.contactPhone}" style="${aStyle}">${data.contactPhone}</a></li>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.5rem;">
+          ${connectRow(connectIcons.chat, data.contactUsUrl, data.contactUsLabel)}
+          ${connectRow(connectIcons.envelope, `mailto:${data.contactEmail}`, data.contactEmail)}
+          ${connectRow(connectIcons.phone, `tel:${data.contactPhone}`, data.contactPhone)}
         </ul>
         ${socialRow}
       </div>`
