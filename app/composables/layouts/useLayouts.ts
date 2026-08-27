@@ -21,6 +21,10 @@ import {
   ru4NavbarFields,
   ru4NavbarSvg,
   renderRu4Navbar,
+  ru5DynamicNavbarDefaults,
+  ru5DynamicNavbarFields,
+  ru5DynamicNavbarSvg,
+  renderRu5DynamicNavbar,
   bannerDefaults,
   bannerFields,
   bannerSvg,
@@ -225,6 +229,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Headers',
       cover_image: ru4NavbarSvg,
       html_code: renderRu4Navbar(ru4NavbarDefaults),
+    },
+    {
+      title: 'Ru5-Dynamic-Navbar',
+      category: 'Headers',
+      cover_image: ru5DynamicNavbarSvg,
+      html_code: renderRu5DynamicNavbar(ru5DynamicNavbarDefaults),
     },
   ],
   Banner: [
@@ -494,6 +504,12 @@ export function useLayouts() {
     defaults: ru4NavbarDefaults,
     fields: ru4NavbarFields,
     render: renderRu4Navbar,
+  })
+
+  blockRegistry.register('Ru5-Dynamic-Navbar', {
+    defaults: ru5DynamicNavbarDefaults,
+    fields: ru5DynamicNavbarFields,
+    render: renderRu5DynamicNavbar,
   })
 
   blockRegistry.register('Ru1-Banner', {
