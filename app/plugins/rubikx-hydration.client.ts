@@ -172,23 +172,35 @@ function renderMegaColumn(header: CategoryNode, items: CategoryNode[]): string {
   </div>`
 }
 
-// For Ru5's logoNavLinks — the logo columns are headings only (rendered
-// statically by renderLogoNavLinkShell, name known at pick time), not a
-// products filter, so unlike renderMegaColumn there's no per-logo tree to
-// walk: every column shows this same flat, parent-only list, plus a
-// trailing "View All Products" link (restored to match the original
-// per-logo mega-column design) pointing at the general shop page rather
-// than a per-logo filter, since a logo isn't a real scope here.
-function renderFlatParentCategoryLinks(roots: CategoryNode[]): string {
-  const itemsHtml = roots.map((root) => {
-    const query = root.headlessName || root.displayName || root.name
-    const href = `/shop?category=${encodeURIComponent(query)}`
-    // text-decoration set inline, not left to the ambient [data-cat-dropdown]
-    // a CSS rule — this same markup also lands inside [data-cat-inline-
-    // children] on mobile (not a [data-cat-dropdown] descendant at all), so
-    // relying on that rule alone left mobile showing a default underline.
-    return `<div class='rubikx-mega-child'><a href='${href}' style='text-decoration:none;'>${root.displayName}</a></div>`
-  }).join('')
+// For Ru5's logoNavLinks — a flat list of plain category links plus a
+// trailing "View All Products" link pointing at the general shop page (not
+// a per-category filter, since a logo group has no real single /shop scope
+// of its own). Categories come from Odoo's productCategoryIds relation
+// (nested under logoIds, aggregated per group by /api/logo-groups) — this
+// shape has no children (unlike CategoryNode, the auto-category row's own
+// shape), hence its own renderer rather than coercing into renderMegaColumn's
+// tree-walking one. Otherwise matches every other category-link builder in
+// this file exactly: href prefers headlessName (the real backend slug, per
+// loadCategories/renderMegaColumn/_renderDynamicNavResults all doing the
+// same headlessName||displayName||name priority) over displayName, and the
+// label shows only the leaf segment of a " / "-delimited hierarchical
+// displayName (matching renderMegaColumn's own label logic) rather than the
+// full path. text-decoration set inline, not left to the ambient
+// [data-cat-dropdown] a CSS rule — this same markup also lands inside
+// [data-cat-inline-children] on mobile (not a [data-cat-dropdown]
+// descendant at all), so relying on that rule alone left mobile showing a
+// default underline.
+function renderGroupCategoryLinks(categories: Array<{ id: number, name: string, displayName: string, headlessName?: string | false }>): string {
+  const itemsHtml = categories
+    .map((cat) => {
+      const query = cat.headlessName || cat.displayName || cat.name
+      const href = `/shop?category=${encodeURIComponent(query)}`
+      const label = cat.displayName.includes(' / ')
+        ? cat.displayName.split(' / ').pop()!
+        : cat.displayName
+      return `<div class='rubikx-mega-child'><a href='${href}' style='text-decoration:none;'>${label}</a></div>`
+    })
+    .join('')
   const viewAll = `<div class='rubikx-mega-child'><a href='/shop' style='text-decoration:none;'>View All Products</a></div>`
   return itemsHtml + viewAll
 }
@@ -432,55 +444,86 @@ async function loadDynamicNav(el: HTMLElement, companyId?: number) {
 }
 
 // Ru5-Dynamic-Navbar's logoNavLinks — a hand-authored nav link with one
-// column per selected decoration/imprint logo (see Ru5LogoNavLink in
-// components.ts). The logo is a column heading only, not a filter — every
-// column shows the same flat, parent-only category list, so this just needs
-// the site's regular top-level categories (the same /api/categories call
-// loadDynamicNav already uses) and writes that identical content into every
-// [data-logo-col-items] placeholder the shell already has (headers are
-// static, rendered directly by renderLogoNavLinkShell — nothing to fetch
-// for those). Structured like loadDynamicNav above, including its
-// documented re-find-after-rebuild workaround (editing ANY field on the
-// block tears down and rebuilds every <section>, orphaning any DOM
-// reference captured before the fetch resolves — see loadDynamicNav's
-// comment for the full explanation), keyed by data-logo-nav-index instead of
-// data-componentid alone since a navbar can have several logoNavLinks shells
-// in the same section.
+// column per selected logo GROUP (see Ru5LogoNavLink in components.ts).
+// Headers are static, rendered directly by renderLogoNavLinkShell — nothing
+// to fetch for those, only the column content ([data-logo-col-items]) needs
+// filling, with that group's own real categories: fetches /api/logo-groups
+// live, then matches each [data-logo-group] column back to its entry by the
+// URL-decoded group name.
+//
+// Always re-fetches on every hydration call, same as loadDynamicNav above —
+// deliberately no cache. This is a live-data feature by requirement: a
+// category added on the backend must show up on the published site without
+// republishing, the same guarantee the site-wide auto-category row already
+// has. The known cost is that editing ANY field on this block (which tears
+// down and rebuilds the whole canvas, per EditorSidebar.client.vue's
+// REWIRE_ON_ANY_FIELD_TITLES) re-fires this fetch too — an accepted
+// trade-off, not an oversight, matching loadDynamicNav's own documented
+// stance on the same trade-off.
+//
+// Structured like loadDynamicNav above, including its documented
+// re-find-after-rebuild workaround (editing ANY field on the block tears
+// down and rebuilds every <section>, orphaning any DOM reference captured
+// before the fetch resolves — see loadDynamicNav's comment for the full
+// explanation), keyed by data-logo-nav-index instead of data-componentid
+// alone since a navbar can have several logoNavLinks shells in the same
+// section.
+//
+// Triggered ONLY from the desktop shell (renderLogoNavLinkShell only emits
+// data-on-mount on that one) — this one call fetches once and fills in BOTH
+// the desktop and mobile representations of the same link, found by shared
+// data-logo-nav-index. Without this, both shells independently carrying
+// data-on-mount would fire two full-catalog scans per link (desktop +
+// mobile) on every hydration pass for content that's identical either way.
 async function loadLogoNav(el: HTMLElement, companyId?: number) {
   if (el.dataset.hydrated === 'true') return
   el.dataset.hydrated = 'true'
 
   const idx = el.dataset.logoNavIndex
-  const isMobile = el.dataset.logoNavMobile === 'true'
-
   const componentId = el.closest('section')?.getAttribute('data-componentid') ?? null
 
-  const findLiveShell = () => {
+  const findLiveShells = () => {
     const liveSection = componentId
       ? document.querySelector<HTMLElement>(`section[data-componentid="${componentId}"]`)
       : el.closest('section')
-    return liveSection?.querySelector<HTMLElement>(`[data-logo-nav-index="${idx}"][data-logo-nav-mobile="${isMobile}"]`) ?? el
+    const desktop = liveSection?.querySelector<HTMLElement>(`[data-logo-nav-index="${idx}"][data-logo-nav-mobile="false"]`) ?? el
+    const mobile = liveSection?.querySelector<HTMLElement>(`[data-logo-nav-index="${idx}"][data-logo-nav-mobile="true"]`) ?? null
+    return { desktop, mobile }
+  }
+
+  const fillColumns = (shell: HTMLElement, categoriesByGroupName: Map<string, Array<{ id: number, name: string, displayName: string, headlessName?: string | false }>>) => {
+    shell.querySelectorAll<HTMLElement>('[data-logo-group]').forEach((column) => {
+      const groupName = decodeURIComponent(column.dataset.logoGroup ?? '')
+      const items = column.querySelector<HTMLElement>('[data-logo-col-items]')
+      if (!items) return
+      items.innerHTML = renderGroupCategoryLinks(categoriesByGroupName.get(groupName) ?? [])
+    })
   }
 
   try {
-    const flat = await $fetch<FlatCategory[]>('/api/categories', { query: { companyId } })
-    const roots = buildCategoryTree(flat)
-    const itemsHtml = renderFlatParentCategoryLinks(roots)
+    const { desktop: desktop0, mobile: mobile0 } = findLiveShells()
+    if (!desktop0.isConnected && !mobile0?.isConnected) return
 
-    const liveShell = findLiveShell()
-    if (!liveShell.isConnected) return
+    const groups = await $fetch<Array<{ groupName: string, categories: Array<{ id: number, name: string, displayName: string, headlessName?: string | false }> }>>(
+      '/api/logo-groups',
+      { query: { companyId } }
+    )
+    const categoriesByGroupName = new Map(groups.map((g) => [g.groupName, g.categories]))
 
-    liveShell.querySelectorAll<HTMLElement>('[data-logo-col-items]').forEach((col) => {
-      col.innerHTML = itemsHtml
-    })
-
-    if (isMobile) bindInlineCategoryToggles(liveShell)
+    const { desktop, mobile } = findLiveShells()
+    if (desktop.isConnected) fillColumns(desktop, categoriesByGroupName)
+    if (mobile?.isConnected) {
+      fillColumns(mobile, categoriesByGroupName)
+      bindInlineCategoryToggles(mobile)
+    }
   } catch (e) {
     console.error('[Rubikx] Failed to load logo nav categories:', e)
-    const liveShell = findLiveShell()
-    if (liveShell.isConnected) {
-      liveShell.querySelectorAll<HTMLElement>('[data-logo-col-items]').forEach((col) => { col.innerHTML = '' })
+    const { desktop, mobile } = findLiveShells()
+    const clearColumns = (shell: HTMLElement) => {
+      shell.querySelectorAll<HTMLElement>('[data-logo-col-items]').forEach((col) => { col.innerHTML = '' })
     }
+    if (desktop.isConnected) clearColumns(desktop)
+    if (mobile?.isConnected) clearColumns(mobile)
   }
 }
 

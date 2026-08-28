@@ -744,19 +744,26 @@ function applyMegaMenuToLink() {
 }
 
 
-// ── Logo nav link picker (Ru5-Dynamic-Navbar logoNavLinks only) ───────────────
-interface LogoOption { id: number; name: string }
+// ── Logo group nav link picker (Ru5-Dynamic-Navbar logoNavLinks only) ─────────
+// Picks by groupName (a plain string off Odoo, not a numeric id) — only the
+// name is stored in blockData.logoNavLinks (see applyLogoSelection).
+// Categories are NOT baked in here: this is a live-data feature, and
+// loadLogoNav (rubikx-hydration.client.ts) fetches /api/logo-groups fresh
+// at hydration time so a category added on the backend shows up on the
+// published site without republishing — the picker only needs group names
+// for display/selection.
+interface LogoGroupOption { groupName: string, categories: Array<{ id: number, name: string, displayName: string }> }
 
-const logoPickerIdx   = ref(-1)          // which logoNavLinks row is open
-const logoAllOptions  = ref<LogoOption[]>([])
-const logoSearch      = ref('')
-const logoLoading     = ref(false)
-const selectedLogoIds = ref(new Set<number>())
+const logoPickerIdx      = ref(-1)          // which logoNavLinks row is open
+const logoGroupOptions   = ref<LogoGroupOption[]>([])
+const logoSearch         = ref('')
+const logoLoading        = ref(false)
+const selectedGroupNames = ref(new Set<string>())
 
 const logoFiltered = computed(() =>
   logoSearch.value.trim()
-    ? logoAllOptions.value.filter(l => l.name.toLowerCase().includes(logoSearch.value.toLowerCase()))
-    : logoAllOptions.value
+    ? logoGroupOptions.value.filter(g => g.groupName.toLowerCase().includes(logoSearch.value.toLowerCase()))
+    : logoGroupOptions.value
 )
 
 async function openLogoPicker(idx: number) {
@@ -764,38 +771,53 @@ async function openLogoPicker(idx: number) {
   logoSearch.value = ''
   logoLoading.value = true
   try {
-    logoAllOptions.value = await $fetch<LogoOption[]>('/api/logos', {
+    logoGroupOptions.value = await $fetch<LogoGroupOption[]>('/api/logo-groups', {
       query: { companyId: selectedCompanyId.value ?? undefined },
     })
   } finally {
     logoLoading.value = false
   }
   const links: any[] = (blockData.value as any)?.logoNavLinks ?? []
-  selectedLogoIds.value = new Set(((links[idx]?.logos ?? []) as LogoOption[]).map(l => l.id))
+  // An even earlier iteration of this feature stored individual logos under
+  // a `logos` key (`{id, name}[]`, no grouping concept at all) rather than
+  // `logoGroups` — there's no way to recover a meaningful group selection
+  // from that shape (individual logos aren't groups), but warn rather than
+  // silently showing an empty picker, so this isn't mistaken for a fresh
+  // "nothing selected" link when it's actually stale incompatible data.
+  if (!links[idx]?.logoGroups && links[idx]?.logos) {
+    console.warn('[Rubikx] This nav link has data from a defunct pre-group logoNavLinks shape (logos, not logoGroups) — its selection cannot be auto-migrated. Please re-select logo groups.')
+  }
+  const storedGroups: unknown[] = links[idx]?.logoGroups ?? []
+  // Normalize both shapes logoGroups has been saved as during this feature's
+  // iteration — a plain string (current shape) or a {groupName, categories}
+  // object (a shape briefly used and since reverted). Without this, a block
+  // saved during that window has its checkboxes silently never match (Set
+  // has objects, comparison is against strings), showing a "N selected"
+  // count with every checkbox unchecked and no way to actually deselect.
+  selectedGroupNames.value = new Set(
+    storedGroups.map((g) => (typeof g === 'string' ? g : (g as { groupName?: string })?.groupName)).filter((g): g is string => !!g)
+  )
 }
 
 function closeLogoPicker() {
   logoPickerIdx.value = -1
-  logoAllOptions.value = []
+  logoGroupOptions.value = []
   logoSearch.value = ''
-  selectedLogoIds.value = new Set()
+  selectedGroupNames.value = new Set()
 }
 
-function toggleLogo(id: number) {
-  const s = new Set(selectedLogoIds.value)
-  s.has(id) ? s.delete(id) : s.add(id)
-  selectedLogoIds.value = s
+function toggleLogoGroup(groupName: string) {
+  const s = new Set(selectedGroupNames.value)
+  s.has(groupName) ? s.delete(groupName) : s.add(groupName)
+  selectedGroupNames.value = s
 }
 
 function applyLogoSelection() {
   const idx = logoPickerIdx.value
   if (idx < 0) return
-  // Store {id, name} pairs, not bare ids — the render function emits the
-  // logo name as a static column heading with no runtime lookup, so the
-  // name has to be captured here at selection time.
-  const logos = logoAllOptions.value.filter(l => selectedLogoIds.value.has(l.id))
+  const logoGroups = Array.from(selectedGroupNames.value)
   const links: any[] = [...((blockData.value as any)?.logoNavLinks ?? [])]
-  links[idx] = { ...links[idx], logos }
+  links[idx] = { ...links[idx], logoGroups }
   updateBlockField('logoNavLinks', links)
   closeLogoPicker()
 }
@@ -1397,38 +1419,39 @@ onUnmounted(() => {
                     </div>
                   </template>
 
-                  <!-- Logo picker: only for Ru5-Dynamic-Navbar logoNavLinks -->
+                  <!-- Logo group picker: only for Ru5-Dynamic-Navbar logoNavLinks -->
                   <template v-if="selectedBlockTitle === 'Ru5-Dynamic-Navbar' && field.key === 'logoNavLinks'">
                     <div class="mt-1.5 pt-1.5 border-t border-gray-100">
                       <div class="flex items-center justify-between mb-1">
-                        <span class="text-xs text-gray-400">Logos</span>
+                        <span class="text-xs text-gray-400">Logo Groups</span>
                         <button type="button"
                           @click="logoPickerIdx === idx ? closeLogoPicker() : openLogoPicker(idx)"
                           class="text-xs border border-gray-200 rounded px-1.5 py-0.5 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
-                          {{ (item.logos as LogoOption[])?.length ? `${(item.logos as LogoOption[]).length} logos ✎` : '+ Select Logos' }}
+                          {{ (item.logoGroups as string[])?.length ? `${(item.logoGroups as string[]).length} groups ✎` : '+ Select Logo Group' }}
                         </button>
                       </div>
 
                       <div v-if="logoPickerIdx === idx" class="border border-gray-200 rounded-md overflow-hidden text-xs mt-1">
                         <div class="px-2 py-1.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                          <span class="font-medium text-gray-600">Select Logos
-                            <span v-if="selectedLogoIds.size" class="text-blue-500">({{ selectedLogoIds.size }})</span>
+                          <span class="font-medium text-gray-600">Select Logo Group
+                            <span v-if="!logoLoading" class="text-gray-400">({{ logoGroupOptions.length }})</span>
+                            <span v-if="selectedGroupNames.size" class="text-blue-500">· {{ selectedGroupNames.size }} selected</span>
                           </span>
                           <button type="button" @click="closeLogoPicker" class="text-gray-400 hover:text-gray-600 bg-transparent border-none cursor-pointer">✕</button>
                         </div>
                         <div class="px-2 py-1.5 border-b border-gray-100">
-                          <input type="text" v-model="logoSearch" placeholder="Search logos…"
+                          <input type="text" v-model="logoSearch" placeholder="Search groups…"
                             class="w-full border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-blue-400" />
                         </div>
                         <div v-if="logoLoading" class="px-2 py-3 text-gray-400 text-center">Loading…</div>
                         <div v-else class="max-h-52 overflow-y-auto">
-                          <label v-for="logo in logoFiltered" :key="logo.id"
+                          <label v-for="group in logoFiltered" :key="group.groupName"
                             class="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 cursor-pointer border-b border-gray-50">
-                            <input type="checkbox" :checked="selectedLogoIds.has(logo.id)"
-                              @change="toggleLogo(logo.id)" class="cursor-pointer shrink-0" />
-                            <div class="flex-1 min-w-0 text-gray-700 truncate">{{ logo.name }}</div>
+                            <input type="checkbox" :checked="selectedGroupNames.has(group.groupName)"
+                              @change="toggleLogoGroup(group.groupName)" class="cursor-pointer shrink-0" />
+                            <div class="flex-1 min-w-0 text-gray-700 truncate">{{ group.groupName }}</div>
                           </label>
-                          <div v-if="!logoFiltered.length" class="px-2 py-2 text-gray-400 text-center">No logos found</div>
+                          <div v-if="!logoFiltered.length" class="px-2 py-2 text-gray-400 text-center">No logo groups found</div>
                         </div>
                         <div class="px-2 py-1.5 bg-gray-50 border-t border-gray-100">
                           <button type="button" @click="applyLogoSelection"
