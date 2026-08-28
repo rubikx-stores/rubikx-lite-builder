@@ -1084,19 +1084,24 @@ export const ru5DynamicNavbarSvg = `<svg xmlns="http://www.w3.org/2000/svg" view
 </svg>`
 
 // A hand-authored nav link whose dropdown shows one column per selected
-// decoration/imprint logo (Odoo StoreProductTemplate.productVariants[].
-// logoIds) — e.g. a "Shop by Brand" link where each selected logo is a
-// column heading. The column CONTENT is not scoped to that logo's own
-// products — every column shows the same flat, parent-only category list
-// (the site's regular top-level categories, same data /api/categories
-// already provides for the auto-generated category row). `logos` is picked
-// via the EditorSidebar logo picker (name stored alongside id at selection
-// time so the column headers need no extra runtime lookup); label/href/
-// newTab are plain hand-typed fields like Ru3NavLink's.
+// logo GROUP (Odoo StoreProductTemplate.productVariants[].logoIds[].
+// groupName — a plain string grouping several individual logos together,
+// e.g. several "Bystronic ..." logo variants share one groupName) — e.g. a
+// "Shop by Brand" link where each selected group is a column heading. Each
+// column's content is that group's own real categories: the union of
+// productCategoryIds across every logo sharing that groupName.
+//
+// logoGroups stores just the picked group NAME strings — categories are
+// deliberately NOT baked in here. This is a live-data feature, matching
+// loadDynamicNav's own "always refetch, no cache" convention: loadLogoNav
+// fetches /api/logo-groups fresh at hydration time, so a category added on
+// the backend shows up on the live site without republishing — the same
+// guarantee the site-wide auto-category row already has. groupName is the
+// identity (no separate id exists for a group).
 export interface Ru5LogoNavLink {
   label: string
   href: string        // fallback target when not logo-filtering (plain-link mode)
-  logos: Array<{ id: number, name: string }>   // [] = not logo-enabled yet
+  logoGroups: string[]   // [] = not logo-enabled yet
   newTab?: boolean
 }
 
@@ -1377,15 +1382,16 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
   const homeLinkStyle = `${linkStyle}font-weight:600;`
 
   // logoNavLinks — hand-authored links whose dropdown shows one column per
-  // selected decoration/imprint logo (picked via the EditorSidebar logo
-  // picker, see Ru5LogoNavLink). The logo is purely a column heading, not a
-  // filter — every column's content is the same flat, parent-only category
-  // list (loadLogoNav fills [data-logo-col-items] with the site's top-level
-  // categories, identically in every column). Headers are known at render
-  // time (name is stored alongside id when picked) so they're emitted here
-  // directly — hydration only has to supply the shared category content.
-  // A link only gets a live dropdown when it has logos selected AND the
-  // whole-navbar logoFilterByCategory toggle is on — off (or no logos
+  // selected logo GROUP (picked via the EditorSidebar logo picker, see
+  // Ru5LogoNavLink). The group is a column heading, not a filter — each
+  // column's content is that group's own real categories, fetched LIVE at
+  // hydration time by loadLogoNav (rubikx-hydration.client.ts), matching
+  // loadDynamicNav's own "always refetch, no cache" convention: a category
+  // added on the backend shows up on the published site without
+  // republishing. Headers (group names) are known at render time and
+  // emitted directly; only the category content under each needs fetching.
+  // A link only gets a dropdown when it has groups selected AND the
+  // whole-navbar logoFilterByCategory toggle is on — off (or no groups
   // selected yet) falls back to a plain link using its own href, same
   // pattern as navHydrationAttrs omitting data-on-mount entirely below
   // rather than mounting a handler with nothing to do.
@@ -1398,7 +1404,7 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
   // renderCategoryTreeInline's tap-to-expand convention (data-cat-inline-*),
   // matching how Ru5's own auto-generated mobile items already behave.
   const renderLogoNavLinkShell = (link: Ru5LogoNavLink, idx: number, forMobile: boolean) => {
-    const logos = link.logos ?? []
+    const groups = link.logoGroups ?? []
     const target = link.newTab ? ` target="_blank" rel="noopener"` : ''
     // font-weight:600 appended last so it wins over linkStyle's own
     // font-weight:${data.linkFontWeight} for the same inline style attribute
@@ -1406,13 +1412,28 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     // same weight as the Home link instead of the auto-category row's
     // lighter default.
     const shellLinkStyle = forMobile ? `${linkStyle}display:block;padding:0.7rem 0;font-weight:600;` : `${linkStyle}font-weight:600;`
-    if (!logos.length || !logoFilterOn) {
+    if (!groups.length || !logoFilterOn) {
       return `<a href="${link.href}" style="${shellLinkStyle}"${target}>${link.label}</a>`
     }
-    const hydrationAttrs = ` data-rubikx-component="LogoNav" data-on-mount="loadLogoNav" data-logo-nav-index="${idx}" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}"`
+    // Hydration triggers ONLY from the desktop shell — loadLogoNav does ONE
+    // /api/logo-groups fetch (a full paginated catalog scan, unlike the
+    // lightweight /api/categories loadDynamicNav uses) and updates BOTH the
+    // desktop and mobile representations of this same link in that one
+    // call, matched by data-logo-nav-index. Both shells independently
+    // carrying data-on-mount would double the number of full-catalog scans
+    // per link (desktop + mobile, each on every hydration pass) for no
+    // benefit — they show identical content. data-logo-nav-index/-mobile
+    // are still emitted on both regardless, since loadLogoNav needs them to
+    // find the mobile sibling from the desktop element it's triggered on.
+    const indexAttrs = ` data-logo-nav-index="${idx}"`
+    const hydrationAttrs = forMobile ? '' : ` data-rubikx-component="LogoNav" data-on-mount="loadLogoNav" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}"`
+    // data-logo-group carries the raw group name URL-encoded (groupName is
+    // free text off Odoo, not a numeric id) so it survives round-tripping
+    // through an HTML attribute intact; loadLogoNav decodeURIComponent()s it
+    // back before matching against /api/logo-groups.
     if (forMobile) {
-      const columnsHtml = logos.map((logo) => `<div style="padding:6px 16px;font-weight:600;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">${logo.name}</div><div data-logo-col-items></div>`).join('')
-      return `<div data-cat-inline-parent="true"${hydrationAttrs} data-logo-nav-mobile="true">
+      const columnsHtml = groups.map((groupName) => `<div data-logo-group="${encodeURIComponent(groupName)}"><div style="padding:6px 16px;font-weight:600;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">${groupName}</div><div data-logo-col-items></div></div>`).join('')
+      return `<div data-cat-inline-parent="true"${indexAttrs}${hydrationAttrs} data-logo-nav-mobile="true">
         <div data-cat-inline-toggle="true" style="display:flex;align-items:center;justify-content:space-between;gap:12px;${shellLinkStyle}cursor:pointer;">${link.label}<span data-cat-inline-chevron="true" style="font-size:11px;opacity:.6;transition:transform .15s;display:inline-block;">▾</span></div>
         <div data-cat-inline-children="true" style="display:none;">${columnsHtml}</div>
       </div>`
@@ -1420,9 +1441,9 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     // href="/shop" so the header isn't a dead/unfocusable element despite
     // inheriting the same hover-affordance styling every other mega-header
     // link has — matches "View All Products"' own destination, since a
-    // logo column has no real per-logo scope to link to.
-    const columnsHtml = logos.map((logo) => `<div><div class='rubikx-mega-header'><a href='/shop' style='text-decoration:none;'>${logo.name}</a></div><div data-logo-col-items></div></div>`).join('')
-    return `<div data-cat-nav="true" data-mega="true" style="position:relative;display:inline-block;"${hydrationAttrs} data-logo-nav-mobile="false">
+    // logo group has no real per-group scope to link to.
+    const columnsHtml = groups.map((groupName) => `<div data-logo-group="${encodeURIComponent(groupName)}"><div class='rubikx-mega-header'><a href='/shop' style='text-decoration:none;'>${groupName}</a></div><div data-logo-col-items></div></div>`).join('')
+    return `<div data-cat-nav="true" data-mega="true" style="position:relative;display:inline-block;"${indexAttrs}${hydrationAttrs} data-logo-nav-mobile="false">
       <a href="${link.href}" style="${shellLinkStyle}cursor:pointer;"${target}>${link.label} ▾</a>
       <div data-cat-dropdown="true" style="display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;">${columnsHtml}</div>
     </div>`
