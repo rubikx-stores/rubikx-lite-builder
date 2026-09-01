@@ -1315,10 +1315,33 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
   const logoEl = `<a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;">${logoInner}</a>`
 
   const searchEl = data.showSearch
-    ? `<div style="display:flex;flex:1;max-width:640px;">
+    ? `<div data-ru5-desktop-search style="display:flex;flex:1;max-width:640px;">
         <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="flex:1;min-width:0;border:1px solid #d1d5db;border-radius:0.375rem 0 0 0.375rem;padding:0.6rem 1rem;font-size:0.875rem;outline:none;${fontCss(data.searchFont, data.fontFamily)}" />
         <button type="button" style="background:#ffffff;border:1px solid #d1d5db;border-left:none;border-radius:0 0.375rem 0.375rem 0;padding:0 1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${icon('magnifyingGlass', { size: 18, stroke: data.linkColor })}</button>
       </div>`
+    : ''
+
+  // Full-width counterpart to searchEl — searchEl itself is hidden at the
+  // same <=1024px breakpoint (see responsiveStyle below), since flex:1 +
+  // max-width:640px alongside a non-shrinking logo otherwise squeezes it
+  // down to an unusably thin input on small phones instead of ever actually
+  // going full-width. Rendered as its own always-visible row directly under
+  // the logo (data-ru5-mobile-search-row, shown at the same breakpoint as
+  // data-ru5-mobile-bar) rather than tucked inside the collapsible
+  // mobilePanel — shoppers shouldn't need to open the hamburger just to
+  // search. Own data-on-mount="loadSearch" (not shared with the desktop
+  // input) — loadSearch is self-contained per element (input.dataset.
+  // searchWired guard, own results dropdown appended via
+  // input.closest('div')), so wiring both independently is safe, same
+  // pattern authStateEl already relies on via renderTopBarButtons() being
+  // called for both the top row and mobilePanel.
+  const mobileSearchRow = data.showSearch
+    ? `<div data-ru5-mobile-search-row style="padding:0 ${data.paddingX}px 0.75rem;">
+      <div style="display:flex;">
+        <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="flex:1;min-width:0;border:1px solid #d1d5db;border-radius:0.375rem 0 0 0.375rem;padding:0.6rem 1rem;font-size:0.875rem;outline:none;${fontCss(data.searchFont, data.fontFamily)}" />
+        <button type="button" style="background:#ffffff;border:1px solid #d1d5db;border-left:none;border-radius:0 0.375rem 0.375rem 0;padding:0 1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${icon('magnifyingGlass', { size: 18, stroke: data.linkColor })}</button>
+      </div>
+    </div>`
     : ''
 
   const linkStyle = `color:${data.linkColor};text-decoration:none;font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}`
@@ -1479,7 +1502,7 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     <button type="button" data-active-border-color="${String(data.textColor).replace(/"/g, '&quot;')}" onclick="(function(btn){var sec=btn.closest('section');var panel=sec.querySelector('[data-ru5-mobile-panel]');var ctas=sec.querySelector('[data-ru5-mobile-bar-ctas]');var open=panel.style.display==='block';panel.style.display=open?'none':'block';if(ctas){ctas.style.display=open?'flex':'none';}btn.style.background=open?'none':'rgba(0,0,0,0.04)';btn.style.borderColor=open?'transparent':btn.dataset.activeBorderColor;})(this)" style="background:none;border:1.5px solid transparent;border-radius:6px;cursor:pointer;padding:6px;display:inline-flex;align-items:center;flex-shrink:0;">
       <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="${data.textColor}" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
     </button>
-    <div data-ru5-mobile-bar-ctas style="display:flex;align-items:center;gap:0.6rem;">${renderTopBarButtons()}</div>
+    <div data-ru5-mobile-bar-ctas style="display:flex;align-items:center;flex-wrap:nowrap;gap:0.6rem;">${renderTopBarButtons()}</div>
   </div>`
 
   // In-place expanding panel (pushes page content down), not a slide-in
@@ -1494,15 +1517,26 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     ${mobileLogoLinksEl}
     ${mobileItemsEl}
     <div style="padding:0.75rem 0;">${cartEl}</div>
-    <div style="display:flex;justify-content:flex-end;flex-wrap:wrap;gap:0.75rem;margin-top:0.75rem;">${renderTopBarButtons()}</div>
+    <div style="display:flex;justify-content:flex-end;flex-wrap:nowrap;gap:0.75rem;margin-top:0.75rem;">${renderTopBarButtons()}</div>
   </div>`
 
   const responsiveStyle = `<style>
   [data-ru5-desktop-nav] { display: flex; }
+  [data-ru5-desktop-search] { display: flex; }
   [data-ru5-mobile-bar] { display: none; }
+  [data-ru5-mobile-search-row] { display: none; }
   @media (max-width: 1024px) {
     [data-ru5-desktop-nav] { display: none !important; }
     [data-ru5-mobile-bar] { display: flex !important; }
+  }
+  /* Search bar keeps its own, narrower breakpoint (tablet/768px) rather than
+     sharing the nav's 1024px one — on a tablet-width screen there's still
+     enough room for it inline next to the logo (just the nav links move
+     into the hamburger at 1024px); it only needs to drop to its own
+     full-width row, below the logo, once we're actually at phone width. */
+  @media (max-width: 768px) {
+    [data-ru5-desktop-search] { display: none !important; }
+    [data-ru5-mobile-search-row] { display: block !important; }
   }
   /* The mobile panel's open/closed state lives purely in an inline
      style.display the hamburger's onclick sets — nothing else ever resets
@@ -1552,6 +1586,7 @@ ${responsiveStyle}
     ${searchEl}
     <div data-ru5-desktop-nav style="flex-shrink:0;align-items:center;gap:0.75rem;">${renderTopBarButtons()}</div>
   </div>
+  ${mobileSearchRow}
   ${desktopNavRow}
   ${mobileBar}
   ${mobilePanel}
