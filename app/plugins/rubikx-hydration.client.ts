@@ -5,6 +5,7 @@ import type {
 } from '~/composables/categories/buildCategoryTree'
 import { icon } from '~/composables/useIconSvg'
 import { productImageSrc } from '~/composables/useProductImageSrc'
+import { fetchLogoGroupsCached } from '~/composables/logoGroups/fetchLogoGroupsCached'
 
 // Set true to preview logged-in auth state inside the builder
 const SIMULATE_AUTH = false
@@ -173,14 +174,21 @@ function renderMegaColumn(header: CategoryNode, items: CategoryNode[]): string {
 }
 
 // For Ru5's logoNavLinks — a flat list of plain category links plus a
-// trailing "View All Products" link pointing at the general shop page (not
-// a per-category filter, since a logo group has no real single /shop scope
-// of its own). Categories come from Odoo's productCategoryIds relation
-// (nested under logoIds, aggregated per group by /api/logo-groups) — this
-// shape has no children (unlike CategoryNode, the auto-category row's own
-// shape), hence its own renderer rather than coercing into renderMegaColumn's
-// tree-walking one. Otherwise matches every other category-link builder in
-// this file exactly: href prefers headlessName (the real backend slug, per
+// trailing "View All Products" link, both scoped to this group via a
+// `logoGroup` query param (the company name). This reverts the id-based
+// `logo_id` approach tried previously — that was adopted after an initial
+// test suggested groupName string-matching didn't work end to end, but was
+// reverted back to name-based matching per an explicit decision to instead
+// track down and fix the real underlying bug (a watcher race in the
+// headless shop page unrelated to id-vs-name matching) rather than carry
+// the extra id-resolution complexity — /api/logo-groups no longer tracks or
+// returns logo ids at all.
+// Categories come from Odoo's productCategoryIds relation (nested under
+// logoIds, aggregated per group by /api/logo-groups) — this shape has no
+// children (unlike CategoryNode, the auto-category row's own shape), hence
+// its own renderer rather than coercing into renderMegaColumn's tree-walking
+// one. Otherwise matches every other category-link builder in this file
+// exactly: href prefers headlessName (the real backend slug, per
 // loadCategories/renderMegaColumn/_renderDynamicNavResults all doing the
 // same headlessName||displayName||name priority) over displayName, and the
 // label shows only the leaf segment of a " / "-delimited hierarchical
@@ -190,18 +198,22 @@ function renderMegaColumn(header: CategoryNode, items: CategoryNode[]): string {
 // [data-cat-inline-children] on mobile (not a [data-cat-dropdown]
 // descendant at all), so relying on that rule alone left mobile showing a
 // default underline.
-function renderGroupCategoryLinks(categories: Array<{ id: number, name: string, displayName: string, headlessName?: string | false }>): string {
+//
+// groupName is passed in already URL-encoded by the caller (it decoded the
+// same value off data-logo-group to look up this group's categories in the
+// first place), so it's used as-is here rather than re-encoding.
+function renderGroupCategoryLinks(categories: Array<{ id: number, name: string, displayName: string, headlessName?: string | false }>, encodedGroupName: string): string {
   const itemsHtml = categories
     .map((cat) => {
       const query = cat.headlessName || cat.displayName || cat.name
-      const href = `/shop?category=${encodeURIComponent(query)}`
+      const href = `/shop?category=${encodeURIComponent(query)}&logoGroup=${encodedGroupName}`
       const label = cat.displayName.includes(' / ')
         ? cat.displayName.split(' / ').pop()!
         : cat.displayName
       return `<div class='rubikx-mega-child'><a href='${href}' style='text-decoration:none;'>${label}</a></div>`
     })
     .join('')
-  const viewAll = `<div class='rubikx-mega-child'><a href='/shop' style='text-decoration:none;'>View All Products</a></div>`
+  const viewAll = `<div class='rubikx-mega-child'><a href='/shop?logoGroup=${encodedGroupName}' style='text-decoration:none;'>View All Products</a></div>`
   return itemsHtml + viewAll
 }
 
@@ -491,12 +503,21 @@ async function loadLogoNav(el: HTMLElement, companyId?: number) {
     return { desktop, mobile }
   }
 
+  // Header link needs no post-fetch rewrite (unlike the earlier logo_id
+  // approach) — components.ts already renders it correctly at initial
+  // synchronous render time as /shop?logoGroup=<name>, since the name (unlike
+  // logoIds) is known up front, with no fetch required.
   const fillColumns = (shell: HTMLElement, categoriesByGroupName: Map<string, Array<{ id: number, name: string, displayName: string, headlessName?: string | false }>>) => {
     shell.querySelectorAll<HTMLElement>('[data-logo-group]').forEach((column) => {
-      const groupName = decodeURIComponent(column.dataset.logoGroup ?? '')
+      // data-logo-group already carries the URL-encoded group name (see
+      // renderLogoNavLinkShell in components.ts) — decode once for the map
+      // lookup, but hand the still-encoded raw attribute value to
+      // renderGroupCategoryLinks so it doesn't need to re-encode it itself.
+      const encodedGroupName = column.dataset.logoGroup ?? ''
+      const groupName = decodeURIComponent(encodedGroupName)
       const items = column.querySelector<HTMLElement>('[data-logo-col-items]')
       if (!items) return
-      items.innerHTML = renderGroupCategoryLinks(categoriesByGroupName.get(groupName) ?? [])
+      items.innerHTML = renderGroupCategoryLinks(categoriesByGroupName.get(groupName) ?? [], encodedGroupName)
     })
   }
 
@@ -504,10 +525,7 @@ async function loadLogoNav(el: HTMLElement, companyId?: number) {
     const { desktop: desktop0, mobile: mobile0 } = findLiveShells()
     if (!desktop0.isConnected && !mobile0?.isConnected) return
 
-    const groups = await $fetch<Array<{ groupName: string, categories: Array<{ id: number, name: string, displayName: string, headlessName?: string | false }> }>>(
-      '/api/logo-groups',
-      { query: { companyId } }
-    )
+    const groups = await fetchLogoGroupsCached(companyId)
     const categoriesByGroupName = new Map(groups.map((g) => [g.groupName, g.categories]))
 
     const { desktop, mobile } = findLiveShells()

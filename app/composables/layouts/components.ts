@@ -1438,11 +1438,11 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
         <div data-cat-inline-children="true" style="display:none;">${columnsHtml}</div>
       </div>`
     }
-    // href="/shop" so the header isn't a dead/unfocusable element despite
-    // inheriting the same hover-affordance styling every other mega-header
-    // link has — matches "View All Products"' own destination, since a
-    // logo group has no real per-group scope to link to.
-    const columnsHtml = groups.map((groupName) => `<div data-logo-group="${encodeURIComponent(groupName)}"><div class='rubikx-mega-header'><a href='/shop' style='text-decoration:none;'>${groupName}</a></div><div data-logo-col-items></div></div>`).join('')
+    // href scoped to this group via ?logoGroup= — the header is this
+    // group's own "view all of this company" entry point (the headless/shop
+    // side is expected to filter by it, same as the category links below
+    // it), not just a non-dead placeholder anymore.
+    const columnsHtml = groups.map((groupName) => `<div data-logo-group="${encodeURIComponent(groupName)}"><div class='rubikx-mega-header'><a href='/shop?logoGroup=${encodeURIComponent(groupName)}' style='text-decoration:none;'>${groupName}</a></div><div data-logo-col-items></div></div>`).join('')
     return `<div data-cat-nav="true" data-mega="true" style="position:relative;display:inline-block;"${indexAttrs}${hydrationAttrs} data-logo-nav-mobile="false">
       <a href="${link.href}" style="${shellLinkStyle}cursor:pointer;"${target}>${link.label} ▾</a>
       <div data-cat-dropdown="true" style="display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;">${columnsHtml}</div>
