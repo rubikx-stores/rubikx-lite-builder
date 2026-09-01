@@ -10,6 +10,7 @@ import { getDomain, faviconUrl } from '~/composables/useSocialIcons'
 import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
 import { buildCategoryTree } from '~/composables/categories/buildCategoryTree'
 import type { FlatCategory } from '~/composables/categories/buildCategoryTree'
+import { fetchLogoGroupsCached } from '~/composables/logoGroups/fetchLogoGroupsCached'
 
 const selectedCompanyId = useState<number | null>('selectedCompanyId')
 
@@ -771,9 +772,7 @@ async function openLogoPicker(idx: number) {
   logoSearch.value = ''
   logoLoading.value = true
   try {
-    logoGroupOptions.value = await $fetch<LogoGroupOption[]>('/api/logo-groups', {
-      query: { companyId: selectedCompanyId.value ?? undefined },
-    })
+    logoGroupOptions.value = await fetchLogoGroupsCached(selectedCompanyId.value ?? undefined)
   } finally {
     logoLoading.value = false
   }
