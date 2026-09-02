@@ -526,7 +526,7 @@ async function loadLogoNav(el: HTMLElement, companyId?: number) {
     if (!desktop0.isConnected && !mobile0?.isConnected) return
 
     const groups = await fetchLogoGroupsCached(companyId)
-    const categoriesByGroupName = new Map(groups.map((g) => [g.groupName, g.categories]))
+    const categoriesByGroupName = new Map(groups.map((g) => [g.name, g.categories]))
 
     const { desktop, mobile } = findLiveShells()
     if (desktop.isConnected) fillColumns(desktop, categoriesByGroupName)
