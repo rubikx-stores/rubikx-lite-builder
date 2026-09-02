@@ -1438,7 +1438,7 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     if (!groups.length || !logoFilterOn) {
       return `<a href="${link.href}" style="${shellLinkStyle}"${target}>${link.label}</a>`
     }
-    // Hydration triggers ONLY from the desktop shell — loadLogoNav does ONE
+    // Hydration TRIGGERS only from the desktop shell — loadLogoNav does ONE
     // /api/logo-groups fetch (a full paginated catalog scan, unlike the
     // lightweight /api/categories loadDynamicNav uses) and updates BOTH the
     // desktop and mobile representations of this same link in that one
@@ -1448,16 +1448,37 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     // benefit — they show identical content. data-logo-nav-index/-mobile
     // are still emitted on both regardless, since loadLogoNav needs them to
     // find the mobile sibling from the desktop element it's triggered on.
+    //
+    // The mobile shell still needs data-rubikx-component="LogoNav" (just
+    // not data-on-mount) — the published/live storefront's own equivalent
+    // mount script discovers every LogoNav shell by querying that attribute
+    // directly (it doesn't know about this file's own desktop-triggers-both
+    // convention), so omitting it left every mobile "fbin"-style dropdown
+    // structurally invisible to that script — the categories inside got
+    // filled by something else, but the click-to-expand listener never got
+    // attached, since the shell was never even found. This repo's own
+    // hydrateElement() only acts on data-on-mount, so adding the marker
+    // here alone doesn't trigger a second fetch on this side.
     const indexAttrs = ` data-logo-nav-index="${idx}"`
-    const hydrationAttrs = forMobile ? '' : ` data-rubikx-component="LogoNav" data-on-mount="loadLogoNav" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}"`
+    const hydrationAttrs = forMobile
+      ? ` data-rubikx-component="LogoNav"`
+      : ` data-rubikx-component="LogoNav" data-on-mount="loadLogoNav" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}"`
     // data-logo-group carries the raw group name URL-encoded (groupName is
     // free text off Odoo, not a numeric id) so it survives round-tripping
     // through an HTML attribute intact; loadLogoNav decodeURIComponent()s it
     // back before matching against /api/logo-groups.
     if (forMobile) {
-      const columnsHtml = groups.map((groupName) => `<div data-logo-group="${encodeURIComponent(groupName)}"><div style="padding:6px 16px;font-weight:600;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">${groupName}</div><div data-logo-col-items></div></div>`).join('')
+      const columnsHtml = groups.map((groupName) => `<div data-logo-group="${encodeURIComponent(groupName)}"><div style="padding:6px 16px;font-weight:600;font-size:12px;color:#111;text-transform:uppercase;letter-spacing:.04em;">${groupName}</div><div data-logo-col-items></div></div>`).join('')
+      // shellLinkStyle comes first (not appended after the flex properties)
+      // so its own display:block — needed as-is for the plain-link branch
+      // above, which reuses the same shellLinkStyle — doesn't win the
+      // duplicate-declaration fight with this row's display:flex; the same
+      // property repeated in one style attribute resolves to whichever
+      // comes last, so display:flex has to be the last one written here or
+      // justify-content:space-between silently does nothing and the chevron
+      // just sits inline after the label instead of being pushed right.
       return `<div data-cat-inline-parent="true"${indexAttrs}${hydrationAttrs} data-logo-nav-mobile="true">
-        <div data-cat-inline-toggle="true" style="display:flex;align-items:center;justify-content:space-between;gap:12px;${shellLinkStyle}cursor:pointer;">${link.label}<span data-cat-inline-chevron="true" style="font-size:11px;opacity:.6;transition:transform .15s;display:inline-block;">▾</span></div>
+        <div data-cat-inline-toggle="true" style="${shellLinkStyle}display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;">${link.label}<span data-cat-inline-chevron="true" style="font-size:11px;opacity:.6;transition:transform .15s;display:inline-block;">▾</span></div>
         <div data-cat-inline-children="true" style="display:none;">${columnsHtml}</div>
       </div>`
     }
@@ -1499,26 +1520,38 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
   </div>`
 
   const mobileBar = `<div data-ru5-mobile-bar style="align-items:center;justify-content:space-between;padding:0.75rem ${data.paddingX}px;${data.showBottomBorder ? `border-top:1px solid ${data.bottomBorderColor};` : ''}">
-    <button type="button" data-active-border-color="${String(data.textColor).replace(/"/g, '&quot;')}" onclick="(function(btn){var sec=btn.closest('section');var panel=sec.querySelector('[data-ru5-mobile-panel]');var ctas=sec.querySelector('[data-ru5-mobile-bar-ctas]');var open=panel.style.display==='block';panel.style.display=open?'none':'block';if(ctas){ctas.style.display=open?'flex':'none';}btn.style.background=open?'none':'rgba(0,0,0,0.04)';btn.style.borderColor=open?'transparent':btn.dataset.activeBorderColor;})(this)" style="background:none;border:1.5px solid transparent;border-radius:6px;cursor:pointer;padding:6px;display:inline-flex;align-items:center;flex-shrink:0;">
+    <button type="button" onclick="(function(btn){var sec=btn.closest('section');var d=sec&&sec.querySelector('[data-ru5-mobile-drawer]');var o=sec&&sec.querySelector('[data-ru5-mobile-overlay]');if(d){d.style.transform='translateX(0)';}if(o){o.style.display='block';}document.body.style.overflow='hidden';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:6px;display:inline-flex;align-items:center;flex-shrink:0;">
       <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="${data.textColor}" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
     </button>
-    <div data-ru5-mobile-bar-ctas style="display:flex;align-items:center;flex-wrap:nowrap;gap:0.6rem;">${renderTopBarButtons()}</div>
+    <div style="display:flex;align-items:center;flex-wrap:nowrap;gap:0.6rem;">${renderTopBarButtons()}</div>
   </div>`
 
-  // In-place expanding panel (pushes page content down), not a slide-in
-  // overlay drawer — intentionally different from Ru2/Ru3/Ru4's mobile
-  // pattern to match this component's reference design.
   const mobileItemsEl = data.showDynamicCategories !== false
     ? `<div data-ru5-mobile-items style="display:flex;flex-direction:column;">${mobilePlaceholder}</div>`
     : ''
 
-  const mobilePanel = `<div data-ru5-mobile-panel style="display:none;padding:0.25rem ${data.paddingX}px 1.25rem;">
+  // Left-side slide-in overlay drawer — matches Ru2/Ru3/Ru4's mobile pattern
+  // (data-mobile-drawer/data-mobile-overlay, translateX), replacing the
+  // in-place push-down panel this used to have. Own data-ru5-mobile-drawer/
+  // -overlay attribute names (not Ru1-4's shared data-mobile-drawer/-overlay)
+  // so a page with more than one navbar variant can't have one block's
+  // hamburger open another's drawer. Scoped via closest('section') rather
+  // than Ru1-4's unscoped document.querySelector, for the same reason.
+  const mobileDrawer = `<div data-ru5-mobile-drawer style="position:fixed;top:0;left:0;width:320px;max-width:85vw;height:100vh;background:${data.bgColor};color:${data.textColor};z-index:99999;transform:translateX(-100%);transition:transform 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+      ${logoEl}
+      <button type="button" onclick="(function(btn){var sec=btn.closest('section');var d=sec&&sec.querySelector('[data-ru5-mobile-drawer]');var o=sec&&sec.querySelector('[data-ru5-mobile-overlay]');if(d){d.style.transform='translateX(-100%)';}if(o){o.style.display='none';}document.body.style.overflow='';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0.25rem;display:flex;align-items:center;">
+        ${icon('xMark', { size: 24, stroke: data.textColor })}
+      </button>
+    </div>
     <a href="${data.homeHref}" style="display:block;padding:0.7rem 0;${homeLinkStyle}">${data.homeLabel}</a>
     ${mobileLogoLinksEl}
     ${mobileItemsEl}
     <div style="padding:0.75rem 0;">${cartEl}</div>
-    <div style="display:flex;justify-content:flex-end;flex-wrap:nowrap;gap:0.75rem;margin-top:0.75rem;">${renderTopBarButtons()}</div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:0.75rem;">${renderTopBarButtons()}</div>
   </div>`
+
+  const mobileOverlay = `<div data-ru5-mobile-overlay onclick="(function(el){var sec=el.closest('section');var d=sec&&sec.querySelector('[data-ru5-mobile-drawer]');if(d){d.style.transform='translateX(-100%)';}el.style.display='none';document.body.style.overflow='';})(this);" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;"></div>`
 
   const responsiveStyle = `<style>
   [data-ru5-desktop-nav] { display: flex; }
@@ -1538,17 +1571,17 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     [data-ru5-desktop-search] { display: none !important; }
     [data-ru5-mobile-search-row] { display: block !important; }
   }
-  /* The mobile panel's open/closed state lives purely in an inline
-     style.display the hamburger's onclick sets — nothing else ever resets
-     it. Without this, opening it at mobile width then resizing to desktop
-     leaves that inline display:block in place with no CSS touching it, so
-     it renders stacked alongside the desktop nav row instead of closing.
-     min-width (not the max-width:1024px block above) so it only forces the
-     panel shut once we're past the breakpoint the hamburger itself is
-     hidden at — inline JS-controlled open/close at mobile width is
-     untouched, since this rule doesn't apply there at all. */
+  /* The drawer's open/closed state lives purely in an inline style the
+     hamburger's onclick sets — nothing else ever resets it. Without this,
+     opening it at mobile width then resizing to desktop leaves it slid open
+     (and the dimmed overlay up) with no CSS touching it. min-width (not the
+     max-width:1024px block above) so it only forces the drawer shut once
+     we're past the breakpoint the hamburger itself is hidden at — inline
+     JS-controlled open/close at mobile width is untouched, since this rule
+     doesn't apply there at all. */
   @media (min-width: 1025px) {
-    [data-ru5-mobile-panel] { display: none !important; }
+    [data-ru5-mobile-drawer] { transform: translateX(-100%) !important; }
+    [data-ru5-mobile-overlay] { display: none !important; }
   }
 </style>`
 
@@ -1589,7 +1622,8 @@ ${responsiveStyle}
   ${mobileSearchRow}
   ${desktopNavRow}
   ${mobileBar}
-  ${mobilePanel}
+  ${mobileDrawer}
+  ${mobileOverlay}
 </nav>
 </section>`
 }
