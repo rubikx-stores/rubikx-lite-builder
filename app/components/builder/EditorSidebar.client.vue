@@ -753,7 +753,7 @@ function applyMegaMenuToLink() {
 // at hydration time so a category added on the backend shows up on the
 // published site without republishing — the picker only needs group names
 // for display/selection.
-interface LogoGroupOption { groupName: string, categories: Array<{ id: number, name: string, displayName: string }> }
+interface LogoGroupOption { name: string, categories: Array<{ id: number, name: string, displayName: string }> }
 
 const logoPickerIdx      = ref(-1)          // which logoNavLinks row is open
 const logoGroupOptions   = ref<LogoGroupOption[]>([])
@@ -763,7 +763,7 @@ const selectedGroupNames = ref(new Set<string>())
 
 const logoFiltered = computed(() =>
   logoSearch.value.trim()
-    ? logoGroupOptions.value.filter(g => g.groupName.toLowerCase().includes(logoSearch.value.toLowerCase()))
+    ? logoGroupOptions.value.filter(g => g.name.toLowerCase().includes(logoSearch.value.toLowerCase()))
     : logoGroupOptions.value
 )
 
@@ -1444,11 +1444,11 @@ onUnmounted(() => {
                         </div>
                         <div v-if="logoLoading" class="px-2 py-3 text-gray-400 text-center">Loading…</div>
                         <div v-else class="max-h-52 overflow-y-auto">
-                          <label v-for="group in logoFiltered" :key="group.groupName"
+                          <label v-for="group in logoFiltered" :key="group.name"
                             class="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 cursor-pointer border-b border-gray-50">
-                            <input type="checkbox" :checked="selectedGroupNames.has(group.groupName)"
-                              @change="toggleLogoGroup(group.groupName)" class="cursor-pointer shrink-0" />
-                            <div class="flex-1 min-w-0 text-gray-700 truncate">{{ group.groupName }}</div>
+                            <input type="checkbox" :checked="selectedGroupNames.has(group.name)"
+                              @change="toggleLogoGroup(group.name)" class="cursor-pointer shrink-0" />
+                            <div class="flex-1 min-w-0 text-gray-700 truncate">{{ group.name }}</div>
                           </label>
                           <div v-if="!logoFiltered.length" class="px-2 py-2 text-gray-400 text-center">No logo groups found</div>
                         </div>
