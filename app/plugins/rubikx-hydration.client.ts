@@ -367,7 +367,12 @@ function _renderDynamicNavResults(
           const dropInner = hasGrouping
             ? children.map((c) => renderMegaColumn(c, c.children ?? [])).join('')
             : renderMegaColumn(root, children)
-          return `<div data-cat-nav='true' data-mega='true' style='position:relative;display:inline-block;'>
+          const columnCount = hasGrouping ? children.length : 1
+          // data-mega-cols tells the Ru5-scoped CSS (rubikx-cat-styles) the
+          // column count, which drives the 6-track grid columns sit in
+          // (naturally adjacent, however many there are) and lets a single
+          // column span the whole box instead of just the first track.
+          return `<div data-cat-nav='true' data-mega='true' data-mega-cols='${columnCount}' style='position:relative;display:inline-block;'>
             <a href='${href}' style='${linkStyle}text-decoration:none;cursor:pointer;'>${root.displayName} ▾</a>
             <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
               ${dropInner}
@@ -1175,12 +1180,47 @@ export function hydrateComponents(companyId?: number) {
      edge-to-edge width only the two far corners would show any rounding at
      all, which read as a mistake rather than a deliberate radius. */
   nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-dropdown] { border-radius: 0 !important; }
+  /* A fixed 6-track grid (not a flex split sized to the actual column
+     count) — with flex's even-share sizing, N equal-grow columns always end
+     up exactly 100%/N wide each regardless of their basis, so e.g. 2
+     columns always split into a dead 50/50 half each, leaving column 2's
+     content starting at the box's exact horizontal center instead of
+     sitting right beside column 1. A 6-track grid instead lets however many
+     columns exist (1-6) occupy that many consecutive tracks from the left,
+     naturally adjacent, with no special-casing per count; 7+ overflows into
+     an implicit new row using the same 6-track template, still capping at 6
+     per line. */
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega]:hover [data-cat-dropdown] { display: grid !important; grid-template-columns: repeat(6, 1fr); gap: 0; }
+  /* Same 30px left/right padding on every column so the gap from the box
+     edge — and between columns — reads consistently at any category count.
+     min-width:0 (overriding the shared rule's 150px) lets a track shrink to
+     its actual 1/6 grid width instead of forcing overflow on a narrow nav. */
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega] [data-cat-dropdown] > div { min-width: 0; box-sizing: border-box; padding-left: 30px; padding-right: 30px; }
+  /* A single category still spans the whole box (see the [data-mega-cols=
+     "1"] comment further up) instead of sitting in just the first of the
+     6 tracks. */
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega][data-mega-cols="1"] [data-cat-dropdown] > div { grid-column: 1 / -1; }
   /* Larger type and more vertical breathing room between category rows,
      scoped to Ru5 only so Ru3-Mega-Header's own unscoped mega dropdown
      (shares .rubikx-mega-child/-header via the same >6-category branch in
      loadCategories) keeps its current sizing untouched. */
   nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-dropdown] .rubikx-mega-header a { font-size: 15px !important; }
   nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-dropdown] > div > div a { font-size: 14px !important; padding: 6px 8px !important; }
+  /* A long, unbroken category/group name would otherwise overflow a narrow
+     6-way track sideways instead of wrapping onto a second line. */
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-dropdown] .rubikx-mega-header a,
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-dropdown] > div > div a { overflow-wrap: break-word; }
+  /* Ru5's own nav (and this mega dropdown with it) is hidden below 1024px in
+     favor of the mobile drawer (see components.ts's [data-ru5-desktop-nav]
+     media query) — so 6 equal tracks only ever need to fit between 1024px
+     and typical desktop widths. That's still tight on the narrower end of
+     that range, so this mid-size step trades the per-row cap down to 3
+     (still wrapping any extra columns beneath) for more breathing room per
+     column; a single category still spans the full row via the
+     [data-mega-cols="1"] rule above regardless of this override. */
+  @media (max-width: 1280px) {
+    nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega]:hover [data-cat-dropdown] { grid-template-columns: repeat(3, 1fr) !important; }
+  }
 `
     document.head.appendChild(style)
   }

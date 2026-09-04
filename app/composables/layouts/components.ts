@@ -1487,7 +1487,11 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     // side is expected to filter by it, same as the category links below
     // it), not just a non-dead placeholder anymore.
     const columnsHtml = groups.map((groupName) => `<div data-logo-group="${encodeURIComponent(groupName)}"><div class='rubikx-mega-header'><a href='/shop?logoGroup=${encodeURIComponent(groupName)}' style='text-decoration:none;'>${groupName}</a></div><div data-logo-col-items></div></div>`).join('')
-    return `<div data-cat-nav="true" data-mega="true" style="position:relative;display:inline-block;"${indexAttrs}${hydrationAttrs} data-logo-nav-mobile="false">
+    // Same data-mega-cols convention as _renderDynamicNavResults
+    // (rubikx-hydration.client.ts) — drives the 6-track grid groups sit in
+    // (naturally adjacent, however many there are) and lets a single group
+    // span the whole box instead of just the first track.
+    return `<div data-cat-nav="true" data-mega="true" data-mega-cols="${groups.length}" style="position:relative;display:inline-block;"${indexAttrs}${hydrationAttrs} data-logo-nav-mobile="false">
       <a href="${link.href}" style="${shellLinkStyle}cursor:pointer;"${target}>${link.label} ▾</a>
       <div data-cat-dropdown="true" style="display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;">${columnsHtml}</div>
     </div>`
