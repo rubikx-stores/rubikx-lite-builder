@@ -1559,6 +1559,363 @@ ${responsiveStyle}
 </section>`
 }
 
+// ─── Ru6-Hamburger-Navbar ───────────────────────────────────────────────────
+// A hamburger-first navbar: the hamburger menu (Home + the live category
+// tree) is the ONLY nav-link access at every screen width, not just a mobile
+// fallback — logo stays centered, hamburger left, search/cart/profile right,
+// at all widths. Categories load the same way Ru5-Dynamic-Navbar's mobile
+// panel does (loadDynamicNav), reusing its data-ru5-mobile-items contract —
+// only Home is hand-authored, everything else comes from the live category
+// tree. Search and Profile are self-contained icon-swap dropdowns/popups;
+// Profile's Log In/Register are plain configurable links, not wired to the
+// real AuthState system (see loadAuthState in rubikx-hydration.client.ts,
+// which only ever shows a single sign-in link when logged out — supporting
+// a two-option dropdown there would be a much bigger, shared-behavior change
+// affecting every other navbar block that already uses it).
+
+export const ru6HamburgerNavbarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 48">
+  <rect fill="#111827" width="277.5" height="48"/>
+  <rect fill="#718096" x="12" y="20" width="20" height="2.5" rx="1"/>
+  <rect fill="#718096" x="12" y="26" width="20" height="2.5" rx="1"/>
+  <circle fill="#718096" cx="130" cy="20" r="7"/>
+  <rect fill="#718096" x="142" y="17" width="70" height="6" rx="1"/>
+  <circle fill="none" stroke="#718096" stroke-width="1.5" cx="225" cy="24" r="6"/>
+  <rect fill="none" stroke="#718096" stroke-width="1.5" x="243" y="16" width="26" height="16" rx="3"/>
+</svg>`
+
+export interface Ru6HamburgerNavbarData {
+  fontFamily: string
+
+  logoUrl: string
+  brandName: string
+  logoWidth: number
+  brandFontSize: number
+  brandFontWeight: string
+  brandFont: string
+
+  homeLabel: string
+  homeHref: string
+  showDynamicCategories: boolean
+  maxCategories: number
+  linkColor: string
+  linkFontSize: number
+  linkFontWeight: string
+  linkFont: string
+
+  showSearch: boolean
+  searchPlaceholder: string
+
+  showCart: boolean
+  cartUrl: string
+  cartLabel: string
+
+  showProfile: boolean
+  profileLabel: string
+  profileLinks: { label: string; url: string; newTab?: boolean }[]
+
+  bgColor: string
+  textColor: string
+  paddingY: number
+  paddingX: number
+  sticky: boolean
+}
+
+export const ru6HamburgerNavbarDefaults: Ru6HamburgerNavbarData = {
+  fontFamily: '',
+
+  logoUrl: '',
+  brandName: 'Your Logo',
+  logoWidth: 160,
+  brandFontSize: 20,
+  brandFontWeight: '700',
+  brandFont: '',
+
+  homeLabel: 'Home',
+  homeHref: '/',
+  showDynamicCategories: true,
+  maxCategories: 20,
+  linkColor: '#000000',
+  linkFontSize: 15,
+  linkFontWeight: '500',
+  linkFont: '',
+
+  showSearch: true,
+  searchPlaceholder: 'Search',
+
+  showCart: true,
+  cartUrl: '/cart',
+  cartLabel: 'Cart',
+
+  showProfile: true,
+  profileLabel: 'Profile',
+  profileLinks: [{ label: 'Log In', url: '/login' }],
+
+  bgColor: '#1e2a63',
+  textColor: '#ffffff',
+  paddingY: 16,
+  paddingX: 24,
+  sticky: false,
+}
+
+export const ru6HamburgerNavbarFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_logo', label: 'Logo', type: 'header' },
+  { key: 'logoUrl', label: 'Logo Image', type: 'image', noAspectRatio: true },
+  { key: 'brandName', label: 'Brand Name (shown if no logo image)', type: 'text', placeholder: 'e.g. Your Logo' },
+  { key: 'logoWidth', label: 'Logo Width (px)', type: 'number', placeholder: '160' },
+  { key: 'brandFontSize', label: 'Brand Font Size (px)', type: 'number', placeholder: '20' },
+  { key: 'brandFontWeight', label: 'Brand Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  fontField('brandFont', 'Brand Font'),
+
+  { key: '_h_nav', label: 'Hamburger Menu', type: 'header' },
+  { key: 'homeLabel', label: 'Home Link Label', type: 'text', placeholder: 'Home' },
+  { key: 'homeHref', label: 'Home Link URL', type: 'url', placeholder: '/' },
+  { key: 'showDynamicCategories', label: 'Show Categories from Store', type: 'toggle' },
+  { key: 'linkColor', label: 'Menu Link Colour', type: 'color' },
+  { key: 'linkFontSize', label: 'Menu Link Font Size (px)', type: 'number', placeholder: '15' },
+  { key: 'linkFontWeight', label: 'Menu Link Font Weight', type: 'select', options: ['400', '500', '600', '700'] },
+  fontField('linkFont', 'Menu Link Font'),
+
+  { key: '_h_search', label: 'Search', type: 'header' },
+  { key: 'showSearch', label: 'Show Search Icon', type: 'toggle' },
+  { key: 'searchPlaceholder', label: 'Search Placeholder', type: 'text', placeholder: 'Search' },
+
+  { key: '_h_cart', label: 'Cart', type: 'header' },
+  { key: 'showCart', label: 'Show Cart', type: 'toggle' },
+  { key: 'cartUrl', label: 'Cart URL', type: 'url', placeholder: '/cart' },
+  { key: 'cartLabel', label: 'Cart Label', type: 'text', placeholder: 'Cart' },
+
+  { key: '_h_profile', label: 'Profile', type: 'header' },
+  { key: 'showProfile', label: 'Show Profile Dropdown', type: 'toggle' },
+  { key: 'profileLabel', label: 'Profile Label', type: 'text', placeholder: 'Profile' },
+  {
+    key: 'profileLinks', label: 'Profile Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'url', label: 'URL', type: 'url' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
+    ],
+  },
+
+  { key: '_h_style', label: 'Style', type: 'header' },
+  { key: 'bgColor', label: 'Background Colour', type: 'color' },
+  { key: 'textColor', label: 'Text/Icon Colour', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '16' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '24' },
+  { key: 'sticky', label: 'Sticky Navbar (stays fixed while scrolling)', type: 'toggle' },
+]
+
+// Filled (solid) cart/user icons — the shared icon() helper only ships the
+// heroicons OUTLINE set, so these are hand-added the same way Ru1-Footer's
+// filled/outline icon pair was, using currentColor so they follow textColor.
+const ru6IconCartFilled = (size: number) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="${size}" height="${size}"><path d="M2.25 2.25a.75.75 0 0 0 0 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 0 0-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 0 0 0-1.5H5.378A2.25 2.25 0 0 1 7.5 15h11.218a.75.75 0 0 0 .674-.421 60.358 60.358 0 0 0 2.96-7.228.75.75 0 0 0-.525-.965A60.864 60.864 0 0 0 5.68 4.509l-.232-.867A1.875 1.875 0 0 0 3.636 2.25H2.25ZM3.75 20.25a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM16.5 20.25a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"/></svg>`
+const ru6IconUserFilled = (size: number) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="${size}" height="${size}"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"/></svg>`
+
+export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
+  const logoInner = data.logoUrl
+    ? `<img src="${data.logoUrl}" alt="${data.brandName}" style="width:${data.logoWidth}px;max-width:100%;height:auto;display:block;" />`
+    : `<span style="font-size:${data.brandFontSize}px;font-weight:${data.brandFontWeight};color:${data.textColor};${fontCss(data.brandFont, data.fontFamily)}">${data.brandName}</span>`
+  const logoEl = `<a href="${data.homeHref}" style="text-decoration:none;color:inherit;display:flex;align-items:center;min-width:0;">${logoInner}</a>`
+
+  // Hamburger: icon-swaps bars -> X (same technique Ru4 already uses for its
+  // own search toggle) and opens a single dropdown panel underneath it.
+  // stopImmediatePropagation (not just stopPropagation) — the page-builder
+  // library attaches its own click listener to every element inside a block
+  // section for click-to-select (PageBuilderService.handleElementClick),
+  // which preventDefaults/stopPropagates and kicks off an autosave cycle on
+  // every click regardless of target. That listener lives on this SAME
+  // element, so plain stopPropagation (which only blocks bubbling to
+  // ancestors) doesn't stop it — only stopImmediatePropagation, called
+  // before it runs, keeps this toggle from being fought/undone by the
+  // builder's own selection handling.
+  const menuToggleScript = `event.stopImmediatePropagation();(function(btn){var sec=btn.closest('section');var panel=sec.querySelector('[data-ru6-menu-panel]');var caret=sec.querySelector('[data-ru6-menu-caret]');var overlay=sec.querySelector('[data-ru6-menu-overlay]');var bars=btn.querySelector('[data-icon-bars]');var x=btn.querySelector('[data-icon-x]');var open=panel.style.display==='block';panel.style.display=open?'none':'block';if(caret)caret.style.display=open?'none':'block';if(overlay)overlay.style.display=open?'none':'block';if(bars)bars.style.display=open?'inline-flex':'none';if(x)x.style.display=open?'none':'inline-flex';})(this);`
+  // Clicking anywhere outside the open panel closes it — same transparent
+  // full-page overlay idiom already used for the search popup.
+  const menuCloseScript = `event.stopImmediatePropagation();(function(el){var sec=el.closest('section');var panel=sec.querySelector('[data-ru6-menu-panel]');var caret=sec.querySelector('[data-ru6-menu-caret]');var btn=sec.querySelector('[data-ru6-menu-toggle]');panel.style.display='none';if(caret)caret.style.display='none';el.style.display='none';var bars=btn.querySelector('[data-icon-bars]');var x=btn.querySelector('[data-icon-x]');if(bars)bars.style.display='inline-flex';if(x)x.style.display='none';})(this);`
+  const hamburgerEl = `<button type="button" data-ru6-menu-toggle onclick="${menuToggleScript}" style="background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;flex-shrink:0;">
+    <span data-icon-bars style="display:inline-flex;"><svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="${data.textColor}" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg></span>
+    <span data-icon-x style="display:none;">${icon('xMark', { size: 28, stroke: data.textColor, strokeWidth: '2.5' })}</span>
+  </button>`
+
+  // Items container reuses Ru5-Dynamic-Navbar's data-ru5-mobile-items marker
+  // deliberately — loadDynamicNav renders that one as a stacked/accordion
+  // vertical list (vs. data-ru5-desktop-items' horizontal mega-dropdown row),
+  // which is the only layout this single-panel design ever needs, at every
+  // screen width.
+  const menuPlaceholder = `<span style="display:block;padding:6px 0;color:#9ca3af;font-size:13px;font-style:italic;">⟳ Loading categories…</span>`
+  const menuItemsEl = data.showDynamicCategories !== false
+    ? `<div data-ru5-mobile-items style="display:flex;flex-direction:column;">${menuPlaceholder}</div>`
+    : ''
+  // data-rubikx-component is required, not just decorative — the global
+  // hydration sweep in rubikx-hydration.client.ts only ever queries for
+  // `[data-rubikx-component]` and reads data-on-mount off whatever it
+  // finds that way; an element with data-on-mount but no
+  // data-rubikx-component is invisible to it and its handler never runs
+  // (silently — no error, which is exactly why this was hard to spot).
+  // "DynamicCategoryNav" matches Ru5-Dynamic-Navbar's own value since
+  // that's also what scopes the shared mega-dropdown CSS in the hydration
+  // plugin, even though this panel only ever uses the inline/vertical path.
+  const menuHydrationAttrs = data.showDynamicCategories !== false
+    ? `data-rubikx-component="DynamicCategoryNav" data-on-mount="loadDynamicNav" data-max-categories="${data.maxCategories}" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}"`
+    : ''
+  const homeLinkStyle = `color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;${fontCss(data.linkFont, data.fontFamily)}`
+
+  // On mobile, Cart/Profile relocate INTO the hamburger panel entirely
+  // (not just losing their text labels) — this renders plain Cart/profile
+  // link rows matching the Home link's styling, hidden by default and only
+  // shown by the responsive <style> below at phone widths, while the
+  // top-bar cartEl/profileEl hide there instead.
+  const profileLinksHtml = (data.profileLinks ?? [])
+    .map(l => `<a href="${l.url}" style="display:block;padding:0.65rem 0;${homeLinkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`)
+    .join('')
+  const mobileMenuExtras = (data.showCart || data.showProfile)
+    ? `<div data-ru6-menu-mobile-extra style="display:none;margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid #e5e7eb;">
+        ${data.showCart ? `<a href="${data.cartUrl}" style="display:block;padding:0.65rem 0;${homeLinkStyle}">${data.cartLabel}</a>` : ''}
+        ${data.showProfile ? profileLinksHtml : ''}
+      </div>`
+    : ''
+
+  // A big box, but NOT full-width — capped at 500px so the rest of the
+  // page (hero image, content below) stays visible on desktop, per the
+  // reference design. width:100% up to that cap means it naturally fills
+  // ~the whole screen on phones (where the viewport itself is under
+  // 500px) without needing a separate mobile-specific width rule. A small
+  // caret triangle sits just above it, near the hamburger, as a visual
+  // pointer back to the button that opened it.
+  const menuPanel = `<div data-ru6-menu-panel ${menuHydrationAttrs} style="display:none;position:absolute;top:100%;left:0;width:100%;max-width:500px;background:#fff;box-shadow:0 12px 24px rgba(0,0,0,0.12);padding:1.25rem min(${data.paddingX}px,5vw) 1.5rem;z-index:9999;">
+    <a href="${data.homeHref}" style="display:block;padding:0.65rem 0;${homeLinkStyle}">${data.homeLabel}</a>
+    ${menuItemsEl}
+    ${mobileMenuExtras}
+  </div>
+  <div data-ru6-menu-caret style="display:none;position:absolute;top:100%;left:min(${data.paddingX}px,5vw);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:8px solid #ffffff;z-index:10000;pointer-events:none;"></div>
+  <div data-ru6-menu-overlay onclick="${menuCloseScript}" style="display:none;position:fixed;inset:0;z-index:9998;background:transparent;"></div>`
+
+  // Underline-on-hover for both the hardcoded Home link and every
+  // dynamically-loaded category link — the category links are injected by
+  // loadDynamicNav's own JS (renderCategoryTreeInline), not by this
+  // template, so their hover state has to be a real CSS rule rather than
+  // an inline style; targeting any <a> inside the panel covers both.
+  const menuLinkHoverStyle = `<style>
+  [data-ru6-menu-panel] a:hover { text-decoration: underline; }
+</style>`
+
+  // Search: icon-swap toggle (same idiom as the hamburger) opening a popup
+  // that's centered on the WHOLE navbar — not anchored under the search
+  // icon itself — so it lands over the logo's position, matching the
+  // reference design. It slides down/fades in (opacity+translateY, not
+  // display:none, so the transition can actually animate) and a full-page
+  // transparent overlay closes it again on any outside click, same pattern
+  // as the mobile drawer's data-mobile-overlay elsewhere in this file.
+  const searchToggleScript = `event.stopImmediatePropagation();(function(btn){var sec=btn.closest('section');var pop=sec.querySelector('[data-ru6-search-popup]');var overlay=sec.querySelector('[data-ru6-search-overlay]');var s=btn.querySelector('[data-icon-search]');var x=btn.querySelector('[data-icon-search-x]');var open=pop.getAttribute('data-open')==='true';var next=!open;pop.setAttribute('data-open',String(next));pop.style.opacity=next?'1':'0';pop.style.transform=next?'translateY(0)':'translateY(-10px)';pop.style.pointerEvents=next?'auto':'none';if(overlay)overlay.style.display=next?'block':'none';if(s)s.style.display=next?'none':'inline-flex';if(x)x.style.display=next?'inline-flex':'none';if(next){var inp=pop.querySelector('input');if(inp)setTimeout(function(){inp.focus()},220);}})(this);`
+  const searchToggleEl = data.showSearch
+    ? `<button type="button" data-ru6-search-toggle onclick="${searchToggleScript}" style="background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;flex-shrink:0;">
+        <span data-icon-search style="display:inline-flex;">${icon('magnifyingGlass', { size: 26, stroke: data.textColor })}</span>
+        <span data-icon-search-x style="display:none;">${icon('xMark', { size: 26, stroke: data.textColor })}</span>
+      </button>`
+    : ''
+  const searchCloseScript = `event.stopImmediatePropagation();(function(el){var sec=el.closest('section');var pop=sec.querySelector('[data-ru6-search-popup]');var btn=sec.querySelector('[data-ru6-search-toggle]');pop.setAttribute('data-open','false');pop.style.opacity='0';pop.style.transform='translateY(-10px)';pop.style.pointerEvents='none';el.style.display='none';var s=btn.querySelector('[data-icon-search]');var x=btn.querySelector('[data-icon-search-x]');if(s)s.style.display='inline-flex';if(x)x.style.display='none';})(this);`
+  const searchAnchor = data.showSearch
+    ? `<div style="position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:0.5rem;z-index:9999;">
+        <div data-ru6-search-popup data-open="false" style="opacity:0;transform:translateY(-10px);pointer-events:none;transition:opacity 0.22s ease, transform 0.22s ease;background:#fff;border-radius:8px;box-shadow:0 12px 24px rgba(0,0,0,0.16);padding:0.75rem;width:min(420px,90vw);">
+          <div style="display:flex;align-items:center;gap:0.5rem;border:1px solid #d1d5db;border-radius:6px;padding:0.5rem 0.75rem;">
+            <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="border:none;outline:none;background:transparent;font-size:0.9rem;width:100%;color:#111827;" />
+            ${icon('magnifyingGlass', { size: 18, stroke: '#6b7280' })}
+          </div>
+        </div>
+      </div>
+      <div data-ru6-search-overlay onclick="${searchCloseScript}" style="display:none;position:fixed;inset:0;z-index:9998;background:transparent;"></div>`
+    : ''
+
+  // data-ru6-label on the text spans lets the responsive <style> below hide
+  // just the wording on small screens (icons/dropdowns stay fully
+  // functional, tap targets don't shrink) instead of squeezing three
+  // labeled controls into a cramped third of a phone-width screen.
+  const cartEl = data.showCart
+    ? `<span data-ru6-cart data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
+        <a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;align-items:center;gap:0.375rem;text-decoration:none;font-size:0.9rem;font-weight:500;white-space:nowrap;${fontCss(undefined, data.fontFamily)}">${ru6IconCartFilled(24)}<span data-ru6-label>${data.cartLabel}</span></a>
+      </span>`
+    : ''
+
+  // Profile: self-contained static dropdown (same pattern as Ru3-Mega-
+  // Header's Account button) — see the block-level comment above for why
+  // this isn't wired into the real AuthState system.
+  // See menuToggleScript's comment above for why stopImmediatePropagation
+  // (not stopPropagation) is required here too.
+  // Chevron lives in its own span (data-ru6-chevron) purely so it can be
+  // rotated independently on open/close, with a transition for a smooth
+  // flip instead of an instant flip. Padding is a modest, symmetric value —
+  // an earlier much larger right-side padding pushed this button's visible
+  // content well short of the row's true right edge, which is what made
+  // Search/Cart look shifted left relative to the container (they were
+  // correctly flush right — this button's own trailing whitespace was the
+  // illusion).
+  const profileToggleScript = `event.stopImmediatePropagation();(function(btn){var d=btn.nextElementSibling;var chev=btn.querySelector('[data-ru6-chevron]');var open=d.style.display==='block';document.querySelectorAll('[data-ru6-profile-drop]').forEach(function(x){x.style.display='none'});document.querySelectorAll('[data-ru6-chevron]').forEach(function(c){c.style.transform='rotate(0deg)'});d.style.display=open?'none':'block';if(chev)chev.style.transform=open?'rotate(0deg)':'rotate(180deg)';})(this);`
+  const profileEl = data.showProfile
+    ? `<div data-ru6-profile style="position:relative;flex-shrink:0;">
+        <button type="button" data-ru6-profile-btn onclick="${profileToggleScript}" style="display:flex;align-items:center;gap:0.5rem;background:none;border:none;border-radius:6px;padding:0.4rem 0.5rem;cursor:pointer;color:${data.textColor};font-size:1.125rem;font-weight:500;white-space:nowrap;${fontCss(undefined, data.fontFamily)}">
+          ${ru6IconUserFilled(24)}<span data-ru6-label>${data.profileLabel}</span><span data-ru6-chevron style="display:inline-flex;transition:transform 0.2s ease;">${icon('chevronDown', { size: 18, strokeWidth: '2.5' })}</span>
+        </button>
+        <div data-ru6-profile-drop style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.12);min-width:160px;z-index:9999;padding:6px 0;">
+          ${(data.profileLinks ?? []).map(l => `<a href="${l.url}" style="display:block;padding:8px 16px;font-size:14px;font-weight:500;color:#1f2937;text-decoration:none;"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`).join('')}
+        </div>
+      </div>`
+    : ''
+
+  const sectionStyle = `width:100%;display:block;${fontCss(undefined, data.fontFamily)}${data.sticky ? 'position:sticky;top:0;z-index:9999;' : ''}`
+
+  // Below 640px: drop the Cart/Profile text labels (icons + dropdowns stay
+  // fully functional — tap targets don't shrink, just the wording), tighten
+  // the right-hand group's gap and the Profile button's padding to match,
+  // cap the logo's width so a generously-sized configured logo can't crowd
+  // out the hamburger/icons on a phone screen, and only THERE (not at
+  // normal/desktop widths) cap horizontal padding too — a large configured
+  // value should apply in full everywhere except a phone-width screen,
+  // where it could otherwise eat most of the available width.
+  // Cart/Profile fully relocate into the hamburger panel below 640px —
+  // hidden from the top bar entirely (not just their text labels) — and
+  // the matching rows inside [data-ru6-menu-panel] (hidden by default)
+  // switch on there instead.
+  const responsiveStyle = `<style>
+  @media (max-width: 640px) {
+    [data-ru6-navbar] { padding-left: min(${data.paddingX}px, 5vw); padding-right: min(${data.paddingX}px, 5vw); }
+    [data-ru6-navbar] [data-ru6-right] { gap: 0.6rem; }
+    [data-ru6-navbar] [data-ru6-cart],
+    [data-ru6-navbar] [data-ru6-profile] { display: none !important; }
+    [data-ru6-navbar] [data-ru6-menu-mobile-extra] { display: block !important; }
+    [data-ru6-navbar] [data-ru6-logo] img,
+    [data-ru6-navbar] [data-ru6-logo] span { max-width: 38vw; }
+  }
+</style>`
+
+  // 3-column grid with minmax(0,1fr) (not a bare 1fr) so each zone can
+  // actually shrink at narrow widths instead of overflowing — the same fix
+  // applied retroactively to Ru1-Navbar's desktop grid, built in here from
+  // the start.
+  return `<section data-component-title="Ru6-Hamburger-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}background:${data.bgColor};">
+${responsiveStyle}
+${menuLinkHoverStyle}
+<nav data-ru6-navbar style="position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);align-items:center;gap:1rem;padding:${data.paddingY}px ${data.paddingX}px;">
+  <div style="display:flex;align-items:center;justify-content:flex-start;gap:1rem;min-width:0;">
+    ${hamburgerEl}
+  </div>
+  <div data-ru6-logo style="display:flex;align-items:center;justify-content:center;min-width:0;">
+    ${logoEl}
+  </div>
+  <div data-ru6-right style="display:flex;align-items:center;justify-content:flex-end;gap:2.5rem;min-width:0;">
+    ${searchToggleEl}
+    ${cartEl}
+    ${profileEl}
+  </div>
+  ${menuPanel}
+  ${searchAnchor}
+</nav>
+</section>`
+}
+
 export const ru1FormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
   <rect fill="#394152" x="0" y="10" width="88" height="7"/>
   <rect fill="#394152" x="0" y="24" width="118" height="3"/>
@@ -2270,6 +2627,10 @@ export interface Ru3BannerData {
   pageTitle: string
   pageTitleColor: string
   pageTitleFont: string
+
+  showContactMessage: boolean
+  contactMessage: string
+  contactMessageAlign: string
 }
 
 export interface Ru3ContactFormData {
@@ -2326,6 +2687,10 @@ export const ru3BannerDefaults: Ru3BannerData = {
   pageTitle: 'Contact Us',
   pageTitleColor: '#0a1e5e',
   pageTitleFont: '',
+
+  showContactMessage: true,
+  contactMessage: `<p><strong>Have a Question or Need Assistance?</strong></p><p>We're here to help. Complete the form below and our team will review your request and get back to you as soon as possible.</p><p>We're happy to assist you and look forward to hearing from you.</p>`,
+  contactMessageAlign: 'left',
 }
 
 export const ru3ContactFormDefaults: Ru3ContactFormData = {
@@ -2397,6 +2762,11 @@ export const ru3BannerFields: FieldConfig[] = [
   { key: 'pageTitle', label: 'Page Title Text', type: 'text', placeholder: 'e.g. Contact Us' },
   { key: 'pageTitleColor', label: 'Page Title Colour', type: 'color' },
   fontField('pageTitleFont', 'Page Title Font'),
+
+  { key: '_h_contactmessage', label: 'Contact Message', type: 'header' },
+  { key: 'showContactMessage', label: 'Show Contact Message', type: 'toggle', default: true },
+  { key: 'contactMessage', label: 'Contact Message', type: 'textarea' },
+  { key: 'contactMessageAlign', label: 'Contact Message Alignment', type: 'select', options: ['left', 'center', 'right'] },
 ]
 
 export const ru3ContactFormFields: FieldConfig[] = [
@@ -2532,13 +2902,18 @@ function buildRu3BannerHtml(data: Ru3BannerData): string {
     ? `<h1 style="max-width:100rem;margin:0 auto;padding:1rem 2rem 0;font-size:min(2.25rem,7vw);font-weight:700;color:${data.pageTitleColor};${fontCss(data.pageTitleFont, data.fontFamily)}">${data.pageTitle}</h1>`
     : ''
 
+  const contactMessageHtml = data.showContactMessage !== false && data.contactMessage
+    ? `<div style="max-width:100rem;margin:0 auto;padding:1rem 2rem 0;font-size:1rem;line-height:1.7;color:#374151;text-align:${data.contactMessageAlign || 'left'};">${data.contactMessage}</div>`
+    : ''
+
   return `<div style="${bannerBg}${bannerAspect}min-height:${data.bannerHeight}px;padding:2.5rem 0;display:flex;flex-direction:column;justify-content:flex-end;box-sizing:border-box;">
     <div style="max-width:80rem;margin:0 auto;padding:0 2rem;display:flex;flex-direction:column;align-items:${bannerItems};text-align:${bannerTextAlign};width:100%;box-sizing:border-box;">
       <h2 style="font-size:min(2.75rem,9vw);font-weight:800;color:${data.bannerTitleColor};margin:0;line-height:1.1;${fontCss(data.bannerTitleFont, data.fontFamily)}">${data.bannerTitle}</h2>
     </div>
   </div>
   ${breadcrumbHtml}
-  ${pageTitleHtml}`
+  ${pageTitleHtml}
+  ${contactMessageHtml}`
 }
 
 // Returns just the form-layout wrapper + <form> markup (no <section>
@@ -5744,6 +6119,266 @@ export function renderRu2FaqBanner(data: Ru2FaqBannerData): string {
   <div style="max-width:80rem;margin:0 auto;padding:1.5rem ${data.contentPaddingX}px 4rem;">
     <div data-rubikx-component="FaqAccordion" data-on-mount="loadFaqAccordion" style="border-bottom:1px solid ${data.dividerColor};">
       ${itemsHtml}
+    </div>
+  </div>
+</section>`
+}
+
+// ─── Ru3-FAQ ─────────────────────────────────────────────────────────────────
+// Static, categorized FAQ list — category headings + a divider under each,
+// with every answer always visible (no accordion, unlike Ru1-FAQ/
+// Ru2-FAQ+Banner). `categories` is a true nested list (a list of category
+// cards, each with its own inner list of Q&A rows) — supported by
+// EditorSidebar.client.vue's nested-list branch. Adding a new category is
+// "+ Add" on the outer list; adding another question to a specific category
+// is "+ Add" on that category's own inner list — no shared/matched text, so
+// there's nothing to typo or merge incorrectly. The optional banner strip at
+// the top (showBanner, on by default) is part of this same block/section
+// rather than a separate one.
+
+export const ru3FaqSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 140">
+  <rect fill="#394152" x="0" y="0" width="277.5" height="140"/>
+  <rect fill="#718096" x="10" y="10" width="120" height="10" rx="1"/>
+  <rect fill="#5a6475" x="10" y="24" width="200" height="5" rx="1"/>
+  <rect fill="#a0aec0" x="10" y="42" width="90" height="6" rx="1"/>
+  <rect fill="#5a6475" x="10" y="51" width="257.5" height="2" rx="1"/>
+  <rect fill="#718096" x="10" y="60" width="70" height="5" rx="1"/>
+  <rect fill="#5a6475" x="10" y="67" width="220" height="4" rx="1"/>
+  <rect fill="#718096" x="10" y="78" width="80" height="5" rx="1"/>
+  <rect fill="#5a6475" x="10" y="85" width="200" height="4" rx="1"/>
+  <rect fill="#a0aec0" x="10" y="98" width="90" height="6" rx="1"/>
+  <rect fill="#5a6475" x="10" y="107" width="257.5" height="2" rx="1"/>
+  <rect fill="#718096" x="10" y="116" width="70" height="5" rx="1"/>
+  <rect fill="#5a6475" x="10" y="123" width="220" height="4" rx="1"/>
+</svg>`
+
+export interface Ru3FaqQAItem {
+  question: string
+  answer: string
+}
+
+export interface Ru3FaqCategoryItem {
+  categoryTitle: string
+  faqs: Ru3FaqQAItem[]
+}
+
+export interface Ru3FaqData {
+  fontFamily: string
+
+  showBanner: boolean
+  bannerBgColor: string
+  bannerImage: string
+  bannerImageAspectRatio: string
+  bannerHeight: number
+  bannerTitleAlign: string
+  bannerTitle: string
+  bannerTitleColor: string
+  bannerTitleFont: string
+
+  sectionBgColor: string
+
+  title: string
+  titleColor: string
+  titleAlign: string
+  titleFont: string
+
+  subtitleText: string
+  subtitleColor: string
+  subtitleFont: string
+
+  categoryColor: string
+  categoryFont: string
+  categoryDividerColor: string
+
+  questionColor: string
+  questionFont: string
+  answerColor: string
+  answerFont: string
+
+  categories: Ru3FaqCategoryItem[]
+}
+
+export const ru3FaqDefaults: Ru3FaqData = {
+  fontFamily: '',
+
+  showBanner: true,
+  bannerBgColor: '#0f1b2d',
+  bannerImage: '',
+  bannerImageAspectRatio: 'Auto',
+  bannerHeight: 160,
+  bannerTitleAlign: 'left',
+  bannerTitle: 'Frequently Asked Questions',
+  bannerTitleColor: '#ffffff',
+  bannerTitleFont: '',
+
+  sectionBgColor: '#ffffff',
+
+  title: 'Frequently Asked Questions',
+  titleColor: '#111827',
+  titleAlign: 'left',
+  titleFont: '',
+
+  subtitleText: 'Quick answers about placing orders, shipping timelines, billing, and account support.',
+  subtitleColor: '#6b7280',
+  subtitleFont: '',
+
+  categoryColor: '#111827',
+  categoryFont: '',
+  categoryDividerColor: '#a58a3a',
+
+  questionColor: '#111827',
+  questionFont: '',
+  answerColor: '#374151',
+  answerFont: '',
+
+  categories: [
+    {
+      categoryTitle: 'Orders & Delivery',
+      faqs: [
+        { question: "What's the typical turnaround time before my order ships?", answer: "Standard orders typically leave our warehouse within 3 to 5 business days. Items that are custom-made or personalized may take a bit longer to produce before dispatch. Once your package is on its way, we'll email you a tracking link so you can follow its progress." },
+        { question: 'Is it possible to modify or cancel an order once it has been submitted?', answer: "As long as production hasn't started yet, reach out to our team right away and we'll do our best to adjust or cancel it for you. Once a package has left our facility, though, we're no longer able to make changes." },
+      ],
+    },
+    {
+      categoryTitle: 'Payments & Pricing',
+      faqs: [
+        { question: 'Will I be charged anything on top of the listed product price?', answer: 'Shipping is calculated separately, and a minor handling fee may apply depending on your order. Any card processing charges are always shown upfront during checkout, before you confirm payment.' },
+        { question: 'When does the charge for my order actually go through?', answer: 'Your card is charged as soon as the order is confirmed. Approved business accounts may instead be billed via a separate invoice under our standard payment terms.' },
+      ],
+    },
+    {
+      categoryTitle: 'Help & Account Access',
+      faqs: [
+        { question: 'How can I set up an account or invite a teammate to join ours?', answer: "Get in touch with our support team along with your organization's details, and we'll either create a new account or add a fresh login for your teammate." },
+        { question: "Who should I contact for order questions or items I can't find on the site?", answer: 'Our support team is happy to help with questions about an existing order, or about products that may not currently be listed on the store.' },
+        { question: 'Where can I get help with a technical issue on the website?', answer: 'If you run into login trouble, checkout errors, or anything else while browsing, our support team is ready to help you sort it out.' },
+      ],
+    },
+  ],
+}
+
+export const ru3FaqFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_banner', label: 'Banner', type: 'header' },
+  { key: 'showBanner', label: 'Show Banner', type: 'toggle', default: true },
+  { key: 'bannerBgColor', label: 'Banner Background', type: 'color' },
+  { key: 'bannerImage', label: 'Banner Image (URL)', type: 'image' },
+  { key: 'bannerImageAspectRatio', label: 'Banner Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
+  { key: 'bannerHeight', label: 'Banner Height', type: 'number', unit: 'px', step: 10, placeholder: '160' },
+  { key: 'bannerTitleAlign', label: 'Banner Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'bannerTitle', label: 'Banner Title Text', type: 'text', placeholder: 'e.g. Frequently Asked Questions' },
+  { key: 'bannerTitleColor', label: 'Banner Title Colour', type: 'color' },
+  fontField('bannerTitleFont', 'Banner Title Font'),
+
+  { key: '_h_section', label: 'Section', type: 'header' },
+  { key: 'sectionBgColor', label: 'Section Background', type: 'color' },
+
+  { key: '_h_title', label: 'Title', type: 'header' },
+  { key: 'title', label: 'Title Text', type: 'text', placeholder: 'e.g. Frequently Asked Questions' },
+  { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  { key: 'titleAlign', label: 'Content Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  fontField('titleFont', 'Title Font'),
+
+  { key: '_h_subtitle', label: 'Subtitle', type: 'header' },
+  { key: 'subtitleText', label: 'Subtitle Text', type: 'textarea' },
+  { key: 'subtitleColor', label: 'Subtitle Colour', type: 'color' },
+  fontField('subtitleFont', 'Subtitle Font'),
+
+  { key: '_h_category', label: 'Category Style', type: 'header' },
+  { key: 'categoryColor', label: 'Category Heading Colour', type: 'color' },
+  fontField('categoryFont', 'Category Font'),
+  { key: 'categoryDividerColor', label: 'Category Divider Colour', type: 'color' },
+
+  { key: '_h_qa', label: 'Question & Answer Style', type: 'header' },
+  { key: 'questionColor', label: 'Question Colour', type: 'color' },
+  fontField('questionFont', 'Question Font'),
+  { key: 'answerColor', label: 'Answer Colour', type: 'color' },
+  fontField('answerFont', 'Answer Font'),
+
+  {
+    key: 'categories', label: 'FAQs', type: 'list',
+    listFields: [
+      { key: 'categoryTitle', label: 'Category', type: 'text', placeholder: 'e.g. Ordering & Shipping' },
+      {
+        key: 'faqs', label: 'Questions', type: 'list',
+        listFields: [
+          { key: 'question', label: 'Question', type: 'text' },
+          { key: 'answer', label: 'Answer', type: 'textarea' },
+        ],
+      },
+    ],
+  },
+]
+
+export function renderRu3Faq(data: Ru3FaqData): string {
+  const categories = data.categories ?? []
+  const contentAlign = data.titleAlign || 'left'
+  const contentMarginMap: Record<string, string> = { left: '0 auto 0 0', center: '0 auto', right: '0 0 0 auto' }
+  const contentMargin = contentMarginMap[contentAlign] ?? contentMarginMap.left
+  const outerMaxWidth = contentAlign === 'left' ? '100rem' : '80rem'
+  const contentMaxWidth = contentAlign === 'left' ? '100rem' : '56rem'
+
+  const groupsHtml = categories.map(cat => `
+    <div data-ru3-faq-category style="margin:0 0 2.5rem;">
+      <h3 style="font-size:min(1.25rem,5vw);font-weight:700;color:${data.categoryColor};text-align:${contentAlign};margin:0 0 0.75rem;${fontCss(data.categoryFont, data.fontFamily)}">${cat.categoryTitle}</h3>
+      <div style="height:2px;background:${data.categoryDividerColor};margin:0 0 1.25rem;"></div>
+      <div data-ru3-faq-items style="display:flex;flex-direction:column;gap:1.25rem;">
+        ${(cat.faqs ?? []).map(item => `
+          <div>
+            <p style="font-size:min(1rem,4.2vw);font-weight:700;color:${data.questionColor};text-align:${contentAlign};margin:0 0 0.375rem;${fontCss(data.questionFont, data.fontFamily)}">${item.question}</p>
+            <p style="font-size:min(0.9375rem,4vw);line-height:1.7;color:${data.answerColor};text-align:${contentAlign};margin:0;${fontCss(data.answerFont, data.fontFamily)}">${item.answer}</p>
+          </div>`).join('')}
+      </div>
+    </div>`).join('')
+
+  const bannerHtml = data.showBanner !== false
+    ? (() => {
+        const alignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
+        const items = alignMap[data.bannerTitleAlign] ?? 'flex-start'
+        const textAlign = data.bannerTitleAlign || 'left'
+
+        const bannerImg = productImageSrc(data.bannerImage)
+        const aspectRatioMap: Record<string, string> = {
+          'Wide (16:9)':      'aspect-ratio:16/9;',
+          'Standard (4:3)':   'aspect-ratio:4/3;',
+          'Square (1:1)':     'aspect-ratio:1/1;',
+          'Tall (3:4)':       'aspect-ratio:3/4;',
+          'Cinematic (21:9)': 'aspect-ratio:21/9;',
+        }
+        const bannerAspect = (data.bannerImageAspectRatio && data.bannerImageAspectRatio !== 'Auto')
+          ? (aspectRatioMap[data.bannerImageAspectRatio] ?? '')
+          : ''
+        const bannerBg = bannerImg
+          ? `background:url('${bannerImg}') center/cover no-repeat;background-color:${data.bannerBgColor};`
+          : `background:${data.bannerBgColor};`
+
+        return `<div style="${bannerBg}${bannerAspect}min-height:${data.bannerHeight}px;padding:min(2.5rem,6vw) 0;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box;">
+    <div style="max-width:80rem;margin:0 auto;padding:0 min(2rem,6vw);display:flex;flex-direction:column;gap:0.75rem;align-items:${items};text-align:${textAlign};width:100%;box-sizing:border-box;">
+      <h1 style="font-size:min(2.5rem,8vw);font-weight:800;color:${data.bannerTitleColor};margin:0;line-height:1.15;${fontCss(data.bannerTitleFont, data.fontFamily)}">${data.bannerTitle}</h1>
+    </div>
+  </div>`
+      })()
+    : ''
+
+  return `<section data-component-title="Ru3-FAQ" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.sectionBgColor};${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:768px){
+    [data-ru3-faq-outer]{padding:min(2.5rem,8vw) 1.25rem!important;}
+    [data-ru3-faq-category]{margin:0 0 2rem!important;}
+    [data-ru3-faq-items]{gap:1rem!important;}
+  }
+  @media(max-width:480px){
+    [data-ru3-faq-outer]{padding:1.75rem 1rem!important;}
+  }
+</style>
+  ${bannerHtml}
+  <div data-ru3-faq-outer style="max-width:${outerMaxWidth};margin:0 auto;padding:min(4rem,10vw) min(2rem,6vw);box-sizing:border-box;width:100%;">
+    <div style="max-width:${contentMaxWidth};margin:${contentMargin};width:100%;box-sizing:border-box;">
+      <h2 style="font-size:min(2rem,7vw);font-weight:700;color:${data.titleColor};text-align:${contentAlign};margin:0 0 0.5rem;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+      ${data.subtitleText ? `<p style="font-size:min(1rem,4.5vw);font-style:italic;color:${data.subtitleColor};text-align:${contentAlign};margin:0 0 2.5rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitleText}</p>` : ''}
+      ${groupsHtml}
     </div>
   </div>
 </section>`

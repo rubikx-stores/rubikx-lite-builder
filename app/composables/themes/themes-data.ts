@@ -1115,8 +1115,14 @@ export function renderRu1Footer(data: Ru1FooterData): string {
   const connectIcons = data.connectIconStyle === 'filled'
     ? { chat: ru1FooterIconChatFilled, envelope: ru1FooterIconEnvelopeFilled, phone: ru1FooterIconPhoneFilled }
     : { chat: ru1FooterIconChatOutline, envelope: ru1FooterIconEnvelopeOutline, phone: ru1FooterIconPhoneOutline }
+  // A blank label drops the whole row (icon + link), not just an
+  // empty-looking one — lets a merchant show e.g. only 2 of the 3 rows by
+  // clearing that field, without needing the master toggle off, matching
+  // how a blank Social Link row already renders no icon.
   const connectRow = (iconSvg: string, href: string, label: string) =>
-    `<li style="list-style:none;display:flex;align-items:center;gap:0.5rem;">${connectIconsOn ? `<span style="color:${connectIconColor};display:inline-flex;">${iconSvg}</span>` : ''}<a href="${href}" style="${aStyle}">${label}</a></li>`
+    label?.trim()
+      ? `<li style="list-style:none;display:flex;align-items:center;gap:0.5rem;">${connectIconsOn ? `<span style="color:${connectIconColor};display:inline-flex;">${iconSvg}</span>` : ''}<a href="${href}" style="${aStyle}">${label}</a></li>`
+      : ''
   const contactCol = `<div style="max-width:20rem;">
         <h3 style="${hStyle}">Connect with Us</h3>
         <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.5rem;">
