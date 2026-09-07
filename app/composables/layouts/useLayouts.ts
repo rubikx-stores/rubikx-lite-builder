@@ -25,6 +25,10 @@ import {
   ru5DynamicNavbarFields,
   ru5DynamicNavbarSvg,
   renderRu5DynamicNavbar,
+  ru6HamburgerNavbarDefaults,
+  ru6HamburgerNavbarFields,
+  ru6HamburgerNavbarSvg,
+  renderRu6HamburgerNavbar,
   bannerDefaults,
   bannerFields,
   bannerSvg,
@@ -77,6 +81,10 @@ import {
   ru2FaqBannerFields,
   ru2FaqBannerSvg,
   renderRu2FaqBanner,
+  ru3FaqDefaults,
+  ru3FaqFields,
+  ru3FaqSvg,
+  renderRu3Faq,
   ru2SplitBannerCollageDefaults,
   ru2SplitBannerCollageFields,
   ru2SplitBannerCollageSvg,
@@ -236,6 +244,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       cover_image: ru5DynamicNavbarSvg,
       html_code: renderRu5DynamicNavbar(ru5DynamicNavbarDefaults),
     },
+    {
+      title: 'Ru6-Hamburger-Navbar',
+      category: 'Headers',
+      cover_image: ru6HamburgerNavbarSvg,
+      html_code: renderRu6HamburgerNavbar(ru6HamburgerNavbarDefaults),
+    },
   ],
   Banner: [
     {
@@ -369,6 +383,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'FAQs',
       cover_image: ru2FaqBannerSvg,
       html_code: renderRu2FaqBanner(ru2FaqBannerDefaults),
+    },
+    {
+      title: 'Ru3-FAQ',
+      category: 'FAQs',
+      cover_image: ru3FaqSvg,
+      html_code: renderRu3Faq(ru3FaqDefaults),
     },
   ],
   Stats: [
@@ -512,6 +532,12 @@ export function useLayouts() {
     render: renderRu5DynamicNavbar,
   })
 
+  blockRegistry.register('Ru6-Hamburger-Navbar', {
+    defaults: ru6HamburgerNavbarDefaults,
+    fields: ru6HamburgerNavbarFields,
+    render: renderRu6HamburgerNavbar,
+  })
+
   blockRegistry.register('Ru1-Banner', {
     defaults: bannerDefaults,
     fields: bannerFields,
@@ -582,6 +608,12 @@ export function useLayouts() {
     defaults: ru2FaqBannerDefaults,
     fields: ru2FaqBannerFields,
     render: renderRu2FaqBanner,
+  })
+
+  blockRegistry.register('Ru3-FAQ', {
+    defaults: ru3FaqDefaults,
+    fields: ru3FaqFields,
+    render: renderRu3Faq,
   })
 
   blockRegistry.register('Ru2-Split-Banner-Collage', {

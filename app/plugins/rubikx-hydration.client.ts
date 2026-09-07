@@ -217,15 +217,42 @@ function renderGroupCategoryLinks(categories: Array<{ id: number, name: string, 
   return itemsHtml + viewAll
 }
 
-// Click-to-expand wiring for renderCategoryTreeInline's toggle rows — a
-// single delegated listener on the dropdown container rather than one per
-// row, since loadCategories only ever calls this once per hydration
-// (guarded by data-hydrated) and delegation survives any future re-render
-// of the same dropdown without needing to re-bind.
-function bindInlineCategoryToggles(dropdown: HTMLElement) {
-  dropdown.addEventListener('click', (e) => {
+// Click-to-expand wiring for renderCategoryTreeInline's toggle rows.
+//
+// Attached ONCE ever, globally on `document` (guarded by
+// _inlineCategoryTogglesBound below) — NOT on the passed-in `dropdown`
+// container. Confirmed via a diagnostic pass (attach log fired, the
+// click-time logs never did) that a listener on the container itself goes
+// silently dead: this codebase's own comments elsewhere document that the
+// builder's autosave/sync cycle can tear down and rebuild an entire
+// block's <section> — not just on field edits, evidently on other
+// interactions too — which replaces `dropdown` with a lookalike element
+// that never had this listener attached, orphaning the original silently
+// (no error, nothing — exactly the symptom observed). `document` itself
+// is never replaced, so a global delegated listener survives any number
+// of rebuilds; `dropdown` is only used here to confirm this call site
+// actually has categories worth wiring up, not as the listener's target.
+//
+// Capture phase (the `true` below) for a second, independent reason —
+// inside the page builder, PageBuilderService attaches its own
+// click-to-select listener directly to every element under a block
+// section and calls stopPropagation() (not just preventDefault()) on
+// whatever was clicked. A bubble-phase listener would rely on the click
+// bubbling up to wherever it's attached, which that stopPropagation()
+// cuts off before it arrives. Capture runs top-down, before the event
+// reaches the row, so it isn't affected by anything the row's own
+// bubble-phase listeners do afterward. stopPropagation() here (once we
+// know it's actually a toggle click) additionally keeps the builder's
+// click-to-select/autosave cycle from re-rendering the block right
+// afterward and wiping the expand/collapse state we just set.
+let _inlineCategoryTogglesBound = false
+function bindInlineCategoryToggles(_dropdown: HTMLElement) {
+  if (_inlineCategoryTogglesBound) return
+  _inlineCategoryTogglesBound = true
+  document.addEventListener('click', (e) => {
     const toggle = (e.target as HTMLElement).closest<HTMLElement>('[data-cat-inline-toggle]')
-    if (!toggle || !dropdown.contains(toggle)) return
+    if (!toggle) return
+    e.stopPropagation()
     const parent = toggle.closest<HTMLElement>('[data-cat-inline-parent]')
     const children = parent?.querySelector<HTMLElement>(':scope > [data-cat-inline-children]')
     if (!children) return
@@ -233,7 +260,7 @@ function bindInlineCategoryToggles(dropdown: HTMLElement) {
     children.style.display = isOpen ? 'none' : 'block'
     const chevron = toggle.querySelector<HTMLElement>('[data-cat-inline-chevron]')
     if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)'
-  })
+  }, true)
 }
 
 // Finds the tree node whose name/displayName/headlessName matches `filter`
@@ -384,18 +411,12 @@ function _renderDynamicNavResults(
 
   if (mobileContainer) {
     if (roots.length) {
+      // Same as Ru1-Navbar's inline CategoryNav: renderCategoryTreeInline
+      // starts every branch pre-expanded, and bindInlineCategoryToggles
+      // lets a shopper collapse/re-expand from there. No forced collapse
+      // pass here, so both navbars share identical default behavior.
       mobileContainer.innerHTML = renderCategoryTreeInline(roots, linkStyle)
       bindInlineCategoryToggles(mobileContainer)
-      // renderCategoryTreeInline defaults to pre-expanded (right for
-      // CategoryNav's own floating panel) — this reference design shows
-      // every top-level category collapsed until tapped, so close them
-      // immediately after render instead.
-      mobileContainer.querySelectorAll<HTMLElement>('[data-cat-inline-children]').forEach((c) => {
-        c.style.display = 'none'
-      })
-      mobileContainer.querySelectorAll<HTMLElement>('[data-cat-inline-chevron]').forEach((c) => {
-        c.style.transform = ''
-      })
     } else {
       mobileContainer.innerHTML = emptyState
     }

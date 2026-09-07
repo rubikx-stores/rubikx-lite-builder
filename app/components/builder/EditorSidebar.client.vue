@@ -352,14 +352,15 @@ async function onSelectField(fieldKey: string, value: string | number) {
 // The watcher calls hydrateComponents so the fresh element gets its carousel wired.
 // Other ProductDetail blocks keep their data-hydrated and are skipped automatically.
 //
-// Ru3-Mega-Header and Ru5-Dynamic-Navbar get the same treatment: both have
-// several hydrated shells (AccountMenu, CartBadge, CategoryNav/DynamicCategoryNav,
-// HeaderSearch) that all lose their click/hover wiring the same way on every
-// field edit — without this, e.g. the Account dropdown stops opening (Ru3) or
-// the nav row gets stuck on its "Loading categories…" placeholder (Ru5) the
-// moment you touch any other field on the block.
+// Ru3-Mega-Header, Ru5-Dynamic-Navbar, and Ru6-Hamburger-Navbar get the same
+// treatment: all three have several hydrated shells (AccountMenu, CartBadge,
+// CategoryNav/DynamicCategoryNav, HeaderSearch) that all lose their
+// click/hover wiring the same way on every field edit — without this, e.g.
+// the Account dropdown stops opening (Ru3) or the nav row/hamburger menu
+// gets stuck on its "Loading categories…" placeholder (Ru5, Ru6) the moment
+// you touch any other field on the block.
 let _carouselRewireTimer = 0
-const REWIRE_ON_ANY_FIELD_TITLES = ['Ru3-Mega-Header', 'Ru5-Dynamic-Navbar']
+const REWIRE_ON_ANY_FIELD_TITLES = ['Ru3-Mega-Header', 'Ru5-Dynamic-Navbar', 'Ru6-Hamburger-Navbar']
 watch(
   blockData,
   async (newData) => {
@@ -440,6 +441,58 @@ function debouncedUpdateBlockListItem(listKey: string, idx: number, itemKey: str
   }, 50)
 }
 
+// Nested list (one level deep, e.g. Ru3-FAQ-Category's faqs list living
+// inside a categories list item) — every mutation reads the current nested
+// array, copies+edits it, and writes the WHOLE array back via the existing
+// flat updateBlockListItem(parentKey, parentIdx, nestedKey, value) setter.
+// That setter doesn't care whether `value` is a primitive or an array, so
+// this needed no changes to useBlockRegistry.ts/useEditorSidebar.ts — it's
+// just a different value being passed through the same path.
+function getNestedList(parentKey: string, parentIdx: number, nestedKey: string): Record<string, any>[] {
+  const parentItem = (blockData.value?.[parentKey] as any[] | undefined)?.[parentIdx]
+  return Array.isArray(parentItem?.[nestedKey]) ? parentItem[nestedKey] : []
+}
+
+function addNestedListItem(parentKey: string, parentIdx: number, nestedKey: string, template: Record<string, any>) {
+  const arr = [...getNestedList(parentKey, parentIdx, nestedKey), { ...template }]
+  updateBlockListItem(parentKey, parentIdx, nestedKey, arr)
+}
+
+function removeNestedListItem(parentKey: string, parentIdx: number, nestedKey: string, nestedIdx: number) {
+  const arr = [...getNestedList(parentKey, parentIdx, nestedKey)]
+  arr.splice(nestedIdx, 1)
+  updateBlockListItem(parentKey, parentIdx, nestedKey, arr)
+}
+
+function moveNestedListItemUp(parentKey: string, parentIdx: number, nestedKey: string, nestedIdx: number) {
+  const arr = [...getNestedList(parentKey, parentIdx, nestedKey)]
+  const [moved] = arr.splice(nestedIdx, 1)
+  arr.splice(nestedIdx - 1, 0, moved)
+  updateBlockListItem(parentKey, parentIdx, nestedKey, arr)
+}
+
+function moveNestedListItemDown(parentKey: string, parentIdx: number, nestedKey: string, nestedIdx: number) {
+  const arr = [...getNestedList(parentKey, parentIdx, nestedKey)]
+  const [moved] = arr.splice(nestedIdx, 1)
+  arr.splice(nestedIdx + 1, 0, moved)
+  updateBlockListItem(parentKey, parentIdx, nestedKey, arr)
+}
+
+function updateNestedListItem(parentKey: string, parentIdx: number, nestedKey: string, nestedIdx: number, itemKey: string, value: any) {
+  const arr = [...getNestedList(parentKey, parentIdx, nestedKey)]
+  if (nestedIdx < 0 || nestedIdx >= arr.length) return
+  arr[nestedIdx] = { ...arr[nestedIdx], [itemKey]: value }
+  updateBlockListItem(parentKey, parentIdx, nestedKey, arr)
+}
+
+let _nestedListItemDebounceTimer = 0
+function debouncedUpdateNestedListItem(parentKey: string, parentIdx: number, nestedKey: string, nestedIdx: number, itemKey: string, value: any) {
+  clearTimeout(_nestedListItemDebounceTimer)
+  _nestedListItemDebounceTimer = window.setTimeout(() => {
+    updateNestedListItem(parentKey, parentIdx, nestedKey, nestedIdx, itemKey, value)
+  }, 50)
+}
+
 // FAQ answer: the plain single-line input is too small to read and can't
 // hold a hyperlink/button, so it opens a bigger modal editor instead (see
 // RichTextEditorModal.client.vue). The sidebar row itself just shows a
@@ -449,7 +502,12 @@ function debouncedUpdateBlockListItem(listKey: string, idx: number, itemKey: str
 // Ru4-About's intro paragraphs) — so only one modal instance is needed.
 const showFaqAnswerModal = ref(false)
 const faqAnswerModalInitial = ref('')
-const faqAnswerModalTarget = ref<{ listKey: string; idx: number; itemKey: string } | { fieldKey: string } | null>(null)
+const faqAnswerModalTarget = ref<
+  | { listKey: string; idx: number; itemKey: string }
+  | { listKey: string; idx: number; nestedKey: string; nestedIdx: number; itemKey: string }
+  | { fieldKey: string }
+  | null
+>(null)
 
 function stripHtml(html: any): string {
   if (typeof html !== 'string' || !html) return ''
@@ -460,6 +518,12 @@ function stripHtml(html: any): string {
 
 function openFaqAnswerModal(listKey: string, idx: number, itemKey: string, currentValue: any) {
   faqAnswerModalTarget.value = { listKey, idx, itemKey }
+  faqAnswerModalInitial.value = typeof currentValue === 'string' ? currentValue : ''
+  showFaqAnswerModal.value = true
+}
+
+function openNestedFaqAnswerModal(listKey: string, idx: number, nestedKey: string, nestedIdx: number, itemKey: string, currentValue: any) {
+  faqAnswerModalTarget.value = { listKey, idx, nestedKey, nestedIdx, itemKey }
   faqAnswerModalInitial.value = typeof currentValue === 'string' ? currentValue : ''
   showFaqAnswerModal.value = true
 }
@@ -475,6 +539,8 @@ function handleFaqAnswerSave(html: string) {
   if (!target) return
   if ('fieldKey' in target) {
     updateBlockField(target.fieldKey, html)
+  } else if ('nestedKey' in target) {
+    updateNestedListItem(target.listKey, target.idx, target.nestedKey, target.nestedIdx, target.itemKey, html)
   } else {
     updateBlockListItem(target.listKey, target.idx, target.itemKey, html)
   }
@@ -1268,6 +1334,53 @@ onUnmounted(() => {
                           <button type="button"
                             class="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-base font-medium cursor-pointer shrink-0"
                             @click="updateBlockListItem(field.key, idx, subField.key, Number(item[subField.key] ?? subField.placeholder ?? 0) + (subField.step ?? 1))">+</button>
+                        </div>
+                      </template>
+
+                      <!-- Nested list, one level deep (e.g. Ru3-FAQ-Category's
+                           faqs list living inside a categories list item).
+                           Reuses updateBlockListItem for every mutation —
+                           writing a whole replacement array back into
+                           item[subField.key] via the existing flat setter —
+                           so no changes to useBlockRegistry.ts/useEditorSidebar.ts
+                           were needed to support this. -->
+                      <template v-else-if="subField.type === 'list' && subField.listFields">
+                        <div class="flex items-center justify-end mb-1.5">
+                          <button type="button"
+                            class="text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-1.5 py-0.5 bg-blue-50 cursor-pointer"
+                            @click="addNestedListItem(field.key, idx, subField.key, Object.fromEntries((subField.listFields ?? []).map(f => [f.key, ''])))">+ Add</button>
+                        </div>
+                        <div v-for="(nestedItem, nestedIdx) in (item[subField.key] as Record<string,any>[] ?? [])" :key="nestedIdx"
+                          class="rounded-lg border border-gray-200 bg-gray-50 p-2 mb-2">
+                          <div class="flex justify-between items-center px-1 py-0.5 mb-1">
+                            <span class="text-xs text-gray-400 font-medium">{{ nestedIdx + 1 }}</span>
+                            <div class="flex gap-1">
+                              <button v-if="nestedIdx > 0" type="button" class="text-xs text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="moveNestedListItemUp(field.key, idx, subField.key, nestedIdx)">↑</button>
+                              <button v-if="nestedIdx < (item[subField.key] as any[]).length - 1" type="button" class="text-xs text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="moveNestedListItemDown(field.key, idx, subField.key, nestedIdx)">↓</button>
+                              <button type="button" class="text-xs text-red-400 hover:text-red-600 border-none bg-transparent cursor-pointer px-1" @click="removeNestedListItem(field.key, idx, subField.key, nestedIdx)">✕</button>
+                            </div>
+                          </div>
+                          <template v-for="nestedSubField in subField.listFields" :key="nestedSubField.key">
+                            <div class="mb-1">
+                              <label class="block text-xs font-medium text-gray-700 mb-0.5">{{ nestedSubField.label }}</label>
+                              <template v-if="nestedSubField.type === 'textarea' && !nestedSubField.plainTextarea">
+                                <div class="flex items-center gap-1.5">
+                                  <div class="flex-1 min-w-0 truncate rounded border border-gray-200 px-2 py-1 text-xs bg-white" :class="nestedItem[nestedSubField.key] ? 'text-gray-600' : 'text-gray-400'" :title="stripHtml(nestedItem[nestedSubField.key])">
+                                    {{ stripHtml(nestedItem[nestedSubField.key]) || nestedSubField.placeholder || 'Click Edit to add text…' }}
+                                  </div>
+                                  <button type="button"
+                                    class="shrink-0 rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 hover:bg-gray-100"
+                                    @click="openNestedFaqAnswerModal(field.key, idx, subField.key, nestedIdx, nestedSubField.key, nestedItem[nestedSubField.key])">Edit</button>
+                                </div>
+                              </template>
+                              <template v-else>
+                                <input type="text" :value="typeof nestedItem[nestedSubField.key] === 'object' ? '' : (nestedItem[nestedSubField.key] ?? '')"
+                                  :placeholder="nestedSubField.placeholder ?? ''"
+                                  class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs bg-white focus:outline-none focus:border-blue-400"
+                                  @input="debouncedUpdateNestedListItem(field.key, idx, subField.key, nestedIdx, nestedSubField.key, ($event.target as HTMLInputElement).value)" />
+                              </template>
+                            </div>
+                          </template>
                         </div>
                       </template>
 
