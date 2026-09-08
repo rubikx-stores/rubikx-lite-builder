@@ -1491,9 +1491,31 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     // (rubikx-hydration.client.ts) — drives the 6-track grid groups sit in
     // (naturally adjacent, however many there are) and lets a single group
     // span the whole box instead of just the first track.
+    // Inner wrapper (data-cat-dropdown-inner) mirrors the auto-generated
+    // category row's own dropdown shell (_renderDynamicNavResults in the
+    // hydration plugin) — see rubikx-cat-styles there for why the outer box
+    // stays full-nav-width (the mega dropdown's edge-to-edge background)
+    // while the columns need their own narrower, centered box lined up with
+    // the header row's actual content (paddingX matches [data-ru5-desktop-
+    // nav]'s own padding so "Home" and this column's content share the same
+    // left edge).
+    // This trigger is deliberately NOT an <a> — link.href is documented on
+    // Ru5LogoNavLink as "fallback target when not logo-filtering (plain-
+    // link mode)" only; it isn't a real destination once this link has
+    // groups selected and is showing a dropdown instead. An <a href> here
+    // was live-navigating shoppers away the moment they clicked the label
+    // (e.g. "FBIN") instead of just opening its dropdown. tabindex="0" +
+    // role="button" keep it keyboard-focusable/announced the same way the
+    // old <a> was — both the builder's own CSS (:hover, this file) and the
+    // published site's bindHoverDropdown (rubikx-hydration.client.ts in the
+    // headless repo) key off :hover/focusin on the [data-cat-nav] wrapper
+    // itself, not this element's tag, so no dropdown behavior depends on it
+    // being a link.
     return `<div data-cat-nav="true" data-mega="true" data-mega-cols="${groups.length}" style="position:relative;display:inline-block;"${indexAttrs}${hydrationAttrs} data-logo-nav-mobile="false">
-      <a href="${link.href}" style="${shellLinkStyle}cursor:pointer;"${target}>${link.label} ▾</a>
-      <div data-cat-dropdown="true" style="display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;">${columnsHtml}</div>
+      <span role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" style="${shellLinkStyle}cursor:pointer;display:inline-block;">${link.label} ▾</span>
+      <div data-cat-dropdown="true" style="display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;">
+        <div data-cat-dropdown-inner="true" style="max-width:90rem;margin:0 auto;padding-left:${data.paddingX}px;padding-right:${data.paddingX}px;box-sizing:border-box;">${columnsHtml}</div>
+      </div>
     </div>`
   }
   const desktopLogoLinksEl = logoNavLinks.map((l, i) => renderLogoNavLinkShell(l, i, false)).join('')
@@ -1616,6 +1638,7 @@ ${responsiveStyle}
   style="${navStyle}"
   data-rubikx-component="DynamicCategoryNav"
   data-logo-filter-by-category="${data.logoFilterByCategory}"
+  data-padding-x="${data.paddingX}"
   ${navHydrationAttrs}
 >
   <div style="max-width:90rem;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding:${data.paddingY}px ${data.paddingX}px;">
