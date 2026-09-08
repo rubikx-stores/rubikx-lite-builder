@@ -153,6 +153,10 @@ import {
   ru5FooterFields,
   ru5FooterSvg,
   renderRu5Footer,
+  ru6FooterDefaults,
+  ru6FooterFields,
+  ru6FooterSvg,
+  renderRu6Footer,
   ru1ProductDetailDefaults,
   ru1ProductDetailFields,
   ru1ProductDetailSvg,
@@ -448,6 +452,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       cover_image: ru5FooterSvg,
       html_code: renderRu5Footer(ru5FooterDefaults),
     },
+    {
+      title: 'Ru6-Footer',
+      category: 'Footer',
+      cover_image: ru6FooterSvg,
+      html_code: renderRu6Footer(ru6FooterDefaults),
+    },
   ],
   'Product Showcase': [
     {
@@ -698,6 +708,12 @@ export function useLayouts() {
     defaults: ru5FooterDefaults,
     fields: ru5FooterFields,
     render: renderRu5Footer,
+  })
+
+  blockRegistry.register('Ru6-Footer', {
+    defaults: ru6FooterDefaults,
+    fields: ru6FooterFields,
+    render: renderRu6Footer,
   })
 
   blockRegistry.register('Ru1-Product Detail', {

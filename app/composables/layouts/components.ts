@@ -4043,6 +4043,137 @@ export function renderRu5Footer(data: Ru5FooterData): string {
 </section>`
 }
 
+// ─── Ru6-Footer ──────────────────────────────────────────────────────────────
+// Two-band footer: a top row with a logo on the left and a single CTA button
+// on the right, and a darker bottom row holding the copyright line.
+
+export const ru6FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 90">
+  <rect fill="#1b2430" x="0" y="0" width="277.5" height="60"/>
+  <rect fill="#9ca3af" x="14" y="24" width="70" height="12" rx="1"/>
+  <rect fill="#f2c14e" x="220" y="20" width="45" height="20" rx="3"/>
+  <rect fill="#12161d" x="0" y="60" width="277.5" height="30"/>
+  <rect fill="#6b7280" x="14" y="72" width="90" height="4" rx="1"/>
+</svg>`
+
+export interface Ru6FooterData {
+  fontFamily: string
+
+  logoUrl: string
+  logoAlt: string
+  logoHref: string
+  logoWidth: number
+  logoHeight: number
+
+  buttonText: string
+  buttonUrl: string
+  buttonNewTab: boolean
+  buttonBgColor: string
+  buttonTextColor: string
+  buttonBorderRadius: number
+  buttonFont: string
+
+  copyrightText: string
+  copyrightColor: string
+  copyrightFont: string
+
+  topBgColor: string
+  bottomBgColor: string
+  paddingX: number
+  topPaddingY: number
+  bottomPaddingY: number
+}
+
+export const ru6FooterDefaults: Ru6FooterData = {
+  fontFamily: '',
+
+  logoUrl: '',
+  logoAlt: 'Your Logo',
+  logoHref: '/',
+  logoWidth: 160,
+  logoHeight: 40,
+
+  buttonText: 'Get in touch',
+  buttonUrl: '/contactus',
+  buttonNewTab: false,
+  buttonBgColor: '#f2c14e',
+  buttonTextColor: '#1b2430',
+  buttonBorderRadius: 4,
+  buttonFont: '',
+
+  copyrightText: '© 2026 Your Company. All rights reserved.',
+  copyrightColor: '#9ca3af',
+  copyrightFont: '',
+
+  topBgColor: '#1b2430',
+  bottomBgColor: '#12161d',
+  paddingX: 32,
+  topPaddingY: 20,
+  bottomPaddingY: 16,
+}
+
+export const ru6FooterFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_logo', label: 'Logo', type: 'header' },
+  { key: 'logoUrl',    label: 'Logo Image', type: 'image', noAspectRatio: true },
+  { key: 'logoAlt',    label: 'Logo Alt Text (shown if no image)', type: 'text', placeholder: 'Your Logo' },
+  { key: 'logoHref',   label: 'Logo Link', type: 'url', placeholder: '/' },
+  { key: 'logoWidth',  label: 'Logo Width',  type: 'number', unit: 'px', step: 4, placeholder: '160' },
+  { key: 'logoHeight', label: 'Logo Height', type: 'number', unit: 'px', step: 4, placeholder: '40' },
+
+  { key: '_h_button', label: 'Button', type: 'header' },
+  { key: 'buttonText',   label: 'Button Text', type: 'text', placeholder: 'Get in touch' },
+  { key: 'buttonUrl',    label: 'Button Link', type: 'url', placeholder: '/contactus' },
+  { key: 'buttonNewTab', label: 'Open in New Tab', type: 'toggle', default: false },
+  { key: 'buttonBgColor',      label: 'Button Background',      type: 'color' },
+  { key: 'buttonTextColor',    label: 'Button Text Color',      type: 'color' },
+  { key: 'buttonBorderRadius', label: 'Button Border Radius',   type: 'number', unit: 'px', step: 1, placeholder: '4' },
+  fontField('buttonFont', 'Button Font'),
+
+  { key: '_h_copyright', label: 'Copyright', type: 'header' },
+  { key: 'copyrightText',  label: 'Copyright Text', type: 'text', placeholder: '© 2026 Your Company. All rights reserved.' },
+  { key: 'copyrightColor', label: 'Copyright Color', type: 'color' },
+  fontField('copyrightFont', 'Copyright Font'),
+
+  { key: '_h_style', label: 'Style', type: 'header' },
+  { key: 'topBgColor',     label: 'Top Row Background',           type: 'color' },
+  { key: 'bottomBgColor',  label: 'Bottom Row Background',        type: 'color' },
+  { key: 'paddingX',       label: 'Horizontal Padding',           type: 'number', unit: 'px', step: 4, placeholder: '32' },
+  { key: 'topPaddingY',    label: 'Top Row Vertical Padding',     type: 'number', unit: 'px', step: 4, placeholder: '20' },
+  { key: 'bottomPaddingY', label: 'Bottom Row Vertical Padding',  type: 'number', unit: 'px', step: 4, placeholder: '16' },
+]
+
+export function renderRu6Footer(data: Ru6FooterData): string {
+  const logoInner = data.logoUrl
+    ? `<img src="${productImageSrc(data.logoUrl)}" alt="${data.logoAlt ?? ''}" style="width:${data.logoWidth}px;height:${data.logoHeight}px;object-fit:contain;flex-shrink:0;max-width:100%;" />`
+    : `<span style="color:#ffffff;font-size:1.1rem;font-weight:700;${fontCss(undefined, data.fontFamily)}">${data.logoAlt ?? ''}</span>`
+  const logoHtml = data.logoHref
+    ? `<a href="${data.logoHref}" style="display:inline-flex;align-items:center;text-decoration:none;">${logoInner}</a>`
+    : `<div style="display:inline-flex;align-items:center;">${logoInner}</div>`
+
+  const buttonHtml = data.buttonText
+    ? `<a href="${data.buttonUrl}" style="display:inline-block;padding:0.75rem 1.75rem;border-radius:${data.buttonBorderRadius ?? 4}px;background:${data.buttonBgColor};color:${data.buttonTextColor};text-decoration:none;font-size:0.95rem;font-weight:600;white-space:nowrap;${fontCss(data.buttonFont, data.fontFamily)}"${data.buttonNewTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${data.buttonText}</a>`
+    : ''
+
+  return `<section data-component-title="Ru6-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:640px){
+    [data-ru6-footer-top]{flex-direction:column;align-items:flex-start!important;gap:16px!important;}
+  }
+</style>
+<footer style="box-sizing:border-box;">
+  <div data-ru6-footer-top style="background:${data.topBgColor};padding:${data.topPaddingY}px min(${data.paddingX}px,6vw);display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+    ${logoHtml}
+    ${buttonHtml}
+  </div>
+  <div style="background:${data.bottomBgColor};padding:${data.bottomPaddingY}px min(${data.paddingX}px,6vw);">
+    <p style="margin:0;font-size:0.875rem;color:${data.copyrightColor};${fontCss(data.copyrightFont, data.fontFamily)}">${data.copyrightText}</p>
+  </div>
+</footer>
+</section>`
+}
+
 // ─── Ru1-About ───────────────────────────────────────────────────────────────
 
 export const ru1AboutSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
