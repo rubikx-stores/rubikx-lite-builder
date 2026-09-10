@@ -30,27 +30,33 @@ import { createHash } from 'node:crypto'
 // same credential.
 //
 // Individual logos (StoreProductTemplate.productVariants[].logoIds) each
-// carry a groupName field (a plain string, not a separate relation/id) —
-// confirmed exact casing, camelCase — the merchant picks by group, not by
-// individual logo, so this groups logos by that field and merges every
-// member logo's productCategoryIds into one deduped category list per
-// group. Logos with no groupName are skipped — they have nothing
-// meaningful to surface in a group-based picker.
+// carry a logoGroupId relation ({ id, name }) — this used to be a flat
+// groupName scalar string on the logo itself, but the backend query was
+// updated to expose the group as its own relation. This endpoint's output
+// field is named `name` to match, sourced from logo.logoGroupId.name —
+// downstream callers (fetchLogoGroupsCached.ts, loadLogoNav,
+// EditorSidebar's logo-group picker) read LogoGroup.name accordingly. The
+// merchant still picks by group, not by individual logo, so this groups
+// logos by logoGroupId.name and merges every member logo's
+// productCategoryIds into one deduped category list per group. Logos with
+// no logoGroupId are skipped — they have nothing meaningful to surface in
+// a group-based picker.
 //
 // An id-based filtering approach (this endpoint also returning each group's
 // member logo ids, nav links carrying ?logo_id=<ids>) was tried and reverted
-// — real per-store data confirmed groupName itself holds genuine company
-// names (e.g. "FBIN", "MOEN"), and the actual end-to-end filtering bug found
-// during testing turned out to be a watcher race on the shop page, unrelated
-// to id-vs-name matching. Filtering is back to matching on groupName alone,
-// so this endpoint no longer needs to track or return logo ids.
+// — real per-store data confirmed the group name itself holds genuine
+// company names (e.g. "FBIN", "MOEN"), and the actual end-to-end filtering
+// bug found during testing turned out to be a watcher race on the shop
+// page, unrelated to id-vs-name matching. Filtering is back to matching on
+// the group name alone, so this endpoint no longer needs to track or
+// return logo ids.
 //
 // No page cap — matches products.get.ts/categories.get.ts, which fetch
 // their full result set with no limit. A prior MAX_PAGES backstop here
 // risked silently truncating logos/categories on larger catalogs; loop
 // naturally ends once a page comes back short of PAGE_SIZE.
 type LogoGroup = {
-  groupName: string
+  name: string
   categories: Array<{ id: number, name: string, displayName: string, headlessName?: string | false }>
 }
 
@@ -74,7 +80,7 @@ async function fetchLogoGroups(url: string, token: string, companyId: number | u
   // declaration.
   const query = `query product($offset: Int, $limit: Int, $order: String, $domain: [[Any]]) {
     StoreProductTemplate(offset: $offset, limit: $limit, order: $order, domain: $domain) {
-      productVariants { id logoIds { id name groupName productCategoryIds { id name displayName headlessName } } }
+      productVariants { id logoIds { id name logoGroupId { id name } productCategoryIds { id name displayName headlessName } } }
     }
   }`
 
@@ -111,7 +117,7 @@ async function fetchLogoGroups(url: string, token: string, companyId: number | u
         logoIds: Array<{
           id: number
           name: string
-          groupName?: string | false | null
+          logoGroupId?: { id: number, name: string } | false | null
           // headlessName unverified against real data (no logo-linked
           // category has been inspected with it requested yet) — assumed
           // present since productCategoryIds appears to be the same
@@ -128,11 +134,13 @@ async function fetchLogoGroups(url: string, token: string, companyId: number | u
       for (const variant of tmpl.productVariants ?? []) {
         for (const logo of variant.logoIds ?? []) {
           // typeof guard, not just `?.trim()` — this backend returns `false`
-          // (not null/undefined) for an unset optional field elsewhere in
+          // (not null/undefined) for an unset optional relation elsewhere in
           // this codebase (see headlessName), and optional chaining doesn't
-          // short-circuit on `false`, so `?.trim()` alone still throws
-          // "trim is not a function" for any logo with no group assigned.
-          const groupName = typeof logo.groupName === 'string' ? logo.groupName.trim() : ''
+          // short-circuit on `false`, so `logo.logoGroupId?.name.trim()`
+          // alone would still throw for any logo with no group assigned.
+          const groupName = logo.logoGroupId && typeof logo.logoGroupId === 'object' && typeof logo.logoGroupId.name === 'string'
+            ? logo.logoGroupId.name.trim()
+            : ''
           if (!groupName) continue
           if (!groupCategories.has(groupName)) groupCategories.set(groupName, new Map())
           const catMap = groupCategories.get(groupName)!
@@ -146,8 +154,8 @@ async function fetchLogoGroups(url: string, token: string, companyId: number | u
     if (templates.length < PAGE_SIZE) break
   }
 
-  return Array.from(groupCategories, ([groupName, categories]) => ({
-    groupName,
+  return Array.from(groupCategories, ([name, categories]) => ({
+    name,
     categories: Array.from(categories.values()),
   }))
 }

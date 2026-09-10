@@ -377,7 +377,8 @@ function _renderDynamicNavResults(
   roots: CategoryNode[],
   desktopContainer: HTMLElement | null,
   mobileContainer: HTMLElement | null,
-  linkStyle: string
+  linkStyle: string,
+  dropdownInnerStyle: string
 ) {
   const emptyState = `<span style='display:block;padding:6px 0;color:#9ca3af;font-size:13px;font-style:italic;'>No categories found</span>`
 
@@ -394,10 +395,24 @@ function _renderDynamicNavResults(
           const dropInner = hasGrouping
             ? children.map((c) => renderMegaColumn(c, c.children ?? [])).join('')
             : renderMegaColumn(root, children)
-          return `<div data-cat-nav='true' data-mega='true' style='position:relative;display:inline-block;'>
+          const columnCount = hasGrouping ? children.length : 1
+          // data-mega-cols tells the Ru5-scoped CSS (rubikx-cat-styles) the
+          // column count, which drives the 6-track grid columns sit in
+          // (naturally adjacent, however many there are) and lets a single
+          // column span the whole box instead of just the first track.
+          //
+          // The columns live inside a data-cat-dropdown-inner wrapper, not
+          // directly in [data-cat-dropdown] — the outer box stays anchored
+          // full-nav-width (see rubikx-cat-styles) so the mega dropdown's
+          // *background* still spans edge-to-edge on any viewport width,
+          // while the inner box's own max-width/padding (dropdownInnerStyle,
+          // built in loadDynamicNav from this nav's own data-padding-x) line
+          // its columns up with wherever the header row's real content
+          // starts/ends — same left edge "Home" and every category sit at.
+          return `<div data-cat-nav='true' data-mega='true' data-mega-cols='${columnCount}' style='position:relative;display:inline-block;'>
             <a href='${href}' style='${linkStyle}text-decoration:none;cursor:pointer;'>${root.displayName} ▾</a>
             <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
-              ${dropInner}
+              <div data-cat-dropdown-inner='true' style='${dropdownInnerStyle}'>${dropInner}</div>
             </div>
           </div>`
         }).join('')
@@ -430,6 +445,18 @@ async function loadDynamicNav(el: HTMLElement, companyId?: number) {
   const fontSize = el.dataset.fontSize ?? '14'
   const fontWeight = el.dataset.fontWeight ?? '500'
   const linkStyle = `color:${linkColor};font-size:${fontSize}px;font-weight:${fontWeight};white-space:nowrap;`
+  // Mirrors [data-ru5-desktop-nav]'s own max-width:90rem;margin:0 auto and
+  // paddingX (see renderRu5DynamicNavbar/desktopNavRow in components.ts,
+  // and data-padding-x published alongside it on this same <nav>) — this is
+  // what data-cat-dropdown-inner (built into the markup below) uses to line
+  // its columns up with the header row's real content instead of the full
+  // edge-to-edge [data-cat-dropdown] box. Parsed with a numeric guard, same
+  // pattern as maxCategories above, so a missing/invalid attribute falls
+  // back to the row's own default paddingX rather than emitting the literal
+  // invalid CSS text "padding-left:NaNpx".
+  const rawPaddingX = parseInt(el.dataset.paddingX ?? '', 10)
+  const paddingX = Number.isFinite(rawPaddingX) ? rawPaddingX : 24
+  const dropdownInnerStyle = `max-width:90rem;margin:0 auto;padding-left:${paddingX}px;padding-right:${paddingX}px;box-sizing:border-box;`
 
   const desktopContainer = el.querySelector<HTMLElement>('[data-ru5-desktop-items]')
   const mobileContainer = el.querySelector<HTMLElement>('[data-ru5-mobile-items]')
@@ -463,7 +490,7 @@ async function loadDynamicNav(el: HTMLElement, companyId?: number) {
     const liveMobile = liveSection?.querySelector<HTMLElement>('[data-ru5-mobile-items]') ?? mobileContainer
     if (!liveDesktop?.isConnected && !liveMobile?.isConnected) return
 
-    _renderDynamicNavResults(roots, liveDesktop, liveMobile, linkStyle)
+    _renderDynamicNavResults(roots, liveDesktop, liveMobile, linkStyle, dropdownInnerStyle)
   } catch (e) {
     console.error('[Rubikx] Failed to load dynamic nav categories:', e)
     const liveSection = componentId
@@ -547,7 +574,7 @@ async function loadLogoNav(el: HTMLElement, companyId?: number) {
     if (!desktop0.isConnected && !mobile0?.isConnected) return
 
     const groups = await fetchLogoGroupsCached(companyId)
-    const categoriesByGroupName = new Map(groups.map((g) => [g.groupName, g.categories]))
+    const categoriesByGroupName = new Map(groups.map((g) => [g.name, g.categories]))
 
     const { desktop, mobile } = findLiveShells()
     if (desktop.isConnected) fillColumns(desktop, categoriesByGroupName)
@@ -1196,12 +1223,57 @@ export function hydrateComponents(companyId?: number) {
      edge-to-edge width only the two far corners would show any rounding at
      all, which read as a mistake rather than a deliberate radius. */
   nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-dropdown] { border-radius: 0 !important; }
+  /* A fixed 6-track grid (not a flex split sized to the actual column
+     count) — with flex's even-share sizing, N equal-grow columns always end
+     up exactly 100%/N wide each regardless of their basis, so e.g. 2
+     columns always split into a dead 50/50 half each, leaving column 2's
+     content starting at the box's exact horizontal center instead of
+     sitting right beside column 1. A 6-track grid instead lets however many
+     columns exist (1-6) occupy that many consecutive tracks from the left,
+     naturally adjacent, with no special-casing per count; 7+ overflows into
+     an implicit new row using the same 6-track template, still capping at 6
+     per line. */
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega]:hover [data-cat-dropdown] { display: block !important; }
+  /* The grid itself lives on data-cat-dropdown-inner, not [data-cat-dropdown]
+     directly — [data-cat-dropdown] stays anchored to <nav> so the mega
+     dropdown's background still spans the full, edge-to-edge header width at
+     any viewport size (the rule above), while data-cat-dropdown-inner gets
+     its own max-width:90rem;margin:0 auto;padding matching [data-ru5-desktop-
+     nav] (built inline per-instance in loadDynamicNav/renderLogoNavLinkShell
+     from this navbar's own configured paddingX) so its columns line up with
+     wherever the header row's real content — "Home", every category —
+     actually starts and ends, instead of the full-bleed box's edges. */
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega] [data-cat-dropdown-inner] { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; }
+  /* Same 30px left/right padding on every column so the gap from the box
+     edge — and between columns — reads consistently at any category count.
+     min-width:0 (overriding the shared rule's 150px) lets a track shrink to
+     its actual 1/6 grid width instead of forcing overflow on a narrow nav. */
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega] [data-cat-dropdown-inner] > div { min-width: 0; box-sizing: border-box; padding-left: 30px; padding-right: 30px; }
+  /* A single category still spans the whole box (see the [data-mega-cols=
+     "1"] comment further up) instead of sitting in just the first of the
+     6 tracks. */
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega][data-mega-cols="1"] [data-cat-dropdown-inner] > div { grid-column: 1 / -1; }
   /* Larger type and more vertical breathing room between category rows,
      scoped to Ru5 only so Ru3-Mega-Header's own unscoped mega dropdown
      (shares .rubikx-mega-child/-header via the same >6-category branch in
      loadCategories) keeps its current sizing untouched. */
   nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-dropdown] .rubikx-mega-header a { font-size: 15px !important; }
-  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-dropdown] > div > div a { font-size: 14px !important; padding: 6px 8px !important; }
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-dropdown-inner] > div > div a { font-size: 14px !important; padding: 6px 8px !important; }
+  /* A long, unbroken category/group name would otherwise overflow a narrow
+     6-way track sideways instead of wrapping onto a second line. */
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-dropdown] .rubikx-mega-header a,
+  nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-dropdown-inner] > div > div a { overflow-wrap: break-word; }
+  /* Ru5's own nav (and this mega dropdown with it) is hidden below 1024px in
+     favor of the mobile drawer (see components.ts's [data-ru5-desktop-nav]
+     media query) — so 6 equal tracks only ever need to fit between 1024px
+     and typical desktop widths. That's still tight on the narrower end of
+     that range, so this mid-size step trades the per-row cap down to 3
+     (still wrapping any extra columns beneath) for more breathing room per
+     column; a single category still spans the full row via the
+     [data-mega-cols="1"] rule above regardless of this override. */
+  @media (max-width: 1280px) {
+    nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega] [data-cat-dropdown-inner] { grid-template-columns: repeat(3, 1fr) !important; }
+  }
 `
     document.head.appendChild(style)
   }

@@ -1315,10 +1315,33 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
   const logoEl = `<a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;">${logoInner}</a>`
 
   const searchEl = data.showSearch
-    ? `<div style="display:flex;flex:1;max-width:640px;">
+    ? `<div data-ru5-desktop-search style="display:flex;flex:1;max-width:640px;">
         <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="flex:1;min-width:0;border:1px solid #d1d5db;border-radius:0.375rem 0 0 0.375rem;padding:0.6rem 1rem;font-size:0.875rem;outline:none;${fontCss(data.searchFont, data.fontFamily)}" />
         <button type="button" style="background:#ffffff;border:1px solid #d1d5db;border-left:none;border-radius:0 0.375rem 0.375rem 0;padding:0 1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${icon('magnifyingGlass', { size: 18, stroke: data.linkColor })}</button>
       </div>`
+    : ''
+
+  // Full-width counterpart to searchEl — searchEl itself is hidden at the
+  // same <=1024px breakpoint (see responsiveStyle below), since flex:1 +
+  // max-width:640px alongside a non-shrinking logo otherwise squeezes it
+  // down to an unusably thin input on small phones instead of ever actually
+  // going full-width. Rendered as its own always-visible row directly under
+  // the logo (data-ru5-mobile-search-row, shown at the same breakpoint as
+  // data-ru5-mobile-bar) rather than tucked inside the collapsible
+  // mobilePanel — shoppers shouldn't need to open the hamburger just to
+  // search. Own data-on-mount="loadSearch" (not shared with the desktop
+  // input) — loadSearch is self-contained per element (input.dataset.
+  // searchWired guard, own results dropdown appended via
+  // input.closest('div')), so wiring both independently is safe, same
+  // pattern authStateEl already relies on via renderTopBarButtons() being
+  // called for both the top row and mobilePanel.
+  const mobileSearchRow = data.showSearch
+    ? `<div data-ru5-mobile-search-row style="padding:0 ${data.paddingX}px 0.75rem;">
+      <div style="display:flex;">
+        <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="flex:1;min-width:0;border:1px solid #d1d5db;border-radius:0.375rem 0 0 0.375rem;padding:0.6rem 1rem;font-size:0.875rem;outline:none;${fontCss(data.searchFont, data.fontFamily)}" />
+        <button type="button" style="background:#ffffff;border:1px solid #d1d5db;border-left:none;border-radius:0 0.375rem 0.375rem 0;padding:0 1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${icon('magnifyingGlass', { size: 18, stroke: data.linkColor })}</button>
+      </div>
+    </div>`
     : ''
 
   const linkStyle = `color:${data.linkColor};text-decoration:none;font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}`
@@ -1415,7 +1438,7 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     if (!groups.length || !logoFilterOn) {
       return `<a href="${link.href}" style="${shellLinkStyle}"${target}>${link.label}</a>`
     }
-    // Hydration triggers ONLY from the desktop shell — loadLogoNav does ONE
+    // Hydration TRIGGERS only from the desktop shell — loadLogoNav does ONE
     // /api/logo-groups fetch (a full paginated catalog scan, unlike the
     // lightweight /api/categories loadDynamicNav uses) and updates BOTH the
     // desktop and mobile representations of this same link in that one
@@ -1425,16 +1448,37 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     // benefit — they show identical content. data-logo-nav-index/-mobile
     // are still emitted on both regardless, since loadLogoNav needs them to
     // find the mobile sibling from the desktop element it's triggered on.
+    //
+    // The mobile shell still needs data-rubikx-component="LogoNav" (just
+    // not data-on-mount) — the published/live storefront's own equivalent
+    // mount script discovers every LogoNav shell by querying that attribute
+    // directly (it doesn't know about this file's own desktop-triggers-both
+    // convention), so omitting it left every mobile "fbin"-style dropdown
+    // structurally invisible to that script — the categories inside got
+    // filled by something else, but the click-to-expand listener never got
+    // attached, since the shell was never even found. This repo's own
+    // hydrateElement() only acts on data-on-mount, so adding the marker
+    // here alone doesn't trigger a second fetch on this side.
     const indexAttrs = ` data-logo-nav-index="${idx}"`
-    const hydrationAttrs = forMobile ? '' : ` data-rubikx-component="LogoNav" data-on-mount="loadLogoNav" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}"`
+    const hydrationAttrs = forMobile
+      ? ` data-rubikx-component="LogoNav"`
+      : ` data-rubikx-component="LogoNav" data-on-mount="loadLogoNav" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}"`
     // data-logo-group carries the raw group name URL-encoded (groupName is
     // free text off Odoo, not a numeric id) so it survives round-tripping
     // through an HTML attribute intact; loadLogoNav decodeURIComponent()s it
     // back before matching against /api/logo-groups.
     if (forMobile) {
-      const columnsHtml = groups.map((groupName) => `<div data-logo-group="${encodeURIComponent(groupName)}"><div style="padding:6px 16px;font-weight:600;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">${groupName}</div><div data-logo-col-items></div></div>`).join('')
+      const columnsHtml = groups.map((groupName) => `<div data-logo-group="${encodeURIComponent(groupName)}"><div style="padding:6px 16px;font-weight:600;font-size:12px;color:#111;text-transform:uppercase;letter-spacing:.04em;">${groupName}</div><div data-logo-col-items></div></div>`).join('')
+      // shellLinkStyle comes first (not appended after the flex properties)
+      // so its own display:block — needed as-is for the plain-link branch
+      // above, which reuses the same shellLinkStyle — doesn't win the
+      // duplicate-declaration fight with this row's display:flex; the same
+      // property repeated in one style attribute resolves to whichever
+      // comes last, so display:flex has to be the last one written here or
+      // justify-content:space-between silently does nothing and the chevron
+      // just sits inline after the label instead of being pushed right.
       return `<div data-cat-inline-parent="true"${indexAttrs}${hydrationAttrs} data-logo-nav-mobile="true">
-        <div data-cat-inline-toggle="true" style="display:flex;align-items:center;justify-content:space-between;gap:12px;${shellLinkStyle}cursor:pointer;">${link.label}<span data-cat-inline-chevron="true" style="font-size:11px;opacity:.6;transition:transform .15s;display:inline-block;">▾</span></div>
+        <div data-cat-inline-toggle="true" style="${shellLinkStyle}display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;">${link.label}<span data-cat-inline-chevron="true" style="font-size:11px;opacity:.6;transition:transform .15s;display:inline-block;">▾</span></div>
         <div data-cat-inline-children="true" style="display:none;">${columnsHtml}</div>
       </div>`
     }
@@ -1443,9 +1487,35 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     // side is expected to filter by it, same as the category links below
     // it), not just a non-dead placeholder anymore.
     const columnsHtml = groups.map((groupName) => `<div data-logo-group="${encodeURIComponent(groupName)}"><div class='rubikx-mega-header'><a href='/shop?logoGroup=${encodeURIComponent(groupName)}' style='text-decoration:none;'>${groupName}</a></div><div data-logo-col-items></div></div>`).join('')
-    return `<div data-cat-nav="true" data-mega="true" style="position:relative;display:inline-block;"${indexAttrs}${hydrationAttrs} data-logo-nav-mobile="false">
-      <a href="${link.href}" style="${shellLinkStyle}cursor:pointer;"${target}>${link.label} ▾</a>
-      <div data-cat-dropdown="true" style="display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;">${columnsHtml}</div>
+    // Same data-mega-cols convention as _renderDynamicNavResults
+    // (rubikx-hydration.client.ts) — drives the 6-track grid groups sit in
+    // (naturally adjacent, however many there are) and lets a single group
+    // span the whole box instead of just the first track.
+    // Inner wrapper (data-cat-dropdown-inner) mirrors the auto-generated
+    // category row's own dropdown shell (_renderDynamicNavResults in the
+    // hydration plugin) — see rubikx-cat-styles there for why the outer box
+    // stays full-nav-width (the mega dropdown's edge-to-edge background)
+    // while the columns need their own narrower, centered box lined up with
+    // the header row's actual content (paddingX matches [data-ru5-desktop-
+    // nav]'s own padding so "Home" and this column's content share the same
+    // left edge).
+    // This trigger is deliberately NOT an <a> — link.href is documented on
+    // Ru5LogoNavLink as "fallback target when not logo-filtering (plain-
+    // link mode)" only; it isn't a real destination once this link has
+    // groups selected and is showing a dropdown instead. An <a href> here
+    // was live-navigating shoppers away the moment they clicked the label
+    // (e.g. "FBIN") instead of just opening its dropdown. tabindex="0" +
+    // role="button" keep it keyboard-focusable/announced the same way the
+    // old <a> was — both the builder's own CSS (:hover, this file) and the
+    // published site's bindHoverDropdown (rubikx-hydration.client.ts in the
+    // headless repo) key off :hover/focusin on the [data-cat-nav] wrapper
+    // itself, not this element's tag, so no dropdown behavior depends on it
+    // being a link.
+    return `<div data-cat-nav="true" data-mega="true" data-mega-cols="${groups.length}" style="position:relative;display:inline-block;"${indexAttrs}${hydrationAttrs} data-logo-nav-mobile="false">
+      <span role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" style="${shellLinkStyle}cursor:pointer;display:inline-block;">${link.label} ▾</span>
+      <div data-cat-dropdown="true" style="display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;">
+        <div data-cat-dropdown-inner="true" style="max-width:90rem;margin:0 auto;padding-left:${data.paddingX}px;padding-right:${data.paddingX}px;box-sizing:border-box;">${columnsHtml}</div>
+      </div>
     </div>`
   }
   const desktopLogoLinksEl = logoNavLinks.map((l, i) => renderLogoNavLinkShell(l, i, false)).join('')
@@ -1476,45 +1546,68 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
   </div>`
 
   const mobileBar = `<div data-ru5-mobile-bar style="align-items:center;justify-content:space-between;padding:0.75rem ${data.paddingX}px;${data.showBottomBorder ? `border-top:1px solid ${data.bottomBorderColor};` : ''}">
-    <button type="button" data-active-border-color="${String(data.textColor).replace(/"/g, '&quot;')}" onclick="(function(btn){var sec=btn.closest('section');var panel=sec.querySelector('[data-ru5-mobile-panel]');var ctas=sec.querySelector('[data-ru5-mobile-bar-ctas]');var open=panel.style.display==='block';panel.style.display=open?'none':'block';if(ctas){ctas.style.display=open?'flex':'none';}btn.style.background=open?'none':'rgba(0,0,0,0.04)';btn.style.borderColor=open?'transparent':btn.dataset.activeBorderColor;})(this)" style="background:none;border:1.5px solid transparent;border-radius:6px;cursor:pointer;padding:6px;display:inline-flex;align-items:center;flex-shrink:0;">
+    <button type="button" onclick="(function(btn){var sec=btn.closest('section');var d=sec&&sec.querySelector('[data-ru5-mobile-drawer]');var o=sec&&sec.querySelector('[data-ru5-mobile-overlay]');if(d){d.style.transform='translateX(0)';}if(o){o.style.display='block';}document.body.style.overflow='hidden';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:6px;display:inline-flex;align-items:center;flex-shrink:0;">
       <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="${data.textColor}" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
     </button>
-    <div data-ru5-mobile-bar-ctas style="display:flex;align-items:center;gap:0.6rem;">${renderTopBarButtons()}</div>
+    <div style="display:flex;align-items:center;flex-wrap:nowrap;gap:0.6rem;">${renderTopBarButtons()}</div>
   </div>`
 
-  // In-place expanding panel (pushes page content down), not a slide-in
-  // overlay drawer — intentionally different from Ru2/Ru3/Ru4's mobile
-  // pattern to match this component's reference design.
   const mobileItemsEl = data.showDynamicCategories !== false
     ? `<div data-ru5-mobile-items style="display:flex;flex-direction:column;">${mobilePlaceholder}</div>`
     : ''
 
-  const mobilePanel = `<div data-ru5-mobile-panel style="display:none;padding:0.25rem ${data.paddingX}px 1.25rem;">
+  // Left-side slide-in overlay drawer — matches Ru2/Ru3/Ru4's mobile pattern
+  // (data-mobile-drawer/data-mobile-overlay, translateX), replacing the
+  // in-place push-down panel this used to have. Own data-ru5-mobile-drawer/
+  // -overlay attribute names (not Ru1-4's shared data-mobile-drawer/-overlay)
+  // so a page with more than one navbar variant can't have one block's
+  // hamburger open another's drawer. Scoped via closest('section') rather
+  // than Ru1-4's unscoped document.querySelector, for the same reason.
+  const mobileDrawer = `<div data-ru5-mobile-drawer style="position:fixed;top:0;left:0;width:320px;max-width:85vw;height:100vh;background:${data.bgColor};color:${data.textColor};z-index:99999;transform:translateX(-100%);transition:transform 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+      ${logoEl}
+      <button type="button" onclick="(function(btn){var sec=btn.closest('section');var d=sec&&sec.querySelector('[data-ru5-mobile-drawer]');var o=sec&&sec.querySelector('[data-ru5-mobile-overlay]');if(d){d.style.transform='translateX(-100%)';}if(o){o.style.display='none';}document.body.style.overflow='';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0.25rem;display:flex;align-items:center;">
+        ${icon('xMark', { size: 24, stroke: data.textColor })}
+      </button>
+    </div>
     <a href="${data.homeHref}" style="display:block;padding:0.7rem 0;${homeLinkStyle}">${data.homeLabel}</a>
     ${mobileLogoLinksEl}
     ${mobileItemsEl}
     <div style="padding:0.75rem 0;">${cartEl}</div>
-    <div style="display:flex;justify-content:flex-end;flex-wrap:wrap;gap:0.75rem;margin-top:0.75rem;">${renderTopBarButtons()}</div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:0.75rem;">${renderTopBarButtons()}</div>
   </div>`
+
+  const mobileOverlay = `<div data-ru5-mobile-overlay onclick="(function(el){var sec=el.closest('section');var d=sec&&sec.querySelector('[data-ru5-mobile-drawer]');if(d){d.style.transform='translateX(-100%)';}el.style.display='none';document.body.style.overflow='';})(this);" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;"></div>`
 
   const responsiveStyle = `<style>
   [data-ru5-desktop-nav] { display: flex; }
+  [data-ru5-desktop-search] { display: flex; }
   [data-ru5-mobile-bar] { display: none; }
+  [data-ru5-mobile-search-row] { display: none; }
   @media (max-width: 1024px) {
     [data-ru5-desktop-nav] { display: none !important; }
     [data-ru5-mobile-bar] { display: flex !important; }
   }
-  /* The mobile panel's open/closed state lives purely in an inline
-     style.display the hamburger's onclick sets — nothing else ever resets
-     it. Without this, opening it at mobile width then resizing to desktop
-     leaves that inline display:block in place with no CSS touching it, so
-     it renders stacked alongside the desktop nav row instead of closing.
-     min-width (not the max-width:1024px block above) so it only forces the
-     panel shut once we're past the breakpoint the hamburger itself is
-     hidden at — inline JS-controlled open/close at mobile width is
-     untouched, since this rule doesn't apply there at all. */
+  /* Search bar keeps its own, narrower breakpoint (tablet/768px) rather than
+     sharing the nav's 1024px one — on a tablet-width screen there's still
+     enough room for it inline next to the logo (just the nav links move
+     into the hamburger at 1024px); it only needs to drop to its own
+     full-width row, below the logo, once we're actually at phone width. */
+  @media (max-width: 768px) {
+    [data-ru5-desktop-search] { display: none !important; }
+    [data-ru5-mobile-search-row] { display: block !important; }
+  }
+  /* The drawer's open/closed state lives purely in an inline style the
+     hamburger's onclick sets — nothing else ever resets it. Without this,
+     opening it at mobile width then resizing to desktop leaves it slid open
+     (and the dimmed overlay up) with no CSS touching it. min-width (not the
+     max-width:1024px block above) so it only forces the drawer shut once
+     we're past the breakpoint the hamburger itself is hidden at — inline
+     JS-controlled open/close at mobile width is untouched, since this rule
+     doesn't apply there at all. */
   @media (min-width: 1025px) {
-    [data-ru5-mobile-panel] { display: none !important; }
+    [data-ru5-mobile-drawer] { transform: translateX(-100%) !important; }
+    [data-ru5-mobile-overlay] { display: none !important; }
   }
 </style>`
 
@@ -1545,6 +1638,7 @@ ${responsiveStyle}
   style="${navStyle}"
   data-rubikx-component="DynamicCategoryNav"
   data-logo-filter-by-category="${data.logoFilterByCategory}"
+  data-padding-x="${data.paddingX}"
   ${navHydrationAttrs}
 >
   <div style="max-width:90rem;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding:${data.paddingY}px ${data.paddingX}px;">
@@ -1552,9 +1646,11 @@ ${responsiveStyle}
     ${searchEl}
     <div data-ru5-desktop-nav style="flex-shrink:0;align-items:center;gap:0.75rem;">${renderTopBarButtons()}</div>
   </div>
+  ${mobileSearchRow}
   ${desktopNavRow}
   ${mobileBar}
-  ${mobilePanel}
+  ${mobileDrawer}
+  ${mobileOverlay}
 </nav>
 </section>`
 }
@@ -1597,6 +1693,7 @@ export interface Ru6HamburgerNavbarData {
   homeHref: string
   showDynamicCategories: boolean
   maxCategories: number
+  menuLinks: { label: string; url: string; newTab?: boolean }[]
   linkColor: string
   linkFontSize: number
   linkFontWeight: string
@@ -1634,6 +1731,7 @@ export const ru6HamburgerNavbarDefaults: Ru6HamburgerNavbarData = {
   homeHref: '/',
   showDynamicCategories: true,
   maxCategories: 20,
+  menuLinks: [{ label: 'Home', url: '/', newTab: false }],
   linkColor: '#000000',
   linkFontSize: 15,
   linkFontWeight: '500',
@@ -1670,8 +1768,14 @@ export const ru6HamburgerNavbarFields: FieldConfig[] = [
   fontField('brandFont', 'Brand Font'),
 
   { key: '_h_nav', label: 'Hamburger Menu', type: 'header' },
-  { key: 'homeLabel', label: 'Home Link Label', type: 'text', placeholder: 'Home' },
-  { key: 'homeHref', label: 'Home Link URL', type: 'url', placeholder: '/' },
+  {
+    key: 'menuLinks', label: 'Menu Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'url', label: 'URL', type: 'url' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
+    ],
+  },
   { key: 'showDynamicCategories', label: 'Show Categories from Store', type: 'toggle' },
   { key: 'linkColor', label: 'Menu Link Colour', type: 'color' },
   { key: 'linkFontSize', label: 'Menu Link Font Size (px)', type: 'number', placeholder: '15' },
@@ -1763,6 +1867,9 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
     ? `data-rubikx-component="DynamicCategoryNav" data-on-mount="loadDynamicNav" data-max-categories="${data.maxCategories}" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}"`
     : ''
   const homeLinkStyle = `color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;${fontCss(data.linkFont, data.fontFamily)}`
+  const menuLinksHtml = (data.menuLinks ?? [])
+    .map(l => `<a href="${l.url}" style="display:block;padding:0.65rem 0;${homeLinkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`)
+    .join('')
 
   // On mobile, Cart/Profile relocate INTO the hamburger panel entirely
   // (not just losing their text labels) — this renders plain Cart/profile
@@ -1787,7 +1894,7 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
   // caret triangle sits just above it, near the hamburger, as a visual
   // pointer back to the button that opened it.
   const menuPanel = `<div data-ru6-menu-panel ${menuHydrationAttrs} style="display:none;position:absolute;top:100%;left:0;width:100%;max-width:500px;background:#fff;box-shadow:0 12px 24px rgba(0,0,0,0.12);padding:1.25rem min(${data.paddingX}px,5vw) 1.5rem;z-index:9999;">
-    <a href="${data.homeHref}" style="display:block;padding:0.65rem 0;${homeLinkStyle}">${data.homeLabel}</a>
+    ${menuLinksHtml}
     ${menuItemsEl}
     ${mobileMenuExtras}
   </div>
@@ -3947,19 +4054,150 @@ export function renderRu5Footer(data: Ru5FooterData): string {
 </section>`
 }
 
-// ─── Ru6-Footer ───────────────────────────────────────────────────────────────
+// ─── Ru6-Footer ──────────────────────────────────────────────────────────────
+// Two-band footer: a top row with a logo on the left and a single CTA button
+// on the right, and a darker bottom row holding the copyright line.
 
-export const ru6FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
-  <rect fill="#161b4d" x="0" y="0" width="277.5" height="100"/>
-  <rect fill="#ffffff" x="14" y="14" width="54" height="30" rx="2"/>
-  <rect fill="#0f1f4d" x="30" y="24" width="22" height="10" rx="1"/>
-  <rect fill="#9ca3af" x="14" y="52" width="70" height="4" rx="1"/>
-  <rect fill="#9ca3af" x="14" y="60" width="60" height="4" rx="1"/>
-  <rect fill="#33397a" x="14" y="80" width="249.5" height="1"/>
-  <rect fill="#9ca3af" x="106" y="88" width="65" height="4" rx="1"/>
+export const ru6FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 90">
+  <rect fill="#1b2430" x="0" y="0" width="277.5" height="60"/>
+  <rect fill="#9ca3af" x="14" y="24" width="70" height="12" rx="1"/>
+  <rect fill="#f2c14e" x="220" y="20" width="45" height="20" rx="3"/>
+  <rect fill="#12161d" x="0" y="60" width="277.5" height="30"/>
+  <rect fill="#6b7280" x="14" y="72" width="90" height="4" rx="1"/>
 </svg>`
 
 export interface Ru6FooterData {
+  fontFamily: string
+
+  logoUrl: string
+  logoAlt: string
+  logoHref: string
+  logoWidth: number
+  logoHeight: number
+
+  buttonText: string
+  buttonUrl: string
+  buttonNewTab: boolean
+  buttonBgColor: string
+  buttonTextColor: string
+  buttonBorderRadius: number
+  buttonFont: string
+
+  copyrightText: string
+  copyrightColor: string
+  copyrightFont: string
+
+  topBgColor: string
+  bottomBgColor: string
+  paddingX: number
+  topPaddingY: number
+  bottomPaddingY: number
+}
+
+export const ru6FooterDefaults: Ru6FooterData = {
+  fontFamily: '',
+
+  logoUrl: '',
+  logoAlt: 'Your Logo',
+  logoHref: '/',
+  logoWidth: 160,
+  logoHeight: 40,
+
+  buttonText: 'Get in touch',
+  buttonUrl: '/contactus',
+  buttonNewTab: false,
+  buttonBgColor: '#f2c14e',
+  buttonTextColor: '#1b2430',
+  buttonBorderRadius: 4,
+  buttonFont: '',
+
+  copyrightText: '© 2026 Your Company. All rights reserved.',
+  copyrightColor: '#9ca3af',
+  copyrightFont: '',
+
+  topBgColor: '#1b2430',
+  bottomBgColor: '#12161d',
+  paddingX: 32,
+  topPaddingY: 20,
+  bottomPaddingY: 16,
+}
+
+export const ru6FooterFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_logo', label: 'Logo', type: 'header' },
+  { key: 'logoUrl',    label: 'Logo Image', type: 'image', noAspectRatio: true },
+  { key: 'logoAlt',    label: 'Logo Alt Text (shown if no image)', type: 'text', placeholder: 'Your Logo' },
+  { key: 'logoHref',   label: 'Logo Link', type: 'url', placeholder: '/' },
+  { key: 'logoWidth',  label: 'Logo Width',  type: 'number', unit: 'px', step: 4, placeholder: '160' },
+  { key: 'logoHeight', label: 'Logo Height', type: 'number', unit: 'px', step: 4, placeholder: '40' },
+
+  { key: '_h_button', label: 'Button', type: 'header' },
+  { key: 'buttonText',   label: 'Button Text', type: 'text', placeholder: 'Get in touch' },
+  { key: 'buttonUrl',    label: 'Button Link', type: 'url', placeholder: '/contactus' },
+  { key: 'buttonNewTab', label: 'Open in New Tab', type: 'toggle', default: false },
+  { key: 'buttonBgColor',      label: 'Button Background',      type: 'color' },
+  { key: 'buttonTextColor',    label: 'Button Text Color',      type: 'color' },
+  { key: 'buttonBorderRadius', label: 'Button Border Radius',   type: 'number', unit: 'px', step: 1, placeholder: '4' },
+  fontField('buttonFont', 'Button Font'),
+
+  { key: '_h_copyright', label: 'Copyright', type: 'header' },
+  { key: 'copyrightText',  label: 'Copyright Text', type: 'text', placeholder: '© 2026 Your Company. All rights reserved.' },
+  { key: 'copyrightColor', label: 'Copyright Color', type: 'color' },
+  fontField('copyrightFont', 'Copyright Font'),
+
+  { key: '_h_style', label: 'Style', type: 'header' },
+  { key: 'topBgColor',     label: 'Top Row Background',           type: 'color' },
+  { key: 'bottomBgColor',  label: 'Bottom Row Background',        type: 'color' },
+  { key: 'paddingX',       label: 'Horizontal Padding',           type: 'number', unit: 'px', step: 4, placeholder: '32' },
+  { key: 'topPaddingY',    label: 'Top Row Vertical Padding',     type: 'number', unit: 'px', step: 4, placeholder: '20' },
+  { key: 'bottomPaddingY', label: 'Bottom Row Vertical Padding',  type: 'number', unit: 'px', step: 4, placeholder: '16' },
+]
+
+export function renderRu6Footer(data: Ru6FooterData): string {
+  const logoInner = data.logoUrl
+    ? `<img src="${productImageSrc(data.logoUrl)}" alt="${data.logoAlt ?? ''}" style="width:${data.logoWidth}px;height:${data.logoHeight}px;object-fit:contain;flex-shrink:0;max-width:100%;" />`
+    : `<span style="color:#ffffff;font-size:1.1rem;font-weight:700;${fontCss(undefined, data.fontFamily)}">${data.logoAlt ?? ''}</span>`
+  const logoHtml = data.logoHref
+    ? `<a href="${data.logoHref}" style="display:inline-flex;align-items:center;text-decoration:none;">${logoInner}</a>`
+    : `<div style="display:inline-flex;align-items:center;">${logoInner}</div>`
+
+  const buttonHtml = data.buttonText
+    ? `<a href="${data.buttonUrl}" style="display:inline-block;padding:0.75rem 1.75rem;border-radius:${data.buttonBorderRadius ?? 4}px;background:${data.buttonBgColor};color:${data.buttonTextColor};text-decoration:none;font-size:0.95rem;font-weight:600;white-space:nowrap;${fontCss(data.buttonFont, data.fontFamily)}"${data.buttonNewTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${data.buttonText}</a>`
+    : ''
+
+  return `<section data-component-title="Ru6-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:640px){
+    [data-ru6-footer-top]{flex-direction:column;align-items:flex-start!important;gap:16px!important;}
+  }
+</style>
+<footer style="box-sizing:border-box;">
+  <div data-ru6-footer-top style="background:${data.topBgColor};padding:${data.topPaddingY}px min(${data.paddingX}px,6vw);display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+    ${logoHtml}
+    ${buttonHtml}
+  </div>
+  <div style="background:${data.bottomBgColor};padding:${data.bottomPaddingY}px min(${data.paddingX}px,6vw);">
+    <p style="margin:0;font-size:0.875rem;color:${data.copyrightColor};${fontCss(data.copyrightFont, data.fontFamily)}">${data.copyrightText}</p>
+  </div>
+</footer>
+</section>`
+}
+
+// ─── Ru7-Footer ──────────────────────────────────────────────────────────────
+
+export const ru7FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
+  <rect fill="#374151" x="0" y="0" width="277.5" height="100"/>
+  <rect fill="#ffffff" x="14" y="14" width="54" height="30" rx="2"/>
+  <rect fill="#1f2937" x="30" y="24" width="22" height="10" rx="1"/>
+  <rect fill="#9ca3af" x="14" y="52" width="70" height="4" rx="1"/>
+  <rect fill="#9ca3af" x="14" y="60" width="60" height="4" rx="1"/>
+  <rect fill="#4b5563" x="14" y="80" width="249.5" height="1"/>
+  <rect fill="#9ca3af" x="106" y="88" width="65" height="4" rx="1"/>
+</svg>`
+
+export interface Ru7FooterData {
   logoUrl: string
   logoAlt: string
   logoWidth: number
@@ -3982,7 +4220,7 @@ export interface Ru6FooterData {
   copyrightFont: string
 }
 
-export const ru6FooterDefaults: Ru6FooterData = {
+export const ru7FooterDefaults: Ru7FooterData = {
   logoUrl: '',
   logoAlt: 'Logo',
   logoWidth: 130,
@@ -4005,7 +4243,7 @@ export const ru6FooterDefaults: Ru6FooterData = {
   copyrightFont: '',
 }
 
-export const ru6FooterFields: FieldConfig[] = [
+export const ru7FooterFields: FieldConfig[] = [
   { key: '_h_font', label: 'Font', type: 'header' },
   fontField('fontFamily', 'Font Family'),
 
@@ -4037,28 +4275,28 @@ export const ru6FooterFields: FieldConfig[] = [
   { key: 'gap', label: 'Section Gap', type: 'number', unit: 'px', step: 4, placeholder: '24' },
 ]
 
-export function renderRu6Footer(data: Ru6FooterData): string {
+export function renderRu7Footer(data: Ru7FooterData): string {
   // Generic "photo" placeholder icon (Heroicons v2 outline), shown until a
-  // real logo is uploaded — fixed dark blue, not editor-configurable, since
+  // real logo is uploaded — fixed dark grey, not editor-configurable, since
   // an uploaded raster/vector logo itself can't be recolored through CSS
   // anyway once one is set.
-  const placeholderIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0f1f4d" stroke-width="1.5" style="width:60%;height:60%;">
+  const placeholderIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#1f2937" stroke-width="1.5" style="width:60%;height:60%;">
         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
       </svg>`
   const logoInner = data.logoUrl
     ? `<img src="${productImageSrc(data.logoUrl)}" alt="${data.logoAlt ?? ''}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
     : placeholderIcon
-  const logoBox = `<div data-ru6-logo-box style="display:inline-flex;align-items:center;justify-content:center;background:${data.logoBoxBg || '#ffffff'};padding:${data.logoBoxPadding ?? 16}px;border-radius:${data.logoBoxRadius ?? 0}px;overflow:hidden;box-sizing:border-box;width:${data.logoWidth}px;height:${data.logoHeight}px;max-width:100%;">${logoInner}</div>`
+  const logoBox = `<div data-ru7-logo-box style="display:inline-flex;align-items:center;justify-content:center;background:${data.logoBoxBg || '#ffffff'};padding:${data.logoBoxPadding ?? 16}px;border-radius:${data.logoBoxRadius ?? 0}px;overflow:hidden;box-sizing:border-box;width:${data.logoWidth}px;height:${data.logoHeight}px;max-width:100%;">${logoInner}</div>`
   const alignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
   const contentAlign = alignMap[data.contentAlign] || 'flex-start'
 
-  return `<section data-component-title="Ru6-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru7-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
 <style>
   @media(max-width:420px){
-    [data-ru6-logo-box]{width:${Math.round((data.logoWidth || 130) * 0.75)}px!important;height:${Math.round((data.logoHeight || 70) * 0.75)}px!important;}
+    [data-ru7-logo-box]{width:${Math.round((data.logoWidth || 130) * 0.75)}px!important;height:${Math.round((data.logoHeight || 70) * 0.75)}px!important;}
   }
 </style>
-<footer data-ru6-footer="true" style="box-sizing:border-box;background:${data.bgColor || '#161b4d'};padding:${data.paddingY ?? 48}px min(${data.paddingX ?? 32}px,8vw);">
+<footer data-ru7-footer="true" style="box-sizing:border-box;background:${data.bgColor || '#161b4d'};padding:${data.paddingY ?? 48}px min(${data.paddingX ?? 32}px,8vw);">
   <div style="width:100%;max-width:1280px;margin:0 auto;box-sizing:border-box;">
     <div style="display:flex;flex-direction:column;align-items:${contentAlign};gap:${data.gap ?? 24}px;">
       ${logoBox}

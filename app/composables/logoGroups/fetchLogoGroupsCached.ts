@@ -1,5 +1,5 @@
 export type LogoGroupCategory = { id: number, name: string, displayName: string, headlessName?: string | false }
-export type LogoGroupEntry = { groupName: string, categories: LogoGroupCategory[] }
+export type LogoGroupEntry = { name: string, categories: LogoGroupCategory[] }
 
 // Client-only cache for GET /api/logo-groups, shared by loadLogoNav
 // (rubikx-hydration.client.ts) and the EditorSidebar logo-group picker
