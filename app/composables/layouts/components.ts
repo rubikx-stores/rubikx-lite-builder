@@ -1693,6 +1693,7 @@ export interface Ru6HamburgerNavbarData {
   homeHref: string
   showDynamicCategories: boolean
   maxCategories: number
+  menuLinks: { label: string; url: string; newTab?: boolean }[]
   linkColor: string
   linkFontSize: number
   linkFontWeight: string
@@ -1730,6 +1731,7 @@ export const ru6HamburgerNavbarDefaults: Ru6HamburgerNavbarData = {
   homeHref: '/',
   showDynamicCategories: true,
   maxCategories: 20,
+  menuLinks: [{ label: 'Home', url: '/', newTab: false }],
   linkColor: '#000000',
   linkFontSize: 15,
   linkFontWeight: '500',
@@ -1766,8 +1768,14 @@ export const ru6HamburgerNavbarFields: FieldConfig[] = [
   fontField('brandFont', 'Brand Font'),
 
   { key: '_h_nav', label: 'Hamburger Menu', type: 'header' },
-  { key: 'homeLabel', label: 'Home Link Label', type: 'text', placeholder: 'Home' },
-  { key: 'homeHref', label: 'Home Link URL', type: 'url', placeholder: '/' },
+  {
+    key: 'menuLinks', label: 'Menu Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'url', label: 'URL', type: 'url' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
+    ],
+  },
   { key: 'showDynamicCategories', label: 'Show Categories from Store', type: 'toggle' },
   { key: 'linkColor', label: 'Menu Link Colour', type: 'color' },
   { key: 'linkFontSize', label: 'Menu Link Font Size (px)', type: 'number', placeholder: '15' },
@@ -1859,6 +1867,9 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
     ? `data-rubikx-component="DynamicCategoryNav" data-on-mount="loadDynamicNav" data-max-categories="${data.maxCategories}" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}"`
     : ''
   const homeLinkStyle = `color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;${fontCss(data.linkFont, data.fontFamily)}`
+  const menuLinksHtml = (data.menuLinks ?? [])
+    .map(l => `<a href="${l.url}" style="display:block;padding:0.65rem 0;${homeLinkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`)
+    .join('')
 
   // On mobile, Cart/Profile relocate INTO the hamburger panel entirely
   // (not just losing their text labels) — this renders plain Cart/profile
@@ -1883,7 +1894,7 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
   // caret triangle sits just above it, near the hamburger, as a visual
   // pointer back to the button that opened it.
   const menuPanel = `<div data-ru6-menu-panel ${menuHydrationAttrs} style="display:none;position:absolute;top:100%;left:0;width:100%;max-width:500px;background:#fff;box-shadow:0 12px 24px rgba(0,0,0,0.12);padding:1.25rem min(${data.paddingX}px,5vw) 1.5rem;z-index:9999;">
-    <a href="${data.homeHref}" style="display:block;padding:0.65rem 0;${homeLinkStyle}">${data.homeLabel}</a>
+    ${menuLinksHtml}
     ${menuItemsEl}
     ${mobileMenuExtras}
   </div>
@@ -1953,7 +1964,7 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
   const profileEl = data.showProfile
     ? `<div data-ru6-profile style="position:relative;flex-shrink:0;">
         <button type="button" data-ru6-profile-btn onclick="${profileToggleScript}" style="display:flex;align-items:center;gap:0.5rem;background:none;border:none;border-radius:6px;padding:0.4rem 0.5rem;cursor:pointer;color:${data.textColor};font-size:1.125rem;font-weight:500;white-space:nowrap;${fontCss(undefined, data.fontFamily)}">
-          ${ru6IconUserFilled(24)}<span data-ru6-label>${data.profileLabel}</span><span data-ru6-chevron style="display:inline-flex;transition:transform 0.2s ease;">${icon('chevronDown', { size: 18, strokeWidth: '2.5' })}</span>
+          ${ru6IconUserFilled(24)}<span data-ru6-label>${data.profileLabel}</span><span data-ru6-chevron style="display:inline-flex;transition:transform 0.2s ease;">${icon('chevronDown', { size: 15, strokeWidth: '4' })}</span>
         </button>
         <div data-ru6-profile-drop style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.12);min-width:160px;z-index:9999;padding:6px 0;">
           ${(data.profileLinks ?? []).map(l => `<a href="${l.url}" style="display:block;padding:8px 16px;font-size:14px;font-weight:500;color:#1f2937;text-decoration:none;"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`).join('')}
@@ -2001,7 +2012,7 @@ ${menuLinkHoverStyle}
   <div data-ru6-logo style="display:flex;align-items:center;justify-content:center;min-width:0;">
     ${logoEl}
   </div>
-  <div data-ru6-right style="display:flex;align-items:center;justify-content:flex-end;gap:2.5rem;min-width:0;">
+  <div data-ru6-right style="display:flex;align-items:center;justify-content:flex-end;gap:1.25rem;min-width:0;">
     ${searchToggleEl}
     ${cartEl}
     ${profileEl}
@@ -4174,6 +4185,131 @@ export function renderRu6Footer(data: Ru6FooterData): string {
 </section>`
 }
 
+// ─── Ru7-Footer ──────────────────────────────────────────────────────────────
+
+export const ru7FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
+  <rect fill="#374151" x="0" y="0" width="277.5" height="100"/>
+  <rect fill="#ffffff" x="14" y="14" width="54" height="30" rx="2"/>
+  <rect fill="#1f2937" x="30" y="24" width="22" height="10" rx="1"/>
+  <rect fill="#9ca3af" x="14" y="52" width="70" height="4" rx="1"/>
+  <rect fill="#9ca3af" x="14" y="60" width="60" height="4" rx="1"/>
+  <rect fill="#4b5563" x="14" y="80" width="249.5" height="1"/>
+  <rect fill="#9ca3af" x="106" y="88" width="65" height="4" rx="1"/>
+</svg>`
+
+export interface Ru7FooterData {
+  logoUrl: string
+  logoAlt: string
+  logoWidth: number
+  logoHeight: number
+  logoBoxBg: string
+  logoBoxPadding: number
+  logoBoxRadius: number
+  contentAlign: 'left' | 'center' | 'right'
+  addressText: string
+  addressColor: string
+  copyrightText: string
+  copyrightAlign: 'left' | 'center' | 'right'
+  copyrightColor: string
+  bgColor: string
+  paddingY: number
+  paddingX: number
+  gap: number
+  fontFamily: string
+  addressFont: string
+  copyrightFont: string
+}
+
+export const ru7FooterDefaults: Ru7FooterData = {
+  logoUrl: '',
+  logoAlt: 'Logo',
+  logoWidth: 130,
+  logoHeight: 70,
+  logoBoxBg: '#ffffff',
+  logoBoxPadding: 16,
+  logoBoxRadius: 0,
+  contentAlign: 'left',
+  addressText: '40 W. Gregson Avenue<br>Salt Lake City, Utah 84115',
+  addressColor: '#e5e7eb',
+  copyrightText: '© All Rights Reserved',
+  copyrightAlign: 'center',
+  copyrightColor: '#e5e7eb',
+  bgColor: '#161b4d',
+  paddingY: 48,
+  paddingX: 32,
+  gap: 24,
+  fontFamily: '',
+  addressFont: '',
+  copyrightFont: '',
+}
+
+export const ru7FooterFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_logo', label: 'Logo', type: 'header' },
+  { key: 'logoUrl', label: 'Logo Image', type: 'image', noAspectRatio: true },
+  { key: 'logoAlt', label: 'Logo Alt Text', type: 'text' },
+  { key: 'logoWidth', label: 'Logo Box Width', type: 'number', unit: 'px', step: 4, placeholder: '130' },
+  { key: 'logoHeight', label: 'Logo Box Height', type: 'number', unit: 'px', step: 4, placeholder: '70' },
+  { key: 'logoBoxBg', label: 'Logo Box Background', type: 'color' },
+  { key: 'logoBoxPadding', label: 'Logo Box Padding', type: 'number', unit: 'px', step: 2, placeholder: '16' },
+  { key: 'logoBoxRadius', label: 'Logo Box Border Radius', type: 'number', unit: 'px', step: 2, placeholder: '0' },
+  { key: 'contentAlign', label: 'Logo & Address Align', type: 'select', options: ['left', 'center', 'right'] },
+
+  { key: '_h_address', label: 'Address', type: 'header' },
+  { key: 'addressText', label: 'Address Text', type: 'textarea' },
+  { key: 'addressColor', label: 'Address Text Color', type: 'color' },
+  fontField('addressFont', 'Address Font'),
+
+  { key: '_h_copyright', label: 'Copyright', type: 'header' },
+  { key: 'copyrightText', label: 'Copyright Text', type: 'textarea' },
+  { key: 'copyrightAlign', label: 'Copyright Align', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'copyrightColor', label: 'Copyright Color', type: 'color' },
+  fontField('copyrightFont', 'Copyright Font'),
+
+  { key: '_h_style', label: 'Style', type: 'header' },
+  { key: 'bgColor', label: 'Background Color', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '48' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '32' },
+  { key: 'gap', label: 'Section Gap', type: 'number', unit: 'px', step: 4, placeholder: '24' },
+]
+
+export function renderRu7Footer(data: Ru7FooterData): string {
+  // Generic "photo" placeholder icon (Heroicons v2 outline), shown until a
+  // real logo is uploaded — fixed dark grey, not editor-configurable, since
+  // an uploaded raster/vector logo itself can't be recolored through CSS
+  // anyway once one is set.
+  const placeholderIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#1f2937" stroke-width="1.5" style="width:60%;height:60%;">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+      </svg>`
+  const logoInner = data.logoUrl
+    ? `<img src="${productImageSrc(data.logoUrl)}" alt="${data.logoAlt ?? ''}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+    : placeholderIcon
+  const logoBox = `<div data-ru7-logo-box style="display:inline-flex;align-items:center;justify-content:center;background:${data.logoBoxBg || '#ffffff'};padding:${data.logoBoxPadding ?? 16}px;border-radius:${data.logoBoxRadius ?? 0}px;overflow:hidden;box-sizing:border-box;width:${data.logoWidth}px;height:${data.logoHeight}px;max-width:100%;">${logoInner}</div>`
+  const alignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
+  const contentAlign = alignMap[data.contentAlign] || 'flex-start'
+
+  return `<section data-component-title="Ru7-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:420px){
+    [data-ru7-logo-box]{width:${Math.round((data.logoWidth || 130) * 0.75)}px!important;height:${Math.round((data.logoHeight || 70) * 0.75)}px!important;}
+  }
+</style>
+<footer data-ru7-footer="true" style="box-sizing:border-box;background:${data.bgColor || '#161b4d'};padding:${data.paddingY ?? 48}px min(${data.paddingX ?? 32}px,8vw);">
+  <div style="width:100%;max-width:1280px;margin:0 auto;box-sizing:border-box;">
+    <div style="display:flex;flex-direction:column;align-items:${contentAlign};gap:${data.gap ?? 24}px;">
+      ${logoBox}
+      <div data-field-key="addressText" style="color:${data.addressColor || '#e5e7eb'};font-size:0.95rem;line-height:1.6;text-align:${data.contentAlign || 'left'};${fontCss(data.addressFont, data.fontFamily)}">${data.addressText}</div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,0.15);margin-top:${data.gap ?? 24}px;padding-top:24px;text-align:${data.copyrightAlign || 'center'};">
+      <p data-field-key="copyrightText" style="margin:0;font-size:0.85rem;color:${data.copyrightColor || '#e5e7eb'};${fontCss(data.copyrightFont, data.fontFamily)}">${data.copyrightText}</p>
+    </div>
+  </div>
+</footer>
+</section>`
+}
+
 // ─── Ru1-About ───────────────────────────────────────────────────────────────
 
 export const ru1AboutSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
@@ -5322,7 +5458,9 @@ export const bannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2
 
 export interface BannerData {
   title: string
+  titleFontSize: number
   subtitle: string
+  subtitleFontSize: number
   bgColor: string
   bgImage: string
   bgImageAspectRatio: string
@@ -5335,6 +5473,9 @@ export interface BannerData {
   ctaHref: string
   ctaBgColor: string
   ctaTextColor: string
+  ctaFontSize: number
+  ctaPaddingY: number
+  ctaPaddingX: number
   paddingY: number
   fontFamily: string
   titleFont: string
@@ -5344,7 +5485,9 @@ export interface BannerData {
 
 export const bannerDefaults: BannerData = {
   title: '',
+  titleFontSize: 40,
   subtitle: '',
+  subtitleFontSize: 18,
   bgColor: '#f7f7f7',
   bgImage: '',
   bgImageAspectRatio: 'Auto',
@@ -5357,6 +5500,9 @@ export const bannerDefaults: BannerData = {
   ctaHref: '/shop',
   ctaBgColor: '#ffffff',
   ctaTextColor: '#111827',
+  ctaFontSize: 16,
+  ctaPaddingY: 12,
+  ctaPaddingX: 32,
   paddingY: 80,
   fontFamily: '',
   titleFont: '',
@@ -5369,8 +5515,10 @@ export const bannerFields: FieldConfig[] = [
   fontField('fontFamily', 'Font Family'),
 
   { key: 'title',    label: 'Title',    type: 'textarea',  placeholder: 'e.g. Welcome to Our Store' },
+  { key: 'titleFontSize', label: 'Title Font Size (px)', type: 'number', step: 1, placeholder: '40' },
   fontField('titleFont', 'Title Font'),
-  { key: 'subtitle', label: 'Subtitle', type: 'text',  placeholder: 'Short supporting line…' },
+  { key: 'subtitle', label: 'Subtitle', type: 'textarea',  placeholder: 'Short supporting line…' },
+  { key: 'subtitleFontSize', label: 'Subtitle Font Size (px)', type: 'number', step: 1, placeholder: '18' },
   fontField('subtitleFont', 'Subtitle Font'),
   { key: 'textColor',  label: 'Text Colour',       type: 'color' },
   { key: 'textAlign',  label: 'Text Alignment',    type: 'select', options: ['left', 'center', 'right'] },
@@ -5383,6 +5531,9 @@ export const bannerFields: FieldConfig[] = [
   { key: 'ctaHref',    label: 'Button URL',       type: 'url',  placeholder: '/shop' },
   { key: 'ctaBgColor',   label: 'Button Background',  type: 'color' },
   { key: 'ctaTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'ctaFontSize',  label: 'Button Font Size (px)', type: 'number', step: 1, placeholder: '16' },
+  { key: 'ctaPaddingY',  label: 'Button Vertical Padding (px)', type: 'number', step: 1, placeholder: '12' },
+  { key: 'ctaPaddingX',  label: 'Button Horizontal Padding (px)', type: 'number', step: 1, placeholder: '32' },
   fontField('buttonFont', 'Button Font'),
   { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '80' },
 ]
@@ -5429,7 +5580,7 @@ export function renderBanner(data: BannerData): string {
     : ''
 
   const ctaHtml = data.showCta !== false
-    ? `<a href="${data.ctaHref}" style="display:inline-block;margin-top:2rem;padding:0.75rem 2rem;background:${data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:6px;font-size:1rem;font-weight:600;${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaLabel}</a>`
+    ? `<a href="${data.ctaHref}" style="display:inline-block;margin-top:2rem;padding:${data.ctaPaddingY ?? 12}px ${data.ctaPaddingX ?? 32}px;background:${data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:6px;font-size:${data.ctaFontSize ?? 16}px;font-weight:600;${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaLabel}</a>`
     : ''
 
   // Section uses display:flex so the inner div can flex:1 and fill the full
@@ -5439,8 +5590,8 @@ export function renderBanner(data: BannerData): string {
   ${autoRatioScript}
   <div style="width:100%;box-sizing:border-box;flex:1;display:flex;align-items:center;padding:${data.paddingY}px 1rem;">
     <div style="max-width:80rem;margin:0 auto;width:100%;display:flex;flex-direction:column;align-items:${itemsAlign};text-align:${textAlign};">
-      <h2 style="font-size:min(2.5rem,8vw);font-weight:700;color:${data.textColor};margin:0;line-height:1.2;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
-      <p style="font-size:min(1.125rem,4.5vw);color:${data.textColor};opacity:0.85;margin:1rem 0 0;max-width:42rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>
+      <h2 style="font-size:min(${data.titleFontSize ?? 40}px,8vw);font-weight:700;color:${data.textColor};margin:0;line-height:1.2;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+      <p style="font-size:min(${data.subtitleFontSize ?? 18}px,4.5vw);color:${data.textColor};opacity:0.85;margin:1rem 0 0;max-width:42rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>
       ${ctaHtml}
     </div>
   </div>
@@ -11093,11 +11244,11 @@ export const showMultipleProductsDefaults: ShowMultipleProductsData = {
   contentAlign: 'left',
   defaultBorderColor: '#e5e7eb',
   borderWidth: 1,
-  hoverBorderColor: '#1e3a8a',
+  hoverBorderColor: '#0f1f4d',
   hoverBorderRadius: 8,
   showViewProduct: true,
   viewProductLabel: 'View Product',
-  viewProductBg: '#1e3a8a',
+  viewProductBg: '#0f1f4d',
   viewProductTextColor: '#ffffff',
   hoverOverlayColor: '#9ca3af',
   hoverOverlayOpacity: 35,
@@ -11106,7 +11257,7 @@ export const showMultipleProductsDefaults: ShowMultipleProductsData = {
   ...productCardStyleDefaults,
   cardPadding: 16,
   showButton: true,
-  buttonBgColor: '#1e3a8a',
+  buttonBgColor: '#0f1f4d',
   buttonTextColor: '#ffffff',
 }
 
@@ -11282,7 +11433,7 @@ export function renderShowMultipleProducts(data: ShowMultipleProductsData): stri
   @media(max-width:1024px){[data-showmulti-grid]{grid-template-columns:repeat(3,1fr)!important;}}
   @media(max-width:768px){[data-showmulti-grid]{grid-template-columns:repeat(2,1fr)!important;}}
   @media(max-width:480px){[data-showmulti-grid]{grid-template-columns:1fr!important;}}
-  [data-smp-card]:hover{box-shadow:0 0 0 ${data.borderWidth ?? 1}px ${data.hoverBorderColor || '#1e3a8a'},${CARD_SHADOW_PRESETS['shadow-xl']}!important;transform:translateY(-4px) scale(1.02)!important;}
+  [data-smp-card]:hover{box-shadow:0 0 0 ${data.borderWidth ?? 1}px ${data.hoverBorderColor || '#0f1f4d'},${CARD_SHADOW_PRESETS['shadow-xl']}!important;transform:translateY(-4px) scale(1.02)!important;}
   [data-smp-card]:hover [data-smp-overlay],[data-smp-card]:hover [data-smp-viewbtn],[data-smp-card]:hover [data-smp-arrow]{opacity:1!important;}
   ${data.imageHoverZoom !== false ? `[data-smp-card]:hover [data-smp-image]{transform:scale(${1 + (data.imageHoverZoomAmount ?? 6) / 100})!important;}` : ''}
   /* Touch devices (tablet/mobile) can't rely on :hover to reveal these —
