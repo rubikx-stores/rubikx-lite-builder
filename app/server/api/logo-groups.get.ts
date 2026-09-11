@@ -164,7 +164,6 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
 
   if (!config.odooBaseUrl) throw createError({ statusCode: 500, message: 'ODOO_BASE_URL is not configured' })
-  if (!config.odooGraphqlApiKey) throw createError({ statusCode: 500, message: 'ODOO_GRAPHQL_API_KEY is not configured' })
 
   const { companyId: companyIdParam } = getQuery(event) as { companyId?: string }
   const companyId = companyIdParam ? Number(companyIdParam)
