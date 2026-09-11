@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   const companyId = companyIdParam ? Number(companyIdParam)
     : config.odooCompanyId ? Number(config.odooCompanyId)
     : undefined
-  const token = getCookie(event, 'rb_auth_token') ?? config.odooGraphqlApiKey
+  const token = getCookie(event, 'rb_auth_token') ?? config.odooGraphqlApiKey ?? ''
   const idList = idsParam ? idsParam.split(',').map(Number).filter(Boolean) : []
   const domain = idList.length ? [['id', 'in', idList]] : []
   const context = companyId ? { allowed_company_ids: [companyId] } : {}

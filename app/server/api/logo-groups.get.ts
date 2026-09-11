@@ -169,7 +169,7 @@ export default defineEventHandler(async (event) => {
   const companyId = companyIdParam ? Number(companyIdParam)
     : config.odooCompanyId ? Number(config.odooCompanyId)
     : undefined
-  const token = getCookie(event, 'rb_auth_token') ?? config.odooGraphqlApiKey
+  const token = getCookie(event, 'rb_auth_token') ?? config.odooGraphqlApiKey ?? ''
   const url = `${config.odooBaseUrl}/graphql`
   // Scoped by identity, not just companyId — two different callers (e.g. two
   // different logged-in customers, or a customer vs. the anonymous fallback
