@@ -2023,6 +2023,274 @@ ${menuLinkHoverStyle}
 </section>`
 }
 
+// ─── Ru7-Navbar ──────────────────────────────────────────────────────────────
+// Two-row navbar: a thin dark utility bar (Sign In, AuthState-aware) on top,
+// and a white main bar underneath holding the logo, nav links, search and
+// cart. Nav links collapse into a hamburger dropdown below 640px — same
+// icon-swap + dropdown-panel technique as Ru6-Hamburger-Navbar's own menu
+// (menuToggleScript/menuCloseScript there), just scoped to data-ru7-* here so
+// the two blocks never collide when both sit on the same page. Search toggles
+// a full-width in-flow row directly under the main bar (not a floating
+// popup) — same icon-swap on the toggle button, different reveal.
+
+export const ru7NavbarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 70">
+  <rect fill="#111827" x="0" y="0" width="277.5" height="16"/>
+  <rect fill="#9ca3af" x="240" y="6" width="26" height="5" rx="1"/>
+  <rect fill="#ffffff" x="0" y="16" width="277.5" height="54"/>
+  <circle fill="#374151" cx="16" cy="43" r="6"/>
+  <rect fill="#374151" x="26" y="39" width="44" height="8" rx="1"/>
+  <rect fill="#9ca3af" x="196" y="40" width="30" height="6" rx="1"/>
+  <circle fill="none" stroke="#9ca3af" stroke-width="1.5" cx="238" cy="43" r="6"/>
+  <rect fill="none" stroke="#9ca3af" stroke-width="1.5" x="254" y="35" width="16" height="14" rx="2"/>
+</svg>`
+
+export interface Ru7NavbarData {
+  fontFamily: string
+  logoFont: string
+  linkFont: string
+  buttonFont: string
+
+  logoUrl: string
+  logoAlt: string
+  brandName: string
+  logoWidth: number
+  brandFontSize: number
+  brandFontWeight: string
+
+  navLinks: { label: string; url: string; newTab?: boolean }[]
+  linkColor: string
+  linkFontSize: number
+  linkFontWeight: string
+
+  showSearch: boolean
+  searchPlaceholder: string
+
+  showCart: boolean
+  cartUrl: string
+
+  showTopBar: boolean
+  showSignIn: boolean
+  signInLabel: string
+  signInUrl: string
+  topBarBgColor: string
+  topBarTextColor: string
+  topBarPaddingY: number
+  topBarPaddingX: number
+
+  mainBarBgColor: string
+  mainBarPaddingY: number
+  mainBarPaddingX: number
+
+  sticky: boolean
+}
+
+export const ru7NavbarDefaults: Ru7NavbarData = {
+  fontFamily: '',
+  logoFont: '',
+  linkFont: '',
+  buttonFont: '',
+
+  logoUrl: '',
+  logoAlt: 'Your Logo',
+  brandName: 'Your Logo',
+  logoWidth: 140,
+  brandFontSize: 22,
+  brandFontWeight: '700',
+
+  navLinks: [{ label: 'Shop', url: '/shop' }],
+  linkColor: '#111827',
+  linkFontSize: 15,
+  linkFontWeight: '600',
+
+  showSearch: true,
+  searchPlaceholder: 'Search',
+
+  showCart: true,
+  cartUrl: '/cart',
+
+  showTopBar: true,
+  showSignIn: true,
+  signInLabel: 'Sign In',
+  signInUrl: '/login',
+  topBarBgColor: '#000000',
+  topBarTextColor: '#ffffff',
+  topBarPaddingY: 10,
+  topBarPaddingX: 32,
+
+  mainBarBgColor: '#ffffff',
+  mainBarPaddingY: 20,
+  mainBarPaddingX: 32,
+
+  sticky: false,
+}
+
+export const ru7NavbarFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_logo', label: 'Logo', type: 'header' },
+  { key: 'logoUrl', label: 'Logo Image', type: 'image', noAspectRatio: true },
+  { key: 'logoAlt', label: 'Logo Alt Text', type: 'text', placeholder: 'Your Logo' },
+  { key: 'brandName', label: 'Brand Name (shown if no logo image)', type: 'text', placeholder: 'Your Logo' },
+  { key: 'logoWidth', label: 'Logo Width (px)', type: 'number', unit: 'px', step: 4, placeholder: '140' },
+  { key: 'brandFontSize', label: 'Brand Font Size (px)', type: 'number', unit: 'px', step: 1, placeholder: '22' },
+  { key: 'brandFontWeight', label: 'Brand Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  fontField('logoFont', 'Logo Font'),
+
+  { key: '_h_topbar', label: 'Top Bar', type: 'header' },
+  { key: 'showTopBar', label: 'Show Top Bar', type: 'toggle' },
+  { key: 'showSignIn', label: 'Show Sign In', type: 'toggle' },
+  { key: 'signInLabel', label: 'Sign In Label', type: 'text', placeholder: 'Sign In' },
+  { key: 'signInUrl', label: 'Sign In URL', type: 'url', placeholder: '/login' },
+  { key: 'topBarBgColor', label: 'Top Bar Background', type: 'color' },
+  { key: 'topBarTextColor', label: 'Top Bar Text Colour', type: 'color' },
+  { key: 'topBarPaddingY', label: 'Top Bar Vertical Padding (px)', type: 'number', unit: 'px', step: 2, placeholder: '10' },
+  { key: 'topBarPaddingX', label: 'Top Bar Horizontal Padding (px)', type: 'number', unit: 'px', step: 4, placeholder: '32' },
+
+  { key: '_h_nav', label: 'Navigation', type: 'header' },
+  {
+    key: 'navLinks', label: 'Nav Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'url', label: 'URL', type: 'url' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
+    ],
+  },
+  { key: 'linkColor', label: 'Link Colour', type: 'color' },
+  { key: 'linkFontSize', label: 'Link Font Size (px)', type: 'number', unit: 'px', step: 1, placeholder: '15' },
+  { key: 'linkFontWeight', label: 'Link Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  fontField('linkFont', 'Link Font'),
+
+  { key: '_h_search', label: 'Search', type: 'header' },
+  { key: 'showSearch', label: 'Show Search', type: 'toggle' },
+  { key: 'searchPlaceholder', label: 'Search Placeholder', type: 'text', placeholder: 'Search' },
+
+  { key: '_h_cart', label: 'Cart', type: 'header' },
+  { key: 'showCart', label: 'Show Cart', type: 'toggle' },
+  { key: 'cartUrl', label: 'Cart URL', type: 'url', placeholder: '/cart' },
+
+  { key: '_h_style', label: 'Style', type: 'header' },
+  { key: 'mainBarBgColor', label: 'Main Bar Background', type: 'color' },
+  { key: 'mainBarPaddingY', label: 'Main Bar Vertical Padding (px)', type: 'number', unit: 'px', step: 2, placeholder: '20' },
+  { key: 'mainBarPaddingX', label: 'Main Bar Horizontal Padding (px)', type: 'number', unit: 'px', step: 4, placeholder: '32' },
+  { key: 'sticky', label: 'Sticky Navbar (stays fixed while scrolling)', type: 'toggle' },
+]
+
+export function renderRu7Navbar(data: Ru7NavbarData): string {
+  const logoInner = data.logoUrl
+    ? `<img src="${productImageSrc(data.logoUrl)}" alt="${data.logoAlt ?? ''}" style="width:${data.logoWidth}px;max-width:100%;height:auto;display:block;" />`
+    : `<span style="font-size:${data.brandFontSize}px;font-weight:${data.brandFontWeight};color:#111827;${fontCss(data.logoFont, data.fontFamily)}">${data.brandName}</span>`
+  const logoEl = `<a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;min-width:0;flex-shrink:0;">${logoInner}</a>`
+
+  const linkStyle = `color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;${fontCss(data.linkFont, data.fontFamily)}`
+  const navLinksHtml = (data.navLinks ?? [])
+    .map(l => `<a href="${l.url}" style="${linkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`)
+    .join('')
+  const desktopLinksEl = navLinksHtml
+    ? `<nav data-ru7-desktop-links style="display:flex;align-items:center;gap:1.75rem;">${navLinksHtml}</nav>`
+    : ''
+
+  // Sign In: static link + hidden AuthState shell, same coexistence pattern
+  // as Ru1-Navbar's own buttons — loadAuthState (rubikx-hydration.client.ts)
+  // hides every [data-auth-signin-btn] and reveals the shell once it knows
+  // the visitor is logged in, or does the reverse if the auth check fails.
+  const signInEl = data.showSignIn
+    ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${data.topBarTextColor};font-size:0.8125rem;font-weight:600;text-decoration:none;white-space:nowrap;${fontCss(data.buttonFont, data.fontFamily)}">${data.signInLabel}</a>
+       <span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" style="position:relative;display:none;align-items:center;flex-shrink:0;"></span>`
+    : ''
+  const topBarEl = data.showTopBar !== false
+    ? `<div style="background:${data.topBarBgColor};padding:${data.topBarPaddingY}px min(${data.topBarPaddingX}px,6vw);display:flex;align-items:center;justify-content:flex-end;gap:1rem;">${signInEl}</div>`
+    : ''
+
+  // Hamburger for the nav-links list only — search/cart icons stay visible
+  // in the main row at every width since they're compact and don't need
+  // collapsing; only an admin-grown Nav Links list risks overflowing a
+  // narrow screen. Same stopImmediatePropagation rationale as
+  // Ru6-Hamburger-Navbar's own menuToggleScript: the page builder's own
+  // click-to-select listener lives on this same element and would otherwise
+  // fight/undo this toggle.
+  const hamburgerToggleScript = `event.stopImmediatePropagation();(function(btn){var sec=btn.closest('section');var panel=sec.querySelector('[data-ru7-menu-panel]');var overlay=sec.querySelector('[data-ru7-menu-overlay]');var bars=btn.querySelector('[data-icon-bars]');var x=btn.querySelector('[data-icon-x]');var open=panel.style.display==='block';panel.style.display=open?'none':'block';if(overlay)overlay.style.display=open?'none':'block';if(bars)bars.style.display=open?'inline-flex':'none';if(x)x.style.display=open?'none':'inline-flex';})(this);`
+  const hamburgerCloseScript = `event.stopImmediatePropagation();(function(el){var sec=el.closest('section');var panel=sec.querySelector('[data-ru7-menu-panel]');var btn=sec.querySelector('[data-ru7-menu-toggle]');panel.style.display='none';el.style.display='none';var bars=btn.querySelector('[data-icon-bars]');var x=btn.querySelector('[data-icon-x]');if(bars)bars.style.display='inline-flex';if(x)x.style.display='none';})(this);`
+  const hamburgerEl = navLinksHtml
+    ? `<button type="button" data-ru7-menu-toggle onclick="${hamburgerToggleScript}" style="display:none;background:none;border:none;cursor:pointer;padding:0;align-items:center;flex-shrink:0;">
+        <span data-icon-bars style="display:inline-flex;"><svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.linkColor}" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg></span>
+        <span data-icon-x style="display:none;">${icon('xMark', { size: 24, stroke: data.linkColor, strokeWidth: '2.5' })}</span>
+      </button>
+      <div data-ru7-menu-panel style="display:none;position:absolute;top:100%;left:0;width:100%;background:#fff;box-shadow:0 12px 24px rgba(0,0,0,0.12);padding:0.75rem min(${data.mainBarPaddingX}px,6vw) 1rem;z-index:9999;">
+        ${(data.navLinks ?? []).map(l => `<a href="${l.url}" style="display:block;padding:0.65rem 0;${linkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`).join('')}
+      </div>
+      <div data-ru7-menu-overlay onclick="${hamburgerCloseScript}" style="display:none;position:fixed;inset:0;z-index:9998;background:transparent;"></div>`
+    : ''
+
+  // Search: expands into a full-width row directly under the main bar (not
+  // a floating popup) — same icon-swap (search icon -> X) as the toggle
+  // button, but the search field itself is a normal in-flow block that
+  // pushes whatever's below it down, spanning the same horizontal padding
+  // as the main bar above it.
+  const searchToggleScript = `event.stopImmediatePropagation();(function(btn){var sec=btn.closest('section');var row=sec.querySelector('[data-ru7-search-row]');var s=btn.querySelector('[data-icon-search]');var x=btn.querySelector('[data-icon-search-x]');var open=row.style.display==='block';row.style.display=open?'none':'block';if(s)s.style.display=open?'inline-flex':'none';if(x)x.style.display=open?'none':'inline-flex';if(!open){var inp=row.querySelector('input');if(inp)setTimeout(function(){inp.focus()},50);}})(this);`
+  const searchToggleEl = data.showSearch
+    ? `<button type="button" data-ru7-search-toggle onclick="${searchToggleScript}" style="background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;flex-shrink:0;">
+        <span data-icon-search style="display:inline-flex;">${icon('magnifyingGlass', { size: 22, stroke: data.linkColor })}</span>
+        <span data-icon-search-x style="display:none;">${icon('xMark', { size: 22, stroke: data.linkColor })}</span>
+      </button>`
+    : ''
+  const searchRow = data.showSearch
+    ? `<div data-ru7-search-row style="display:none;border-top:1px solid #e5e7eb;background:${data.mainBarBgColor};padding:0.75rem min(${data.mainBarPaddingX}px,6vw);box-sizing:border-box;">
+        <div style="display:flex;align-items:center;gap:0.5rem;border:1px solid #d1d5db;border-radius:6px;padding:0.5rem 0.875rem;">
+          ${icon('magnifyingGlass', { size: 18, stroke: '#9ca3af' })}
+          <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="border:none;outline:none;background:transparent;font-size:0.9rem;width:100%;color:#111827;" />
+        </div>
+      </div>`
+    : ''
+
+  const cartEl = data.showCart
+    ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.linkColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
+        <a href="${data.cartUrl}" style="color:${data.linkColor};display:inline-flex;">${icon('shoppingCart', { size: 22, stroke: data.linkColor })}</a>
+      </span>`
+    : ''
+
+  // Thin divider between the search and cart icons — only shown when both
+  // are actually present, otherwise it'd be a lone floating line.
+  const searchCartDividerEl = (data.showSearch && data.showCart)
+    ? `<span style="width:1px;height:20px;background:#d1d5db;display:inline-block;flex-shrink:0;"></span>`
+    : ''
+
+  const sectionStyle = `width:100%;display:block;${fontCss(undefined, data.fontFamily)}${data.sticky ? 'position:sticky;top:0;z-index:9999;' : ''}`
+
+  // Below 640px: text nav links give way to the hamburger button/panel, the
+  // search toggle and cart icon stay put (compact enough not to need
+  // collapsing), and the logo's own max-width is capped so a generously
+  // configured logo can't crowd out the hamburger/icons on a phone screen.
+  const responsiveStyle = navLinksHtml
+    ? `<style>
+  @media (max-width: 640px) {
+    [data-ru7-desktop-links] { display: none !important; }
+    [data-ru7-menu-toggle] { display: inline-flex !important; }
+    [data-ru7-main] [data-ru7-logo] img,
+    [data-ru7-main] [data-ru7-logo] span { max-width: 40vw; }
+  }
+</style>`
+    : ''
+
+  return `<section data-component-title="Ru7-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
+${responsiveStyle}
+${topBarEl}
+<nav data-ru7-main style="position:relative;background:${data.mainBarBgColor};padding:${data.mainBarPaddingY}px min(${data.mainBarPaddingX}px,6vw);display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+  <div data-ru7-logo style="display:flex;align-items:center;min-width:0;">
+    ${logoEl}
+  </div>
+  <div style="display:flex;align-items:center;gap:1.75rem;min-width:0;">
+    ${desktopLinksEl}
+    ${hamburgerEl}
+    ${searchToggleEl}
+    ${searchCartDividerEl}
+    ${cartEl}
+  </div>
+</nav>
+${searchRow}
+</section>`
+}
+
 export const ru1FormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
   <rect fill="#394152" x="0" y="10" width="88" height="7"/>
   <rect fill="#394152" x="0" y="24" width="118" height="3"/>
@@ -7582,8 +7850,8 @@ export const ru3StatsDefaults: Ru3StatsData = {
   cardBorderRadius: 16,
   cardBorderColor: '#e5e7eb',
   showBorder: false,
-  paddingY: 32,
-  paddingX: 24,
+  paddingY: 24,
+  paddingX: 32,
   showSectionTitle: false,
   sectionTitle: 'How it works',
   sectionTitleSize: 28,
@@ -7593,13 +7861,13 @@ export const ru3StatsDefaults: Ru3StatsData = {
   sectionSubtitleColor: '#6b7280',
   badgeBgColor: '#ede9fe',
   badgeTextColor: '#7c3aed',
-  badgeSize: 52,
+  badgeSize: 100,
   showSeparator: true,
   separatorColor: '#d1d5db',
-  titleFontSize: 16,
+  titleFontSize: 28,
   titleFontWeight: '700',
   titleColor: '#111827',
-  descriptionFontSize: 14,
+  descriptionFontSize: 18,
   descriptionColor: '#6b7280',
   items: [
     { badgeType: 'number', badgeText: '1', iconUrl: '', title: 'Pick your gear', description: 'Explore the lineup and find pieces that fit your style.' },
@@ -7609,7 +7877,7 @@ export const ru3StatsDefaults: Ru3StatsData = {
   fontFamily: '',
   sectionTitleFont: '',
   sectionSubtitleFont: '',
-  badgeFont: '',
+  badgeFont: 'Caveat, cursive',
   titleFont: '',
   descriptionFont: '',
 }
@@ -7619,8 +7887,8 @@ export const ru3StatsFields: FieldConfig[] = [
   fontField('fontFamily', 'Font Family'),
 
   { key: '_h_layout', label: 'Layout', type: 'header' },
-  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '32' },
-  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '24' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '24' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '32' },
 
   { key: '_h_section', label: 'Section', type: 'header' },
   { key: 'bgColor', label: 'Background Colour', type: 'color' },
@@ -7643,7 +7911,7 @@ export const ru3StatsFields: FieldConfig[] = [
   { key: '_h_badge', label: 'Badge', type: 'header' },
   { key: 'badgeBgColor', label: 'Badge Background', type: 'color' },
   { key: 'badgeTextColor', label: 'Badge Text / Icon Colour', type: 'color' },
-  { key: 'badgeSize', label: 'Badge Size (px)', type: 'number', placeholder: '52' },
+  { key: 'badgeSize', label: 'Badge Size (px)', type: 'number', placeholder: '100' },
   fontField('badgeFont', 'Badge Font'),
 
   { key: '_h_separator', label: 'Separator', type: 'header' },
@@ -7651,11 +7919,11 @@ export const ru3StatsFields: FieldConfig[] = [
   { key: 'separatorColor', label: 'Separator Colour', type: 'color' },
 
   { key: '_h_text', label: 'Text Style', type: 'header' },
-  { key: 'titleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '16' },
+  { key: 'titleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '28' },
   { key: 'titleFontWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
   { key: 'titleColor', label: 'Title Colour', type: 'color' },
   fontField('titleFont', 'Title Font'),
-  { key: 'descriptionFontSize', label: 'Description Size (px)', type: 'number', placeholder: '14' },
+  { key: 'descriptionFontSize', label: 'Description Size (px)', type: 'number', placeholder: '18' },
   { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
   fontField('descriptionFont', 'Description Font'),
 
@@ -7685,20 +7953,20 @@ export function renderRu3Stats(data: Ru3StatsData): string {
     : ''
 
   const separatorHtml = data.showSeparator
-    ? `<div data-ru3-stats-sep="true" style="flex-shrink:0;width:10px;height:10px;background:${data.separatorColor};transform:rotate(45deg);margin:0 16px;align-self:center;"></div>`
+    ? `<div data-ru3-stats-sep="true" style="flex-shrink:0;width:16px;height:16px;background:${data.separatorColor};transform:rotate(45deg);align-self:center;"></div>`
     : ''
 
   const itemsHtml = (data.items ?? []).map((item, i) => {
     const badgeInner = item.badgeType === 'icon' && item.iconUrl
       ? `<img src="${item.iconUrl}" style="width:${data.badgeSize * 0.5}px;height:${data.badgeSize * 0.5}px;object-fit:contain;" />`
-      : `<span style="font-size:${data.badgeSize * 0.45}px;font-weight:700;color:${data.badgeTextColor};font-style:italic;${fontCss(data.badgeFont, data.fontFamily)}">${item.badgeText}</span>`
+      : `<span style="font-size:${data.badgeSize * 0.62}px;font-weight:700;color:${data.badgeTextColor};line-height:1;${fontCss(data.badgeFont, data.fontFamily)}">${item.badgeText}</span>`
 
-    const stepHtml = `<div style="display:flex;align-items:flex-start;gap:16px;flex:1;min-width:0;">
-      <div style="flex-shrink:0;width:${data.badgeSize}px;height:${data.badgeSize}px;border-radius:${half}px;background:${data.badgeBgColor};display:flex;align-items:center;justify-content:center;">
+    const stepHtml = `<div data-ru3-stats-item="true" style="display:flex;align-items:flex-start;gap:20px;flex:1;min-width:0;">
+      <div data-ru3-stats-badge="true" style="flex-shrink:0;width:${data.badgeSize}px;height:${data.badgeSize}px;border-radius:${half}px;background:${data.badgeBgColor};display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,0.12);">
         ${badgeInner}
       </div>
       <div style="min-width:0;">
-        <div style="font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};margin-bottom:6px;line-height:1.3;${fontCss(data.titleFont, data.fontFamily)}">${item.title}</div>
+        <div data-ru3-stats-title="true" style="font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};margin-bottom:10px;line-height:1.3;${fontCss(data.titleFont, data.fontFamily)}">${item.title}</div>
         <div style="font-size:${data.descriptionFontSize}px;color:${data.descriptionColor};line-height:1.6;${fontCss(data.descriptionFont, data.fontFamily)}">${item.description}</div>
       </div>
     </div>`
@@ -7707,14 +7975,28 @@ export function renderRu3Stats(data: Ru3StatsData): string {
     return stepHtml + sep
   }).join('')
 
-  return `<section data-component-title="Ru3-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru3-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px min(${data.paddingX}px,5vw);${fontCss(undefined, data.fontFamily)}">
 <style>
-  @media(max-width:768px){[data-ru3-stats-row]{flex-direction:column!important}[data-ru3-stats-sep]{display:none!important}}
-  @media(max-width:600px){[data-ru3-stats-row]{padding:24px 20px!important}}
+  @media(max-width:900px){
+    [data-ru3-stats-row]{gap:28px!important}
+    [data-ru3-stats-badge]{width:82px!important;height:82px!important}
+    [data-ru3-stats-badge] span{font-size:50px!important}
+  }
+  @media(max-width:768px){
+    [data-ru3-stats-row]{flex-direction:column!important;align-items:stretch!important}
+    [data-ru3-stats-sep]{display:none!important}
+    [data-ru3-stats-item]{width:100%!important}
+  }
+  @media(max-width:600px){
+    [data-ru3-stats-row]{padding:24px 20px!important;gap:24px!important}
+    [data-ru3-stats-badge]{width:68px!important;height:68px!important}
+    [data-ru3-stats-badge] span{font-size:42px!important}
+    [data-ru3-stats-title]{font-size:22px!important}
+  }
 </style>
-  <div style="width:100%;max-width:1280px;margin:0 auto;">
+  <div style="width:100%;max-width:1400px;margin:0 auto;">
     ${sectionHeaderHtml}
-    <div data-ru3-stats-row="true" style="background:${data.cardBgColor};${cardBorder}border-radius:${data.cardBorderRadius}px;padding:32px 40px;display:flex;align-items:stretch;flex-wrap:wrap;gap:16px;">
+    <div data-ru3-stats-row="true" style="background:${data.cardBgColor};${cardBorder}border-radius:${data.cardBorderRadius}px;padding:32px min(56px,6vw);display:flex;align-items:center;flex-wrap:wrap;gap:40px;">
       ${itemsHtml}
     </div>
   </div>
@@ -7916,6 +8198,248 @@ export function renderRu4Stats(data: Ru4StatsData): string {
       </div>
       <div data-ru4-stats-inner="true" style="display:grid;grid-template-columns:1fr 1fr;gap:${data.gridGap}px;">
         ${statsGrid}
+      </div>
+    </div>
+  </div>
+</section>`
+}
+
+// ─── Ru5-Stats ───────────────────────────────────────────────────────────────
+
+export const ru5StatsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
+  <rect fill="#1f2937" width="277.5" height="80"/>
+  <rect fill="#374151" x="8" y="10" width="120" height="60" rx="8"/>
+  <circle fill="#4b5563" cx="30" cy="34" r="12"/>
+  <rect fill="#9ca3af" x="48" y="24" width="72" height="6" rx="1"/>
+  <rect fill="#6b7280" x="48" y="34" width="64" height="4" rx="1"/>
+  <rect fill="#6b7280" x="48" y="42" width="56" height="4" rx="1"/>
+  <rect fill="#6b7280" x="20" y="54" width="98" height="4" rx="1"/>
+  <rect fill="#374151" x="149.5" y="10" width="120" height="60" rx="8"/>
+  <rect fill="#4b5563" x="161.5" y="20" width="46" height="5" rx="1"/>
+  <rect fill="#9ca3af" x="161.5" y="30" width="80" height="8" rx="1"/>
+  <rect fill="#6b7280" x="161.5" y="46" width="66" height="4" rx="1"/>
+  <rect fill="#6b7280" x="161.5" y="58" width="70" height="3" rx="1"/>
+  <rect fill="#4b5563" x="161.5" y="63" width="70" height="2" rx="1"/>
+</svg>`
+
+export interface Ru5StatsLink {
+  label: string
+  href: string
+  underlineColor: string
+}
+
+export interface Ru5StatsData {
+  bgColor: string
+  paddingY: number
+  paddingX: number
+  gap: number
+  cardBgColor: string
+  cardBorderRadius: number
+  cardPaddingY: number
+  cardPaddingX: number
+
+  logoUrl: string
+  logoAlt: string
+  logoBgColor: string
+  logoSize: number
+  leftTitle: string
+  leftTitleFontSize: number
+  leftTitleFontWeight: string
+  leftTitleColor: string
+  leftTitleFont: string
+  leftDescription: string
+  leftDescriptionFontSize: number
+  leftDescriptionColor: string
+  leftDescriptionFont: string
+
+  eyebrowText: string
+  eyebrowFontSize: number
+  eyebrowColor: string
+  eyebrowFont: string
+  headline: string
+  headlineFontSize: number
+  headlineFontWeight: string
+  headlineGradientFrom: string
+  headlineGradientTo: string
+  headlineFont: string
+  rightDescription: string
+  rightDescriptionFontSize: number
+  rightDescriptionColor: string
+  rightDescriptionFont: string
+
+  linkFontSize: number
+  linkFontWeight: string
+  linkColor: string
+  linkFont: string
+  links: Ru5StatsLink[]
+
+  fontFamily: string
+}
+
+export const ru5StatsDefaults: Ru5StatsData = {
+  bgColor: '#faf8f3',
+  paddingY: 32,
+  paddingX: 32,
+  gap: 24,
+  cardBgColor: '#ffffff',
+  cardBorderRadius: 20,
+  cardPaddingY: 36,
+  cardPaddingX: 40,
+
+  logoUrl: '',
+  logoAlt: 'RX',
+  logoBgColor: '#f3f4f6',
+  logoSize: 64,
+  leftTitle: 'Curated gear for the team, by the team',
+  leftTitleFontSize: 26,
+  leftTitleFontWeight: '400',
+  leftTitleColor: '#111827',
+  leftTitleFont: '',
+  leftDescription: 'Quality pieces you will reach for. Branded with pride.\nBuilt for how we work.',
+  leftDescriptionFontSize: 16,
+  leftDescriptionColor: '#4b5563',
+  leftDescriptionFont: '',
+
+  eyebrowText: "WHAT'S NEXT",
+  eyebrowFontSize: 12,
+  eyebrowColor: '#0d9488',
+  eyebrowFont: '',
+  headline: 'Phase 2 is coming',
+  headlineFontSize: 40,
+  headlineFontWeight: '500',
+  headlineGradientFrom: '#7c3aed',
+  headlineGradientTo: '#db2777',
+  headlineFont: '',
+  rightDescription: 'More gear. More ways to customize.',
+  rightDescriptionFontSize: 16,
+  rightDescriptionColor: '#4b5563',
+  rightDescriptionFont: '',
+
+  linkFontSize: 15,
+  linkFontWeight: '400',
+  linkColor: '#111827',
+  linkFont: '',
+  links: [
+    { label: 'Share Feedback', href: '#', underlineColor: '#14b8a6' },
+    { label: 'New Omni rebrand', href: '#', underlineColor: '#4f46e5' },
+  ],
+
+  fontFamily: '',
+}
+
+export const ru5StatsFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'bgColor', label: 'Background Colour', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '32' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '32' },
+  { key: 'gap', label: 'Gap Between Cards (px)', type: 'number', placeholder: '24' },
+
+  { key: '_h_card', label: 'Card Style', type: 'header' },
+  { key: 'cardBgColor', label: 'Card Background', type: 'color' },
+  { key: 'cardBorderRadius', label: 'Card Radius (px)', type: 'number', placeholder: '20' },
+  { key: 'cardPaddingY', label: 'Card Vertical Padding (px)', type: 'number', placeholder: '36' },
+  { key: 'cardPaddingX', label: 'Card Horizontal Padding (px)', type: 'number', placeholder: '40' },
+
+  { key: '_h_left', label: 'Left Card', type: 'header' },
+  { key: 'logoUrl', label: 'Logo Image', type: 'image', placeholder: 'https://example.com/logo.png', noAspectRatio: true },
+  { key: 'logoAlt', label: 'Logo Alt / Initials', type: 'text', placeholder: 'Shown instead when no logo image is set' },
+  { key: 'logoBgColor', label: 'Logo Background', type: 'color' },
+  { key: 'logoSize', label: 'Logo Size (px)', type: 'number', placeholder: '64' },
+  { key: 'leftTitle', label: 'Title', type: 'text', placeholder: 'e.g. Curated gear for the team, by the team' },
+  { key: 'leftTitleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '26' },
+  { key: 'leftTitleFontWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  { key: 'leftTitleColor', label: 'Title Colour', type: 'color' },
+  fontField('leftTitleFont', 'Title Font'),
+  { key: 'leftDescription', label: 'Description', type: 'textarea', placeholder: 'Short supporting copy' },
+  { key: 'leftDescriptionFontSize', label: 'Description Size (px)', type: 'number', placeholder: '16' },
+  { key: 'leftDescriptionColor', label: 'Description Colour', type: 'color' },
+  fontField('leftDescriptionFont', 'Description Font'),
+
+  { key: '_h_right', label: 'Right Card', type: 'header' },
+  { key: 'eyebrowText', label: 'Eyebrow Text', type: 'text', placeholder: "e.g. WHAT'S NEXT" },
+  { key: 'eyebrowFontSize', label: 'Eyebrow Size (px)', type: 'number', placeholder: '12' },
+  { key: 'eyebrowColor', label: 'Eyebrow Colour', type: 'color' },
+  fontField('eyebrowFont', 'Eyebrow Font'),
+  { key: 'headline', label: 'Headline', type: 'text', placeholder: 'e.g. Phase 2 is coming' },
+  { key: 'headlineFontSize', label: 'Headline Size (px)', type: 'number', placeholder: '40' },
+  { key: 'headlineFontWeight', label: 'Headline Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  { key: 'headlineGradientFrom', label: 'Headline Gradient From', type: 'color' },
+  { key: 'headlineGradientTo', label: 'Headline Gradient To', type: 'color' },
+  fontField('headlineFont', 'Headline Font'),
+  { key: 'rightDescription', label: 'Description', type: 'text', placeholder: 'Short supporting copy' },
+  { key: 'rightDescriptionFontSize', label: 'Description Size (px)', type: 'number', placeholder: '16' },
+  { key: 'rightDescriptionColor', label: 'Description Colour', type: 'color' },
+  fontField('rightDescriptionFont', 'Description Font'),
+
+  { key: '_h_links', label: 'Links', type: 'header' },
+  { key: 'linkFontSize', label: 'Link Size (px)', type: 'number', placeholder: '15' },
+  { key: 'linkFontWeight', label: 'Link Weight', type: 'select', options: ['400', '500', '600', '700'] },
+  { key: 'linkColor', label: 'Link Colour', type: 'color' },
+  fontField('linkFont', 'Link Font'),
+  {
+    key: 'links',
+    label: 'Link Buttons',
+    type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Share Feedback' },
+      { key: 'href', label: 'URL', type: 'url', placeholder: 'https://example.com' },
+      { key: 'underlineColor', label: 'Underline Colour', type: 'color' },
+    ],
+  },
+]
+
+export function renderRu5Stats(data: Ru5StatsData): string {
+  // With no logo uploaded yet, show alt text/initials instead of an actual
+  // <img> — a real <img> with no src just renders the browser's tiny, cramped
+  // "broken image" icon. Once a real URL is set, it renders as a normal image.
+  const logoInner = data.logoUrl
+    ? `<img src="${data.logoUrl}" alt="${data.logoAlt ?? ''}" style="width:100%;height:100%;object-fit:cover;display:block;" />`
+    : `<span style="font-size:${Math.round(data.logoSize * 0.4)}px;font-weight:700;color:#9ca3af;${fontCss(data.leftTitleFont, data.fontFamily)}">${data.logoAlt ?? ''}</span>`
+
+  const leftDescriptionHtml = (data.leftDescription ?? '')
+    .split('\n')
+    .filter(Boolean)
+    .map(line => `<p style="margin:0 0 4px;">${line}</p>`)
+    .join('')
+
+  const linksHtml = (data.links ?? []).map(link => `
+    <a href="${link.href || '#'}" style="display:flex;align-items:center;justify-content:space-between;gap:24px;text-decoration:none;color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};padding-bottom:10px;border-bottom:4px solid ${link.underlineColor};white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}">
+      <span>${link.label}</span><span aria-hidden="true">&rarr;</span>
+    </a>`
+  ).join('')
+
+  return `<section data-component-title="Ru5-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:900px){[data-ru5-stats-row]{grid-template-columns:1fr!important}[data-ru5-stats-right]{flex-direction:column!important;align-items:flex-start!important}[data-ru5-stats-links]{flex-direction:row!important;width:100%!important;gap:16px!important}[data-ru5-stats-links] a{width:100%!important}}
+  @media(max-width:600px){[data-ru5-stats-row]{gap:16px!important}[data-ru5-stats-card]{padding:28px 24px!important}[data-ru5-stats-links]{flex-direction:column!important}}
+</style>
+  <div style="width:100%;max-width:1400px;margin:0 auto;">
+    <div data-ru5-stats-row="true" style="display:grid;grid-template-columns:1fr 1fr;gap:${data.gap}px;align-items:stretch;">
+      <div data-ru5-stats-card="true" style="background:${data.cardBgColor};border-radius:${data.cardBorderRadius}px;padding:${data.cardPaddingY}px ${data.cardPaddingX}px;display:flex;align-items:flex-start;gap:20px;">
+        <div style="flex-shrink:0;width:${data.logoSize}px;height:${data.logoSize}px;border-radius:50%;overflow:hidden;background:${data.logoBgColor};display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,0.12);">
+          ${logoInner}
+        </div>
+        <div style="min-width:0;">
+          <h3 style="margin:0 0 12px;font-size:${data.leftTitleFontSize}px;font-weight:${data.leftTitleFontWeight};color:${data.leftTitleColor};line-height:1.3;${fontCss(data.leftTitleFont, data.fontFamily)}">${data.leftTitle}</h3>
+          <div style="font-size:${data.leftDescriptionFontSize}px;color:${data.leftDescriptionColor};line-height:1.6;${fontCss(data.leftDescriptionFont, data.fontFamily)}">
+            ${leftDescriptionHtml}
+          </div>
+        </div>
+      </div>
+      <div data-ru5-stats-card="true" style="background:${data.cardBgColor};border-radius:${data.cardBorderRadius}px;padding:${data.cardPaddingY}px ${data.cardPaddingX}px;display:flex;">
+        <div data-ru5-stats-right="true" style="display:flex;align-items:center;justify-content:space-between;gap:32px;width:100%;">
+          <div style="min-width:0;">
+            <div style="font-size:${data.eyebrowFontSize}px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${data.eyebrowColor};margin-bottom:10px;${fontCss(data.eyebrowFont, data.fontFamily)}">${data.eyebrowText}</div>
+            <h3 style="margin:0 0 12px;font-size:${data.headlineFontSize}px;font-weight:${data.headlineFontWeight};line-height:1.2;background:linear-gradient(90deg,${data.headlineGradientFrom},${data.headlineGradientTo});-webkit-background-clip:text;background-clip:text;color:transparent;${fontCss(data.headlineFont, data.fontFamily)}">${data.headline}</h3>
+            <p style="margin:0;font-size:${data.rightDescriptionFontSize}px;color:${data.rightDescriptionColor};line-height:1.6;${fontCss(data.rightDescriptionFont, data.fontFamily)}">${data.rightDescription}</p>
+          </div>
+          <div data-ru5-stats-links="true" style="flex-shrink:0;display:flex;flex-direction:column;gap:20px;">
+            ${linksHtml}
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -8212,6 +8736,8 @@ export interface Ru3TextImageHeroData {
   descriptionColor: string
   descriptionSize: number
   ctaBgColor: string
+  ctaGradient: boolean
+  ctaGradientColor: string
   ctaTextColor: string
   ctaBorderRadius: number
   ctaBorderWidth: number
@@ -8253,7 +8779,9 @@ export const ru3TextImageHeroDefaults: Ru3TextImageHeroData = {
   subheadingSize: 22,
   descriptionColor: '#475569',
   descriptionSize: 16,
-  ctaBgColor: '#a855f7',
+  ctaBgColor: '#4f46e5',
+  ctaGradient: false,
+  ctaGradientColor: '#ec4899',
   ctaTextColor: '#ffffff',
   ctaBorderRadius: 50,
   ctaBorderWidth: 2,
@@ -8282,6 +8810,8 @@ export const ru3TextImageHeroFields: FieldConfig[] = [
   { key: 'ctaUrl',   label: 'Button URL',   type: 'url',  placeholder: '/shop' },
   { key: 'ctaStyle', label: 'Button Style', type: 'select', options: ['filled', 'outline', 'ghost'] },
   { key: 'ctaBgColor',      label: 'Button Background', type: 'color' },
+  { key: 'ctaGradient', label: 'Gradient Background', type: 'toggle' },
+  { key: 'ctaGradientColor', label: 'Gradient End Color', type: 'color' },
   { key: 'ctaTextColor',    label: 'Button Text Color', type: 'color' },
   { key: 'ctaBorderRadius', label: 'Button Radius',     type: 'number', unit: 'px', step: 2, placeholder: '50' },
   { key: 'ctaBorderWidth',  label: 'Border Width',      type: 'number', unit: 'px', step: 1, placeholder: '2' },
@@ -8357,7 +8887,10 @@ export function renderRu3TextImageHero(data: Ru3TextImageHeroData): string {
   } else if (data.ctaStyle === 'ghost') {
     ctaBtnStyle = `background:transparent;color:${data.ctaTextColor};border:none;`
   } else {
-    ctaBtnStyle = `background:${data.ctaBgColor};color:${data.ctaTextColor};border:${data.ctaBorderWidth ?? 0}px solid transparent;`
+    const ctaBg = data.ctaGradient
+      ? `linear-gradient(90deg, ${data.ctaBgColor}, ${data.ctaGradientColor})`
+      : data.ctaBgColor
+    ctaBtnStyle = `background:${ctaBg};color:${data.ctaTextColor};border:${data.ctaBorderWidth ?? 0}px solid transparent;`
   }
 
   const ctaHtml = data.ctaText
@@ -8398,7 +8931,7 @@ export function renderRu3TextImageHero(data: Ru3TextImageHeroData): string {
 
   return `<section data-component-title="Ru3-Text + Image Hero" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${sectionBg};${heightStyle}${fontCss(undefined, data.fontFamily)}">
   <style>@media(max-width:767px){.ru3-tih-grid{grid-template-columns:1fr!important;gap:2rem!important;}}</style>
-  <div style="max-width:80rem;margin:0 auto;padding:${data.paddingY ?? 64}px ${data.paddingX ?? 48}px;box-sizing:border-box;">
+  <div style="max-width:90rem;margin:0 auto;padding:${data.paddingY ?? 64}px ${data.paddingX ?? 48}px;box-sizing:border-box;">
     <div class="ru3-tih-grid" style="display:grid;grid-template-columns:${gridCols};gap:${data.columnGap ?? 48}px;align-items:${vertAlign};">
       ${leftCol}
       ${rightCol}
