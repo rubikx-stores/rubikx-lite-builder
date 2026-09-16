@@ -29,6 +29,10 @@ import {
   ru6HamburgerNavbarFields,
   ru6HamburgerNavbarSvg,
   renderRu6HamburgerNavbar,
+  ru7NavbarDefaults,
+  ru7NavbarFields,
+  ru7NavbarSvg,
+  renderRu7Navbar,
   bannerDefaults,
   bannerFields,
   bannerSvg,
@@ -129,6 +133,10 @@ import {
   ru4StatsFields,
   ru4StatsSvg,
   renderRu4Stats,
+  ru5StatsDefaults,
+  ru5StatsFields,
+  ru5StatsSvg,
+  renderRu5Stats,
   ru3TextImageHeroDefaults,
   ru3TextImageHeroFields,
   ru3TextImageHeroSvg,
@@ -157,6 +165,10 @@ import {
   ru6FooterFields,
   ru6FooterSvg,
   renderRu6Footer,
+  ru7FooterDefaults,
+  ru7FooterFields,
+  ru7FooterSvg,
+  renderRu7Footer,
   ru1ProductDetailDefaults,
   ru1ProductDetailFields,
   ru1ProductDetailSvg,
@@ -253,6 +265,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Headers',
       cover_image: ru6HamburgerNavbarSvg,
       html_code: renderRu6HamburgerNavbar(ru6HamburgerNavbarDefaults),
+    },
+    {
+      title: 'Ru7-Navbar',
+      category: 'Headers',
+      cover_image: ru7NavbarSvg,
+      html_code: renderRu7Navbar(ru7NavbarDefaults),
     },
   ],
   Banner: [
@@ -420,6 +438,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       cover_image: ru4StatsSvg,
       html_code: renderRu4Stats(ru4StatsDefaults),
     },
+    {
+      title: 'Ru5-Stats',
+      category: 'Stats',
+      cover_image: ru5StatsSvg,
+      html_code: renderRu5Stats(ru5StatsDefaults),
+    },
   ],
   Footer: [
     {
@@ -457,6 +481,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Footer',
       cover_image: ru6FooterSvg,
       html_code: renderRu6Footer(ru6FooterDefaults),
+    },
+    {
+      title: 'Ru7-Footer',
+      category: 'Footer',
+      cover_image: ru7FooterSvg,
+      html_code: renderRu7Footer(ru7FooterDefaults),
     },
   ],
   'Product Showcase': [
@@ -546,6 +576,12 @@ export function useLayouts() {
     defaults: ru6HamburgerNavbarDefaults,
     fields: ru6HamburgerNavbarFields,
     render: renderRu6HamburgerNavbar,
+  })
+
+  blockRegistry.register('Ru7-Navbar', {
+    defaults: ru7NavbarDefaults,
+    fields: ru7NavbarFields,
+    render: renderRu7Navbar,
   })
 
   blockRegistry.register('Ru1-Banner', {
@@ -716,6 +752,12 @@ export function useLayouts() {
     render: renderRu6Footer,
   })
 
+  blockRegistry.register('Ru7-Footer', {
+    defaults: ru7FooterDefaults,
+    fields: ru7FooterFields,
+    render: renderRu7Footer,
+  })
+
   blockRegistry.register('Ru1-Product Detail', {
     defaults: ru1ProductDetailDefaults,
     fields: ru1ProductDetailFields,
@@ -756,6 +798,12 @@ export function useLayouts() {
     defaults: ru4StatsDefaults,
     fields: ru4StatsFields,
     render: renderRu4Stats,
+  })
+
+  blockRegistry.register('Ru5-Stats', {
+    defaults: ru5StatsDefaults,
+    fields: ru5StatsFields,
+    render: renderRu5Stats,
   })
 
   blockRegistry.register('Ru1-Show-Featured-Products', {

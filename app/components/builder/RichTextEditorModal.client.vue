@@ -15,6 +15,7 @@
 // Edits are a local draft: nothing is written back to the block until "Save"
 // is clicked; closing (X, backdrop, Cancel) discards them.
 import { ref, shallowRef, computed, watch, nextTick, onUnmounted } from 'vue'
+import { FONT_FAMILY_OPTIONS } from '../../composables/editor/fontFields'
 
 const props = defineProps<{
   modelValue: boolean
@@ -68,6 +69,9 @@ const customFontSizePx = ref(16)
 const fontWeightKey = ref('700')
 const letterSpacingKey = ref('normal')
 const textAlignKey = ref<'left' | 'center' | 'right'>('left')
+const gradientFromColor = ref('#4f46e5')
+const gradientToColor = ref('#ec4899')
+const fontFamilyKey = ref('')
 
 const showUrlBar = ref(false)
 const pendingType = ref<'link' | 'button' | null>(null)
@@ -294,7 +298,53 @@ function toggleBold() {
 
 function applyTextColor() {
   selectionError.value = ''
-  wrapSelection('span', { 'data-faq-mark': 'color', style: `color:${textColorInput.value};` }, 'span[data-faq-mark="color"]')
+  wrapSelection('span', { 'data-faq-mark': 'color', style: `color:${textColorInput.value};` }, 'span[data-faq-mark="color"], span[data-faq-mark="gradient"]')
+}
+
+// Gradient text: a solid text-color and a gradient are mutually exclusive, so
+// this clears either kind of pre-existing mark from the selection first, same
+// as applyTextColor does in the other direction. Both -webkit-background-clip
+// and the unprefixed background-clip are set (older WebKit still needs the
+// prefix), and -webkit-text-fill-color is set alongside color:transparent —
+// the former is what WebKit/Blink actually honors for the fill, the latter is
+// the standard fallback for engines that don't support any of this and would
+// otherwise render solid black text over the gradient.
+function applyGradientText() {
+  selectionError.value = ''
+  wrapSelection(
+    'span',
+    {
+      'data-faq-mark': 'gradient',
+      style: `background-image:linear-gradient(90deg, ${gradientFromColor.value}, ${gradientToColor.value});-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;`,
+    },
+    'span[data-faq-mark="color"], span[data-faq-mark="gradient"]',
+  )
+}
+
+// '' (the "Default" option) clears any existing font-family mark instead of
+// wrapping with an empty style — same extractContents/stripMarksFromFragment
+// steps wrapSelection uses internally, reused here directly since there's no
+// wrapper to insert in this branch.
+function applyFontFamily(key: string) {
+  selectionError.value = ''
+  if (!key) {
+    const range = savedRange.value
+    if (!range || range.collapsed) {
+      selectionError.value = 'Select some text first.'
+      return
+    }
+    try {
+      const extracted = range.extractContents()
+      stripMarksFromFragment(extracted, 'span[data-faq-mark="font"]')
+      range.insertNode(extracted)
+    } catch {
+      selectionError.value = "Couldn't clear the font for that selection — try selecting a smaller or simpler range."
+      return
+    }
+    setSavedRange(null)
+    return
+  }
+  wrapSelection('span', { 'data-faq-mark': 'font', style: `font-family:${key};` }, 'span[data-faq-mark="font"]')
 }
 
 function applyFontSize(key: string) {
@@ -637,6 +687,31 @@ function save() {
             />
           </label>
 
+          <div class="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
+            <span class="material-symbols-outlined text-base">gradient</span>
+            Gradient
+            <input
+              v-model="gradientFromColor"
+              type="color"
+              class="h-5 w-6 cursor-pointer rounded border-none p-0"
+              title="Gradient start color"
+            />
+            <input
+              v-model="gradientToColor"
+              type="color"
+              class="h-5 w-6 cursor-pointer rounded border-none p-0"
+              title="Gradient end color"
+            />
+            <button
+              type="button"
+              class="rounded border border-gray-300 bg-white px-1.5 py-0.5 text-[11px] font-medium text-gray-700 hover:bg-gray-100"
+              @mousedown.prevent
+              @click="applyGradientText"
+            >
+              Apply
+            </button>
+          </div>
+
           <label class="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
             <span class="material-symbols-outlined text-base">format_size</span>
             Size
@@ -700,6 +775,18 @@ function save() {
              applied to the whole text (see ensureBlockWrapper), unlike the
              per-selection rows above. -->
         <div class="mb-2 flex flex-wrap items-center gap-2 shrink-0">
+          <label class="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
+            <span class="material-symbols-outlined text-base">font_download</span>
+            Font
+            <select
+              v-model="fontFamilyKey"
+              class="max-w-[9rem] rounded border-none bg-transparent text-xs font-medium text-gray-700 focus:outline-none"
+              @change="applyFontFamily(fontFamilyKey)"
+            >
+              <option v-for="opt in FONT_FAMILY_OPTIONS" :key="opt" :value="opt">{{ opt || 'Default' }}</option>
+            </select>
+          </label>
+
           <label class="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
             <span class="material-symbols-outlined text-base">format_line_spacing</span>
             Line Height

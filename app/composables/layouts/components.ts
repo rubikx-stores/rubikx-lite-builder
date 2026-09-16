@@ -1693,6 +1693,7 @@ export interface Ru6HamburgerNavbarData {
   homeHref: string
   showDynamicCategories: boolean
   maxCategories: number
+  menuLinks: { label: string; url: string; newTab?: boolean }[]
   linkColor: string
   linkFontSize: number
   linkFontWeight: string
@@ -1730,6 +1731,7 @@ export const ru6HamburgerNavbarDefaults: Ru6HamburgerNavbarData = {
   homeHref: '/',
   showDynamicCategories: true,
   maxCategories: 20,
+  menuLinks: [{ label: 'Home', url: '/', newTab: false }],
   linkColor: '#000000',
   linkFontSize: 15,
   linkFontWeight: '500',
@@ -1768,6 +1770,14 @@ export const ru6HamburgerNavbarFields: FieldConfig[] = [
   { key: '_h_nav', label: 'Hamburger Menu', type: 'header' },
   { key: 'homeLabel', label: 'Home Link Label', type: 'text', placeholder: 'Home' },
   { key: 'homeHref', label: 'Home Link URL', type: 'url', placeholder: '/' },
+  {
+    key: 'menuLinks', label: 'Menu Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'url', label: 'URL', type: 'url' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
+    ],
+  },
   { key: 'showDynamicCategories', label: 'Show Categories from Store', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'linkColor', label: 'Menu Link Colour', type: 'color' },
   { key: 'linkFontSize', label: 'Menu Link Font Size (px)', type: 'number', placeholder: '15' },
@@ -1859,6 +1869,9 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
     ? `data-rubikx-component="DynamicCategoryNav" data-on-mount="loadDynamicNav" data-max-categories="${data.maxCategories}" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}"`
     : ''
   const homeLinkStyle = `color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;${fontCss(data.linkFont, data.fontFamily)}`
+  const menuLinksHtml = (data.menuLinks ?? [])
+    .map(l => `<a href="${l.url}" style="display:block;padding:0.65rem 0;${homeLinkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`)
+    .join('')
 
   // On mobile, Cart/Profile relocate INTO the hamburger panel entirely
   // (not just losing their text labels) — this renders plain Cart/profile
@@ -1883,7 +1896,7 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
   // caret triangle sits just above it, near the hamburger, as a visual
   // pointer back to the button that opened it.
   const menuPanel = `<div data-ru6-menu-panel ${menuHydrationAttrs} style="display:none;position:absolute;top:100%;left:0;width:100%;max-width:500px;background:#fff;box-shadow:0 12px 24px rgba(0,0,0,0.12);padding:1.25rem min(${data.paddingX}px,5vw) 1.5rem;z-index:9999;">
-    <a href="${data.homeHref}" style="display:block;padding:0.65rem 0;${homeLinkStyle}">${data.homeLabel}</a>
+    ${menuLinksHtml}
     ${menuItemsEl}
     ${mobileMenuExtras}
   </div>
@@ -1953,7 +1966,7 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
   const profileEl = data.showProfile
     ? `<div data-ru6-profile style="position:relative;flex-shrink:0;">
         <button type="button" data-ru6-profile-btn onclick="${profileToggleScript}" style="display:flex;align-items:center;gap:0.5rem;background:none;border:none;border-radius:6px;padding:0.4rem 0.5rem;cursor:pointer;color:${data.textColor};font-size:1.125rem;font-weight:500;white-space:nowrap;${fontCss(undefined, data.fontFamily)}">
-          ${ru6IconUserFilled(24)}<span data-ru6-label>${data.profileLabel}</span><span data-ru6-chevron style="display:inline-flex;transition:transform 0.2s ease;">${icon('chevronDown', { size: 18, strokeWidth: '2.5' })}</span>
+          ${ru6IconUserFilled(24)}<span data-ru6-label>${data.profileLabel}</span><span data-ru6-chevron style="display:inline-flex;transition:transform 0.2s ease;">${icon('chevronDown', { size: 15, strokeWidth: '4' })}</span>
         </button>
         <div data-ru6-profile-drop style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.12);min-width:160px;z-index:9999;padding:6px 0;">
           ${(data.profileLinks ?? []).map(l => `<a href="${l.url}" style="display:block;padding:8px 16px;font-size:14px;font-weight:500;color:#1f2937;text-decoration:none;"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`).join('')}
@@ -2001,7 +2014,7 @@ ${menuLinkHoverStyle}
   <div data-ru6-logo style="display:flex;align-items:center;justify-content:center;min-width:0;">
     ${logoEl}
   </div>
-  <div data-ru6-right style="display:flex;align-items:center;justify-content:flex-end;gap:2.5rem;min-width:0;">
+  <div data-ru6-right style="display:flex;align-items:center;justify-content:flex-end;gap:1.25rem;min-width:0;">
     ${searchToggleEl}
     ${cartEl}
     ${profileEl}
@@ -2009,6 +2022,274 @@ ${menuLinkHoverStyle}
   ${menuPanel}
   ${searchAnchor}
 </nav>
+</section>`
+}
+
+// ─── Ru7-Navbar ──────────────────────────────────────────────────────────────
+// Two-row navbar: a thin dark utility bar (Sign In, AuthState-aware) on top,
+// and a white main bar underneath holding the logo, nav links, search and
+// cart. Nav links collapse into a hamburger dropdown below 640px — same
+// icon-swap + dropdown-panel technique as Ru6-Hamburger-Navbar's own menu
+// (menuToggleScript/menuCloseScript there), just scoped to data-ru7-* here so
+// the two blocks never collide when both sit on the same page. Search toggles
+// a full-width in-flow row directly under the main bar (not a floating
+// popup) — same icon-swap on the toggle button, different reveal.
+
+export const ru7NavbarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 70">
+  <rect fill="#111827" x="0" y="0" width="277.5" height="16"/>
+  <rect fill="#9ca3af" x="240" y="6" width="26" height="5" rx="1"/>
+  <rect fill="#ffffff" x="0" y="16" width="277.5" height="54"/>
+  <circle fill="#374151" cx="16" cy="43" r="6"/>
+  <rect fill="#374151" x="26" y="39" width="44" height="8" rx="1"/>
+  <rect fill="#9ca3af" x="196" y="40" width="30" height="6" rx="1"/>
+  <circle fill="none" stroke="#9ca3af" stroke-width="1.5" cx="238" cy="43" r="6"/>
+  <rect fill="none" stroke="#9ca3af" stroke-width="1.5" x="254" y="35" width="16" height="14" rx="2"/>
+</svg>`
+
+export interface Ru7NavbarData {
+  fontFamily: string
+  logoFont: string
+  linkFont: string
+  buttonFont: string
+
+  logoUrl: string
+  logoAlt: string
+  brandName: string
+  logoWidth: number
+  brandFontSize: number
+  brandFontWeight: string
+
+  navLinks: { label: string; url: string; newTab?: boolean }[]
+  linkColor: string
+  linkFontSize: number
+  linkFontWeight: string
+
+  showSearch: boolean
+  searchPlaceholder: string
+
+  showCart: boolean
+  cartUrl: string
+
+  showTopBar: boolean
+  showSignIn: boolean
+  signInLabel: string
+  signInUrl: string
+  topBarBgColor: string
+  topBarTextColor: string
+  topBarPaddingY: number
+  topBarPaddingX: number
+
+  mainBarBgColor: string
+  mainBarPaddingY: number
+  mainBarPaddingX: number
+
+  sticky: boolean
+}
+
+export const ru7NavbarDefaults: Ru7NavbarData = {
+  fontFamily: '',
+  logoFont: '',
+  linkFont: '',
+  buttonFont: '',
+
+  logoUrl: '',
+  logoAlt: 'Your Logo',
+  brandName: 'Your Logo',
+  logoWidth: 140,
+  brandFontSize: 22,
+  brandFontWeight: '700',
+
+  navLinks: [{ label: 'Shop', url: '/shop' }],
+  linkColor: '#111827',
+  linkFontSize: 15,
+  linkFontWeight: '600',
+
+  showSearch: true,
+  searchPlaceholder: 'Search',
+
+  showCart: true,
+  cartUrl: '/cart',
+
+  showTopBar: true,
+  showSignIn: true,
+  signInLabel: 'Sign In',
+  signInUrl: '/login',
+  topBarBgColor: '#000000',
+  topBarTextColor: '#ffffff',
+  topBarPaddingY: 10,
+  topBarPaddingX: 32,
+
+  mainBarBgColor: '#ffffff',
+  mainBarPaddingY: 20,
+  mainBarPaddingX: 32,
+
+  sticky: false,
+}
+
+export const ru7NavbarFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_logo', label: 'Logo', type: 'header' },
+  { key: 'logoUrl', label: 'Logo Image', type: 'image', noAspectRatio: true },
+  { key: 'logoAlt', label: 'Logo Alt Text', type: 'text', placeholder: 'Your Logo' },
+  { key: 'brandName', label: 'Brand Name (shown if no logo image)', type: 'text', placeholder: 'Your Logo' },
+  { key: 'logoWidth', label: 'Logo Width (px)', type: 'number', unit: 'px', step: 4, placeholder: '140' },
+  { key: 'brandFontSize', label: 'Brand Font Size (px)', type: 'number', unit: 'px', step: 1, placeholder: '22' },
+  { key: 'brandFontWeight', label: 'Brand Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  fontField('logoFont', 'Logo Font'),
+
+  { key: '_h_topbar', label: 'Top Bar', type: 'header' },
+  { key: 'showTopBar', label: 'Show Top Bar', type: 'toggle' },
+  { key: 'showSignIn', label: 'Show Sign In', type: 'toggle' },
+  { key: 'signInLabel', label: 'Sign In Label', type: 'text', placeholder: 'Sign In' },
+  { key: 'signInUrl', label: 'Sign In URL', type: 'url', placeholder: '/login' },
+  { key: 'topBarBgColor', label: 'Top Bar Background', type: 'color' },
+  { key: 'topBarTextColor', label: 'Top Bar Text Colour', type: 'color' },
+  { key: 'topBarPaddingY', label: 'Top Bar Vertical Padding (px)', type: 'number', unit: 'px', step: 2, placeholder: '10' },
+  { key: 'topBarPaddingX', label: 'Top Bar Horizontal Padding (px)', type: 'number', unit: 'px', step: 4, placeholder: '32' },
+
+  { key: '_h_nav', label: 'Navigation', type: 'header' },
+  {
+    key: 'navLinks', label: 'Nav Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text' },
+      { key: 'url', label: 'URL', type: 'url' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
+    ],
+  },
+  { key: 'linkColor', label: 'Link Colour', type: 'color' },
+  { key: 'linkFontSize', label: 'Link Font Size (px)', type: 'number', unit: 'px', step: 1, placeholder: '15' },
+  { key: 'linkFontWeight', label: 'Link Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  fontField('linkFont', 'Link Font'),
+
+  { key: '_h_search', label: 'Search', type: 'header' },
+  { key: 'showSearch', label: 'Show Search', type: 'toggle' },
+  { key: 'searchPlaceholder', label: 'Search Placeholder', type: 'text', placeholder: 'Search' },
+
+  { key: '_h_cart', label: 'Cart', type: 'header' },
+  { key: 'showCart', label: 'Show Cart', type: 'toggle' },
+  { key: 'cartUrl', label: 'Cart URL', type: 'url', placeholder: '/cart' },
+
+  { key: '_h_style', label: 'Style', type: 'header' },
+  { key: 'mainBarBgColor', label: 'Main Bar Background', type: 'color' },
+  { key: 'mainBarPaddingY', label: 'Main Bar Vertical Padding (px)', type: 'number', unit: 'px', step: 2, placeholder: '20' },
+  { key: 'mainBarPaddingX', label: 'Main Bar Horizontal Padding (px)', type: 'number', unit: 'px', step: 4, placeholder: '32' },
+  { key: 'sticky', label: 'Sticky Navbar (stays fixed while scrolling)', type: 'toggle' },
+]
+
+export function renderRu7Navbar(data: Ru7NavbarData): string {
+  const logoInner = data.logoUrl
+    ? `<img src="${productImageSrc(data.logoUrl)}" alt="${data.logoAlt ?? ''}" style="width:${data.logoWidth}px;max-width:100%;height:auto;display:block;" />`
+    : `<span style="font-size:${data.brandFontSize}px;font-weight:${data.brandFontWeight};color:#111827;${fontCss(data.logoFont, data.fontFamily)}">${data.brandName}</span>`
+  const logoEl = `<a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;min-width:0;flex-shrink:0;">${logoInner}</a>`
+
+  const linkStyle = `color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;${fontCss(data.linkFont, data.fontFamily)}`
+  const navLinksHtml = (data.navLinks ?? [])
+    .map(l => `<a href="${l.url}" style="${linkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`)
+    .join('')
+  const desktopLinksEl = navLinksHtml
+    ? `<nav data-ru7-desktop-links style="display:flex;align-items:center;gap:1.75rem;">${navLinksHtml}</nav>`
+    : ''
+
+  // Sign In: static link + hidden AuthState shell, same coexistence pattern
+  // as Ru1-Navbar's own buttons — loadAuthState (rubikx-hydration.client.ts)
+  // hides every [data-auth-signin-btn] and reveals the shell once it knows
+  // the visitor is logged in, or does the reverse if the auth check fails.
+  const signInEl = data.showSignIn
+    ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${data.topBarTextColor};font-size:0.8125rem;font-weight:600;text-decoration:none;white-space:nowrap;${fontCss(data.buttonFont, data.fontFamily)}">${data.signInLabel}</a>
+       <span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" style="position:relative;display:none;align-items:center;flex-shrink:0;"></span>`
+    : ''
+  const topBarEl = data.showTopBar !== false
+    ? `<div style="background:${data.topBarBgColor};padding:${data.topBarPaddingY}px min(${data.topBarPaddingX}px,6vw);display:flex;align-items:center;justify-content:flex-end;gap:1rem;">${signInEl}</div>`
+    : ''
+
+  // Hamburger for the nav-links list only — search/cart icons stay visible
+  // in the main row at every width since they're compact and don't need
+  // collapsing; only an admin-grown Nav Links list risks overflowing a
+  // narrow screen. Same stopImmediatePropagation rationale as
+  // Ru6-Hamburger-Navbar's own menuToggleScript: the page builder's own
+  // click-to-select listener lives on this same element and would otherwise
+  // fight/undo this toggle.
+  const hamburgerToggleScript = `event.stopImmediatePropagation();(function(btn){var sec=btn.closest('section');var panel=sec.querySelector('[data-ru7-menu-panel]');var overlay=sec.querySelector('[data-ru7-menu-overlay]');var bars=btn.querySelector('[data-icon-bars]');var x=btn.querySelector('[data-icon-x]');var open=panel.style.display==='block';panel.style.display=open?'none':'block';if(overlay)overlay.style.display=open?'none':'block';if(bars)bars.style.display=open?'inline-flex':'none';if(x)x.style.display=open?'none':'inline-flex';})(this);`
+  const hamburgerCloseScript = `event.stopImmediatePropagation();(function(el){var sec=el.closest('section');var panel=sec.querySelector('[data-ru7-menu-panel]');var btn=sec.querySelector('[data-ru7-menu-toggle]');panel.style.display='none';el.style.display='none';var bars=btn.querySelector('[data-icon-bars]');var x=btn.querySelector('[data-icon-x]');if(bars)bars.style.display='inline-flex';if(x)x.style.display='none';})(this);`
+  const hamburgerEl = navLinksHtml
+    ? `<button type="button" data-ru7-menu-toggle onclick="${hamburgerToggleScript}" style="display:none;background:none;border:none;cursor:pointer;padding:0;align-items:center;flex-shrink:0;">
+        <span data-icon-bars style="display:inline-flex;"><svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.linkColor}" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg></span>
+        <span data-icon-x style="display:none;">${icon('xMark', { size: 24, stroke: data.linkColor, strokeWidth: '2.5' })}</span>
+      </button>
+      <div data-ru7-menu-panel style="display:none;position:absolute;top:100%;left:0;width:100%;background:#fff;box-shadow:0 12px 24px rgba(0,0,0,0.12);padding:0.75rem min(${data.mainBarPaddingX}px,6vw) 1rem;z-index:9999;">
+        ${(data.navLinks ?? []).map(l => `<a href="${l.url}" style="display:block;padding:0.65rem 0;${linkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`).join('')}
+      </div>
+      <div data-ru7-menu-overlay onclick="${hamburgerCloseScript}" style="display:none;position:fixed;inset:0;z-index:9998;background:transparent;"></div>`
+    : ''
+
+  // Search: expands into a full-width row directly under the main bar (not
+  // a floating popup) — same icon-swap (search icon -> X) as the toggle
+  // button, but the search field itself is a normal in-flow block that
+  // pushes whatever's below it down, spanning the same horizontal padding
+  // as the main bar above it.
+  const searchToggleScript = `event.stopImmediatePropagation();(function(btn){var sec=btn.closest('section');var row=sec.querySelector('[data-ru7-search-row]');var s=btn.querySelector('[data-icon-search]');var x=btn.querySelector('[data-icon-search-x]');var open=row.style.display==='block';row.style.display=open?'none':'block';if(s)s.style.display=open?'inline-flex':'none';if(x)x.style.display=open?'none':'inline-flex';if(!open){var inp=row.querySelector('input');if(inp)setTimeout(function(){inp.focus()},50);}})(this);`
+  const searchToggleEl = data.showSearch
+    ? `<button type="button" data-ru7-search-toggle onclick="${searchToggleScript}" style="background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;flex-shrink:0;">
+        <span data-icon-search style="display:inline-flex;">${icon('magnifyingGlass', { size: 22, stroke: data.linkColor })}</span>
+        <span data-icon-search-x style="display:none;">${icon('xMark', { size: 22, stroke: data.linkColor })}</span>
+      </button>`
+    : ''
+  const searchRow = data.showSearch
+    ? `<div data-ru7-search-row style="display:none;border-top:1px solid #e5e7eb;background:${data.mainBarBgColor};padding:0.75rem min(${data.mainBarPaddingX}px,6vw);box-sizing:border-box;">
+        <div style="display:flex;align-items:center;gap:0.5rem;border:1px solid #d1d5db;border-radius:6px;padding:0.5rem 0.875rem;">
+          ${icon('magnifyingGlass', { size: 18, stroke: '#9ca3af' })}
+          <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="border:none;outline:none;background:transparent;font-size:0.9rem;width:100%;color:#111827;" />
+        </div>
+      </div>`
+    : ''
+
+  const cartEl = data.showCart
+    ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.linkColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
+        <a href="${data.cartUrl}" style="color:${data.linkColor};display:inline-flex;">${icon('shoppingCart', { size: 22, stroke: data.linkColor })}</a>
+      </span>`
+    : ''
+
+  // Thin divider between the search and cart icons — only shown when both
+  // are actually present, otherwise it'd be a lone floating line.
+  const searchCartDividerEl = (data.showSearch && data.showCart)
+    ? `<span style="width:1px;height:20px;background:#d1d5db;display:inline-block;flex-shrink:0;"></span>`
+    : ''
+
+  const sectionStyle = `width:100%;display:block;${fontCss(undefined, data.fontFamily)}${data.sticky ? 'position:sticky;top:0;z-index:9999;' : ''}`
+
+  // Below 640px: text nav links give way to the hamburger button/panel, the
+  // search toggle and cart icon stay put (compact enough not to need
+  // collapsing), and the logo's own max-width is capped so a generously
+  // configured logo can't crowd out the hamburger/icons on a phone screen.
+  const responsiveStyle = navLinksHtml
+    ? `<style>
+  @media (max-width: 640px) {
+    [data-ru7-desktop-links] { display: none !important; }
+    [data-ru7-menu-toggle] { display: inline-flex !important; }
+    [data-ru7-main] [data-ru7-logo] img,
+    [data-ru7-main] [data-ru7-logo] span { max-width: 40vw; }
+  }
+</style>`
+    : ''
+
+  return `<section data-component-title="Ru7-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
+${responsiveStyle}
+${topBarEl}
+<nav data-ru7-main style="position:relative;background:${data.mainBarBgColor};padding:${data.mainBarPaddingY}px min(${data.mainBarPaddingX}px,6vw);display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+  <div data-ru7-logo style="display:flex;align-items:center;min-width:0;">
+    ${logoEl}
+  </div>
+  <div style="display:flex;align-items:center;gap:1.75rem;min-width:0;">
+    ${desktopLinksEl}
+    ${hamburgerEl}
+    ${searchToggleEl}
+    ${searchCartDividerEl}
+    ${cartEl}
+  </div>
+</nav>
+${searchRow}
 </section>`
 }
 
@@ -4174,6 +4455,131 @@ export function renderRu6Footer(data: Ru6FooterData): string {
 </section>`
 }
 
+// ─── Ru7-Footer ──────────────────────────────────────────────────────────────
+
+export const ru7FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
+  <rect fill="#374151" x="0" y="0" width="277.5" height="100"/>
+  <rect fill="#ffffff" x="14" y="14" width="54" height="30" rx="2"/>
+  <rect fill="#1f2937" x="30" y="24" width="22" height="10" rx="1"/>
+  <rect fill="#9ca3af" x="14" y="52" width="70" height="4" rx="1"/>
+  <rect fill="#9ca3af" x="14" y="60" width="60" height="4" rx="1"/>
+  <rect fill="#4b5563" x="14" y="80" width="249.5" height="1"/>
+  <rect fill="#9ca3af" x="106" y="88" width="65" height="4" rx="1"/>
+</svg>`
+
+export interface Ru7FooterData {
+  logoUrl: string
+  logoAlt: string
+  logoWidth: number
+  logoHeight: number
+  logoBoxBg: string
+  logoBoxPadding: number
+  logoBoxRadius: number
+  contentAlign: 'left' | 'center' | 'right'
+  addressText: string
+  addressColor: string
+  copyrightText: string
+  copyrightAlign: 'left' | 'center' | 'right'
+  copyrightColor: string
+  bgColor: string
+  paddingY: number
+  paddingX: number
+  gap: number
+  fontFamily: string
+  addressFont: string
+  copyrightFont: string
+}
+
+export const ru7FooterDefaults: Ru7FooterData = {
+  logoUrl: '',
+  logoAlt: 'Logo',
+  logoWidth: 130,
+  logoHeight: 70,
+  logoBoxBg: '#ffffff',
+  logoBoxPadding: 16,
+  logoBoxRadius: 0,
+  contentAlign: 'left',
+  addressText: '40 W. Gregson Avenue<br>Salt Lake City, Utah 84115',
+  addressColor: '#e5e7eb',
+  copyrightText: '© All Rights Reserved',
+  copyrightAlign: 'center',
+  copyrightColor: '#e5e7eb',
+  bgColor: '#161b4d',
+  paddingY: 48,
+  paddingX: 32,
+  gap: 24,
+  fontFamily: '',
+  addressFont: '',
+  copyrightFont: '',
+}
+
+export const ru7FooterFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_logo', label: 'Logo', type: 'header' },
+  { key: 'logoUrl', label: 'Logo Image', type: 'image', noAspectRatio: true },
+  { key: 'logoAlt', label: 'Logo Alt Text', type: 'text' },
+  { key: 'logoWidth', label: 'Logo Box Width', type: 'number', unit: 'px', step: 4, placeholder: '130' },
+  { key: 'logoHeight', label: 'Logo Box Height', type: 'number', unit: 'px', step: 4, placeholder: '70' },
+  { key: 'logoBoxBg', label: 'Logo Box Background', type: 'color' },
+  { key: 'logoBoxPadding', label: 'Logo Box Padding', type: 'number', unit: 'px', step: 2, placeholder: '16' },
+  { key: 'logoBoxRadius', label: 'Logo Box Border Radius', type: 'number', unit: 'px', step: 2, placeholder: '0' },
+  { key: 'contentAlign', label: 'Logo & Address Align', type: 'select', options: ['left', 'center', 'right'] },
+
+  { key: '_h_address', label: 'Address', type: 'header' },
+  { key: 'addressText', label: 'Address Text', type: 'textarea' },
+  { key: 'addressColor', label: 'Address Text Color', type: 'color' },
+  fontField('addressFont', 'Address Font'),
+
+  { key: '_h_copyright', label: 'Copyright', type: 'header' },
+  { key: 'copyrightText', label: 'Copyright Text', type: 'textarea' },
+  { key: 'copyrightAlign', label: 'Copyright Align', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'copyrightColor', label: 'Copyright Color', type: 'color' },
+  fontField('copyrightFont', 'Copyright Font'),
+
+  { key: '_h_style', label: 'Style', type: 'header' },
+  { key: 'bgColor', label: 'Background Color', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '48' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '32' },
+  { key: 'gap', label: 'Section Gap', type: 'number', unit: 'px', step: 4, placeholder: '24' },
+]
+
+export function renderRu7Footer(data: Ru7FooterData): string {
+  // Generic "photo" placeholder icon (Heroicons v2 outline), shown until a
+  // real logo is uploaded — fixed dark grey, not editor-configurable, since
+  // an uploaded raster/vector logo itself can't be recolored through CSS
+  // anyway once one is set.
+  const placeholderIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#1f2937" stroke-width="1.5" style="width:60%;height:60%;">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+      </svg>`
+  const logoInner = data.logoUrl
+    ? `<img src="${productImageSrc(data.logoUrl)}" alt="${data.logoAlt ?? ''}" style="width:100%;height:100%;object-fit:contain;display:block;" />`
+    : placeholderIcon
+  const logoBox = `<div data-ru7-logo-box style="display:inline-flex;align-items:center;justify-content:center;background:${data.logoBoxBg || '#ffffff'};padding:${data.logoBoxPadding ?? 16}px;border-radius:${data.logoBoxRadius ?? 0}px;overflow:hidden;box-sizing:border-box;width:${data.logoWidth}px;height:${data.logoHeight}px;max-width:100%;">${logoInner}</div>`
+  const alignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
+  const contentAlign = alignMap[data.contentAlign] || 'flex-start'
+
+  return `<section data-component-title="Ru7-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:420px){
+    [data-ru7-logo-box]{width:${Math.round((data.logoWidth || 130) * 0.75)}px!important;height:${Math.round((data.logoHeight || 70) * 0.75)}px!important;}
+  }
+</style>
+<footer data-ru7-footer="true" style="box-sizing:border-box;background:${data.bgColor || '#161b4d'};padding:${data.paddingY ?? 48}px min(${data.paddingX ?? 32}px,8vw);">
+  <div style="width:100%;max-width:1280px;margin:0 auto;box-sizing:border-box;">
+    <div style="display:flex;flex-direction:column;align-items:${contentAlign};gap:${data.gap ?? 24}px;">
+      ${logoBox}
+      <div data-field-key="addressText" style="color:${data.addressColor || '#e5e7eb'};font-size:0.95rem;line-height:1.6;text-align:${data.contentAlign || 'left'};${fontCss(data.addressFont, data.fontFamily)}">${data.addressText}</div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,0.15);margin-top:${data.gap ?? 24}px;padding-top:24px;text-align:${data.copyrightAlign || 'center'};">
+      <p data-field-key="copyrightText" style="margin:0;font-size:0.85rem;color:${data.copyrightColor || '#e5e7eb'};${fontCss(data.copyrightFont, data.fontFamily)}">${data.copyrightText}</p>
+    </div>
+  </div>
+</footer>
+</section>`
+}
+
 // ─── Ru1-About ───────────────────────────────────────────────────────────────
 
 export const ru1AboutSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
@@ -5322,7 +5728,9 @@ export const bannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2
 
 export interface BannerData {
   title: string
+  titleFontSize: number
   subtitle: string
+  subtitleFontSize: number
   bgColor: string
   bgImage: string
   bgImageAspectRatio: string
@@ -5335,6 +5743,9 @@ export interface BannerData {
   ctaHref: string
   ctaBgColor: string
   ctaTextColor: string
+  ctaFontSize: number
+  ctaPaddingY: number
+  ctaPaddingX: number
   paddingY: number
   fontFamily: string
   titleFont: string
@@ -5344,7 +5755,9 @@ export interface BannerData {
 
 export const bannerDefaults: BannerData = {
   title: '',
+  titleFontSize: 40,
   subtitle: '',
+  subtitleFontSize: 18,
   bgColor: '#f7f7f7',
   bgImage: '',
   bgImageAspectRatio: 'Auto',
@@ -5357,6 +5770,9 @@ export const bannerDefaults: BannerData = {
   ctaHref: '/shop',
   ctaBgColor: '#ffffff',
   ctaTextColor: '#111827',
+  ctaFontSize: 16,
+  ctaPaddingY: 12,
+  ctaPaddingX: 32,
   paddingY: 80,
   fontFamily: '',
   titleFont: '',
@@ -5369,8 +5785,10 @@ export const bannerFields: FieldConfig[] = [
   fontField('fontFamily', 'Font Family'),
 
   { key: 'title',    label: 'Title',    type: 'textarea',  placeholder: 'e.g. Welcome to Our Store' },
+  { key: 'titleFontSize', label: 'Title Font Size (px)', type: 'number', step: 1, placeholder: '40' },
   fontField('titleFont', 'Title Font'),
-  { key: 'subtitle', label: 'Subtitle', type: 'text',  placeholder: 'Short supporting line…' },
+  { key: 'subtitle', label: 'Subtitle', type: 'textarea',  placeholder: 'Short supporting line…' },
+  { key: 'subtitleFontSize', label: 'Subtitle Font Size (px)', type: 'number', step: 1, placeholder: '18' },
   fontField('subtitleFont', 'Subtitle Font'),
   { key: 'textColor',  label: 'Text Colour',       type: 'color' },
   { key: 'textAlign',  label: 'Text Alignment',    type: 'select', options: ['left', 'center', 'right'] },
@@ -5383,6 +5801,9 @@ export const bannerFields: FieldConfig[] = [
   { key: 'ctaHref',    label: 'Button URL',       type: 'url',  placeholder: '/shop' },
   { key: 'ctaBgColor',   label: 'Button Background',  type: 'color' },
   { key: 'ctaTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'ctaFontSize',  label: 'Button Font Size (px)', type: 'number', step: 1, placeholder: '16' },
+  { key: 'ctaPaddingY',  label: 'Button Vertical Padding (px)', type: 'number', step: 1, placeholder: '12' },
+  { key: 'ctaPaddingX',  label: 'Button Horizontal Padding (px)', type: 'number', step: 1, placeholder: '32' },
   fontField('buttonFont', 'Button Font'),
   { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '80' },
 ]
@@ -5429,7 +5850,7 @@ export function renderBanner(data: BannerData): string {
     : ''
 
   const ctaHtml = data.showCta !== false
-    ? `<a href="${data.ctaHref}" style="display:inline-block;margin-top:2rem;padding:0.75rem 2rem;background:${data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:6px;font-size:1rem;font-weight:600;${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaLabel}</a>`
+    ? `<a href="${data.ctaHref}" style="display:inline-block;margin-top:2rem;padding:${data.ctaPaddingY ?? 12}px ${data.ctaPaddingX ?? 32}px;background:${data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:6px;font-size:${data.ctaFontSize ?? 16}px;font-weight:600;${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaLabel}</a>`
     : ''
 
   // Section uses display:flex so the inner div can flex:1 and fill the full
@@ -5439,8 +5860,8 @@ export function renderBanner(data: BannerData): string {
   ${autoRatioScript}
   <div style="width:100%;box-sizing:border-box;flex:1;display:flex;align-items:center;padding:${data.paddingY}px 1rem;">
     <div style="max-width:80rem;margin:0 auto;width:100%;display:flex;flex-direction:column;align-items:${itemsAlign};text-align:${textAlign};">
-      <h2 style="font-size:min(2.5rem,8vw);font-weight:700;color:${data.textColor};margin:0;line-height:1.2;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
-      <p style="font-size:min(1.125rem,4.5vw);color:${data.textColor};opacity:0.85;margin:1rem 0 0;max-width:42rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>
+      <h2 style="font-size:min(${data.titleFontSize ?? 40}px,8vw);font-weight:700;color:${data.textColor};margin:0;line-height:1.2;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+      <p style="font-size:min(${data.subtitleFontSize ?? 18}px,4.5vw);color:${data.textColor};opacity:0.85;margin:1rem 0 0;max-width:42rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>
       ${ctaHtml}
     </div>
   </div>
@@ -7431,8 +7852,8 @@ export const ru3StatsDefaults: Ru3StatsData = {
   cardBorderRadius: 16,
   cardBorderColor: '#e5e7eb',
   showBorder: false,
-  paddingY: 32,
-  paddingX: 24,
+  paddingY: 24,
+  paddingX: 32,
   showSectionTitle: false,
   sectionTitle: 'How it works',
   sectionTitleSize: 28,
@@ -7442,13 +7863,13 @@ export const ru3StatsDefaults: Ru3StatsData = {
   sectionSubtitleColor: '#6b7280',
   badgeBgColor: '#ede9fe',
   badgeTextColor: '#7c3aed',
-  badgeSize: 52,
+  badgeSize: 100,
   showSeparator: true,
   separatorColor: '#d1d5db',
-  titleFontSize: 16,
+  titleFontSize: 28,
   titleFontWeight: '700',
   titleColor: '#111827',
-  descriptionFontSize: 14,
+  descriptionFontSize: 18,
   descriptionColor: '#6b7280',
   items: [
     { badgeType: 'number', badgeText: '1', iconUrl: '', title: 'Pick your gear', description: 'Explore the lineup and find pieces that fit your style.' },
@@ -7458,7 +7879,7 @@ export const ru3StatsDefaults: Ru3StatsData = {
   fontFamily: '',
   sectionTitleFont: '',
   sectionSubtitleFont: '',
-  badgeFont: '',
+  badgeFont: 'Caveat, cursive',
   titleFont: '',
   descriptionFont: '',
 }
@@ -7468,8 +7889,8 @@ export const ru3StatsFields: FieldConfig[] = [
   fontField('fontFamily', 'Font Family'),
 
   { key: '_h_layout', label: 'Layout', type: 'header' },
-  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '32' },
-  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '24' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '24' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '32' },
 
   { key: '_h_section', label: 'Section', type: 'header' },
   { key: 'bgColor', label: 'Background Colour', type: 'color' },
@@ -7492,7 +7913,7 @@ export const ru3StatsFields: FieldConfig[] = [
   { key: '_h_badge', label: 'Badge', type: 'header' },
   { key: 'badgeBgColor', label: 'Badge Background', type: 'color' },
   { key: 'badgeTextColor', label: 'Badge Text / Icon Colour', type: 'color' },
-  { key: 'badgeSize', label: 'Badge Size (px)', type: 'number', placeholder: '52' },
+  { key: 'badgeSize', label: 'Badge Size (px)', type: 'number', placeholder: '100' },
   fontField('badgeFont', 'Badge Font'),
 
   { key: '_h_separator', label: 'Separator', type: 'header' },
@@ -7500,11 +7921,11 @@ export const ru3StatsFields: FieldConfig[] = [
   { key: 'separatorColor', label: 'Separator Colour', type: 'color' },
 
   { key: '_h_text', label: 'Text Style', type: 'header' },
-  { key: 'titleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '16' },
+  { key: 'titleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '28' },
   { key: 'titleFontWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
   { key: 'titleColor', label: 'Title Colour', type: 'color' },
   fontField('titleFont', 'Title Font'),
-  { key: 'descriptionFontSize', label: 'Description Size (px)', type: 'number', placeholder: '14' },
+  { key: 'descriptionFontSize', label: 'Description Size (px)', type: 'number', placeholder: '18' },
   { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
   fontField('descriptionFont', 'Description Font'),
 
@@ -7534,20 +7955,20 @@ export function renderRu3Stats(data: Ru3StatsData): string {
     : ''
 
   const separatorHtml = data.showSeparator
-    ? `<div data-ru3-stats-sep="true" style="flex-shrink:0;width:10px;height:10px;background:${data.separatorColor};transform:rotate(45deg);margin:0 16px;align-self:center;"></div>`
+    ? `<div data-ru3-stats-sep="true" style="flex-shrink:0;width:16px;height:16px;background:${data.separatorColor};transform:rotate(45deg);align-self:center;"></div>`
     : ''
 
   const itemsHtml = (data.items ?? []).map((item, i) => {
     const badgeInner = item.badgeType === 'icon' && item.iconUrl
       ? `<img src="${item.iconUrl}" style="width:${data.badgeSize * 0.5}px;height:${data.badgeSize * 0.5}px;object-fit:contain;" />`
-      : `<span style="font-size:${data.badgeSize * 0.45}px;font-weight:700;color:${data.badgeTextColor};font-style:italic;${fontCss(data.badgeFont, data.fontFamily)}">${item.badgeText}</span>`
+      : `<span style="font-size:${data.badgeSize * 0.62}px;font-weight:700;color:${data.badgeTextColor};line-height:1;${fontCss(data.badgeFont, data.fontFamily)}">${item.badgeText}</span>`
 
-    const stepHtml = `<div style="display:flex;align-items:flex-start;gap:16px;flex:1;min-width:0;">
-      <div style="flex-shrink:0;width:${data.badgeSize}px;height:${data.badgeSize}px;border-radius:${half}px;background:${data.badgeBgColor};display:flex;align-items:center;justify-content:center;">
+    const stepHtml = `<div data-ru3-stats-item="true" style="display:flex;align-items:flex-start;gap:20px;flex:1;min-width:0;">
+      <div data-ru3-stats-badge="true" style="flex-shrink:0;width:${data.badgeSize}px;height:${data.badgeSize}px;border-radius:${half}px;background:${data.badgeBgColor};display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,0.12);">
         ${badgeInner}
       </div>
       <div style="min-width:0;">
-        <div style="font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};margin-bottom:6px;line-height:1.3;${fontCss(data.titleFont, data.fontFamily)}">${item.title}</div>
+        <div data-ru3-stats-title="true" style="font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};margin-bottom:10px;line-height:1.3;${fontCss(data.titleFont, data.fontFamily)}">${item.title}</div>
         <div style="font-size:${data.descriptionFontSize}px;color:${data.descriptionColor};line-height:1.6;${fontCss(data.descriptionFont, data.fontFamily)}">${item.description}</div>
       </div>
     </div>`
@@ -7556,14 +7977,28 @@ export function renderRu3Stats(data: Ru3StatsData): string {
     return stepHtml + sep
   }).join('')
 
-  return `<section data-component-title="Ru3-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru3-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px min(${data.paddingX}px,5vw);${fontCss(undefined, data.fontFamily)}">
 <style>
-  @media(max-width:768px){[data-ru3-stats-row]{flex-direction:column!important}[data-ru3-stats-sep]{display:none!important}}
-  @media(max-width:600px){[data-ru3-stats-row]{padding:24px 20px!important}}
+  @media(max-width:900px){
+    [data-ru3-stats-row]{gap:28px!important}
+    [data-ru3-stats-badge]{width:82px!important;height:82px!important}
+    [data-ru3-stats-badge] span{font-size:50px!important}
+  }
+  @media(max-width:768px){
+    [data-ru3-stats-row]{flex-direction:column!important;align-items:stretch!important}
+    [data-ru3-stats-sep]{display:none!important}
+    [data-ru3-stats-item]{width:100%!important}
+  }
+  @media(max-width:600px){
+    [data-ru3-stats-row]{padding:24px 20px!important;gap:24px!important}
+    [data-ru3-stats-badge]{width:68px!important;height:68px!important}
+    [data-ru3-stats-badge] span{font-size:42px!important}
+    [data-ru3-stats-title]{font-size:22px!important}
+  }
 </style>
-  <div style="width:100%;max-width:1280px;margin:0 auto;">
+  <div style="width:100%;max-width:1400px;margin:0 auto;">
     ${sectionHeaderHtml}
-    <div data-ru3-stats-row="true" style="background:${data.cardBgColor};${cardBorder}border-radius:${data.cardBorderRadius}px;padding:32px 40px;display:flex;align-items:stretch;flex-wrap:wrap;gap:16px;">
+    <div data-ru3-stats-row="true" style="background:${data.cardBgColor};${cardBorder}border-radius:${data.cardBorderRadius}px;padding:32px min(56px,6vw);display:flex;align-items:center;flex-wrap:wrap;gap:40px;">
       ${itemsHtml}
     </div>
   </div>
@@ -7765,6 +8200,248 @@ export function renderRu4Stats(data: Ru4StatsData): string {
       </div>
       <div data-ru4-stats-inner="true" style="display:grid;grid-template-columns:1fr 1fr;gap:${data.gridGap}px;">
         ${statsGrid}
+      </div>
+    </div>
+  </div>
+</section>`
+}
+
+// ─── Ru5-Stats ───────────────────────────────────────────────────────────────
+
+export const ru5StatsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
+  <rect fill="#1f2937" width="277.5" height="80"/>
+  <rect fill="#374151" x="8" y="10" width="120" height="60" rx="8"/>
+  <circle fill="#4b5563" cx="30" cy="34" r="12"/>
+  <rect fill="#9ca3af" x="48" y="24" width="72" height="6" rx="1"/>
+  <rect fill="#6b7280" x="48" y="34" width="64" height="4" rx="1"/>
+  <rect fill="#6b7280" x="48" y="42" width="56" height="4" rx="1"/>
+  <rect fill="#6b7280" x="20" y="54" width="98" height="4" rx="1"/>
+  <rect fill="#374151" x="149.5" y="10" width="120" height="60" rx="8"/>
+  <rect fill="#4b5563" x="161.5" y="20" width="46" height="5" rx="1"/>
+  <rect fill="#9ca3af" x="161.5" y="30" width="80" height="8" rx="1"/>
+  <rect fill="#6b7280" x="161.5" y="46" width="66" height="4" rx="1"/>
+  <rect fill="#6b7280" x="161.5" y="58" width="70" height="3" rx="1"/>
+  <rect fill="#4b5563" x="161.5" y="63" width="70" height="2" rx="1"/>
+</svg>`
+
+export interface Ru5StatsLink {
+  label: string
+  href: string
+  underlineColor: string
+}
+
+export interface Ru5StatsData {
+  bgColor: string
+  paddingY: number
+  paddingX: number
+  gap: number
+  cardBgColor: string
+  cardBorderRadius: number
+  cardPaddingY: number
+  cardPaddingX: number
+
+  logoUrl: string
+  logoAlt: string
+  logoBgColor: string
+  logoSize: number
+  leftTitle: string
+  leftTitleFontSize: number
+  leftTitleFontWeight: string
+  leftTitleColor: string
+  leftTitleFont: string
+  leftDescription: string
+  leftDescriptionFontSize: number
+  leftDescriptionColor: string
+  leftDescriptionFont: string
+
+  eyebrowText: string
+  eyebrowFontSize: number
+  eyebrowColor: string
+  eyebrowFont: string
+  headline: string
+  headlineFontSize: number
+  headlineFontWeight: string
+  headlineGradientFrom: string
+  headlineGradientTo: string
+  headlineFont: string
+  rightDescription: string
+  rightDescriptionFontSize: number
+  rightDescriptionColor: string
+  rightDescriptionFont: string
+
+  linkFontSize: number
+  linkFontWeight: string
+  linkColor: string
+  linkFont: string
+  links: Ru5StatsLink[]
+
+  fontFamily: string
+}
+
+export const ru5StatsDefaults: Ru5StatsData = {
+  bgColor: '#faf8f3',
+  paddingY: 32,
+  paddingX: 32,
+  gap: 24,
+  cardBgColor: '#ffffff',
+  cardBorderRadius: 20,
+  cardPaddingY: 36,
+  cardPaddingX: 40,
+
+  logoUrl: '',
+  logoAlt: 'RX',
+  logoBgColor: '#f3f4f6',
+  logoSize: 64,
+  leftTitle: 'Curated gear for the team, by the team',
+  leftTitleFontSize: 26,
+  leftTitleFontWeight: '400',
+  leftTitleColor: '#111827',
+  leftTitleFont: '',
+  leftDescription: 'Quality pieces you will reach for. Branded with pride.\nBuilt for how we work.',
+  leftDescriptionFontSize: 16,
+  leftDescriptionColor: '#4b5563',
+  leftDescriptionFont: '',
+
+  eyebrowText: "WHAT'S NEXT",
+  eyebrowFontSize: 12,
+  eyebrowColor: '#0d9488',
+  eyebrowFont: '',
+  headline: 'Phase 2 is coming',
+  headlineFontSize: 40,
+  headlineFontWeight: '500',
+  headlineGradientFrom: '#7c3aed',
+  headlineGradientTo: '#db2777',
+  headlineFont: '',
+  rightDescription: 'More gear. More ways to customize.',
+  rightDescriptionFontSize: 16,
+  rightDescriptionColor: '#4b5563',
+  rightDescriptionFont: '',
+
+  linkFontSize: 15,
+  linkFontWeight: '400',
+  linkColor: '#111827',
+  linkFont: '',
+  links: [
+    { label: 'Share Feedback', href: '#', underlineColor: '#14b8a6' },
+    { label: 'New Omni rebrand', href: '#', underlineColor: '#4f46e5' },
+  ],
+
+  fontFamily: '',
+}
+
+export const ru5StatsFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'bgColor', label: 'Background Colour', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '32' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '32' },
+  { key: 'gap', label: 'Gap Between Cards (px)', type: 'number', placeholder: '24' },
+
+  { key: '_h_card', label: 'Card Style', type: 'header' },
+  { key: 'cardBgColor', label: 'Card Background', type: 'color' },
+  { key: 'cardBorderRadius', label: 'Card Radius (px)', type: 'number', placeholder: '20' },
+  { key: 'cardPaddingY', label: 'Card Vertical Padding (px)', type: 'number', placeholder: '36' },
+  { key: 'cardPaddingX', label: 'Card Horizontal Padding (px)', type: 'number', placeholder: '40' },
+
+  { key: '_h_left', label: 'Left Card', type: 'header' },
+  { key: 'logoUrl', label: 'Logo Image', type: 'image', placeholder: 'https://example.com/logo.png', noAspectRatio: true },
+  { key: 'logoAlt', label: 'Logo Alt / Initials', type: 'text', placeholder: 'Shown instead when no logo image is set' },
+  { key: 'logoBgColor', label: 'Logo Background', type: 'color' },
+  { key: 'logoSize', label: 'Logo Size (px)', type: 'number', placeholder: '64' },
+  { key: 'leftTitle', label: 'Title', type: 'text', placeholder: 'e.g. Curated gear for the team, by the team' },
+  { key: 'leftTitleFontSize', label: 'Title Size (px)', type: 'number', placeholder: '26' },
+  { key: 'leftTitleFontWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  { key: 'leftTitleColor', label: 'Title Colour', type: 'color' },
+  fontField('leftTitleFont', 'Title Font'),
+  { key: 'leftDescription', label: 'Description', type: 'textarea', placeholder: 'Short supporting copy' },
+  { key: 'leftDescriptionFontSize', label: 'Description Size (px)', type: 'number', placeholder: '16' },
+  { key: 'leftDescriptionColor', label: 'Description Colour', type: 'color' },
+  fontField('leftDescriptionFont', 'Description Font'),
+
+  { key: '_h_right', label: 'Right Card', type: 'header' },
+  { key: 'eyebrowText', label: 'Eyebrow Text', type: 'text', placeholder: "e.g. WHAT'S NEXT" },
+  { key: 'eyebrowFontSize', label: 'Eyebrow Size (px)', type: 'number', placeholder: '12' },
+  { key: 'eyebrowColor', label: 'Eyebrow Colour', type: 'color' },
+  fontField('eyebrowFont', 'Eyebrow Font'),
+  { key: 'headline', label: 'Headline', type: 'text', placeholder: 'e.g. Phase 2 is coming' },
+  { key: 'headlineFontSize', label: 'Headline Size (px)', type: 'number', placeholder: '40' },
+  { key: 'headlineFontWeight', label: 'Headline Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  { key: 'headlineGradientFrom', label: 'Headline Gradient From', type: 'color' },
+  { key: 'headlineGradientTo', label: 'Headline Gradient To', type: 'color' },
+  fontField('headlineFont', 'Headline Font'),
+  { key: 'rightDescription', label: 'Description', type: 'text', placeholder: 'Short supporting copy' },
+  { key: 'rightDescriptionFontSize', label: 'Description Size (px)', type: 'number', placeholder: '16' },
+  { key: 'rightDescriptionColor', label: 'Description Colour', type: 'color' },
+  fontField('rightDescriptionFont', 'Description Font'),
+
+  { key: '_h_links', label: 'Links', type: 'header' },
+  { key: 'linkFontSize', label: 'Link Size (px)', type: 'number', placeholder: '15' },
+  { key: 'linkFontWeight', label: 'Link Weight', type: 'select', options: ['400', '500', '600', '700'] },
+  { key: 'linkColor', label: 'Link Colour', type: 'color' },
+  fontField('linkFont', 'Link Font'),
+  {
+    key: 'links',
+    label: 'Link Buttons',
+    type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Share Feedback' },
+      { key: 'href', label: 'URL', type: 'url', placeholder: 'https://example.com' },
+      { key: 'underlineColor', label: 'Underline Colour', type: 'color' },
+    ],
+  },
+]
+
+export function renderRu5Stats(data: Ru5StatsData): string {
+  // With no logo uploaded yet, show alt text/initials instead of an actual
+  // <img> — a real <img> with no src just renders the browser's tiny, cramped
+  // "broken image" icon. Once a real URL is set, it renders as a normal image.
+  const logoInner = data.logoUrl
+    ? `<img src="${data.logoUrl}" alt="${data.logoAlt ?? ''}" style="width:100%;height:100%;object-fit:cover;display:block;" />`
+    : `<span style="font-size:${Math.round(data.logoSize * 0.4)}px;font-weight:700;color:#9ca3af;${fontCss(data.leftTitleFont, data.fontFamily)}">${data.logoAlt ?? ''}</span>`
+
+  const leftDescriptionHtml = (data.leftDescription ?? '')
+    .split('\n')
+    .filter(Boolean)
+    .map(line => `<p style="margin:0 0 4px;">${line}</p>`)
+    .join('')
+
+  const linksHtml = (data.links ?? []).map(link => `
+    <a href="${link.href || '#'}" style="display:flex;align-items:center;justify-content:space-between;gap:24px;text-decoration:none;color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};padding-bottom:10px;border-bottom:4px solid ${link.underlineColor};white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}">
+      <span>${link.label}</span><span aria-hidden="true">&rarr;</span>
+    </a>`
+  ).join('')
+
+  return `<section data-component-title="Ru5-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:900px){[data-ru5-stats-row]{grid-template-columns:1fr!important}[data-ru5-stats-right]{flex-direction:column!important;align-items:flex-start!important}[data-ru5-stats-links]{flex-direction:row!important;width:100%!important;gap:16px!important}[data-ru5-stats-links] a{width:100%!important}}
+  @media(max-width:600px){[data-ru5-stats-row]{gap:16px!important}[data-ru5-stats-card]{padding:28px 24px!important}[data-ru5-stats-links]{flex-direction:column!important}}
+</style>
+  <div style="width:100%;max-width:1400px;margin:0 auto;">
+    <div data-ru5-stats-row="true" style="display:grid;grid-template-columns:1fr 1fr;gap:${data.gap}px;align-items:stretch;">
+      <div data-ru5-stats-card="true" style="background:${data.cardBgColor};border-radius:${data.cardBorderRadius}px;padding:${data.cardPaddingY}px ${data.cardPaddingX}px;display:flex;align-items:flex-start;gap:20px;">
+        <div style="flex-shrink:0;width:${data.logoSize}px;height:${data.logoSize}px;border-radius:50%;overflow:hidden;background:${data.logoBgColor};display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,0.12);">
+          ${logoInner}
+        </div>
+        <div style="min-width:0;">
+          <h3 style="margin:0 0 12px;font-size:${data.leftTitleFontSize}px;font-weight:${data.leftTitleFontWeight};color:${data.leftTitleColor};line-height:1.3;${fontCss(data.leftTitleFont, data.fontFamily)}">${data.leftTitle}</h3>
+          <div style="font-size:${data.leftDescriptionFontSize}px;color:${data.leftDescriptionColor};line-height:1.6;${fontCss(data.leftDescriptionFont, data.fontFamily)}">
+            ${leftDescriptionHtml}
+          </div>
+        </div>
+      </div>
+      <div data-ru5-stats-card="true" style="background:${data.cardBgColor};border-radius:${data.cardBorderRadius}px;padding:${data.cardPaddingY}px ${data.cardPaddingX}px;display:flex;">
+        <div data-ru5-stats-right="true" style="display:flex;align-items:center;justify-content:space-between;gap:32px;width:100%;">
+          <div style="min-width:0;">
+            <div style="font-size:${data.eyebrowFontSize}px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${data.eyebrowColor};margin-bottom:10px;${fontCss(data.eyebrowFont, data.fontFamily)}">${data.eyebrowText}</div>
+            <h3 style="margin:0 0 12px;font-size:${data.headlineFontSize}px;font-weight:${data.headlineFontWeight};line-height:1.2;background:linear-gradient(90deg,${data.headlineGradientFrom},${data.headlineGradientTo});-webkit-background-clip:text;background-clip:text;color:transparent;${fontCss(data.headlineFont, data.fontFamily)}">${data.headline}</h3>
+            <p style="margin:0;font-size:${data.rightDescriptionFontSize}px;color:${data.rightDescriptionColor};line-height:1.6;${fontCss(data.rightDescriptionFont, data.fontFamily)}">${data.rightDescription}</p>
+          </div>
+          <div data-ru5-stats-links="true" style="flex-shrink:0;display:flex;flex-direction:column;gap:20px;">
+            ${linksHtml}
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -8061,6 +8738,8 @@ export interface Ru3TextImageHeroData {
   descriptionColor: string
   descriptionSize: number
   ctaBgColor: string
+  ctaGradient: boolean
+  ctaGradientColor: string
   ctaTextColor: string
   ctaBorderRadius: number
   ctaBorderWidth: number
@@ -8102,7 +8781,9 @@ export const ru3TextImageHeroDefaults: Ru3TextImageHeroData = {
   subheadingSize: 22,
   descriptionColor: '#475569',
   descriptionSize: 16,
-  ctaBgColor: '#a855f7',
+  ctaBgColor: '#4f46e5',
+  ctaGradient: false,
+  ctaGradientColor: '#ec4899',
   ctaTextColor: '#ffffff',
   ctaBorderRadius: 50,
   ctaBorderWidth: 2,
@@ -8131,6 +8812,8 @@ export const ru3TextImageHeroFields: FieldConfig[] = [
   { key: 'ctaUrl',   label: 'Button URL',   type: 'url',  placeholder: '/shop' },
   { key: 'ctaStyle', label: 'Button Style', type: 'select', options: ['filled', 'outline', 'ghost'] },
   { key: 'ctaBgColor',      label: 'Button Background', type: 'color' },
+  { key: 'ctaGradient', label: 'Gradient Background', type: 'toggle' },
+  { key: 'ctaGradientColor', label: 'Gradient End Color', type: 'color' },
   { key: 'ctaTextColor',    label: 'Button Text Color', type: 'color' },
   { key: 'ctaBorderRadius', label: 'Button Radius',     type: 'number', unit: 'px', step: 2, placeholder: '50' },
   { key: 'ctaBorderWidth',  label: 'Border Width',      type: 'number', unit: 'px', step: 1, placeholder: '2' },
@@ -8206,7 +8889,10 @@ export function renderRu3TextImageHero(data: Ru3TextImageHeroData): string {
   } else if (data.ctaStyle === 'ghost') {
     ctaBtnStyle = `background:transparent;color:${data.ctaTextColor};border:none;`
   } else {
-    ctaBtnStyle = `background:${data.ctaBgColor};color:${data.ctaTextColor};border:${data.ctaBorderWidth ?? 0}px solid transparent;`
+    const ctaBg = data.ctaGradient
+      ? `linear-gradient(90deg, ${data.ctaBgColor}, ${data.ctaGradientColor})`
+      : data.ctaBgColor
+    ctaBtnStyle = `background:${ctaBg};color:${data.ctaTextColor};border:${data.ctaBorderWidth ?? 0}px solid transparent;`
   }
 
   const ctaHtml = data.ctaText
@@ -8247,7 +8933,7 @@ export function renderRu3TextImageHero(data: Ru3TextImageHeroData): string {
 
   return `<section data-component-title="Ru3-Text + Image Hero" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${sectionBg};${heightStyle}${fontCss(undefined, data.fontFamily)}">
   <style>@media(max-width:767px){.ru3-tih-grid{grid-template-columns:1fr!important;gap:2rem!important;}}</style>
-  <div style="max-width:80rem;margin:0 auto;padding:${data.paddingY ?? 64}px ${data.paddingX ?? 48}px;box-sizing:border-box;">
+  <div style="max-width:90rem;margin:0 auto;padding:${data.paddingY ?? 64}px ${data.paddingX ?? 48}px;box-sizing:border-box;">
     <div class="ru3-tih-grid" style="display:grid;grid-template-columns:${gridCols};gap:${data.columnGap ?? 48}px;align-items:${vertAlign};">
       ${leftCol}
       ${rightCol}
@@ -11093,11 +11779,11 @@ export const showMultipleProductsDefaults: ShowMultipleProductsData = {
   contentAlign: 'left',
   defaultBorderColor: '#e5e7eb',
   borderWidth: 1,
-  hoverBorderColor: '#1e3a8a',
+  hoverBorderColor: '#0f1f4d',
   hoverBorderRadius: 8,
   showViewProduct: true,
   viewProductLabel: 'View Product',
-  viewProductBg: '#1e3a8a',
+  viewProductBg: '#0f1f4d',
   viewProductTextColor: '#ffffff',
   hoverOverlayColor: '#9ca3af',
   hoverOverlayOpacity: 35,
@@ -11106,7 +11792,7 @@ export const showMultipleProductsDefaults: ShowMultipleProductsData = {
   ...productCardStyleDefaults,
   cardPadding: 16,
   showButton: true,
-  buttonBgColor: '#1e3a8a',
+  buttonBgColor: '#0f1f4d',
   buttonTextColor: '#ffffff',
 }
 
@@ -11282,7 +11968,7 @@ export function renderShowMultipleProducts(data: ShowMultipleProductsData): stri
   @media(max-width:1024px){[data-showmulti-grid]{grid-template-columns:repeat(3,1fr)!important;}}
   @media(max-width:768px){[data-showmulti-grid]{grid-template-columns:repeat(2,1fr)!important;}}
   @media(max-width:480px){[data-showmulti-grid]{grid-template-columns:1fr!important;}}
-  [data-smp-card]:hover{box-shadow:0 0 0 ${data.borderWidth ?? 1}px ${data.hoverBorderColor || '#1e3a8a'},${CARD_SHADOW_PRESETS['shadow-xl']}!important;transform:translateY(-4px) scale(1.02)!important;}
+  [data-smp-card]:hover{box-shadow:0 0 0 ${data.borderWidth ?? 1}px ${data.hoverBorderColor || '#0f1f4d'},${CARD_SHADOW_PRESETS['shadow-xl']}!important;transform:translateY(-4px) scale(1.02)!important;}
   [data-smp-card]:hover [data-smp-overlay],[data-smp-card]:hover [data-smp-viewbtn],[data-smp-card]:hover [data-smp-arrow]{opacity:1!important;}
   ${data.imageHoverZoom !== false ? `[data-smp-card]:hover [data-smp-image]{transform:scale(${1 + (data.imageHoverZoomAmount ?? 6) / 100})!important;}` : ''}
   /* Touch devices (tablet/mobile) can't rely on :hover to reveal these —

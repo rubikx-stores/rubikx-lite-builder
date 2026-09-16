@@ -55,35 +55,43 @@ export default defineEventHandler(async (event) => {
   console.log('[CMS DELETE] key:', key, 'versionList:', versionList, 'companyId:', companyId,
     'recordsToDelete:', recordsToDelete.map((r: any) => ({ id: r.id, version: r.version, state: r.state })))
 
-  // Home's navbar/footer are saved under global-header/global-footer at the
-  // exact same version number as the Home save that produced them (see
-  // PageBuilderWrapper.client.vue's shared commonBody.version), so deleting
-  // a Home version should take its matching header/footer version with it —
-  // global-header/global-footer are otherwise permanently protected above,
-  // which is why they'd never follow Home's version deletions on their own.
-  const CASCADE_ON_KEYS = ['home']
-  const CASCADE_TARGET_KEYS = ['global-header', 'global-footer'] as const
+  // Home's navbar/footer are saved under global-header/global-footer, and
+  // Shop's own banner is saved under shop-header/shop-footer (see
+  // splitShopSectionsForPublish in useGlobalSections.ts — the live storefront
+  // never reads the plain "shop" key at all), both at the exact same version
+  // number as the owning page's save (see PageBuilderWrapper.client.vue's
+  // shared commonBody.version / index.vue's commonFields.version). So
+  // deleting a version of one of these owner pages should take its matching
+  // cascade-target version with it — those targets are otherwise permanently
+  // protected above (global-header/global-footer) or simply never read
+  // directly (shop), so they'd never follow the owner page's deletions on
+  // their own.
+  const CASCADE_MAP: Record<string, string[]> = {
+    home: ['global-header', 'global-footer'],
+    shop: ['shop-header', 'shop-footer'],
+  }
+  const CASCADE_TARGET_KEYS = CASCADE_MAP[key] ?? []
   // Number(...) on both sides — GraphQL/Odoo isn't guaranteed to return
   // `version` as the same JS type across every query, and a silent
   // string/number mismatch here would just match nothing with no error.
   const deletedVersionNumbers = recordsToDelete.map((r: any) => Number(r.version))
-  // Once this delete leaves zero `home` records at all, Home is completely
-  // gone — at that point clear every global-header/global-footer version
-  // that exists, not just the one(s) matching versions deleted right now.
-  // This also self-heals orphaned header/footer rows left over from Home
-  // versions deleted before this cascade existed (their matching row was
-  // never cleaned up at the time, so it just sat there permanently
-  // outranking everything else by version number).
-  const isHomeNowFullyEmpty = CASCADE_ON_KEYS.includes(key) && recordsToDelete.length === pageRecords.length
-  const cascadeRecords = !CASCADE_ON_KEYS.includes(key)
+  // Once this delete leaves zero records of the owner page at all, it's
+  // completely gone — at that point clear every cascade-target version that
+  // exists, not just the one(s) matching versions deleted right now. This
+  // also self-heals orphaned cascade rows left over from owner-page versions
+  // deleted before this cascade existed (their matching row was never
+  // cleaned up at the time, so it just sat there permanently outranking
+  // everything else by version number).
+  const isOwnerKeyNowFullyEmpty = CASCADE_TARGET_KEYS.length > 0 && recordsToDelete.length === pageRecords.length
+  const cascadeRecords = CASCADE_TARGET_KEYS.length === 0
     ? []
-    : isHomeNowFullyEmpty
+    : isOwnerKeyNowFullyEmpty
       ? allRecords.filter((r: any) => CASCADE_TARGET_KEYS.includes(r.key))
       : allRecords.filter((r: any) => CASCADE_TARGET_KEYS.includes(r.key) && deletedVersionNumbers.includes(Number(r.version)))
   const cascadeIds = cascadeRecords.map((r: any) => r.id)
   const allIdsToDelete = [...idsToDelete, ...cascadeIds]
 
-  console.log('[CMS DELETE] isHomeNowFullyEmpty:', isHomeNowFullyEmpty, 'cascade candidates:',
+  console.log('[CMS DELETE] isOwnerKeyNowFullyEmpty:', isOwnerKeyNowFullyEmpty, 'cascade candidates:',
     cascadeRecords.map((r: any) => ({ id: r.id, key: r.key, version: r.version, state: r.state })))
 
   await Promise.all(
@@ -105,7 +113,9 @@ export default defineEventHandler(async (event) => {
   // Cache-bust: a bare delete never tells Odoo to refresh what it serves
   // live for a key — confirmed via testing, the live site only actually
   // updates once a fresh record is PUBLISHED back, not from a delete
-  // alone. So whenever a key ends up with zero rows, publish an explicit
+  // alone. As long as another published row survives for a key, Odoo
+  // naturally falls back to rendering that one on its own — no action
+  // needed. Only once zero published rows remain, publish an explicit
   // "cleared" sentinel (same pattern already used for shop-header/
   // shop-footer in useGlobalSections.ts) to force Odoo to refresh, then
   // immediately delete that record again so the key stays truly empty —
@@ -156,18 +166,30 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  // Odoo resolves what to render for a key by querying live for the current
+  // `published` row, not from some cache that only refreshes on a write — so
+  // as long as another published row survives, Odoo naturally falls back to
+  // it with no action needed here. The cache-bust is only required once
+  // *zero published rows* remain for a key — otherwise Odoo just keeps
+  // serving its last rendered output for the row(s) we removed. Gating this
+  // on zero rows total (as before) missed the common case where draft rows
+  // survive alongside the deleted published one.
   const keysNeedingCacheBust = CASCADE_TARGET_KEYS.filter((gk) => {
     const existedBefore = allRecords.some((r: any) => r.key === gk)
-    const remainingAfter = allRecords.filter((r: any) => r.key === gk && !cascadeIds.includes(r.id)).length
-    return existedBefore && remainingAfter === 0
+    const remainingPublished = allRecords.filter((r: any) =>
+      r.key === gk && r.state === 'published' && !cascadeIds.includes(r.id)
+    ).length
+    return existedBefore && remainingPublished === 0
   })
-  console.log('[CMS DELETE] global-header/global-footer keys needing cache-bust:', keysNeedingCacheBust)
+  console.log('[CMS DELETE] cascade-target keys needing cache-bust:', keysNeedingCacheBust)
   for (const gk of keysNeedingCacheBust) await cacheBustCleared(gk)
 
-  // Same treatment for the page's own key (home or any other page) once
-  // every version of it is gone.
-  const isPageNowFullyEmpty = recordsToDelete.length === pageRecords.length
-  if (isPageNowFullyEmpty) await cacheBustCleared(key)
+  // Same treatment for the page's own key (home or any other page): only
+  // once every remaining row for it is no longer published.
+  const remainingPublished = pageRecords.filter((r: any) =>
+    r.state === 'published' && !idsToDelete.includes(r.id)
+  ).length
+  if (remainingPublished === 0) await cacheBustCleared(key)
 
   return { deleted: allIdsToDelete.length, ids: allIdsToDelete }
 })
