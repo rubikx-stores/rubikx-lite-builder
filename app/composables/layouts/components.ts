@@ -2199,27 +2199,67 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
        <span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" style="position:relative;display:none;align-items:center;flex-shrink:0;"></span>`
     : ''
   const topBarEl = data.showTopBar !== false
-    ? `<div style="background:${data.topBarBgColor};padding:${data.topBarPaddingY}px min(${data.topBarPaddingX}px,6vw);display:flex;align-items:center;justify-content:flex-end;gap:1rem;">${signInEl}</div>`
+    ? `<div data-ru7-topbar style="background:${data.topBarBgColor};padding:${data.topBarPaddingY}px min(${data.topBarPaddingX}px,6vw);display:flex;align-items:center;justify-content:flex-end;gap:1rem;">${signInEl}</div>`
     : ''
 
-  // Hamburger for the nav-links list only — search/cart icons stay visible
-  // in the main row at every width since they're compact and don't need
-  // collapsing; only an admin-grown Nav Links list risks overflowing a
-  // narrow screen. Same stopImmediatePropagation rationale as
-  // Ru6-Hamburger-Navbar's own menuToggleScript: the page builder's own
-  // click-to-select listener lives on this same element and would otherwise
-  // fight/undo this toggle.
-  const hamburgerToggleScript = `event.stopImmediatePropagation();(function(btn){var sec=btn.closest('section');var panel=sec.querySelector('[data-ru7-menu-panel]');var overlay=sec.querySelector('[data-ru7-menu-overlay]');var bars=btn.querySelector('[data-icon-bars]');var x=btn.querySelector('[data-icon-x]');var open=panel.style.display==='block';panel.style.display=open?'none':'block';if(overlay)overlay.style.display=open?'none':'block';if(bars)bars.style.display=open?'inline-flex':'none';if(x)x.style.display=open?'none':'inline-flex';})(this);`
-  const hamburgerCloseScript = `event.stopImmediatePropagation();(function(el){var sec=el.closest('section');var panel=sec.querySelector('[data-ru7-menu-panel]');var btn=sec.querySelector('[data-ru7-menu-toggle]');panel.style.display='none';el.style.display='none';var bars=btn.querySelector('[data-icon-bars]');var x=btn.querySelector('[data-icon-x]');if(bars)bars.style.display='inline-flex';if(x)x.style.display='none';})(this);`
-  const hamburgerEl = navLinksHtml
+  // Hamburger opens a full-height, left-anchored slide-in drawer — same
+  // data-*-mobile-drawer/-overlay + translateX idiom as Ru5-Dynamic-Navbar's
+  // own mobile menu, just scoped to data-ru7-* so the two blocks never
+  // collide when both sit on the same page. Same stopImmediatePropagation
+  // rationale as Ru6-Hamburger-Navbar's own menuToggleScript: the page
+  // builder's own click-to-select listener lives on this same element and
+  // would otherwise fight/undo this toggle.
+  const hamburgerToggleScript = `event.stopImmediatePropagation();(function(btn){var sec=btn.closest('section');var d=sec.querySelector('[data-ru7-mobile-drawer]');var o=sec.querySelector('[data-ru7-mobile-overlay]');if(d)d.style.transform='translateX(0)';if(o)o.style.display='block';document.body.style.overflow='hidden';})(this);`
+  const hamburgerCloseScript = `event.stopImmediatePropagation();(function(el){var sec=el.closest('section');var d=sec.querySelector('[data-ru7-mobile-drawer]');var o=sec.querySelector('[data-ru7-mobile-overlay]');if(d)d.style.transform='translateX(-100%)';if(o)o.style.display='none';document.body.style.overflow='';})(this);`
+
+  // Mobile menu panel: search stays a bordered "button" field; nav links
+  // (e.g. Shop) render as plain borderless text rows, same look as the old
+  // desktop links, just stacked; a divider line separates them from Sign In,
+  // which gets the bordered "button" treatment since it's the panel's one
+  // real call-to-action. This is the mobile-only stand-in for the main
+  // row's search-icon-toggle and the top bar's Sign In link, both of which
+  // get hidden at this breakpoint (see responsiveStyle) so they aren't
+  // duplicated on screen.
+  const mobileBtnStyle = `display:block;width:100%;box-sizing:border-box;text-align:left;background:transparent;border:1px solid #e5e7eb;border-radius:8px;padding:0.65rem 1rem;margin-bottom:0.5rem;${linkStyle}`
+  const mobileLinkStyle = `display:block;padding:0.6rem 0.25rem;${linkStyle}`
+  const mobileSearchEl = data.showSearch
+    ? `<div style="display:flex;align-items:center;gap:0.5rem;background:transparent;border:1px solid #e5e7eb;border-radius:8px;padding:0.65rem 1rem;margin-bottom:0.5rem;">
+        ${icon('magnifyingGlass', { size: 18, stroke: '#9ca3af' })}
+        <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="border:none;outline:none;background:transparent;font-size:0.9rem;width:100%;color:#111827;" />
+      </div>`
+    : ''
+  const mobileNavLinksHtml = (data.navLinks ?? [])
+    .map(l => `<a href="${l.url}" style="${mobileLinkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`)
+    .join('')
+  // Reuses data-auth-signin-btn — loadAuthState already hides every element
+  // with that attribute site-wide once the visitor turns out to be logged
+  // in, so this button and the top bar's own Sign In link stay in sync
+  // without a second AuthState shell.
+  const mobileSignInEl = data.showSignIn
+    ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="${mobileBtnStyle}text-align:center;border-radius:10px;">${data.signInLabel}</a>`
+    : ''
+  const mobileDividerEl = (navLinksHtml || data.showSearch) && data.showSignIn
+    ? `<div style="height:1px;background:#e5e7eb;margin:0.25rem 0 0.75rem;"></div>`
+    : ''
+
+  const showMobileMenu = !!(navLinksHtml || data.showSearch || data.showSignIn)
+  const hamburgerEl = showMobileMenu
     ? `<button type="button" data-ru7-menu-toggle onclick="${hamburgerToggleScript}" style="display:none;background:none;border:none;cursor:pointer;padding:0;align-items:center;flex-shrink:0;">
-        <span data-icon-bars style="display:inline-flex;"><svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.linkColor}" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg></span>
-        <span data-icon-x style="display:none;">${icon('xMark', { size: 24, stroke: data.linkColor, strokeWidth: '2.5' })}</span>
+        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.linkColor}" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
-      <div data-ru7-menu-panel style="display:none;position:absolute;top:100%;left:0;width:100%;background:#fff;box-shadow:0 12px 24px rgba(0,0,0,0.12);padding:0.75rem min(${data.mainBarPaddingX}px,6vw) 1rem;z-index:9999;">
-        ${(data.navLinks ?? []).map(l => `<a href="${l.url}" style="display:block;padding:0.65rem 0;${linkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`).join('')}
+      <div data-ru7-mobile-drawer style="position:fixed;top:0;left:0;width:320px;max-width:85vw;height:100vh;background:#fff;z-index:99999;transform:translateX(-100%);transition:transform 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;box-sizing:border-box;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+          ${logoEl}
+          <button type="button" onclick="${hamburgerCloseScript}" style="background:none;border:none;cursor:pointer;padding:0.25rem;display:flex;align-items:center;">
+            ${icon('xMark', { size: 24, stroke: data.linkColor })}
+          </button>
+        </div>
+        ${mobileSearchEl}
+        ${mobileNavLinksHtml}
+        ${mobileDividerEl}
+        ${mobileSignInEl}
       </div>
-      <div data-ru7-menu-overlay onclick="${hamburgerCloseScript}" style="display:none;position:fixed;inset:0;z-index:9998;background:transparent;"></div>`
+      <div data-ru7-mobile-overlay onclick="${hamburgerCloseScript}" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;"></div>`
     : ''
 
   // Search: expands into a full-width row directly under the main bar (not
@@ -2244,7 +2284,7 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
     : ''
 
   const cartEl = data.showCart
-    ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.linkColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
+    ? `<span data-ru7-cart data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.linkColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
         <a href="${data.cartUrl}" style="color:${data.linkColor};display:inline-flex;">${icon('shoppingCart', { size: 22, stroke: data.linkColor })}</a>
       </span>`
     : ''
@@ -2252,28 +2292,52 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   // Thin divider between the search and cart icons — only shown when both
   // are actually present, otherwise it'd be a lone floating line.
   const searchCartDividerEl = (data.showSearch && data.showCart)
-    ? `<span style="width:1px;height:20px;background:#d1d5db;display:inline-block;flex-shrink:0;"></span>`
+    ? `<span data-ru7-search-cart-divider style="width:1px;height:20px;background:#d1d5db;display:inline-block;flex-shrink:0;"></span>`
     : ''
 
   const sectionStyle = `width:100%;display:block;${fontCss(undefined, data.fontFamily)}${data.sticky ? 'position:sticky;top:0;z-index:9999;' : ''}`
 
-  // Below 640px: text nav links give way to the hamburger button/panel, the
-  // search toggle and cart icon stay put (compact enough not to need
-  // collapsing), and the logo's own max-width is capped so a generously
-  // configured logo can't crowd out the hamburger/icons on a phone screen.
-  const responsiveStyle = navLinksHtml
+  // Below 640px: text nav links, the search icon-toggle and the top bar's
+  // Sign In link all give way to the hamburger button/panel (which carries
+  // its own button-styled search field, nav links and Sign In — see
+  // mobileSearchEl/mobileNavLinksHtml/mobileSignInEl above), and the logo's
+  // own max-width is capped so a generously configured logo can't crowd out
+  // the hamburger/icons on a phone screen. The cart icon is scoped to
+  // data-ru7-not-home (set by homePageScript below) so it only shows on
+  // mobile when the visitor is actually on the home page.
+  const responsiveStyle = showMobileMenu
     ? `<style>
   @media (max-width: 640px) {
     [data-ru7-desktop-links] { display: none !important; }
     [data-ru7-menu-toggle] { display: inline-flex !important; }
+    [data-ru7-search-toggle] { display: none !important; }
+    [data-ru7-search-row] { display: none !important; }
+    [data-ru7-topbar] [data-auth-signin-btn] { display: none !important; }
     [data-ru7-main] [data-ru7-logo] img,
     [data-ru7-main] [data-ru7-logo] span { max-width: 40vw; }
+    [data-ru7-not-home] [data-ru7-cart] { display: none !important; }
+    [data-ru7-cart] { order: -1; }
+    [data-ru7-menu-toggle] { order: 1; }
+    [data-ru7-search-cart-divider] { display: none !important; }
+  }
+  /* The drawer's open/closed state lives purely in an inline style the
+     hamburger's onclick sets — nothing else ever resets it. Without this,
+     opening it at mobile width then resizing to desktop leaves it slid open
+     (and the dimmed overlay up) with no CSS touching it. */
+  @media (min-width: 641px) {
+    [data-ru7-mobile-drawer] { transform: translateX(-100%) !important; }
+    [data-ru7-mobile-overlay] { display: none !important; }
   }
 </style>`
     : ''
 
+  // Marks the section as "not home" so responsiveStyle above can hide the
+  // cart icon on mobile everywhere except the home page.
+  const homePageScript = `<script>(function(){var sec=document.currentScript.closest('section');if(location.pathname!=='/')sec.setAttribute('data-ru7-not-home','true');})()</script>`
+
   return `<section data-component-title="Ru7-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
 ${responsiveStyle}
+${homePageScript}
 ${topBarEl}
 <nav data-ru7-main style="position:relative;background:${data.mainBarBgColor};padding:${data.mainBarPaddingY}px min(${data.mainBarPaddingX}px,6vw);display:flex;align-items:center;justify-content:space-between;gap:1rem;">
   <div data-ru7-logo style="display:flex;align-items:center;min-width:0;">

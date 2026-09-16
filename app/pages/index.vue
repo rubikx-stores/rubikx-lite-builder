@@ -93,27 +93,30 @@ function selectedVersionData(page: Page) {
   return page.versions.find((v) => v.version === vNum) ?? page.versions[0]
 }
 
-// True once every version the page has is currently checked — whether it
-// started that way (single-version page) or got there via "Select all".
-// This is also the exact condition under which the delete removes the
-// page from the site entirely, the single most destructive thing this
-// modal can do — so it doubles as the trigger for the heavier warning
-// and type-the-name confirmation below, instead of just the checkbox state.
+// A published version is never shown or selectable in the delete modal at
+// all — it can only be removed after being unpublished first (which turns
+// it into a normal draft). This is everything the modal is allowed to see.
+const deletableVersions = computed(() => pageToDelete.value?.versions.filter((v) => v.status !== 'published') ?? [])
+
+// True once every *deletable* (i.e. non-published) version is checked.
 const allDeleteVersionsSelected = computed(() => {
-  const page = pageToDelete.value
-  if (!page) return false
-  return selectedDeleteVersions.value.length === page.versions.length
+  return deletableVersions.value.length > 0 && selectedDeleteVersions.value.length === deletableVersions.value.length
 })
 
-const deleteHasPublishedWarning = computed(() => {
+// Only true when that also means nothing survives for this page at all —
+// i.e. there was no published version to begin with. This is the exact
+// condition under which the delete removes the page from the site entirely,
+// the single most destructive thing this modal can do — so it triggers the
+// heavier warning and type-the-name confirmation below.
+const isFullPageRemoval = computed(() => {
   const page = pageToDelete.value
   if (!page) return false
-  return page.versions.some((v) => selectedDeleteVersions.value.includes(v.version) && v.status === 'published')
+  return allDeleteVersionsSelected.value && deletableVersions.value.length === page.versions.length
 })
 
 const deleteConfirmDisabled = computed(() => {
   if (!selectedDeleteVersions.value.length || deleteInFlight.value) return true
-  if (allDeleteVersionsSelected.value) return deleteConfirmText.value.trim() !== pageToDelete.value?.name
+  if (isFullPageRemoval.value) return deleteConfirmText.value.trim() !== pageToDelete.value?.name
   return false
 })
 
@@ -126,9 +129,8 @@ watchEffect(() => {
 })
 
 function toggleSelectAllDeleteVersions() {
-  const page = pageToDelete.value
-  if (!page) return
-  selectedDeleteVersions.value = allDeleteVersionsSelected.value ? [] : page.versions.map((v) => v.version)
+  if (!pageToDelete.value) return
+  selectedDeleteVersions.value = allDeleteVersionsSelected.value ? [] : deletableVersions.value.map((v) => v.version)
 }
 
 function toggleDeleteVersion(version: number) {
@@ -152,6 +154,18 @@ watch(showDeleteModal, (open) => {
   if (open) window.addEventListener('keydown', onDeleteModalKeydown)
   else window.removeEventListener('keydown', onDeleteModalKeydown)
 })
+
+// Only one version of a given CMS key should ever be `published` at a time — once a new
+// version goes live, any other version previously marked published gets demoted back to
+// draft (same value/version, just the state flips) so the page list and Odoo agree.
+function demotePayloads(key: string, keepVersion: number, versions: PageVersion[], commonFields: Record<string, any>) {
+  return versions
+    .filter((v) => v.version !== keepVersion && v.status === 'published')
+    .map((v) => $fetch('/api/proxy/odoo/cms', {
+      method: 'POST',
+      body: { ...commonFields, key, value: v.value, version: v.version, state: 'draft' },
+    }))
+}
 
 async function publishPage(page: Page) {
   publishing.value[page.id] = true
@@ -195,6 +209,14 @@ async function publishPage(page: Page) {
   if (shopFooterHtml) console.log('[PUBLISH PAGE] Also publishing "shop-footer":', shopFooterHtml)
   globalPromotions.forEach((g) => console.log(`[PUBLISH PAGE] Also promoting "${g.key}" (v${g.version}) to published`))
   console.log('====================================================')
+  // Every key that gets a version published here also needs its other
+  // previously-published versions demoted back to draft, so exactly one
+  // version of each key is ever live at a time.
+  const publishTargets: { key: string; keepVersion: number }[] = [{ key: page.id, keepVersion: vData.version }]
+  if (shopHeaderHtml) publishTargets.push({ key: 'shop-header', keepVersion: vData.version })
+  if (shopFooterHtml) publishTargets.push({ key: 'shop-footer', keepVersion: vData.version })
+  for (const g of globalPromotions) publishTargets.push({ key: g.key, keepVersion: g.version })
+
   try {
     const posts = [$fetch('/api/proxy/odoo/cms', { method: 'POST', body: publishPayload })]
     if (shopHeaderHtml) {
@@ -215,22 +237,65 @@ async function publishPage(page: Page) {
         body: { ...commonFields, key: g.key, value: g.value, version: g.version },
       }))
     }
+    for (const t of publishTargets) {
+      const versions = pages.value.find((p) => p.id === t.key)?.versions ?? []
+      posts.push(...demotePayloads(t.key, t.keepVersion, versions, commonFields))
+    }
     const res = await Promise.all(posts)
     console.log('[PUBLISH] response:', res)
-    const target = pages.value.find((p) => p.id === page.id)
-    if (target) {
-      target.status = 'published'
-      const vNum = selectedVersions.value[page.id]
-      const targetVersion = target.versions.find((v) => v.version === vNum) ?? target.versions[0]
-      if (targetVersion) targetVersion.status = 'published'
+    for (const t of publishTargets) {
+      const tTarget = pages.value.find((p) => p.id === t.key)
+      if (!tTarget) continue
+      tTarget.status = 'published'
+      tTarget.versions.forEach((v) => { v.status = v.version === t.keepVersion ? 'published' : 'draft' })
     }
-    for (const g of globalPromotions) {
-      const gTarget = pages.value.find((p) => p.id === g.key)
-      if (gTarget) {
-        gTarget.status = 'published'
-        const gVersion = gTarget.versions.find((v) => v.version === g.version)
-        if (gVersion) gVersion.status = 'published'
-      }
+  } finally {
+    publishing.value[page.id] = false
+  }
+}
+
+async function unpublishPage(page: Page) {
+  const vData = page.versions.find((v) => v.status === 'published')
+  if (!vData) return
+  publishing.value[page.id] = true
+
+  const commonFields = {
+    companyId: selectedWebsiteId.value ?? 1,
+    company_id: selectedWebsiteId.value ?? 1,
+    updatedBy: user.value?.name ?? 'editor',
+    updatedOn: new Date().toISOString(),
+  }
+
+  // Mirrors publishPage()'s promotion list, in reverse: whichever keys got
+  // promoted to published when this page was published are reverted too.
+  const targets: { key: string; version: number; value: string }[] = [
+    { key: page.id, version: vData.version, value: vData.value },
+  ]
+  if (page.id === 'shop') {
+    const { shopHeaderHtml, shopFooterHtml } = splitShopSectionsForPublish(vData.value)
+    if (shopHeaderHtml) targets.push({ key: 'shop-header', version: vData.version, value: shopHeaderHtml })
+    if (shopFooterHtml) targets.push({ key: 'shop-footer', version: vData.version, value: shopFooterHtml })
+  }
+  if (GLOBAL_OWNER_PAGES.includes(page.id)) {
+    for (const key of ['global-header', 'global-footer']) {
+      const gPublished = pages.value.find((p) => p.id === key)?.versions.find((v) => v.status === 'published')
+      if (gPublished) targets.push({ key, version: gPublished.version, value: gPublished.value })
+    }
+  }
+
+  try {
+    await Promise.all(targets.map((t) =>
+      $fetch('/api/proxy/odoo/cms', {
+        method: 'POST',
+        body: { ...commonFields, key: t.key, value: t.value, version: t.version, state: 'draft' },
+      })
+    ))
+    for (const t of targets) {
+      const tTarget = pages.value.find((p) => p.id === t.key)
+      if (!tTarget) continue
+      tTarget.status = 'draft'
+      const tv = tTarget.versions.find((v) => v.version === t.version)
+      if (tv) tv.status = 'draft'
     }
   } finally {
     publishing.value[page.id] = false
@@ -254,7 +319,7 @@ function confirmDeletePage(page: Page) {
 async function deletePage() {
   if (!pageToDelete.value || !selectedDeleteVersions.value.length) return
   const page = pageToDelete.value
-  const isAll = selectedDeleteVersions.value.length === page.versions.length
+  const isAll = isFullPageRemoval.value
   deleteInFlight.value = true
   deleteError.value = ''
   deleting.value[page.id] = true
@@ -318,7 +383,8 @@ function editPage(page: Page) {
     pageHtmlCache.value['global-theme'] = themePage.versions[0]?.value ?? ''
   }
 
-  navigateTo(`/editor?pageId=${page.id}&pageName=${encodeURIComponent(page.name)}&pageVersion=${vData.version}&companyId=${selectedWebsiteId.value}`)
+  const nextVersion = Math.max(...page.versions.map((v) => v.version)) + 1
+  navigateTo(`/editor?pageId=${page.id}&pageName=${encodeURIComponent(page.name)}&pageVersion=${vData.version}&pageVersionStatus=${vData.status}&nextVersion=${nextVersion}&companyId=${selectedWebsiteId.value}`)
 }
 
 function formatDate(iso: string) {
@@ -496,7 +562,7 @@ function handleModalKeydown(e: KeyboardEvent) {
                 </option>
               </select>
               <button
-                v-if="!page.isDefault"
+                v-if="!page.isDefault && selectedVersionData(page)?.status !== 'published'"
                 :disabled="deleting[page.id]"
                 class="p-1.5 rounded-lg border border-red-200 text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 @click.stop="confirmDeletePage(page)"
@@ -516,13 +582,17 @@ function handleModalKeydown(e: KeyboardEvent) {
           <!-- Action buttons -->
           <div class="mt-auto flex items-center gap-2 pt-3">
             <button
-              :disabled="selectedVersionData(page)?.status === 'published' || publishing[page.id]"
-              class="flex-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors"
-              :class="
-                selectedVersionData(page)?.status === 'published'
-                  ? 'cursor-not-allowed border-gray-200 text-gray-400'
-                  : 'border-gray-900 text-gray-900 hover:bg-gray-50'
-              "
+              v-if="selectedVersionData(page)?.status === 'published'"
+              :disabled="publishing[page.id]"
+              class="flex-1 rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60"
+              @click="unpublishPage(page)"
+            >
+              {{ publishing[page.id] ? 'Unpublishing…' : 'Unpublish' }}
+            </button>
+            <button
+              v-else
+              :disabled="publishing[page.id]"
+              class="flex-1 rounded-lg border border-gray-900 px-3 py-1.5 text-xs font-medium text-gray-900 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
               @click="publishPage(page)"
             >
               {{ publishing[page.id] ? 'Publishing…' : 'Publish' }}
@@ -642,7 +712,7 @@ function handleModalKeydown(e: KeyboardEvent) {
               </div>
 
               <div
-                v-if="pageToDelete && pageToDelete.versions.length > 1"
+                v-if="deletableVersions.length > 1"
                 class="mt-5"
                 :class="{ 'pointer-events-none opacity-60': deleteInFlight }"
               >
@@ -657,12 +727,12 @@ function handleModalKeydown(e: KeyboardEvent) {
                     />
                     <span class="text-sm font-medium text-gray-900">Select all</span>
                   </span>
-                  <span class="text-xs text-gray-400">{{ selectedDeleteVersions.length }} of {{ pageToDelete.versions.length }} selected</span>
+                  <span class="text-xs text-gray-400">{{ selectedDeleteVersions.length }} of {{ deletableVersions.length }} selected</span>
                 </label>
 
                 <div class="mt-2 max-h-44 space-y-1 overflow-y-auto rounded-lg border border-gray-100 p-1.5">
                   <label
-                    v-for="v in pageToDelete.versions"
+                    v-for="v in deletableVersions"
                     :key="v.version"
                     class="flex cursor-pointer items-center justify-between gap-2 rounded-md border px-2.5 py-2 transition-colors"
                     :class="selectedDeleteVersions.includes(v.version) ? 'border-gray-900 bg-gray-50' : 'border-transparent hover:bg-gray-50'"
@@ -676,21 +746,29 @@ function handleModalKeydown(e: KeyboardEvent) {
                       />
                       <span class="text-sm text-gray-900">v{{ v.version }}</span>
                     </span>
-                    <span
-                      class="rounded-full px-2 py-0.5 text-xs font-medium"
-                      :class="v.status === 'published' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'"
-                    >
+                    <span class="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
                       {{ v.status }}
                     </span>
                   </label>
                 </div>
               </div>
 
-              <!-- Full page removal: the whole page is coming off the site —
-                   this is the most destructive path through this modal, so
-                   it gets a harder-to-miss warning and a type-to-confirm
-                   gate instead of just an informational note. -->
-              <div v-if="allDeleteVersionsSelected" class="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-3">
+              <!-- The published version, if any, is never listed above at all —
+                   it can only be deleted after being unpublished first. -->
+              <p
+                v-if="pageToDelete && pageToDelete.versions.length > deletableVersions.length"
+                class="mt-3 text-xs text-gray-400"
+              >
+                The published version isn't shown here — unpublish it first to delete it.
+              </p>
+
+              <!-- Full page removal: every version is going, so the page
+                   comes off the site entirely — the most destructive path
+                   through this modal, so it gets a harder-to-miss warning
+                   and a type-to-confirm gate instead of just a note. Only
+                   possible when there's no published version to begin with,
+                   since one can never be selected above. -->
+              <div v-if="isFullPageRemoval" class="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-3">
                 <div class="flex items-start gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-4 w-4 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
@@ -711,15 +789,6 @@ function handleModalKeydown(e: KeyboardEvent) {
                     class="mt-1.5 w-full rounded-lg border border-red-300 bg-white px-2.5 py-1.5 text-sm text-gray-900 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                   />
                 </div>
-              </div>
-
-              <!-- Partial deletion that still touches a published version —
-                   softer, informational note since the page itself survives. -->
-              <div v-else-if="deleteHasPublishedWarning" class="mt-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5">
-                <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-4 w-4 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-8.25 3h.008v.008h-.008V15z" />
-                </svg>
-                <p class="text-xs leading-relaxed text-amber-700">This will remove a version that is currently live on your site.</p>
               </div>
 
               <p v-if="deleteError" class="mt-4 text-xs text-red-600">{{ deleteError }}</p>

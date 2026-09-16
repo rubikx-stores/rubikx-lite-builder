@@ -25,8 +25,16 @@ const props = defineProps<{
   pageId?: string
   pageName?: string
   pageVersion?: number
+  pageVersionStatus?: string
+  nextVersion?: number
   companyId?: number
 }>()
+
+// The version that was open when the editor was loaded is published — Save
+// must not silently flip it back to draft, so confirmSave() blocks writing
+// back to this exact version number until the user picks a later one.
+const isLockedVersion = computed(() => props.pageVersionStatus === 'published')
+const versionError = ref('')
 
 const config: PageBuilderConfig = {
   updateOrCreate: {
@@ -69,11 +77,18 @@ async function handleSaveClick() {
 
   _pendingHtml = html
   selectedVersion.value = props.pageVersion ?? 1
+  versionError.value = ''
   showVersionModal.value = true
 }
 
 async function confirmSave() {
   if (!props.pageId || !_pendingHtml) return
+
+  if (isLockedVersion.value && selectedVersion.value === props.pageVersion) {
+    versionError.value = `Version ${props.pageVersion} is already published and can't be overwritten. Save as version ${props.nextVersion ?? (props.pageVersion ?? 1) + 1} or higher instead.`
+    return
+  }
+
   saveInFlight.value = true
   try {
     const parser = new DOMParser()
@@ -413,7 +428,14 @@ onMounted(async () => {
               type="number"
               min="1"
               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              @input="versionError = ''"
             />
+            <p v-if="isLockedVersion" class="text-xs text-gray-500">
+              Version {{ props.pageVersion }} is currently published.
+            </p>
+            <p v-if="versionError" class="text-xs text-red-600">
+              {{ versionError }}
+            </p>
           </div>
 
           <div class="flex gap-2 justify-end">
