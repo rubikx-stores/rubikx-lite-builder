@@ -27,6 +27,29 @@ export interface FieldConfig {
   // never produces those, so its HTML output would break that splitting.
   // Every other textarea gets the rich editor by default.
   plainTextarea?: boolean
+  // Marks a field as holding data that belongs to one specific site/company
+  // (e.g. hand-picked products, or a toggle that pulls live categories from
+  // that site's backend) rather than reusable design. "Clone Design" (see
+  // server/utils/cloneDesign.ts) resets any field flagged here on the
+  // target copy instead of carrying the source site's value over, so
+  // cloning a page never duplicates one store's catalog into another's.
+  siteSpecific?: boolean
+  // The value a siteSpecific field is reset to on clone. Defaults to the
+  // block's own default for that key — set this explicitly when the block
+  // default isn't the safe "off" state (e.g. a categories toggle whose
+  // normal default is `true`, but which must land `false` on a freshly
+  // cloned page until the target site's owner turns it back on).
+  cloneValue?: any
+  // For a Color/Size/Weight/Align/LineHeight field only: the rich-text
+  // (textarea) field key(s) this one actually styles, when that can't be
+  // derived from the two fields' names — e.g. Ru1-Banner's single
+  // `textColor` colours both `title` and `subtitle`, which share no prefix
+  // or suffix with "textColor" at all. Declaring it here is what lets the
+  // sidebar-vs-rich-text-editor sync (useEditorSidebar.ts) and the modal's
+  // live preview (EditorSidebar.client.vue) find the right field(s) instead
+  // of silently matching nothing. Omit it whenever the naming convention
+  // (`<key>Color`/`<key>FontSize`/etc.) already resolves correctly.
+  pairedContentKeys?: string[]
 }
 
 export interface BlockEditorConfig<T = Record<string, any>> {

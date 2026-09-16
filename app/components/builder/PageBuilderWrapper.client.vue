@@ -4,6 +4,7 @@ import type { PageBuilderConfig } from '@myissue/vue-website-page-builder'
 import BuilderPanel from './BuilderPanel.client.vue'
 import EditorSidebar from './EditorSidebar.client.vue'
 import ThemeColorsModal from './ThemeColorsModal.client.vue'
+import CloneDesignModal from './CloneDesignModal.client.vue'
 import { productImageSrc } from '~/composables/useProductImageSrc'
 import { NAVBAR_TITLES, FOOTER_TITLES, GLOBAL_OWNER_PAGES } from '~/composables/useGlobalSections'
 import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
@@ -20,13 +21,22 @@ import { SLIDER_SCRIPT } from '~/composables/useHydrationScript'
 useThemes()
 useLayouts()
 const showThemeColorsModal = ref(false)
+const showCloneDesignModal = ref(false)
 
 const props = defineProps<{
   pageId?: string
   pageName?: string
   pageVersion?: number
+  pageVersionStatus?: string
+  nextVersion?: number
   companyId?: number
 }>()
+
+// The version that was open when the editor was loaded is published — Save
+// must not silently flip it back to draft, so confirmSave() blocks writing
+// back to this exact version number until the user picks a later one.
+const isLockedVersion = computed(() => props.pageVersionStatus === 'published')
+const versionError = ref('')
 
 const config: PageBuilderConfig = {
   updateOrCreate: {
@@ -57,6 +67,14 @@ const showVersionModal = ref(false)
 const selectedVersion = ref(1)
 const saveInFlight = ref(false)
 
+// Set when the version-save modal was opened via "Clone Design" rather than
+// the builder's own Save button — Clone Design must always operate on
+// whatever's actually on screen, so it forces the same Save step first
+// (same modal, same confirmSave()) and only opens the site/page picker once
+// that save genuinely succeeds. Reset on cancel so a declined save never
+// opens the picker.
+const pendingCloneAfterSave = ref(false)
+
 async function handleSaveClick() {
   if (saveInFlight.value || !props.pageId) return
 
@@ -69,11 +87,32 @@ async function handleSaveClick() {
 
   _pendingHtml = html
   selectedVersion.value = props.pageVersion ?? 1
+  versionError.value = ''
   showVersionModal.value = true
+}
+
+async function startCloneFlow() {
+  pendingCloneAfterSave.value = true
+  await handleSaveClick()
+  // handleSaveClick bails out without opening the modal when there's
+  // nothing on the canvas to save (getSavedPageHtml() returns falsy) — don't
+  // leave the flag armed for some unrelated future save to trigger.
+  if (!showVersionModal.value) pendingCloneAfterSave.value = false
+}
+
+function cancelVersionModal() {
+  pendingCloneAfterSave.value = false
+  showVersionModal.value = false
 }
 
 async function confirmSave() {
   if (!props.pageId || !_pendingHtml) return
+
+  if (isLockedVersion.value && selectedVersion.value === props.pageVersion) {
+    versionError.value = `Version ${props.pageVersion} is already published and can't be overwritten. Save as version ${props.nextVersion ?? (props.pageVersion ?? 1) + 1} or higher instead.`
+    return
+  }
+
   saveInFlight.value = true
   try {
     const parser = new DOMParser()
@@ -162,6 +201,7 @@ async function confirmSave() {
     if (saves.length === 0) {
       console.warn('[CMS] Nothing to save — canvas is empty')
       showVersionModal.value = false
+      pendingCloneAfterSave.value = false
       await navigateTo('/')
       return
     }
@@ -177,6 +217,10 @@ async function confirmSave() {
     if (canEditGlobals && footerSections.length > 0) pageHtmlCache.value['global-footer'] = toHtml(footerSections)
 
     showVersionModal.value = false
+    if (pendingCloneAfterSave.value) {
+      pendingCloneAfterSave.value = false
+      showCloneDesignModal.value = true
+    }
   } catch (error) {
     console.error('[CMS] Save error:', error)
   } finally {
@@ -378,7 +422,7 @@ onMounted(async () => {
   <div class="relative h-full">
     <PageBuilder :CustomBuilderComponents="BuilderPanel">
       <template #toolbarExtra>
-        <div class="flex items-center justify-center ml-2">
+        <div class="flex items-center justify-center gap-2 ml-2">
           <div @click="showThemeColorsModal = true">
             <div class="flex items-center justify-center gap-2">
               <span
@@ -388,11 +432,27 @@ onMounted(async () => {
               </span>
             </div>
           </div>
+          <button
+            v-if="props.pageId"
+            type="button"
+            class="h-10 px-3 cursor-pointer rounded-full flex items-center gap-1 border-none justify-center bg-gray-50 hover:bg-myPrimaryLinkColor focus-visible:ring-0 text-black hover:text-white text-xs font-medium"
+            title="Save, then clone this page's design to other sites"
+            @click="startCloneFlow"
+          >
+            <span class="pbx-myMediumIcon material-symbols-outlined text-base leading-none">content_copy</span>
+            Clone Design
+          </button>
         </div>
       </template>
     </PageBuilder>
     <EditorSidebar />
     <ThemeColorsModal v-model="showThemeColorsModal" />
+    <CloneDesignModal
+      v-if="showCloneDesignModal && props.pageId"
+      :source-company-id="props.companyId ?? selectedCompanyId ?? 1"
+      :source-page-key="props.pageId"
+      @close="showCloneDesignModal = false"
+    />
 
     <!-- Version picker modal -->
     <Teleport to="body">
@@ -413,13 +473,20 @@ onMounted(async () => {
               type="number"
               min="1"
               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              @input="versionError = ''"
             />
+            <p v-if="isLockedVersion" class="text-xs text-gray-500">
+              Version {{ props.pageVersion }} is currently published.
+            </p>
+            <p v-if="versionError" class="text-xs text-red-600">
+              {{ versionError }}
+            </p>
           </div>
 
           <div class="flex gap-2 justify-end">
             <button
               class="rounded-lg border border-gray-200 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-              @click="showVersionModal = false"
+              @click="cancelVersionModal"
             >
               Cancel
             </button>

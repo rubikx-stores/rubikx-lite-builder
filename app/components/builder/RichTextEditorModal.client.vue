@@ -14,10 +14,21 @@
 //
 // Edits are a local draft: nothing is written back to the block until "Save"
 // is clicked; closing (X, backdrop, Cancel) discards them.
-import { ref, shallowRef, watch, nextTick } from 'vue'
+import { ref, shallowRef, computed, watch, nextTick, onUnmounted } from 'vue'
 import { FONT_FAMILY_OPTIONS } from '../../composables/editor/fontFields'
 
-const props = defineProps<{ modelValue: boolean; initialHtml: string }>()
+const props = defineProps<{
+  modelValue: boolean
+  initialHtml: string
+  // Optional base CSS (font-size/weight/colour/line-height/family) so the
+  // editable preview roughly matches the field's real on-page appearance —
+  // e.g. a 48px hero title previews near 48px instead of the small default.
+  // Per-selection marks (Bold, Color, Size, Weight, …) still layer on top of
+  // this via normal CSS inline-style precedence. Left empty (the FAQ-answer
+  // case has no such base style to read), the editable keeps its original
+  // compact look.
+  previewStyle?: string
+}>()
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   save: [html: string]
@@ -29,12 +40,35 @@ const editorEl = ref<HTMLElement | null>(null)
 // mangles the type of .startContainer/.endContainer (both plain Nodes).
 const savedRange = shallowRef<Range | null>(null)
 const selectionError = ref('')
+// Mirrors savedRange as a set of on-screen boxes so the selection stays
+// visibly highlighted even once focus moves to a Color/Size/Line-Height
+// control — the browser's own selection rendering dims/disappears the
+// moment the contenteditable itself isn't the focused element.
+const highlightRects = ref<{ top: number; left: number; width: number; height: number }[]>([])
 
 const FONT_SIZES: Record<string, string> = { sm: '0.875rem', base: '1rem', lg: '1.25rem', xl: '1.5rem' }
 const LINE_HEIGHTS: Record<string, string> = { tight: '1.2', normal: '1.5', relaxed: '1.75', loose: '2' }
+const LETTER_SPACINGS: Record<string, string> = { tight: '-0.02em', normal: '0', wide: '0.05em', wider: '0.1em' }
+const FONT_WEIGHTS = [
+  { value: '300', label: 'Light' },
+  { value: '400', label: 'Regular' },
+  { value: '500', label: 'Medium' },
+  { value: '600', label: 'SemiBold' },
+  { value: '700', label: 'Bold' },
+  { value: '800', label: 'ExtraBold' },
+  { value: '900', label: 'Black' },
+]
 const textColorInput = ref('#111827')
 const fontSizeKey = ref('base')
 const lineHeightKey = ref('normal')
+// Precise pixel size — a supplement to the sm/base/lg/xl presets above,
+// needed once this modal started editing large headline-style fields (a
+// hero title) rather than just FAQ-answer body text, where the presets
+// don't reach anywhere near the sizes those fields actually use.
+const customFontSizePx = ref(16)
+const fontWeightKey = ref('700')
+const letterSpacingKey = ref('normal')
+const textAlignKey = ref<'left' | 'center' | 'right'>('left')
 const gradientFromColor = ref('#4f46e5')
 const gradientToColor = ref('#ec4899')
 const fontFamilyKey = ref('')
@@ -75,11 +109,51 @@ watch(() => props.modelValue, async (open) => {
   selectionError.value = ''
   editingAnchor.value = null
   isDraftAnchor.value = false
-  savedRange.value = null
+  setSavedRange(null)
+  document.removeEventListener('selectionchange', captureSelection)
   if (!open) return
+  // Seed the pixel-size input from the field's real base size (previewStyle)
+  // so it starts near "what this text actually is" instead of a generic 16 —
+  // e.g. opening a 48px hero title shows 48 there, ready to nudge.
+  const baseSizeMatch = /font-size:\s*([\d.]+)px/.exec(props.previewStyle || '')
+  customFontSizePx.value = baseSizeMatch ? Math.round(parseFloat(baseSizeMatch[1])) : 16
+  fontWeightKey.value = '700'
+  letterSpacingKey.value = 'normal'
+  textAlignKey.value = 'left'
   await nextTick()
   if (editorEl.value) editorEl.value.innerHTML = props.initialHtml || ''
+  // Supplements the @mouseup/@keyup handlers on the editable itself: a drag
+  // selection that's released outside the editable's box never fires mouseup
+  // there, which left savedRange stale and made the toolbar act as if
+  // nothing were selected. selectionchange fires regardless of where the
+  // mouse is released, as long as the document's selection actually changed.
+  document.addEventListener('selectionchange', captureSelection)
 })
+
+onUnmounted(() => {
+  document.removeEventListener('selectionchange', captureSelection)
+})
+
+function updateHighlight() {
+  const range = savedRange.value
+  const editor = editorEl.value
+  if (!range || !editor || range.collapsed) {
+    highlightRects.value = []
+    return
+  }
+  const editorRect = editor.getBoundingClientRect()
+  highlightRects.value = Array.from(range.getClientRects()).map((r) => ({
+    top: r.top - editorRect.top,
+    left: r.left - editorRect.left,
+    width: r.width,
+    height: r.height,
+  }))
+}
+
+function setSavedRange(range: Range | null) {
+  savedRange.value = range
+  updateHighlight()
+}
 
 // Toolbar buttons live outside the contenteditable, so clicking one would
 // normally blur it and collapse the browser's text selection before the
@@ -87,11 +161,13 @@ watch(() => props.modelValue, async (open) => {
 // editor — and using @mousedown.prevent on plain toolbar buttons so they
 // never steal focus in the first place — keeps a live reference to exactly
 // what was selected. Native <input type="color">/<select> don't need the
-// same treatment; their own focus shift doesn't clear the saved range.
+// same treatment; their own focus shift doesn't clear the saved range (it's
+// also mirrored into highlightRects — see updateHighlight — so the
+// selection stays visible after that focus shift too).
 function captureSelection() {
   const sel = window.getSelection()
   if (sel && sel.rangeCount > 0 && editorEl.value?.contains(sel.anchorNode)) {
-    savedRange.value = sel.getRangeAt(0).cloneRange()
+    setSavedRange(sel.getRangeAt(0).cloneRange())
   }
 }
 
@@ -130,6 +206,25 @@ function currentMarkedAncestor(selector: string): HTMLElement | null {
   return startMark === endMark ? startMark : null
 }
 
+// Drives the toolbar's pressed/active look and the "N characters selected"
+// status line below the intro text — both recompute automatically whenever
+// setSavedRange runs, giving a non-technical admin a constant, explicit
+// answer to "what's selected right now" instead of relying on the browser's
+// own (easily-lost) selection highlight.
+const isBoldActive = computed(() => !!currentMarkedAncestor('strong[data-faq-mark="bold"]'))
+const isUppercaseActive = computed(() => !!currentMarkedAncestor('span[data-faq-mark="uppercase"]'))
+const hasSelection = computed(() => {
+  const range = savedRange.value
+  return !!range && !range.collapsed
+})
+const activeAnchorMarkType = computed(() => currentMarkedAncestor('a[data-faq-mark]')?.getAttribute('data-faq-mark') ?? null)
+const selectionSummary = computed(() => {
+  const range = savedRange.value
+  if (!range || range.collapsed) return 'No text selected'
+  const len = range.toString().length
+  return `${len} character${len === 1 ? '' : 's'} selected`
+})
+
 // Removes any elements matching `selector` found inside a fragment, keeping
 // their own contents in place — used to scrub old color/size marks out of a
 // selection before rewrapping it (see wrapSelection's clearSelector).
@@ -154,6 +249,10 @@ function unwrapExistingMark(selector: string): boolean {
   if (!parent) return false
   while (existing.firstChild) parent.insertBefore(existing.firstChild, existing)
   parent.removeChild(existing)
+  // Unlike wrapSelection, this used to leave savedRange pointing at the
+  // now-unwrapped range without clearing it — stale enough that a follow-up
+  // action before any new selection could act on outdated boundaries.
+  setSavedRange(null)
   return true
 }
 
@@ -178,22 +277,73 @@ function wrapSelection(tag: string, attrs: Record<string, string>, clearSelector
     range.insertNode(wrapper)
   } catch {
     // Selection spanned something extractContents couldn't handle cleanly —
-    // leave content untouched rather than risk corrupting it.
+    // leave content untouched rather than risk corrupting it. Surfacing this
+    // (instead of a bare `return false`) is the difference between the admin
+    // seeing "why didn't Bold apply?" with no explanation and getting an
+    // actual reason.
+    selectionError.value = "Couldn't apply that to the current selection — try selecting a smaller or simpler range."
     return false
   }
-  savedRange.value = null
+  setSavedRange(null)
   return true
 }
 
 function toggleBold() {
   selectionError.value = ''
   if (unwrapExistingMark('strong[data-faq-mark="bold"]')) return
-  wrapSelection('strong', { 'data-faq-mark': 'bold' })
+  // Same clearSelector treatment as Color/Size (see wrapSelection). Without
+  // it, a selection that only partially overlaps an existing bold run (the
+  // exact-ancestor check above requires BOTH ends to sit inside the very
+  // same <strong>) nested a new <strong> instead of normalizing it, so
+  // toggling bold back off only unwrapped the innermost layer and the text
+  // stayed visibly bold.
+  wrapSelection('strong', { 'data-faq-mark': 'bold' }, 'strong[data-faq-mark="bold"]')
 }
+
+// Bound to the color <input>'s own `input` event (fires continuously while
+// dragging inside the native color picker), not `change` (which only fires
+// once the picker closes) — the reason picking a color didn't feel "live"
+// and needed a hard click/Enter to actually commit. Same live-preview
+// pattern as the Button feature's editingAnchor: the first firing wraps the
+// selection and keeps a reference to that wrapper; every firing after that
+// just restyles the SAME element directly instead of re-running
+// extractContents/insertNode (which would fail on the 2nd+ call anyway,
+// since wrapSelection already consumes/clears the selection on success).
+// finalizeTextColor (bound to `change`, which fires once when the picker
+// closes) drops that reference so the next time this control is used — on a
+// different selection — it starts a fresh wrapper instead of continuing to
+// restyle this one.
+const liveColorMark = shallowRef<HTMLElement | null>(null)
 
 function applyTextColor() {
   selectionError.value = ''
-  wrapSelection('span', { 'data-faq-mark': 'color', style: `color:${textColorInput.value};` }, 'span[data-faq-mark="color"], span[data-faq-mark="gradient"]')
+  if (liveColorMark.value) {
+    liveColorMark.value.setAttribute('style', `color:${textColorInput.value};`)
+    return
+  }
+  const range = savedRange.value
+  if (!range || range.collapsed) {
+    selectionError.value = 'Select some text first.'
+    return
+  }
+  const wrapper = document.createElement('span')
+  wrapper.setAttribute('data-faq-mark', 'color')
+  wrapper.setAttribute('style', `color:${textColorInput.value};`)
+  try {
+    const extracted = range.extractContents()
+    stripMarksFromFragment(extracted, 'span[data-faq-mark="color"], span[data-faq-mark="gradient"]')
+    wrapper.appendChild(extracted)
+    range.insertNode(wrapper)
+  } catch {
+    selectionError.value = "Couldn't apply that to the current selection — try selecting a smaller or simpler range."
+    return
+  }
+  liveColorMark.value = wrapper
+  setSavedRange(null)
+}
+
+function finalizeTextColor() {
+  liveColorMark.value = null
 }
 
 // Gradient text: a solid text-color and a gradient are mutually exclusive, so
@@ -223,19 +373,17 @@ function applyGradientText() {
 function applyFontFamily(key: string) {
   selectionError.value = ''
   if (!key) {
-    const range = savedRange.value
-    if (!range || range.collapsed) {
-      selectionError.value = 'Select some text first.'
-      return
-    }
-    try {
-      const extracted = range.extractContents()
-      stripMarksFromFragment(extracted, 'span[data-faq-mark="font"]')
-      range.insertNode(extracted)
-    } catch {
-      return
-    }
-    savedRange.value = null
+    // Same ancestor-unwrap approach as toggleBold/toggleUppercase — finds the
+    // actual wrapping <span> from the cursor/selection and removes exactly
+    // that element. The previous extractContents-based approach only found a
+    // mark to strip when the selection extended past the span's own
+    // boundary; selecting precisely the marked word (e.g. a double-click,
+    // landing entirely inside the span) extracted plain text with no <span>
+    // in it, so there was nothing to strip and the word landed right back
+    // inside the same still-there font-marked span — "Default" silently did
+    // nothing for the single most common way to select a word.
+    if (unwrapExistingMark('span[data-faq-mark="font"]')) return
+    selectionError.value = 'Click inside the styled text first.'
     return
   }
   wrapSelection('span', { 'data-faq-mark': 'font', style: `font-family:${key};` }, 'span[data-faq-mark="font"]')
@@ -246,32 +394,70 @@ function applyFontSize(key: string) {
   wrapSelection('span', { 'data-faq-mark': 'size', style: `font-size:${FONT_SIZES[key] ?? FONT_SIZES.base};` }, 'span[data-faq-mark="size"]')
 }
 
-// Unlike Bold/Color/Size, line-height only visually changes anything when it
-// spans a whole block — wrapping just the selected words in a <span> (the
-// old behavior) has no meaningful effect on line spacing, since a browser's
-// line-box height is governed by the block as a whole. So this always
-// applies to the entire answer, regardless of what's selected, wrapping
-// (or re-using) a single root-level element so the value survives into the
-// saved HTML. That wrapper is a <span style="display:block"> rather than a
-// <div> — the saved HTML gets embedded into all sorts of contexts (many
-// inside a <p> tag), and a <div> isn't valid inside a <p> — the browser
-// would silently close the <p> early and break its own styling. A <span>
-// is valid there regardless of its display value, and display:block makes
-// it behave identically to a div for line-height purposes.
-function applyLineHeight(key: string) {
+// Supplements the sm/base/lg/xl presets with an exact pixel value — needed
+// once this modal started editing headline-sized fields (e.g. a hero title),
+// where those small presets don't reach anywhere near the sizes actually
+// used. Same clearSelector as the preset version so the two share one mark
+// and never stack conflicting sizes on the same run.
+function applyFontSizePx(px: number) {
   selectionError.value = ''
+  if (!px || px <= 0) return
+  wrapSelection('span', { 'data-faq-mark': 'size', style: `font-size:${px}px;` }, 'span[data-faq-mark="size"]')
+}
+
+function applyFontWeight(weight: string) {
+  selectionError.value = ''
+  wrapSelection('span', { 'data-faq-mark': 'weight', style: `font-weight:${weight};` }, 'span[data-faq-mark="weight"]')
+}
+
+function applyLetterSpacing(key: string) {
+  selectionError.value = ''
+  wrapSelection('span', { 'data-faq-mark': 'letterspacing', style: `letter-spacing:${LETTER_SPACINGS[key] ?? LETTER_SPACINGS.normal};` }, 'span[data-faq-mark="letterspacing"]')
+}
+
+function toggleUppercase() {
+  selectionError.value = ''
+  if (unwrapExistingMark('span[data-faq-mark="uppercase"]')) return
+  wrapSelection('span', { 'data-faq-mark': 'uppercase', style: 'text-transform:uppercase;' }, 'span[data-faq-mark="uppercase"]')
+}
+
+// Line-height and text-align only visually change anything when they span a
+// whole block — wrapping just the selected words in a <span> has no
+// meaningful effect, since a browser's line-box/alignment is governed by the
+// block as a whole. So both always apply to the entire answer regardless of
+// what's selected, sharing one root-level wrapper element so the values
+// survive into the saved HTML. That wrapper is a <span style="display:block">
+// rather than a <div> — the saved HTML gets embedded into all sorts of
+// contexts (many inside a <p> tag), and a <div> isn't valid inside a <p> —
+// the browser would silently close the <p> early and break its own styling.
+// A <span> is valid there regardless of its display value, and
+// display:block makes it behave identically to a div for these purposes.
+function ensureBlockWrapper(): HTMLElement | null {
   const el = editorEl.value
-  if (!el) return
-  const value = LINE_HEIGHTS[key] ?? LINE_HEIGHTS.normal
+  if (!el) return null
   let wrapper = el.firstElementChild as HTMLElement | null
-  if (!wrapper || el.children.length !== 1 || wrapper.getAttribute('data-faq-mark') !== 'lineheight') {
+  if (!wrapper || el.children.length !== 1 || wrapper.getAttribute('data-faq-mark') !== 'block') {
     wrapper = document.createElement('span')
-    wrapper.setAttribute('data-faq-mark', 'lineheight')
+    wrapper.setAttribute('data-faq-mark', 'block')
     wrapper.style.display = 'block'
     while (el.firstChild) wrapper.appendChild(el.firstChild)
     el.appendChild(wrapper)
   }
-  wrapper.style.lineHeight = value
+  return wrapper
+}
+
+function applyLineHeight(key: string) {
+  selectionError.value = ''
+  const wrapper = ensureBlockWrapper()
+  if (!wrapper) return
+  wrapper.style.lineHeight = LINE_HEIGHTS[key] ?? LINE_HEIGHTS.normal
+}
+
+function applyTextAlign(align: 'left' | 'center' | 'right') {
+  selectionError.value = ''
+  const wrapper = ensureBlockWrapper()
+  if (!wrapper) return
+  wrapper.style.textAlign = align
 }
 
 function rgbToHex(color: string, fallback: string): string {
@@ -347,7 +533,7 @@ function startLinkOrButton(type: 'link' | 'button') {
     isDraftAnchor.value = true
     // The button draft has already consumed the range (extractContents
     // above) — clear it so nothing downstream tries to reuse a stale Range.
-    savedRange.value = null
+    setSavedRange(null)
   } else {
     // A brand-new LINK still needs savedRange later, in confirmLinkOrButton,
     // to wrap the selection once the URL is entered — do NOT clear it here.
@@ -367,7 +553,14 @@ function startLinkOrButton(type: 'link' | 'button') {
 // fixed box), and margin controls the gap between the button and whatever
 // text sits next to it.
 function buttonStyle(): string {
-  return `display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;width:${buttonWidth.value}px;height:${buttonHeight.value}px;padding:${buttonPaddingY.value}px ${buttonPaddingX.value}px;margin:${buttonMarginY.value}px ${buttonMarginX.value}px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;background:${buttonBgColor.value};color:${buttonTextColor.value};border-radius:${buttonBorderRadius.value}px;text-decoration:none;font-weight:600;`
+  // content-box (not border-box): Width/Height size the label area only, and
+  // Padding ADDS around it — final box = width + 2*padX by height + 2*padY.
+  // With border-box, Width/Height set the TOTAL box and padding just ate
+  // into that same fixed total, so with the label centered inside it,
+  // nothing ever visibly moved as Padding changed. content-box makes both
+  // sliders compose the same way: each one directly grows/shrinks the
+  // rendered button, with no masking between them.
+  return `display:inline-flex;align-items:center;justify-content:center;box-sizing:content-box;width:${buttonWidth.value}px;height:${buttonHeight.value}px;padding:${buttonPaddingY.value}px ${buttonPaddingX.value}px;margin:${buttonMarginY.value}px ${buttonMarginX.value}px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;background:${buttonBgColor.value};color:${buttonTextColor.value};border-radius:${buttonBorderRadius.value}px;text-decoration:none;font-weight:600;`
 }
 
 // A bare domain ("example.com") or bare email ("you@example.com") typed
@@ -383,7 +576,11 @@ function normalizeHref(raw: string): string {
 
 function confirmLinkOrButton() {
   const raw = urlInput.value.trim()
-  if (!raw) return
+  if (!raw) {
+    selectionError.value = 'Enter a URL first.'
+    return
+  }
+  selectionError.value = ''
   const href = normalizeHref(raw)
   const style = pendingType.value === 'button' ? buttonStyle() : 'color:inherit;text-decoration:underline;cursor:pointer;'
 
@@ -400,7 +597,10 @@ function confirmLinkOrButton() {
     // Only reached for a brand-new LINK — a brand-new button is already a
     // live editingAnchor by this point (see startLinkOrButton).
     const range = savedRange.value
-    if (!range) return
+    if (!range) {
+      selectionError.value = 'Selection was lost — reselect the text and try again.'
+      return
+    }
     const anchor = document.createElement('a')
     anchor.setAttribute('href', href)
     anchor.setAttribute('target', '_blank')
@@ -412,13 +612,14 @@ function confirmLinkOrButton() {
       range.insertNode(anchor)
     } catch {
       // leave content untouched
+      selectionError.value = "Couldn't create the link for that selection — try selecting a smaller or simpler range."
     }
   }
 
   isDraftAnchor.value = false
   showUrlBar.value = false
   editingAnchor.value = null
-  savedRange.value = null
+  setSavedRange(null)
 }
 
 function cancelUrlBar() {
@@ -469,7 +670,7 @@ function save() {
       class="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 p-4"
       @click.self="close"
     >
-      <div class="w-full max-w-2xl rounded-xl bg-white p-5 shadow-xl max-h-[90vh] flex flex-col">
+      <div class="w-full max-w-4xl rounded-xl bg-white p-5 shadow-xl max-h-[92vh] overflow-y-auto flex flex-col">
         <div class="mb-3 flex items-center justify-between shrink-0">
           <h3 class="text-lg font-medium text-gray-900">Edit Answer</h3>
           <button
@@ -482,18 +683,42 @@ function save() {
           </button>
         </div>
 
-        <p class="mb-2 text-xs text-gray-500 shrink-0">Select text below, then apply a style. Line Height applies to the whole text instead, since it only affects spacing at that scale. "Remove" clears whatever style is under the cursor.</p>
+        <p class="mb-2 text-xs text-gray-500 shrink-0">Select text below, then apply a style. Line Height and Align apply to the whole text instead, since they only affect layout at that scale. "Remove" clears whatever style is under the cursor.</p>
 
-        <!-- Format row -->
+        <!-- Always-visible selection status: the editor's own highlight can
+             visually fade once focus moves to a Color/Size control, so this
+             label is the reliable answer to "what's selected right now" and
+             to why an action didn't apply. -->
+        <div class="mb-2 flex items-center justify-between gap-2 text-xs shrink-0">
+          <span
+            class="rounded-full px-2 py-0.5 font-medium"
+            :class="hasSelection ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'"
+          >{{ selectionSummary }}</span>
+          <span v-if="selectionError" class="text-red-500">{{ selectionError }}</span>
+        </div>
+
+        <!-- Text style row -->
         <div class="mb-2 flex flex-wrap items-center gap-2 shrink-0">
           <button
             type="button"
-            class="flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100"
+            class="flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium hover:bg-gray-100"
+            :class="isBoldActive ? 'border-gray-900 bg-gray-900 text-white hover:bg-gray-800' : 'border-gray-200 bg-gray-50 text-gray-700'"
             @mousedown.prevent
             @click="toggleBold"
           >
             <span class="material-symbols-outlined text-base">format_bold</span>
             Bold
+          </button>
+
+          <button
+            type="button"
+            class="flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium hover:bg-gray-100"
+            :class="isUppercaseActive ? 'border-gray-900 bg-gray-900 text-white hover:bg-gray-800' : 'border-gray-200 bg-gray-50 text-gray-700'"
+            @mousedown.prevent
+            @click="toggleUppercase"
+          >
+            <span class="material-symbols-outlined text-base">text_fields</span>
+            Uppercase
           </button>
 
           <label class="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
@@ -503,7 +728,8 @@ function save() {
               v-model="textColorInput"
               type="color"
               class="h-5 w-6 cursor-pointer rounded border-none p-0"
-              @change="applyTextColor"
+              @input="applyTextColor"
+              @change="finalizeTextColor"
             />
           </label>
 
@@ -547,6 +773,80 @@ function save() {
             </select>
           </label>
 
+          <!-- Exact pixel size — the presets above top out at 1.5rem/24px,
+               nowhere near what a hero title actually needs. -->
+          <div class="flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
+            <span class="material-symbols-outlined text-base">format_size</span>
+            <button
+              type="button"
+              class="flex h-5 w-5 items-center justify-center rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100"
+              @mousedown.prevent
+              @click="customFontSizePx = Math.max(8, customFontSizePx - 1)"
+            >−</button>
+            <input
+              v-model.number="customFontSizePx"
+              type="number"
+              min="8"
+              max="200"
+              class="w-12 rounded border border-gray-300 bg-white px-1 py-0.5 text-center text-xs focus:outline-none focus:border-blue-400"
+              @change="applyFontSizePx(customFontSizePx)"
+              @keydown.enter.prevent="applyFontSizePx(customFontSizePx)"
+            />
+            <button
+              type="button"
+              class="flex h-5 w-5 items-center justify-center rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100"
+              @mousedown.prevent
+              @click="customFontSizePx = Math.min(200, customFontSizePx + 1)"
+            >+</button>
+            px
+            <!-- Explicit trigger: a native <select>/number input only fires
+                 change when its value actually differs from what's already
+                 showing, so re-picking/re-entering the same px value (or
+                 nudging ± back to a value you'd already applied) silently
+                 did nothing. This always re-applies the current number,
+                 regardless of whether it changed. -->
+            <button
+              type="button"
+              class="rounded border border-gray-300 bg-white px-1.5 py-0.5 text-[11px] font-medium text-gray-700 hover:bg-gray-100"
+              @mousedown.prevent
+              @click="applyFontSizePx(customFontSizePx)"
+            >
+              Apply
+            </button>
+          </div>
+
+          <label class="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
+            <span class="material-symbols-outlined text-base">line_weight</span>
+            Weight
+            <select
+              v-model="fontWeightKey"
+              class="rounded border-none bg-transparent text-xs font-medium text-gray-700 focus:outline-none"
+              @change="applyFontWeight(fontWeightKey)"
+            >
+              <option v-for="w in FONT_WEIGHTS" :key="w.value" :value="w.value">{{ w.label }}</option>
+            </select>
+          </label>
+
+          <label class="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
+            <span class="material-symbols-outlined text-base">format_letter_spacing</span>
+            Letter Spacing
+            <select
+              v-model="letterSpacingKey"
+              class="rounded border-none bg-transparent text-xs font-medium text-gray-700 focus:outline-none"
+              @change="applyLetterSpacing(letterSpacingKey)"
+            >
+              <option value="tight">Tight</option>
+              <option value="normal">Normal</option>
+              <option value="wide">Wide</option>
+              <option value="wider">Wider</option>
+            </select>
+          </label>
+        </div>
+
+        <!-- Layout row: line height and alignment only make visible sense
+             applied to the whole text (see ensureBlockWrapper), unlike the
+             per-selection rows above. -->
+        <div class="mb-2 flex flex-wrap items-center gap-2 shrink-0">
           <label class="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
             <span class="material-symbols-outlined text-base">font_download</span>
             Font
@@ -573,13 +873,28 @@ function save() {
               <option value="loose">Loose</option>
             </select>
           </label>
+
+          <label class="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
+            <span class="material-symbols-outlined text-base">format_align_left</span>
+            Align
+            <select
+              v-model="textAlignKey"
+              class="rounded border-none bg-transparent text-xs font-medium text-gray-700 focus:outline-none"
+              @change="applyTextAlign(textAlignKey)"
+            >
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+          </label>
         </div>
 
         <!-- Insert row -->
         <div class="mb-2 flex flex-wrap items-center gap-2 shrink-0">
           <button
             type="button"
-            class="flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100"
+            class="flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium hover:bg-gray-100"
+            :class="activeAnchorMarkType === 'link' ? 'border-gray-900 bg-gray-900 text-white hover:bg-gray-800' : 'border-gray-200 bg-gray-50 text-gray-700'"
             @mousedown.prevent
             @click="startLinkOrButton('link')"
           >
@@ -588,7 +903,8 @@ function save() {
           </button>
           <button
             type="button"
-            class="flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100"
+            class="flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium hover:bg-gray-100"
+            :class="activeAnchorMarkType === 'button' ? 'border-gray-900 bg-gray-900 text-white hover:bg-gray-800' : 'border-gray-200 bg-gray-50 text-gray-700'"
             @mousedown.prevent
             @click="startLinkOrButton('button')"
           >
@@ -604,7 +920,6 @@ function save() {
             <span class="material-symbols-outlined text-base">link_off</span>
             Remove
           </button>
-          <span v-if="selectionError" class="text-xs text-red-500">{{ selectionError }}</span>
         </div>
 
         <!-- Link / Button settings panel -->
@@ -671,21 +986,42 @@ function save() {
             <p class="text-xs text-gray-400">Padding is the gap between the label and the button's edge; Margin is the gap between the button and surrounding text. A too-long label clips with an ellipsis rather than stretching the box.</p>
           </template>
 
-          <div class="flex justify-end gap-2">
+          <div class="flex items-center justify-end gap-2">
+            <!-- Duplicates the top status bar's error: that one can scroll
+                 out of view once the Button panel (with all its sliders)
+                 pushes Update far enough down, which made clicking it with
+                 no URL look like it silently did nothing. -->
+            <span v-if="selectionError" class="mr-auto text-xs text-red-500">{{ selectionError }}</span>
             <button type="button" class="rounded border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100" @click="cancelUrlBar">Cancel</button>
             <button type="button" class="rounded bg-gray-900 px-2.5 py-1 text-xs font-medium text-white hover:bg-gray-700" @click="confirmLinkOrButton">{{ editingAnchor ? 'Update' : 'Add' }}</button>
           </div>
         </div>
 
-        <div
-          ref="editorEl"
-          contenteditable="true"
-          class="flex-1 overflow-y-auto rounded-md border border-gray-200 px-3 py-2 text-sm leading-relaxed focus:outline-none"
-          style="min-height: 16rem;"
-          @mouseup="captureSelection"
-          @keyup="captureSelection"
-          @keydown="handleEditorKeydown"
-        ></div>
+        <div class="relative flex-1" style="min-height: 22rem;">
+          <!-- Custom highlight overlay: mirrors the captured selection so it
+               stays visible even after focus moves to the Color/Size/
+               Line-Height controls, where the browser's own selection
+               rendering dims or disappears once the contenteditable itself
+               is no longer the focused element. -->
+          <div class="pointer-events-none absolute inset-0 overflow-hidden rounded-md" aria-hidden="true">
+            <div
+              v-for="(rect, i) in highlightRects"
+              :key="i"
+              class="absolute rounded-sm bg-blue-300/50"
+              :style="{ top: rect.top + 'px', left: rect.left + 'px', width: rect.width + 'px', height: rect.height + 'px' }"
+            ></div>
+          </div>
+          <div
+            ref="editorEl"
+            contenteditable="true"
+            class="absolute inset-0 overflow-y-auto rounded-md border border-gray-200 bg-gray-300 px-3 py-2 text-sm leading-relaxed focus:outline-none"
+            :style="previewStyle"
+            @mouseup="captureSelection"
+            @keyup="captureSelection"
+            @keydown="handleEditorKeydown"
+            @scroll="updateHighlight"
+          ></div>
+        </div>
 
         <div class="mt-3 flex flex-row gap-2 shrink-0">
           <button

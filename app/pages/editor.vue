@@ -5,6 +5,8 @@ const route = useRoute()
 const pageId = computed(() => route.query.pageId as string | undefined)
 const pageName = computed(() => (route.query.pageName as string) ?? 'Untitled')
 const pageVersion = computed(() => Number(route.query.pageVersion) || 1)
+const pageVersionStatus = computed(() => route.query.pageVersionStatus as string | undefined)
+const nextVersion = computed(() => Number(route.query.nextVersion) || undefined)
 const companyId = computed(() => Number(route.query.companyId) || undefined)
 </script>
 
@@ -25,7 +27,15 @@ const companyId = computed(() => Number(route.query.companyId) || undefined)
 
     <!-- Page builder fills remaining height -->
     <div class="flex-1 min-h-0">
-      <PageBuilderWrapper :key="pageId" :page-id="pageId" :page-name="pageName" :page-version="pageVersion" :company-id="companyId" />
+      <PageBuilderWrapper
+        :key="pageId"
+        :page-id="pageId"
+        :page-name="pageName"
+        :page-version="pageVersion"
+        :page-version-status="pageVersionStatus"
+        :next-version="nextVersion"
+        :company-id="companyId"
+      />
     </div>
   </div>
 </template>

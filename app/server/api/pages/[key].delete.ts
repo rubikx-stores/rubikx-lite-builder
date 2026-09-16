@@ -121,14 +121,20 @@ export default defineEventHandler(async (event) => {
   // immediately delete that record again so the key stays truly empty —
   // no default content is written back anywhere; this is a real delete,
   // not a reset.
-  const cacheBustCleared = async (targetKey: string) => {
+  // `survivingVersions` is whatever version numbers are left for this key
+  // *after* the delete above — the sentinel must land on a version number
+  // that isn't one of them, otherwise the POST below silently upserts onto
+  // (and overwrites) a real surviving draft instead of creating a throwaway
+  // row, and the cleanup query would then delete that real draft with it.
+  const cacheBustCleared = async (targetKey: string, survivingVersions: number[]) => {
+    const sentinelVersion = survivingVersions.length ? Math.max(...survivingVersions) + 1 : 1
     try {
       await $fetch('/api/proxy/odoo/cms', {
         method: 'POST',
         body: {
           key: targetKey,
           value: '<!-- cleared -->',
-          version: '1',
+          version: String(sentinelVersion),
           state: 'published',
           ...(companyId ? { companyId } : {}),
         },
@@ -145,7 +151,11 @@ export default defineEventHandler(async (event) => {
         }
       })
       const freshRecords = refetchRes?.data?.MyQuery?.RubikxCms ?? []
-      const clearedIds = freshRecords.filter((r: any) => r.key === targetKey).map((r: any) => r.id)
+      // Only the sentinel row we just wrote — never touch any other
+      // surviving version of this key.
+      const clearedIds = freshRecords
+        .filter((r: any) => r.key === targetKey && Number(r.version) === sentinelVersion)
+        .map((r: any) => r.id)
 
       await Promise.all(clearedIds.map((id: number) =>
         $fetch<any>(ODOO_URL, {
@@ -160,7 +170,7 @@ export default defineEventHandler(async (event) => {
           }
         })
       ))
-      console.log('[CMS DELETE] cache-bust cleared key:', targetKey, 'ids:', clearedIds)
+      console.log('[CMS DELETE] cache-bust cleared key:', targetKey, 'sentinelVersion:', sentinelVersion, 'ids:', clearedIds)
     } catch (err) {
       console.error('[CMS DELETE] cache-bust failed for key:', targetKey, err)
     }
@@ -182,14 +192,24 @@ export default defineEventHandler(async (event) => {
     return existedBefore && remainingPublished === 0
   })
   console.log('[CMS DELETE] cascade-target keys needing cache-bust:', keysNeedingCacheBust)
-  for (const gk of keysNeedingCacheBust) await cacheBustCleared(gk)
+  for (const gk of keysNeedingCacheBust) {
+    const survivingVersions = allRecords
+      .filter((r: any) => r.key === gk && !cascadeIds.includes(r.id))
+      .map((r: any) => Number(r.version))
+    await cacheBustCleared(gk, survivingVersions)
+  }
 
   // Same treatment for the page's own key (home or any other page): only
   // once every remaining row for it is no longer published.
   const remainingPublished = pageRecords.filter((r: any) =>
     r.state === 'published' && !idsToDelete.includes(r.id)
   ).length
-  if (remainingPublished === 0) await cacheBustCleared(key)
+  if (remainingPublished === 0) {
+    const survivingVersions = pageRecords
+      .filter((r: any) => !idsToDelete.includes(r.id))
+      .map((r: any) => Number(r.version))
+    await cacheBustCleared(key, survivingVersions)
+  }
 
   return { deleted: allIdsToDelete.length, ids: allIdsToDelete }
 })
