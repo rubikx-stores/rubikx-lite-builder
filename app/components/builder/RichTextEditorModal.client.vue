@@ -213,6 +213,10 @@ function currentMarkedAncestor(selector: string): HTMLElement | null {
 // own (easily-lost) selection highlight.
 const isBoldActive = computed(() => !!currentMarkedAncestor('strong[data-faq-mark="bold"]'))
 const isUppercaseActive = computed(() => !!currentMarkedAncestor('span[data-faq-mark="uppercase"]'))
+const hasSelection = computed(() => {
+  const range = savedRange.value
+  return !!range && !range.collapsed
+})
 const activeAnchorMarkType = computed(() => currentMarkedAncestor('a[data-faq-mark]')?.getAttribute('data-faq-mark') ?? null)
 const selectionSummary = computed(() => {
   const range = savedRange.value
@@ -296,9 +300,50 @@ function toggleBold() {
   wrapSelection('strong', { 'data-faq-mark': 'bold' }, 'strong[data-faq-mark="bold"]')
 }
 
+// Bound to the color <input>'s own `input` event (fires continuously while
+// dragging inside the native color picker), not `change` (which only fires
+// once the picker closes) — the reason picking a color didn't feel "live"
+// and needed a hard click/Enter to actually commit. Same live-preview
+// pattern as the Button feature's editingAnchor: the first firing wraps the
+// selection and keeps a reference to that wrapper; every firing after that
+// just restyles the SAME element directly instead of re-running
+// extractContents/insertNode (which would fail on the 2nd+ call anyway,
+// since wrapSelection already consumes/clears the selection on success).
+// finalizeTextColor (bound to `change`, which fires once when the picker
+// closes) drops that reference so the next time this control is used — on a
+// different selection — it starts a fresh wrapper instead of continuing to
+// restyle this one.
+const liveColorMark = shallowRef<HTMLElement | null>(null)
+
 function applyTextColor() {
   selectionError.value = ''
-  wrapSelection('span', { 'data-faq-mark': 'color', style: `color:${textColorInput.value};` }, 'span[data-faq-mark="color"], span[data-faq-mark="gradient"]')
+  if (liveColorMark.value) {
+    liveColorMark.value.setAttribute('style', `color:${textColorInput.value};`)
+    return
+  }
+  const range = savedRange.value
+  if (!range || range.collapsed) {
+    selectionError.value = 'Select some text first.'
+    return
+  }
+  const wrapper = document.createElement('span')
+  wrapper.setAttribute('data-faq-mark', 'color')
+  wrapper.setAttribute('style', `color:${textColorInput.value};`)
+  try {
+    const extracted = range.extractContents()
+    stripMarksFromFragment(extracted, 'span[data-faq-mark="color"], span[data-faq-mark="gradient"]')
+    wrapper.appendChild(extracted)
+    range.insertNode(wrapper)
+  } catch {
+    selectionError.value = "Couldn't apply that to the current selection — try selecting a smaller or simpler range."
+    return
+  }
+  liveColorMark.value = wrapper
+  setSavedRange(null)
+}
+
+function finalizeTextColor() {
+  liveColorMark.value = null
 }
 
 // Gradient text: a solid text-color and a gradient are mutually exclusive, so
@@ -328,20 +373,17 @@ function applyGradientText() {
 function applyFontFamily(key: string) {
   selectionError.value = ''
   if (!key) {
-    const range = savedRange.value
-    if (!range || range.collapsed) {
-      selectionError.value = 'Select some text first.'
-      return
-    }
-    try {
-      const extracted = range.extractContents()
-      stripMarksFromFragment(extracted, 'span[data-faq-mark="font"]')
-      range.insertNode(extracted)
-    } catch {
-      selectionError.value = "Couldn't clear the font for that selection — try selecting a smaller or simpler range."
-      return
-    }
-    setSavedRange(null)
+    // Same ancestor-unwrap approach as toggleBold/toggleUppercase — finds the
+    // actual wrapping <span> from the cursor/selection and removes exactly
+    // that element. The previous extractContents-based approach only found a
+    // mark to strip when the selection extended past the span's own
+    // boundary; selecting precisely the marked word (e.g. a double-click,
+    // landing entirely inside the span) extracted plain text with no <span>
+    // in it, so there was nothing to strip and the word landed right back
+    // inside the same still-there font-marked span — "Default" silently did
+    // nothing for the single most common way to select a word.
+    if (unwrapExistingMark('span[data-faq-mark="font"]')) return
+    selectionError.value = 'Click inside the styled text first.'
     return
   }
   wrapSelection('span', { 'data-faq-mark': 'font', style: `font-family:${key};` }, 'span[data-faq-mark="font"]')
@@ -648,7 +690,10 @@ function save() {
              label is the reliable answer to "what's selected right now" and
              to why an action didn't apply. -->
         <div class="mb-2 flex items-center justify-between gap-2 text-xs shrink-0">
-          <span class="rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-600">{{ selectionSummary }}</span>
+          <span
+            class="rounded-full px-2 py-0.5 font-medium"
+            :class="hasSelection ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'"
+          >{{ selectionSummary }}</span>
           <span v-if="selectionError" class="text-red-500">{{ selectionError }}</span>
         </div>
 
@@ -683,7 +728,8 @@ function save() {
               v-model="textColorInput"
               type="color"
               class="h-5 w-6 cursor-pointer rounded border-none p-0"
-              @change="applyTextColor"
+              @input="applyTextColor"
+              @change="finalizeTextColor"
             />
           </label>
 
@@ -729,19 +775,45 @@ function save() {
 
           <!-- Exact pixel size — the presets above top out at 1.5rem/24px,
                nowhere near what a hero title actually needs. -->
-          <label class="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
+          <div class="flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
             <span class="material-symbols-outlined text-base">format_size</span>
+            <button
+              type="button"
+              class="flex h-5 w-5 items-center justify-center rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100"
+              @mousedown.prevent
+              @click="customFontSizePx = Math.max(8, customFontSizePx - 1)"
+            >−</button>
             <input
               v-model.number="customFontSizePx"
               type="number"
               min="8"
               max="200"
-              class="w-14 rounded border border-gray-300 bg-white px-1 py-0.5 text-xs focus:outline-none focus:border-blue-400"
+              class="w-12 rounded border border-gray-300 bg-white px-1 py-0.5 text-center text-xs focus:outline-none focus:border-blue-400"
               @change="applyFontSizePx(customFontSizePx)"
               @keydown.enter.prevent="applyFontSizePx(customFontSizePx)"
             />
+            <button
+              type="button"
+              class="flex h-5 w-5 items-center justify-center rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100"
+              @mousedown.prevent
+              @click="customFontSizePx = Math.min(200, customFontSizePx + 1)"
+            >+</button>
             px
-          </label>
+            <!-- Explicit trigger: a native <select>/number input only fires
+                 change when its value actually differs from what's already
+                 showing, so re-picking/re-entering the same px value (or
+                 nudging ± back to a value you'd already applied) silently
+                 did nothing. This always re-applies the current number,
+                 regardless of whether it changed. -->
+            <button
+              type="button"
+              class="rounded border border-gray-300 bg-white px-1.5 py-0.5 text-[11px] font-medium text-gray-700 hover:bg-gray-100"
+              @mousedown.prevent
+              @click="applyFontSizePx(customFontSizePx)"
+            >
+              Apply
+            </button>
+          </div>
 
           <label class="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
             <span class="material-symbols-outlined text-base">line_weight</span>
@@ -914,7 +986,12 @@ function save() {
             <p class="text-xs text-gray-400">Padding is the gap between the label and the button's edge; Margin is the gap between the button and surrounding text. A too-long label clips with an ellipsis rather than stretching the box.</p>
           </template>
 
-          <div class="flex justify-end gap-2">
+          <div class="flex items-center justify-end gap-2">
+            <!-- Duplicates the top status bar's error: that one can scroll
+                 out of view once the Button panel (with all its sliders)
+                 pushes Update far enough down, which made clicking it with
+                 no URL look like it silently did nothing. -->
+            <span v-if="selectionError" class="mr-auto text-xs text-red-500">{{ selectionError }}</span>
             <button type="button" class="rounded border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100" @click="cancelUrlBar">Cancel</button>
             <button type="button" class="rounded bg-gray-900 px-2.5 py-1 text-xs font-medium text-white hover:bg-gray-700" @click="confirmLinkOrButton">{{ editingAnchor ? 'Update' : 'Add' }}</button>
           </div>
@@ -937,7 +1014,7 @@ function save() {
           <div
             ref="editorEl"
             contenteditable="true"
-            class="absolute inset-0 overflow-y-auto rounded-md border border-gray-200 px-3 py-2 text-sm leading-relaxed focus:outline-none"
+            class="absolute inset-0 overflow-y-auto rounded-md border border-gray-200 bg-gray-300 px-3 py-2 text-sm leading-relaxed focus:outline-none"
             :style="previewStyle"
             @mouseup="captureSelection"
             @keyup="captureSelection"

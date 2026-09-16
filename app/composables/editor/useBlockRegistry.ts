@@ -40,6 +40,16 @@ export interface FieldConfig {
   // normal default is `true`, but which must land `false` on a freshly
   // cloned page until the target site's owner turns it back on).
   cloneValue?: any
+  // For a Color/Size/Weight/Align/LineHeight field only: the rich-text
+  // (textarea) field key(s) this one actually styles, when that can't be
+  // derived from the two fields' names — e.g. Ru1-Banner's single
+  // `textColor` colours both `title` and `subtitle`, which share no prefix
+  // or suffix with "textColor" at all. Declaring it here is what lets the
+  // sidebar-vs-rich-text-editor sync (useEditorSidebar.ts) and the modal's
+  // live preview (EditorSidebar.client.vue) find the right field(s) instead
+  // of silently matching nothing. Omit it whenever the naming convention
+  // (`<key>Color`/`<key>FontSize`/etc.) already resolves correctly.
+  pairedContentKeys?: string[]
 }
 
 export interface BlockEditorConfig<T = Record<string, any>> {
