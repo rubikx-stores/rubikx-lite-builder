@@ -5854,8 +5854,8 @@ export const bannerFields: FieldConfig[] = [
   { key: 'subtitle', label: 'Subtitle', type: 'textarea',  placeholder: 'Short supporting line…' },
   { key: 'subtitleFontSize', label: 'Subtitle Font Size (px)', type: 'number', step: 1, placeholder: '18' },
   fontField('subtitleFont', 'Subtitle Font'),
-  { key: 'textColor',  label: 'Text Colour',       type: 'color' },
-  { key: 'textAlign',  label: 'Text Alignment',    type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'textColor',  label: 'Text Colour',       type: 'color',  pairedContentKeys: ['title', 'subtitle'] },
+  { key: 'textAlign',  label: 'Text Alignment',    type: 'select', options: ['left', 'center', 'right'], pairedContentKeys: ['title', 'subtitle'] },
   { key: 'bgColor',    label: 'Background Colour', type: 'color' },
   { key: 'bgImage',    label: 'Background Image',  type: 'image' },
   { key: 'overlayColor',   label: 'Overlay Colour',          type: 'color' },
@@ -7805,7 +7805,7 @@ export function renderRu2Stats(data: Ru2StatsData): string {
     : ''
 
   const cta2Html = data.showCta2
-    ? `<a href="${data.cta2Href}" style="display:inline-block;padding:8px 20px;border-radius:${data.ctaBorderRadius}px;font-size:14px;font-weight:500;text-decoration:none;background:${data.cta2BgColor};color:${data.cta2TextColor};border:1.5px solid ${data.cta2BorderColor};${fontCss(data.buttonFont, data.fontFamily)}">${data.cta2Label}</a>`
+    ? `<a href="${data.cta2Href}" style="display:inline-block;padding:8px 20px;border-radius:${data.ctaBorderRadius}px;font-size:14px;font-weight:500;text-decoration:none;background:${data.cta2Style === 'filled' ? data.cta2BgColor : (data.cta2BgColor || 'transparent')};color:${data.cta2TextColor};border:1.5px solid ${data.cta2BorderColor};${fontCss(data.buttonFont, data.fontFamily)}">${data.cta2Label}</a>`
     : ''
 
   const statsHtml = (data.items ?? []).map((item, i) => {

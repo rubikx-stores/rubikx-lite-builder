@@ -568,15 +568,26 @@ const faqAnswerModalPreviewStyle = computed(() => {
   const data = blockData.value as Record<string, any> | undefined
   if (!data) return ''
   const key = target.fieldKey
-  const parts: string[] = []
+
   // Naming isn't consistent across blocks — some pair a textarea field with
   // `<key>FontSize` (e.g. titleFontSize), others with just `<key>Size`
-  // (e.g. headingSize, sectionTitleSize, titleSize) — try both.
+  // (e.g. headingSize, sectionTitleSize, titleSize) — try both. A few blocks
+  // break the naming link entirely just for colour (Ru1-Banner's single
+  // `textColor` styles both `title` and `subtitle` — "text" shares no
+  // prefix/suffix with either, while titleFontSize/subtitleFontSize ARE
+  // still named correctly per field), so those declare `pairedContentKeys`
+  // on the colour field pointing back at this one. Check for that explicit,
+  // reverse-direction pairing for colour only; every other property keeps
+  // the naming guess, which already resolves correctly on its own.
+  const config = selectedBlockTitle.value ? _blockRegistry.getConfig(selectedBlockTitle.value) : null
+  const explicitColorField = config?.fields.find((f) => f.type === 'color' && f.pairedContentKeys?.includes(key))
+
+  const parts: string[] = []
   const fontSize = Number(data[`${key}FontSize`] ?? data[`${key}Size`])
   if (fontSize > 0) parts.push(`font-size:${fontSize}px`)
   const fontWeight = normalizeFontWeight(data[`${key}FontWeight`] ?? data[`${key}Weight`])
   if (fontWeight) parts.push(`font-weight:${fontWeight}`)
-  const color = data[`${key}Color`]
+  const color = explicitColorField ? data[explicitColorField.key] : data[`${key}Color`]
   if (color) parts.push(`color:${color}`)
   const lineHeight = data[`${key}LineHeight`]
   if (lineHeight) parts.push(`line-height:${lineHeight}`)

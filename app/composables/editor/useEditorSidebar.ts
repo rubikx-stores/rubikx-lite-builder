@@ -1,6 +1,6 @@
 import { computed, watch } from 'vue'
 import { usePageBuilderStateStore } from '@myissue/vue-website-page-builder'
-import { useBlockRegistry } from './useBlockRegistry'
+import { useBlockRegistry, type FieldConfig } from './useBlockRegistry'
 import { roleForKey, wrapThemeVar, isThemeColor, THEME_NESTED_LIST_ROLES } from './useThemeColors'
 
 export type SidebarMode = 'none' | 'block' | 'element'
@@ -56,7 +56,7 @@ function _basePairedKey(key: string, suffixes: string[]): string | null {
 }
 
 // The rich-text modal (RichTextEditorModal.client.vue) can leave a
-// per-selection inline override — <span data-faq-mark="color/size/weight">
+// per-selection inline override — <span data-faq-mark="color/size/weight/font">
 // — inside a field's saved HTML. That override always wins over whatever
 // this same-named sidebar control sets on the field's outer wrapper tag
 // (a child element's own inline style beats an inherited one, regardless of
@@ -64,7 +64,7 @@ function _basePairedKey(key: string, suffixes: string[]): string | null {
 // dead. Stripping the override here — right when the sidebar control that
 // competes with it changes — keeps the two in sync, always in favour of
 // whichever one was touched last.
-function _stripRichTextOverride(html: string, mark: 'color' | 'size' | 'weight'): string {
+function _stripRichTextOverride(html: string, mark: 'color' | 'size' | 'weight' | 'font'): string {
   const div = document.createElement('div')
   div.innerHTML = html
   const marks = div.querySelectorAll(`[data-faq-mark="${mark}"]`)
@@ -78,20 +78,121 @@ function _stripRichTextOverride(html: string, mark: 'color' | 'size' | 'weight')
   return div.innerHTML
 }
 
-// Line Height (and Align) live on a single wrapper spanning the WHOLE field
+// Line Height and Align live on a single wrapper spanning the WHOLE field
 // (see RichTextEditorModal.client.vue's ensureBlockWrapper) rather than a
-// per-selection mark, so only the one style property is cleared here — not
-// the whole wrapper — to avoid also discarding an Align choice made
-// alongside it.
-function _clearBlockLineHeight(html: string): string {
+// per-selection mark, so only the one style property named is cleared here —
+// not the whole wrapper — to avoid also discarding whichever of the two
+// wasn't touched.
+function _clearBlockStyleProp(html: string, prop: 'lineHeight' | 'textAlign'): string {
   const div = document.createElement('div')
   div.innerHTML = html
   const wrapper = div.firstElementChild as HTMLElement | null
-  if (div.children.length !== 1 || wrapper?.getAttribute('data-faq-mark') !== 'block' || !wrapper.style.lineHeight) {
+  if (div.children.length !== 1 || wrapper?.getAttribute('data-faq-mark') !== 'block' || !wrapper.style[prop]) {
     return html
   }
-  wrapper.style.lineHeight = ''
+  wrapper.style[prop] = ''
   return div.innerHTML
+}
+
+// _stripRichTextOverride/_clearBlockStyleProp fix ONE field's HTML string —
+// but the field a sidebar control pairs with isn't always a top-level
+// scalar (blockData[baseKey]) like a Hero title, and it isn't always a
+// single field either. FAQ answers, for instance, are list items
+// (data.faqs[i].answer) sitting under a block-wide `answerColor` field with
+// no top-level `answer` field at all. And some blocks split one colour
+// across TWO rich-text fields that don't share its exact name — Ru1-FAQ's
+// `subtitleColor` paints both `subtitleText` and `subtitleAfterLink`, so an
+// exact-key match against base key 'subtitle' finds neither and the sync
+// silently no-ops for that field, even though the sidebar control does
+// nothing visible.
+//
+// So instead of requiring an exact key match, this treats baseKey as a
+// PREFIX and syncs every rich-text-capable field (type: 'textarea', not
+// plainTextarea — the same predicate EditorSidebar.client.vue itself uses
+// to decide whether a field routes through the modal) whose key starts
+// with it, at either the top level or one level into a list. A trailing
+// boundary check (the remainder after the prefix must start with an
+// uppercase letter, or match exactly) keeps 'subtitle' from accidentally
+// matching an unrelated field like a hypothetical 'subtitles'.
+// (One level of list nesting only — matches every existing case; a
+// list-of-lists would need its own recursive pass.)
+function _isRichTextFieldMatchingPrefix(field: FieldConfig, prefix: string): boolean {
+  if (field.type !== 'textarea' || field.plainTextarea) return false
+  if (field.key === prefix) return true
+  if (!field.key.startsWith(prefix)) return false
+  const rest = field.key.slice(prefix.length)
+  return /^[A-Z]/.test(rest)
+}
+
+// Naming-convention prefix matching (see _isRichTextFieldMatchingPrefix)
+// only works when the colour/size/weight field's own name shares a prefix
+// with the content field(s) it styles. Ru1-Banner breaks that assumption
+// outright: one `textColor` field colours BOTH `title` and `subtitle`, and
+// "text" isn't a prefix of either. For cases like that, the field declares
+// `pairedContentKeys` explicitly (see FieldConfig) — this resolves to that
+// list when present, falling back to the derived prefix otherwise.
+function _resolvedPairedKeys(
+  registry: ReturnType<typeof useBlockRegistry>,
+  id: string,
+  key: string,
+  suffixes: string[],
+): string[] {
+  const title = registry.getTitle(id)
+  const config = title ? registry.getConfig(title) : null
+  const ownField = config?.fields.find((f) => f.key === key)
+  if (ownField?.pairedContentKeys?.length) return ownField.pairedContentKeys
+  const prefix = _basePairedKey(key, suffixes)
+  return prefix ? [prefix] : []
+}
+
+// Shared by _syncPairedContentField (naming-convention prefix match) and the
+// generic `fontFamily` field below (which, unlike headingFont/titleFont etc.,
+// isn't paired to one specific field by name — it's the block-wide fallback
+// every rich-text field falls back to per fontCss(), so changing it needs to
+// sweep every rich-text field in the block, not just one resolved prefix).
+function _syncFieldsMatching(
+  registry: ReturnType<typeof useBlockRegistry>,
+  id: string,
+  matches: (field: FieldConfig) => boolean,
+  strip: (html: string) => string,
+) {
+  const data = registry.getData(id)
+  if (!data) return
+
+  const title = registry.getTitle(id)
+  const config = title ? registry.getConfig(title) : null
+  if (!config) return
+
+  for (const field of config.fields) {
+    if (matches(field)) {
+      if (typeof data[field.key] === 'string') {
+        const stripped = strip(data[field.key])
+        if (stripped !== data[field.key]) registry.setData(id, field.key, stripped)
+      }
+      continue
+    }
+    if (field.type !== 'list' || !field.listFields) continue
+    const matchingListFields = field.listFields.filter(matches)
+    if (!matchingListFields.length) continue
+    const items = data[field.key]
+    if (!Array.isArray(items)) continue
+    items.forEach((item, idx) => {
+      for (const listField of matchingListFields) {
+        if (typeof item?.[listField.key] !== 'string') continue
+        const stripped = strip(item[listField.key])
+        if (stripped !== item[listField.key]) registry.setListItem(id, field.key, idx, listField.key, stripped)
+      }
+    })
+  }
+}
+
+function _syncPairedContentField(
+  registry: ReturnType<typeof useBlockRegistry>,
+  id: string,
+  prefix: string,
+  strip: (html: string) => string,
+) {
+  _syncFieldsMatching(registry, id, (f) => _isRichTextFieldMatchingPrefix(f, prefix), strip)
 }
 
 export function useEditorSidebar() {
@@ -333,30 +434,42 @@ export function useEditorSidebar() {
     if (!id || !registry.getTitle(id)) return
     registry.setData(id, key, value)
 
-    // Clear a stale rich-text-modal override on the paired content field, if
-    // any, so this sidebar change actually shows up (see _stripRichTextOverride).
-    const data = registry.getData(id)
-    if (data) {
-      const colorKey = _basePairedKey(key, ['Color'])
-      if (colorKey && typeof data[colorKey] === 'string') {
-        const stripped = _stripRichTextOverride(data[colorKey], 'color')
-        if (stripped !== data[colorKey]) registry.setData(id, colorKey, stripped)
+    // Clear a stale rich-text-modal override on the paired content field
+    // (top-level OR list-item — see _syncPairedContentField), if any, so
+    // this sidebar change actually shows up instead of the modal's earlier
+    // override silently continuing to win.
+    for (const k of _resolvedPairedKeys(registry, id, key, ['Color'])) {
+      _syncPairedContentField(registry, id, k, (html) => _stripRichTextOverride(html, 'color'))
+    }
+    for (const k of _resolvedPairedKeys(registry, id, key, ['FontSize', 'Size'])) {
+      _syncPairedContentField(registry, id, k, (html) => _stripRichTextOverride(html, 'size'))
+    }
+    for (const k of _resolvedPairedKeys(registry, id, key, ['FontWeight', 'Weight'])) {
+      _syncPairedContentField(registry, id, k, (html) => _stripRichTextOverride(html, 'weight'))
+    }
+    // `fontFamily` is the odd one out among these — it isn't paired to one
+    // specific content field by naming convention (there's no field named
+    // just `family` it derives from). It's the block-wide fallback every
+    // rich-text field falls back to when its own <field>Font override isn't
+    // set (see fontCss()), so changing it has to sweep every rich-text field
+    // in the block, top-level and list items alike, not just one resolved
+    // prefix.
+    if (key === 'fontFamily') {
+      _syncFieldsMatching(
+        registry, id,
+        (f) => f.type === 'textarea' && !f.plainTextarea,
+        (html) => _stripRichTextOverride(html, 'font'),
+      )
+    } else {
+      for (const k of _resolvedPairedKeys(registry, id, key, ['Font'])) {
+        _syncPairedContentField(registry, id, k, (html) => _stripRichTextOverride(html, 'font'))
       }
-      const sizeKey = _basePairedKey(key, ['FontSize', 'Size'])
-      if (sizeKey && typeof data[sizeKey] === 'string') {
-        const stripped = _stripRichTextOverride(data[sizeKey], 'size')
-        if (stripped !== data[sizeKey]) registry.setData(id, sizeKey, stripped)
-      }
-      const weightKey = _basePairedKey(key, ['FontWeight', 'Weight'])
-      if (weightKey && typeof data[weightKey] === 'string') {
-        const stripped = _stripRichTextOverride(data[weightKey], 'weight')
-        if (stripped !== data[weightKey]) registry.setData(id, weightKey, stripped)
-      }
-      const lineHeightKey = _basePairedKey(key, ['LineHeight'])
-      if (lineHeightKey && typeof data[lineHeightKey] === 'string') {
-        const stripped = _clearBlockLineHeight(data[lineHeightKey])
-        if (stripped !== data[lineHeightKey]) registry.setData(id, lineHeightKey, stripped)
-      }
+    }
+    for (const k of _resolvedPairedKeys(registry, id, key, ['LineHeight'])) {
+      _syncPairedContentField(registry, id, k, (html) => _clearBlockStyleProp(html, 'lineHeight'))
+    }
+    for (const k of _resolvedPairedKeys(registry, id, key, ['Align'])) {
+      _syncPairedContentField(registry, id, k, (html) => _clearBlockStyleProp(html, 'textAlign'))
     }
 
     _elementOverrides.delete(id)
