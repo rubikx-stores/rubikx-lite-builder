@@ -27,6 +27,19 @@ export interface FieldConfig {
   // never produces those, so its HTML output would break that splitting.
   // Every other textarea gets the rich editor by default.
   plainTextarea?: boolean
+  // Marks a field as holding data that belongs to one specific site/company
+  // (e.g. hand-picked products, or a toggle that pulls live categories from
+  // that site's backend) rather than reusable design. "Clone Design" (see
+  // server/utils/cloneDesign.ts) resets any field flagged here on the
+  // target copy instead of carrying the source site's value over, so
+  // cloning a page never duplicates one store's catalog into another's.
+  siteSpecific?: boolean
+  // The value a siteSpecific field is reset to on clone. Defaults to the
+  // block's own default for that key — set this explicitly when the block
+  // default isn't the safe "off" state (e.g. a categories toggle whose
+  // normal default is `true`, but which must land `false` on a freshly
+  // cloned page until the target site's owner turns it back on).
+  cloneValue?: any
 }
 
 export interface BlockEditorConfig<T = Record<string, any>> {

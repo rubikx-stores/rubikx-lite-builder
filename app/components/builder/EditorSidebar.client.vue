@@ -11,6 +11,7 @@ import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
 import { buildCategoryTree } from '~/composables/categories/buildCategoryTree'
 import type { FlatCategory } from '~/composables/categories/buildCategoryTree'
 import { fetchLogoGroupsCached } from '~/composables/logoGroups/fetchLogoGroupsCached'
+import { fontCss } from '~/composables/editor/fontFields'
 
 const selectedCompanyId = useState<number | null>('selectedCompanyId')
 
@@ -533,6 +534,56 @@ function openRichTextFieldModal(fieldKey: string, currentValue: any) {
   faqAnswerModalInitial.value = typeof currentValue === 'string' ? currentValue : ''
   showFaqAnswerModal.value = true
 }
+
+// Several blocks store font-weight as a human label ('Semibold',
+// 'Extrabold', …) rather than a raw CSS number, converting it inside that
+// block's own render function via a local `weightMap` (see e.g.
+// components.ts:4325). Injecting the raw label straight into an inline
+// style is invalid CSS that the browser just ignores, so it needs the same
+// normalization here before it can drive the preview.
+const WEIGHT_LABEL_TO_CSS: Record<string, string> = {
+  thin: '100', extralight: '200', light: '300', regular: '400', normal: '400',
+  medium: '500', semibold: '600', bold: '700', extrabold: '800', black: '900',
+}
+function normalizeFontWeight(raw: any): string | null {
+  if (raw === undefined || raw === null || raw === '') return null
+  const s = String(raw).trim()
+  if (/^\d+$/.test(s)) return s
+  return WEIGHT_LABEL_TO_CSS[s.toLowerCase()] ?? null
+}
+
+// Lets the modal preview text at (roughly) its real on-page size/weight/
+// colour/font instead of always the same small default — without that, a
+// 48px hero title looked tiny and generic while editing, then jumped to its
+// real size only after Save. Only applies to top-level scalar fields (the
+// `fieldKey` target): those are the ones with sibling `<key>FontSize` /
+// `<key>FontWeight` / `<key>Color` / `<key>Font` fields in the same block
+// (see themes-data.ts/components.ts field lists) to read the current values
+// from. List-item fields (FAQ answers, card descriptions) have no such
+// siblings, so this resolves to '' for them and the modal keeps its
+// original compact preview — unchanged from before.
+const faqAnswerModalPreviewStyle = computed(() => {
+  const target = faqAnswerModalTarget.value
+  if (!target || !('fieldKey' in target)) return ''
+  const data = blockData.value as Record<string, any> | undefined
+  if (!data) return ''
+  const key = target.fieldKey
+  const parts: string[] = []
+  // Naming isn't consistent across blocks — some pair a textarea field with
+  // `<key>FontSize` (e.g. titleFontSize), others with just `<key>Size`
+  // (e.g. headingSize, sectionTitleSize, titleSize) — try both.
+  const fontSize = Number(data[`${key}FontSize`] ?? data[`${key}Size`])
+  if (fontSize > 0) parts.push(`font-size:${fontSize}px`)
+  const fontWeight = normalizeFontWeight(data[`${key}FontWeight`] ?? data[`${key}Weight`])
+  if (fontWeight) parts.push(`font-weight:${fontWeight}`)
+  const color = data[`${key}Color`]
+  if (color) parts.push(`color:${color}`)
+  const lineHeight = data[`${key}LineHeight`]
+  if (lineHeight) parts.push(`line-height:${lineHeight}`)
+  const fontFamily = fontCss(data[`${key}Font`], data.fontFamily).replace(/;$/, '')
+  if (fontFamily) parts.push(fontFamily)
+  return parts.length ? parts.join(';') + ';' : ''
+})
 
 function handleFaqAnswerSave(html: string) {
   const target = faqAnswerModalTarget.value
@@ -1708,6 +1759,7 @@ onUnmounted(() => {
   <RichTextEditorModal
     v-model="showFaqAnswerModal"
     :initial-html="faqAnswerModalInitial"
+    :preview-style="faqAnswerModalPreviewStyle"
     @save="handleFaqAnswerSave"
   />
 </template>

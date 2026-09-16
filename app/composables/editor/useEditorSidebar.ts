@@ -42,6 +42,58 @@ function _getElementByKey(key: string, section: HTMLElement): HTMLElement | null
   return null
 }
 
+// Field naming isn't consistent across blocks — some pair a rich-text field
+// with `<key>FontSize`/`<key>FontWeight` (e.g. titleFontSize), others with
+// just `<key>Size`/`<key>Weight` (e.g. headingSize, sectionTitleWeight).
+// Checks the longer/more specific suffix first so e.g. 'titleFontSize'
+// resolves to base key 'title', not 'titleFont' (a real, different field —
+// the font-family picker).
+function _basePairedKey(key: string, suffixes: string[]): string | null {
+  for (const suffix of suffixes) {
+    if (key.length > suffix.length && key.endsWith(suffix)) return key.slice(0, -suffix.length)
+  }
+  return null
+}
+
+// The rich-text modal (RichTextEditorModal.client.vue) can leave a
+// per-selection inline override — <span data-faq-mark="color/size/weight">
+// — inside a field's saved HTML. That override always wins over whatever
+// this same-named sidebar control sets on the field's outer wrapper tag
+// (a child element's own inline style beats an inherited one, regardless of
+// how the parent got its value), which makes the sidebar control look
+// dead. Stripping the override here — right when the sidebar control that
+// competes with it changes — keeps the two in sync, always in favour of
+// whichever one was touched last.
+function _stripRichTextOverride(html: string, mark: 'color' | 'size' | 'weight'): string {
+  const div = document.createElement('div')
+  div.innerHTML = html
+  const marks = div.querySelectorAll(`[data-faq-mark="${mark}"]`)
+  if (!marks.length) return html
+  marks.forEach((el) => {
+    const parent = el.parentNode
+    if (!parent) return
+    while (el.firstChild) parent.insertBefore(el.firstChild, el)
+    parent.removeChild(el)
+  })
+  return div.innerHTML
+}
+
+// Line Height (and Align) live on a single wrapper spanning the WHOLE field
+// (see RichTextEditorModal.client.vue's ensureBlockWrapper) rather than a
+// per-selection mark, so only the one style property is cleared here — not
+// the whole wrapper — to avoid also discarding an Align choice made
+// alongside it.
+function _clearBlockLineHeight(html: string): string {
+  const div = document.createElement('div')
+  div.innerHTML = html
+  const wrapper = div.firstElementChild as HTMLElement | null
+  if (div.children.length !== 1 || wrapper?.getAttribute('data-faq-mark') !== 'block' || !wrapper.style.lineHeight) {
+    return html
+  }
+  wrapper.style.lineHeight = ''
+  return div.innerHTML
+}
+
 export function useEditorSidebar() {
   const store = usePageBuilderStateStore() as any
   const registry = useBlockRegistry()
@@ -280,6 +332,33 @@ export function useEditorSidebar() {
     const id = forcedId ?? selectedBlockId.value
     if (!id || !registry.getTitle(id)) return
     registry.setData(id, key, value)
+
+    // Clear a stale rich-text-modal override on the paired content field, if
+    // any, so this sidebar change actually shows up (see _stripRichTextOverride).
+    const data = registry.getData(id)
+    if (data) {
+      const colorKey = _basePairedKey(key, ['Color'])
+      if (colorKey && typeof data[colorKey] === 'string') {
+        const stripped = _stripRichTextOverride(data[colorKey], 'color')
+        if (stripped !== data[colorKey]) registry.setData(id, colorKey, stripped)
+      }
+      const sizeKey = _basePairedKey(key, ['FontSize', 'Size'])
+      if (sizeKey && typeof data[sizeKey] === 'string') {
+        const stripped = _stripRichTextOverride(data[sizeKey], 'size')
+        if (stripped !== data[sizeKey]) registry.setData(id, sizeKey, stripped)
+      }
+      const weightKey = _basePairedKey(key, ['FontWeight', 'Weight'])
+      if (weightKey && typeof data[weightKey] === 'string') {
+        const stripped = _stripRichTextOverride(data[weightKey], 'weight')
+        if (stripped !== data[weightKey]) registry.setData(id, weightKey, stripped)
+      }
+      const lineHeightKey = _basePairedKey(key, ['LineHeight'])
+      if (lineHeightKey && typeof data[lineHeightKey] === 'string') {
+        const stripped = _clearBlockLineHeight(data[lineHeightKey])
+        if (stripped !== data[lineHeightKey]) registry.setData(id, lineHeightKey, stripped)
+      }
+    }
+
     _elementOverrides.delete(id)
     await _applyBlockRender(id)
   }

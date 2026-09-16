@@ -193,8 +193,8 @@ export const ru1NavbarFields: FieldConfig[] = [
     ],
   },
   { key: 'navLinksAlign', label: 'Links Position', type: 'select', options: ['left', 'center', 'right', 'lower-left', 'lower-center', 'lower-right'] },
-  { key: 'dynamicCategoriesFloating', label: 'Dynamic Categories (Floating)', type: 'toggle' },
-  { key: 'dynamicCategoriesInline', label: 'Dynamic Categories (Inline)', type: 'toggle' },
+  { key: 'dynamicCategoriesFloating', label: 'Dynamic Categories (Floating)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'dynamicCategoriesInline', label: 'Dynamic Categories (Inline)', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'linkColor', label: 'Link Colour', type: 'color' },
   { key: 'linkFontSize', label: 'Link Font Size (px)', type: 'number', step: 1, placeholder: '14' },
   { key: 'linkFontWeight', label: 'Link Font Weight', type: 'select', options: ['300', '400', '500', '600', '700', '800'] },
@@ -720,7 +720,7 @@ export const ru1ProductsFields: FieldConfig[] = [
 
   { key: '_h_products', label: 'Products', type: 'header' },
   {
-    key: 'products', label: 'Products', type: 'list',
+    key: 'products', label: 'Products', type: 'list', siteSpecific: true,
     listFields: [
       { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
       { key: 'name', label: 'Product Name', type: 'text' },
@@ -1565,7 +1565,7 @@ export const ru2ShopContentFields: FieldConfig[] = [
   // ── Products list ─────────────────────────────────────────────────────────
   { key: '_h_products', label: 'Products', type: 'header' },
   {
-    key: 'products', label: 'Products', type: 'list',
+    key: 'products', label: 'Products', type: 'list', siteSpecific: true,
     listFields: [
       { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
       { key: 'name', label: 'Product Name', type: 'text' },
