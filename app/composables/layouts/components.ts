@@ -160,8 +160,8 @@ export const megaMenuHeaderFields: FieldConfig[] = [
   fontField('megaProductPriceFont', 'Mega Menu Product Price Font'),
 
   { key: 'showSearch',        label: 'Show Search Bar',               type: 'toggle'  },
-  { key: 'dynamicCategoriesFloating', label: 'Dynamic Categories (Floating)', type: 'toggle'  },
-  { key: 'dynamicCategoriesInline', label: 'Dynamic Categories (Inline)', type: 'toggle'  },
+  { key: 'dynamicCategoriesFloating', label: 'Dynamic Categories (Floating)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'dynamicCategoriesInline', label: 'Dynamic Categories (Inline)', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'searchPlaceholder', label: 'Search Placeholder',  type: 'text',
     placeholder: 'e.g. Search products…'                                    },
   { key: 'searchAlign',     label: 'Search Position',       type: 'select',
@@ -504,8 +504,8 @@ export const ru3MegaHeaderFields: FieldConfig[] = [
     listFields: [
       { key: 'label',        label: 'Label',                   type: 'text', placeholder: 'e.g. Apparel'          },
       { key: 'href',         label: 'URL',                     type: 'url',  placeholder: 'e.g. /apparel or https://…' },
-      { key: 'showDropdown', label: 'Show Categories Dropdown', type: 'toggle' },
-      { key: 'categoryFilter', label: 'Category Name (from backend)', type: 'text',
+      { key: 'showDropdown', label: 'Show Categories Dropdown', type: 'toggle', siteSpecific: true, cloneValue: false },
+      { key: 'categoryFilter', label: 'Category Name (from backend)', type: 'text', siteSpecific: true, cloneValue: '',
         placeholder: 'e.g. Apparel — only that category\'s children show; blank shows all' },
       { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
@@ -893,7 +893,7 @@ export const ru4NavbarFields: FieldConfig[] = [
     ],
   },
   { key: 'navLinksAlign', label: 'Links Position', type: 'select', options: ['left', 'center', 'right'] },
-  { key: 'dynamicCategories', label: 'Dynamic Categories', type: 'toggle' },
+  { key: 'dynamicCategories', label: 'Dynamic Categories', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'linkColor', label: 'Link Colour', type: 'color' },
   { key: 'linkFontSize', label: 'Link Font Size (px)', type: 'number', step: 1, placeholder: '14' },
   { key: 'linkFontWeight', label: 'Link Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
@@ -1231,7 +1231,7 @@ export const ru5DynamicNavbarFields: FieldConfig[] = [
   { key: '_h_nav', label: 'Navigation', type: 'header' },
   { key: 'homeLabel', label: 'Home Link Label', type: 'text', placeholder: 'Home' },
   { key: 'homeHref',  label: 'Home Link URL',   type: 'url',  placeholder: '/'    },
-  { key: 'showDynamicCategories', label: 'Show Dynamic Categories', type: 'toggle' },
+  { key: 'showDynamicCategories', label: 'Show Dynamic Categories', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'maxCategories', label: 'Max Categories Shown', type: 'number',
     placeholder: '8 — the nav row is built automatically from your live category tree, one item per top-level category (each with its own mega dropdown); it grows or shrinks with your data, nothing to configure by hand' },
   {
@@ -1242,7 +1242,7 @@ export const ru5DynamicNavbarFields: FieldConfig[] = [
       { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
-  { key: 'logoFilterByCategory', label: 'Show Logo/Brand Nav Link Dropdowns', type: 'toggle',
+  { key: 'logoFilterByCategory', label: 'Show Logo/Brand Nav Link Dropdowns', type: 'toggle', siteSpecific: true, cloneValue: false,
     placeholder: 'Must be on for any Logo/Brand Nav Link above to show its dropdown — off shows those links as plain links instead' },
   { key: 'linkColor',       label: 'Link Colour',            type: 'color'   },
   { key: 'linkFontSize',    label: 'Link Font Size (px)',    type: 'number',
@@ -1768,7 +1768,7 @@ export const ru6HamburgerNavbarFields: FieldConfig[] = [
   { key: '_h_nav', label: 'Hamburger Menu', type: 'header' },
   { key: 'homeLabel', label: 'Home Link Label', type: 'text', placeholder: 'Home' },
   { key: 'homeHref', label: 'Home Link URL', type: 'url', placeholder: '/' },
-  { key: 'showDynamicCategories', label: 'Show Categories from Store', type: 'toggle' },
+  { key: 'showDynamicCategories', label: 'Show Categories from Store', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'linkColor', label: 'Menu Link Colour', type: 'color' },
   { key: 'linkFontSize', label: 'Menu Link Font Size (px)', type: 'number', placeholder: '15' },
   { key: 'linkFontWeight', label: 'Menu Link Font Weight', type: 'select', options: ['400', '500', '600', '700'] },
@@ -5951,7 +5951,7 @@ export const ru10ShopByCategoryFields: FieldConfig[] = [
   { key: '_h_categories', label: 'Categories', type: 'header' },
   { key: 'syncRu10CategoriesFromApi', label: 'Sync Categories from API', type: 'button' },
   {
-    key: 'categories', label: 'Categories', type: 'list',
+    key: 'categories', label: 'Categories', type: 'list', siteSpecific: true,
     listFields: [
       { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
       { key: 'name', label: 'Category Name', type: 'text', placeholder: 'e.g. Apparel' },
@@ -8709,7 +8709,7 @@ export const ru7HeroCategoryCollectionFields: FieldConfig[] = [
   { key: '_h_categories', label: 'Categories', type: 'header' },
   { key: 'syncRu7CategoriesFromApi', label: 'Sync Categories from API', type: 'button' },
   {
-    key: 'categories', label: 'Categories', type: 'list',
+    key: 'categories', label: 'Categories', type: 'list', siteSpecific: true,
     listFields: [
       { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
       { key: 'name', label: 'Category Name', type: 'text', placeholder: 'e.g. Apparel' },
@@ -10899,7 +10899,7 @@ export const showSingleProductFields: FieldConfig[] = [
 
   { key: '_h_products', label: 'Products', type: 'header' },
   {
-    key: 'products', label: 'Products', type: 'list',
+    key: 'products', label: 'Products', type: 'list', siteSpecific: true,
     listFields: [
       { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
       { key: 'name', label: 'Product Name', type: 'text' },
@@ -11164,7 +11164,7 @@ export const showMultipleProductsFields: FieldConfig[] = [
 
   { key: '_h_products', label: 'Products', type: 'header' },
   {
-    key: 'products', label: 'Products', type: 'list',
+    key: 'products', label: 'Products', type: 'list', siteSpecific: true,
     listFields: [
       { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
       { key: 'name', label: 'Product Name', type: 'text' },
