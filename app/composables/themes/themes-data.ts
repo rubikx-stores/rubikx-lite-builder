@@ -95,6 +95,12 @@ export interface Ru1NavbarData {
   navLinks: NavLink[]
   dynamicCategoriesFloating: boolean
   dynamicCategoriesInline: boolean
+  // Text colour used INSIDE the white "Categories" dropdown popup only —
+  // kept separate from linkColor below, which colours the nav bar's own
+  // link text and would otherwise also recolour the dropdown's contents
+  // (the dropdown box itself has a hardcoded white background, so a light
+  // linkColor chosen for a dark nav bar makes that text unreadable there).
+  categoryDropdownTextColor: string
   navLinksAlign: string
   linkColor: string
   linkFontSize: number
@@ -107,7 +113,17 @@ export interface Ru1NavbarData {
   contactUsUrl: string
   showCart: boolean
   cartUrl: string
+  cartIconColor: string
   buttonsAlign: string
+  buttonBgColor: string
+  buttonTextColor: string
+  buttonBorderColor: string
+  searchBgColor: string
+  searchBorderColor: string
+  searchIconColor: string
+  searchTextColor: string
+  searchBorderRadius: number
+  buttonBorderRadius: number
   textColor: string
   fontSize: number
   fontWeight: string
@@ -142,6 +158,7 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   ],
   dynamicCategoriesFloating: true,
   dynamicCategoriesInline: false,
+  categoryDropdownTextColor: '#111827',
   navLinksAlign: 'lower-left',
   linkColor: '#111827',
   linkFontSize: 14,
@@ -154,7 +171,17 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   contactUsUrl: '/contactus',
   showCart: true,
   cartUrl: '/cart',
+  cartIconColor: '#111827',
   buttonsAlign: 'right',
+  buttonBgColor: '#ffffff',
+  buttonTextColor: '#111827',
+  buttonBorderColor: '#111827',
+  searchBgColor: '#ffffff',
+  searchBorderColor: '#e2e8f0',
+  searchIconColor: '#3b82f6',
+  searchTextColor: '#3b82f6',
+  searchBorderRadius: 8,
+  buttonBorderRadius: 6,
   textColor: '#111827',
   fontSize: 14,
   fontWeight: '500',
@@ -195,6 +222,8 @@ export const ru1NavbarFields: FieldConfig[] = [
   { key: 'navLinksAlign', label: 'Links Position', type: 'select', options: ['left', 'center', 'right', 'lower-left', 'lower-center', 'lower-right'] },
   { key: 'dynamicCategoriesFloating', label: 'Dynamic Categories (Floating)', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'dynamicCategoriesInline', label: 'Dynamic Categories (Inline)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'categoryDropdownTextColor', label: 'Category Dropdown Text Colour', type: 'color',
+    placeholder: 'Text colour inside the white "Categories" dropdown popup — keep this dark regardless of Link Colour below' },
   { key: 'linkColor', label: 'Link Colour', type: 'color' },
   { key: 'linkFontSize', label: 'Link Font Size (px)', type: 'number', step: 1, placeholder: '14' },
   { key: 'linkFontWeight', label: 'Link Font Weight', type: 'select', options: ['300', '400', '500', '600', '700', '800'] },
@@ -203,6 +232,11 @@ export const ru1NavbarFields: FieldConfig[] = [
   { key: 'searchPlaceholder', label: 'Search Placeholder', type: 'text' },
   { key: 'searchAlign', label: 'Search Position', type: 'select', options: ['left', 'center', 'right'] },
   { key: 'searchWidth', label: 'Search Width (px)', type: 'number', unit: 'px', step: 10, placeholder: '220' },
+  { key: 'searchBgColor', label: 'Search Background Colour', type: 'color' },
+  { key: 'searchBorderColor', label: 'Search Border Colour', type: 'color' },
+  { key: 'searchIconColor', label: 'Search Icon Colour', type: 'color' },
+  { key: 'searchTextColor', label: 'Search Text Colour', type: 'color' },
+  { key: 'searchBorderRadius', label: 'Search Border Radius (px)', type: 'number', unit: 'px', step: 1, placeholder: '8' },
 
   { key: '_h_buttons', label: 'Buttons', type: 'header' },
   { key: 'showSignIn', label: 'Show Sign In', type: 'toggle' },
@@ -213,7 +247,12 @@ export const ru1NavbarFields: FieldConfig[] = [
   { key: 'contactUsUrl', label: 'Contact Us URL', type: 'url' },
   { key: 'showCart', label: 'Show Cart Icon', type: 'toggle' },
   { key: 'cartUrl', label: 'Cart URL', type: 'url' },
+  { key: 'cartIconColor', label: 'Cart Icon Colour', type: 'color' },
   { key: 'buttonsAlign', label: 'Buttons Position', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'buttonBgColor', label: 'Button Background Colour', type: 'color' },
+  { key: 'buttonTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'buttonBorderColor', label: 'Button Border Colour', type: 'color' },
+  { key: 'buttonBorderRadius', label: 'Button Border Radius (px)', type: 'number', unit: 'px', step: 1, placeholder: '6' },
   fontField('buttonFont', 'Button Font'),
 
   { key: '_h_style', label: 'Style', type: 'header' },
@@ -248,24 +287,25 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 
   const linkStyle = `color:${data.linkColor};font-size:1rem;text-decoration:none;display:inline-flex;align-items:center;border-radius:0.375rem;padding:0.5rem 0;${fontCss(data.linkFont, data.fontFamily)}`
   // Sign In / Contact buttons follow the site Primary color when the theme is
-  // active; otherwise the var() falls back to the block's own textColor.
-  const btnAccent = `var(--rbx-primary, ${data.textColor})`
+  // active; otherwise the var() falls back to the block's own buttonTextColor.
+  const btnAccent = `var(--rbx-primary, ${data.buttonTextColor})`
+  const btnBorderAccent = `var(--rbx-primary, ${data.buttonBorderColor})`
 
   const searchW = data.searchWidth || 420
   const searchEl = data.showSearch
-    ? `<div style="display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:8px;padding:0.5rem 0.875rem;gap:0.5rem;width:${searchW}px;max-width:100%;min-width:0;">
-        ${icon('magnifyingGlass', { size: 16, stroke: '#3b82f6', style: 'flex-shrink:0;' })}
-        <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:#3b82f6;min-width:0;" />
+    ? `<div style="display:flex;align-items:center;background:${data.searchBgColor};border:1px solid ${data.searchBorderColor};border-radius:${data.searchBorderRadius}px;padding:0.5rem 0.875rem;gap:0.5rem;width:${searchW}px;max-width:100%;min-width:0;">
+        ${icon('magnifyingGlass', { size: 16, stroke: data.searchIconColor, style: 'flex-shrink:0;' })}
+        <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:${data.searchTextColor};min-width:0;" />
       </div>`
     : ''
 
   const buttonsArr = [
-    data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${btnAccent};font-size:0.875rem;text-decoration:none;border:1px solid ${btnAccent};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;${fontCss(data.buttonFont, data.fontFamily)}">${data.signInLabel}</a>` : '',
-    data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${btnAccent};font-size:0.875rem;text-decoration:none;border:1px solid ${btnAccent};border-radius:0.375rem;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:#fff;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;${fontCss(data.buttonFont, data.fontFamily)}">${data.contactUsLabel}</a>` : '',
+    data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${btnAccent};font-size:0.875rem;text-decoration:none;border:1px solid ${btnBorderAccent};border-radius:${data.buttonBorderRadius}px;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:${data.buttonBgColor};box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;${fontCss(data.buttonFont, data.fontFamily)}">${data.signInLabel}</a>` : '',
+    data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${btnAccent};font-size:0.875rem;text-decoration:none;border:1px solid ${btnBorderAccent};border-radius:${data.buttonBorderRadius}px;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:${data.buttonBgColor};box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;${fontCss(data.buttonFont, data.fontFamily)}">${data.contactUsLabel}</a>` : '',
     data.showCart
-      ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;flex-shrink:0;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
+      ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.cartIconColor}" style="position:relative;display:inline-flex;flex-shrink:0;"><a href="${data.cartUrl}" style="color:${data.cartIconColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
       : '',
-    data.showSignIn ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" style="position:relative;display:none;align-items:center;flex-shrink:0;"></span>` : '',
+    data.showSignIn ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" data-text-color="${data.textColor}" style="position:relative;display:none;align-items:center;flex-shrink:0;"></span>` : '',
   ].filter(Boolean)
   const buttonsEl = buttonsArr.length
     ? `<div style="display:flex;align-items:center;flex-wrap:nowrap;flex-shrink:0;gap:1.5rem;">${buttonsArr.join('')}</div>`
@@ -278,7 +318,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
         data-rubikx-component='CategoryNav'
         data-on-mount='loadCategories'
         data-max-items='20'
-        data-link-color='${data.linkColor}'
+        data-link-color='${data.categoryDropdownTextColor ?? '#111827'}'
         data-font-size='${data.linkFontSize}'
         data-font-weight='${data.linkFontWeight}'
         data-category-dropdown-style='${data.dynamicCategoriesInline ? 'inline' : 'floating'}'
@@ -326,9 +366,9 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   ).join('')
 
   const mobileSearchEl = data.showSearch
-    ? `<div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:0.375rem;padding:0 0.5rem;gap:0.5rem;background:#fff;margin-bottom:1rem;">
-        ${icon('magnifyingGlass', { size: 20, stroke: '#1e40af', style: 'flex-shrink:0;' })}
-        <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="border:none;outline:none;background:#fff;font-size:0.875rem;width:100%;color:#3b82f6;padding:0.5rem 0;" />
+    ? `<div style="display:flex;align-items:center;border:1px solid ${data.searchBorderColor};border-radius:${data.searchBorderRadius}px;padding:0 0.5rem;gap:0.5rem;background:${data.searchBgColor};margin-bottom:1rem;">
+        ${icon('magnifyingGlass', { size: 20, stroke: data.searchIconColor, style: 'flex-shrink:0;' })}
+        <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="border:none;outline:none;background:${data.searchBgColor};font-size:0.875rem;width:100%;color:${data.searchTextColor};padding:0.5rem 0;" />
       </div>`
     : ''
 
@@ -347,7 +387,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 <div data-nav-mobile="true" style="display:none;align-items:center;justify-content:space-between;padding:1.25rem ${data.paddingX}px;border-bottom:1px solid ${data.borderColor || '#374151'};">
   ${logoEl}
   <div style="display:flex;align-items:center;gap:1rem;">
-    ${data.showCart ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>` : ''}
+    ${data.showCart ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.cartIconColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.cartIconColor};display:inline-flex;">${icon('shoppingCart')}</a></span>` : ''}
     <button onclick="(function(btn){var s=btn.closest('section');var d=s&&s.querySelector('[data-mobile-drawer]');var o=s&&s.querySelector('[data-mobile-overlay]');if(d){d.style.transform='translateX(0)';}if(o){o.style.display='block';}document.body.style.overflow='hidden';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;">
       <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.textColor}" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
     </button>
@@ -368,8 +408,8 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;cursor:pointer;">Categories</a>` : ''}
   </div>
   <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
-    ${data.showContactUs ? `<a href="${data.contactUsUrl}" style="display:flex;align-items:center;justify-content:center;border:1px solid ${btnAccent};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${btnAccent};text-decoration:none;${fontCss(data.buttonFont, data.fontFamily)}">${data.contactUsLabel}</a>` : ''}
-    ${data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="display:flex;align-items:center;justify-content:center;border:1px solid ${btnAccent};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${btnAccent};text-decoration:none;${fontCss(data.buttonFont, data.fontFamily)}">${data.signInLabel}</a>` : ''}
+    ${data.showContactUs ? `<a href="${data.contactUsUrl}" style="display:flex;align-items:center;justify-content:center;border:1px solid ${btnBorderAccent};border-radius:${data.buttonBorderRadius}px;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${btnAccent};text-decoration:none;${fontCss(data.buttonFont, data.fontFamily)}">${data.contactUsLabel}</a>` : ''}
+    ${data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="display:flex;align-items:center;justify-content:center;border:1px solid ${btnBorderAccent};border-radius:${data.buttonBorderRadius}px;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${btnAccent};text-decoration:none;${fontCss(data.buttonFont, data.fontFamily)}">${data.signInLabel}</a>` : ''}
   </div>
 </div>
 
@@ -425,7 +465,7 @@ export const ru1HeroDefaults: Ru1HeroData = {
   extraHeight: 0,
   headline: '',
   subheadline: '',
-  textColor: '#ffffff',
+  textColor: '#000000',
   textAlign: 'center',
   overlayColor: '#000000',
   overlayOpacity: 30,
@@ -1037,7 +1077,7 @@ export const ru1FooterFields: FieldConfig[] = [
 
   { key: '_h_about', label: 'About Us Content', type: 'header' },
   { key: 'aboutMode', label: 'Content Type', type: 'select', options: ['text', 'logo'] },
-  { key: 'aboutAlign', label: 'About Us Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'aboutAlign', label: 'About Us Alignment', type: 'select', options: ['left', 'center', 'right'], pairedContentKeys: ['tagline'] },
   { key: 'tagline', label: 'Tagline', type: 'textarea' },
   { key: 'aboutLogoUrl', label: 'Logo', type: 'image', noAspectRatio: true },
   { key: 'aboutLogoWidth', label: 'Logo Width', type: 'number', unit: 'px', step: 4, placeholder: '120' },
