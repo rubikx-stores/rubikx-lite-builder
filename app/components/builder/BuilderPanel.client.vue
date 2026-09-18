@@ -100,6 +100,13 @@ async function handleDropComponent(comp: { id: string | number | null; html_code
   try {
     const store = usePageBuilderStateStore() as any
 
+    // Captured before addComponent() so the new instance can be told apart
+    // from any existing sections that already share this same title.
+    const existingIdsForTitle = new Set(
+      Array.from(document.querySelectorAll<HTMLElement>(`section[data-component-title="${CSS.escape(comp.title)}"][data-componentid]`))
+        .map((s) => s.getAttribute('data-componentid'))
+    )
+
     const allSections = Array.from(document.querySelectorAll('section[data-component-title]'))
     const headerIndex = allSections.findIndex(s => NAVBAR_TITLES.includes(s.getAttribute('data-component-title') ?? ''))
     const footerIndex = allSections.findIndex(s => FOOTER_TITLES.includes(s.getAttribute('data-component-title') ?? ''))
@@ -141,9 +148,17 @@ async function handleDropComponent(comp: { id: string | number | null; html_code
     }
 
     if (comp.title && blockRegistry.hasConfig(comp.title)) {
-      blockRegistry.resetToDefaults(comp.title)
-      await nextTick()
-      await applyBlockRender(comp.title)
+      // resetToDefaults()/applyBlockRender() key off a componentId, not a
+      // title — find the one section for this title that wasn't there
+      // before addComponent() ran.
+      const newId = Array.from(document.querySelectorAll<HTMLElement>(`section[data-component-title="${CSS.escape(comp.title)}"][data-componentid]`))
+        .map((s) => s.getAttribute('data-componentid'))
+        .find((id) => id && !existingIdsForTitle.has(id))
+      if (newId) {
+        blockRegistry.resetToDefaults(newId)
+        await nextTick()
+        await applyBlockRender(newId)
+      }
     }
 
     // Hydrate dynamic components after adding new component
