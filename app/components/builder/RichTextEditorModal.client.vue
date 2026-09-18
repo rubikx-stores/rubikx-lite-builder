@@ -1014,7 +1014,7 @@ function save() {
           <div
             ref="editorEl"
             contenteditable="true"
-            class="absolute inset-0 overflow-y-auto rounded-md border border-gray-200 bg-gray-300 px-3 py-2 text-sm leading-relaxed focus:outline-none"
+            class="absolute inset-0 overflow-y-auto rounded-md border border-gray-200 bg-white px-3 py-2 text-sm leading-relaxed focus:outline-none"
             :style="previewStyle"
             @mouseup="captureSelection"
             @keyup="captureSelection"

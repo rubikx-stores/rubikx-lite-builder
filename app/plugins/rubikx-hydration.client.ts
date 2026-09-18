@@ -1,11 +1,11 @@
 import { buildCategoryTree } from '~/composables/categories/buildCategoryTree'
 import type {
-  FlatCategory,
   CategoryNode,
 } from '~/composables/categories/buildCategoryTree'
 import { icon } from '~/composables/useIconSvg'
 import { productImageSrc } from '~/composables/useProductImageSrc'
 import { fetchLogoGroupsCached } from '~/composables/logoGroups/fetchLogoGroupsCached'
+import { fetchCategoriesCached } from '~/composables/categories/fetchCategoriesCached'
 
 // Set true to preview logged-in auth state inside the builder
 const SIMULATE_AUTH = false
@@ -297,9 +297,7 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
   if (!dropdown) return
 
   try {
-    const flat = await $fetch<FlatCategory[]>('/api/categories', {
-      query: { companyId },
-    })
+    const flat = await fetchCategoriesCached(companyId)
     const fullTree = buildCategoryTree(flat)
     // When a specific category name is configured for this nav link (e.g.
     // "Apparel" vs "Headwear"), scope the dropdown to just that category's
@@ -363,16 +361,13 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
 // the published Odoo page doesn't run this app's Nuxt plugin, so the live
 // storefront needs its own equivalent mount function in the headless repo.
 //
-// Always re-fetches on every hydration call, same as loadCategories above —
-// deliberately no cache. A module-level cache was tried here and reverted:
-// it made this navbar populate near-instantly on later hydrations while
-// every other dynamic-category shell on the page stayed fetch-driven, so it
-// visibly rendered first while the rest of the page was still loading
-// (behavior other navbar components don't have) — and being keyed by
-// companyId with no invalidation, switching between company sites within
-// the same session without a full reload could surface one company's
-// categories on another's navbar. Consistency with loadCategories's
-// always-fetch behavior matters more here than avoiding the refetch.
+// Fetches via fetchCategoriesCached, same shared TTL cache loadCategories
+// uses — an earlier per-component cache tried directly in this function was
+// reverted specifically because it only sped up THIS component while every
+// other category shell on the page stayed fetch-driven, and had no TTL. The
+// shared cache (see fetchCategoriesCached.ts) fixes both: every consumer
+// benefits equally, and it still re-fetches within seconds of the TTL
+// expiring rather than risking a stale company's categories indefinitely.
 function _renderDynamicNavResults(
   roots: CategoryNode[],
   desktopContainer: HTMLElement | null,
@@ -478,9 +473,7 @@ async function loadDynamicNav(el: HTMLElement, companyId?: number) {
   const componentId = el.closest('section')?.getAttribute('data-componentid') ?? null
 
   try {
-    const flat = await $fetch<FlatCategory[]>('/api/categories', {
-      query: { companyId },
-    })
+    const flat = await fetchCategoriesCached(companyId)
     const roots = buildCategoryTree(flat).slice(0, maxCategories)
 
     const liveSection = componentId

@@ -353,15 +353,15 @@ async function onSelectField(fieldKey: string, value: string | number) {
 // The watcher calls hydrateComponents so the fresh element gets its carousel wired.
 // Other ProductDetail blocks keep their data-hydrated and are skipped automatically.
 //
-// Ru3-Mega-Header, Ru5-Dynamic-Navbar, and Ru6-Hamburger-Navbar get the same
-// treatment: all three have several hydrated shells (AccountMenu, CartBadge,
-// CategoryNav/DynamicCategoryNav, HeaderSearch) that all lose their
-// click/hover wiring the same way on every field edit — without this, e.g.
-// the Account dropdown stops opening (Ru3) or the nav row/hamburger menu
-// gets stuck on its "Loading categories…" placeholder (Ru5, Ru6) the moment
-// you touch any other field on the block.
+// Ru3-Mega-Header, Ru5-Dynamic-Navbar, Ru6-Hamburger-Navbar, and Ru8-Navbar
+// get the same treatment: all four have several hydrated shells (AccountMenu,
+// CartBadge, CategoryNav/DynamicCategoryNav, HeaderSearch) that all lose
+// their click/hover wiring the same way on every field edit — without this,
+// e.g. the Account dropdown stops opening (Ru3) or the nav row/hamburger menu
+// gets stuck on its "Loading categories…" placeholder (Ru5, Ru6, Ru8) the
+// moment you touch any other field on the block.
 let _carouselRewireTimer = 0
-const REWIRE_ON_ANY_FIELD_TITLES = ['Ru3-Mega-Header', 'Ru5-Dynamic-Navbar', 'Ru6-Hamburger-Navbar']
+const REWIRE_ON_ANY_FIELD_TITLES = ['Ru3-Mega-Header', 'Ru5-Dynamic-Navbar', 'Ru6-Hamburger-Navbar', 'Ru8-Navbar']
 watch(
   blockData,
   async (newData) => {

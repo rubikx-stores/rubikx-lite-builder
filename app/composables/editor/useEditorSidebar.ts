@@ -2,6 +2,7 @@ import { computed, watch } from 'vue'
 import { usePageBuilderStateStore } from '@myissue/vue-website-page-builder'
 import { useBlockRegistry, type FieldConfig } from './useBlockRegistry'
 import { roleForKey, wrapThemeVar, isThemeColor, THEME_NESTED_LIST_ROLES } from './useThemeColors'
+import { FONT_FAMILY_OPTIONS } from './fontFields'
 
 export type SidebarMode = 'none' | 'block' | 'element'
 
@@ -57,14 +58,14 @@ function _basePairedKey(key: string, suffixes: string[]): string | null {
 
 // The rich-text modal (RichTextEditorModal.client.vue) can leave a
 // per-selection inline override — <span data-faq-mark="color/size/weight/font">
-// — inside a field's saved HTML. That override always wins over whatever
-// this same-named sidebar control sets on the field's outer wrapper tag
-// (a child element's own inline style beats an inherited one, regardless of
-// how the parent got its value), which makes the sidebar control look
-// dead. Stripping the override here — right when the sidebar control that
-// competes with it changes — keeps the two in sync, always in favour of
-// whichever one was touched last.
-function _stripRichTextOverride(html: string, mark: 'color' | 'size' | 'weight' | 'font'): string {
+// or <strong data-faq-mark="bold"> — inside a field's saved HTML. That
+// override always wins over whatever this same-named sidebar control sets on
+// the field's outer wrapper tag (a child element's own inline/UA style beats
+// an inherited one, regardless of how the parent got its value), which makes
+// the sidebar control look dead. Stripping the override here — right when
+// the sidebar control that competes with it changes — keeps the two in
+// sync, always in favour of whichever one was touched last.
+function _stripRichTextOverride(html: string, mark: 'color' | 'size' | 'weight' | 'font' | 'bold'): string {
   const div = document.createElement('div')
   div.innerHTML = html
   const marks = div.querySelectorAll(`[data-faq-mark="${mark}"]`)
@@ -183,6 +184,27 @@ function _syncFieldsMatching(
         if (stripped !== item[listField.key]) registry.setListItem(id, field.key, idx, listField.key, stripped)
       }
     })
+  }
+}
+
+// The block-wide `fontFamily` field is meant to read as "every text in this
+// block" — but fontCss() always lets a field's own <field>Font override win
+// over it (see fontFields.ts), so simply re-rendering with the new
+// fontFamily left any field that had its own Font dropdown set (e.g.
+// Heading Font) silently ignoring the change. Resetting every such field
+// back to '' (Default) here — every fontField()-created select, identified
+// by sharing FONT_FAMILY_OPTIONS's exact options array — makes the top
+// control genuinely override everything, matching what it already claims to
+// do. Per-item list fonts don't exist anywhere in the current field configs,
+// so only top-level fields need resetting.
+function _resetFontFieldOverrides(registry: ReturnType<typeof useBlockRegistry>, id: string) {
+  const title = registry.getTitle(id)
+  const config = title ? registry.getConfig(title) : null
+  if (!config) return
+  for (const field of config.fields) {
+    if (field.key === 'fontFamily' || field.options !== FONT_FAMILY_OPTIONS) continue
+    const data = registry.getData(id)
+    if (data && data[field.key] !== '') registry.setData(id, field.key, '')
   }
 }
 
@@ -445,7 +467,11 @@ export function useEditorSidebar() {
       _syncPairedContentField(registry, id, k, (html) => _stripRichTextOverride(html, 'size'))
     }
     for (const k of _resolvedPairedKeys(registry, id, key, ['FontWeight', 'Weight'])) {
-      _syncPairedContentField(registry, id, k, (html) => _stripRichTextOverride(html, 'weight'))
+      // Both the modal's "Font Weight" select (data-faq-mark="weight") and its
+      // separate "Bold" toggle (data-faq-mark="bold", a <strong>) can make text
+      // heavier — the sidebar's own Weight field has to beat whichever one the
+      // admin used, so both get stripped here.
+      _syncPairedContentField(registry, id, k, (html) => _stripRichTextOverride(_stripRichTextOverride(html, 'weight'), 'bold'))
     }
     // `fontFamily` is the odd one out among these — it isn't paired to one
     // specific content field by naming convention (there's no field named
@@ -460,6 +486,7 @@ export function useEditorSidebar() {
         (f) => f.type === 'textarea' && !f.plainTextarea,
         (html) => _stripRichTextOverride(html, 'font'),
       )
+      _resetFontFieldOverrides(registry, id)
     } else {
       for (const k of _resolvedPairedKeys(registry, id, key, ['Font'])) {
         _syncPairedContentField(registry, id, k, (html) => _stripRichTextOverride(html, 'font'))
