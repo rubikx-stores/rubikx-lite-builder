@@ -5881,6 +5881,16 @@ function hexToRgba(hex: string, opacity: number): string {
   return `rgba(${r},${g},${b},${opacity})`
 }
 
+// The rich text editor modal saves a contenteditable div's innerHTML, which
+// browsers leave holding a stray tag (e.g. "<br>") after the user deletes
+// all visible text — so an emptied field is still a truthy, non-empty
+// string. Regex-stripped (no `document` — this runs at build/SSR time too)
+// so callers can tell "no visible text" apart from "has HTML markup".
+function isRichTextEmpty(html: string | undefined | null): boolean {
+  if (!html) return true
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().length === 0
+}
+
 export function renderBanner(data: BannerData): string {
   const imgSrc = productImageSrc(data.bgImage)
   const overlayOpacity = Math.min(100, Math.max(0, data.overlayOpacity ?? 40)) / 100
@@ -5913,8 +5923,16 @@ export function renderBanner(data: BannerData): string {
     ? `box-shadow:inset 0 0 0 9999px ${hexToRgba(data.overlayColor ?? '#000000', overlayOpacity)};`
     : ''
 
+  const hasSubtitle = !isRichTextEmpty(data.subtitle)
+
+  // Tighter gap when the button sits right under the title (no subtitle in
+  // between) than when it follows a subtitle paragraph.
   const ctaHtml = data.showCta !== false
-    ? `<a href="${data.ctaHref}" style="display:inline-block;margin-top:2rem;padding:${data.ctaPaddingY ?? 12}px ${data.ctaPaddingX ?? 32}px;background:${data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:6px;font-size:${data.ctaFontSize ?? 16}px;font-weight:600;${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaLabel}</a>`
+    ? `<a href="${data.ctaHref}" style="display:inline-block;margin-top:${hasSubtitle ? '2rem' : '0.75rem'};padding:${data.ctaPaddingY ?? 12}px ${data.ctaPaddingX ?? 32}px;background:${data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:6px;font-size:${data.ctaFontSize ?? 16}px;font-weight:600;${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaLabel}</a>`
+    : ''
+
+  const subtitleHtml = hasSubtitle
+    ? `<p style="font-size:min(${data.subtitleFontSize ?? 18}px,4.5vw);color:${data.textColor};opacity:0.85;margin:1rem 0 0;max-width:42rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>`
     : ''
 
   // Section uses display:flex so the inner div can flex:1 and fill the full
@@ -5925,7 +5943,7 @@ export function renderBanner(data: BannerData): string {
   <div style="width:100%;box-sizing:border-box;flex:1;display:flex;align-items:center;padding:${data.paddingY}px 1rem;">
     <div style="max-width:80rem;margin:0 auto;width:100%;display:flex;flex-direction:column;align-items:${itemsAlign};text-align:${textAlign};">
       <h2 style="font-size:min(${data.titleFontSize ?? 40}px,8vw);font-weight:700;color:${data.textColor};margin:0;line-height:1.2;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
-      <p style="font-size:min(${data.subtitleFontSize ?? 18}px,4.5vw);color:${data.textColor};opacity:0.85;margin:1rem 0 0;max-width:42rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>
+      ${subtitleHtml}
       ${ctaHtml}
     </div>
   </div>
@@ -9637,9 +9655,22 @@ export interface Ru4OverlayPanelData {
   ctaStyle: string
   ctaBgColor: string
   ctaTextColor: string
+  ctaSize: number
+  ctaWeight: string
   ctaBorderRadius: number
   ctaBorderWidth: number
   ctaBorderColor: string
+  showCta2: boolean
+  cta2Text: string
+  cta2Url: string
+  cta2Style: string
+  cta2BgColor: string
+  cta2TextColor: string
+  cta2Size: number
+  cta2Weight: string
+  cta2BorderRadius: number
+  cta2BorderWidth: number
+  cta2BorderColor: string
   fontFamily: string
   headingFont: string
   descriptionFont: string
@@ -9679,9 +9710,22 @@ export const ru4OverlayPanelDefaults: Ru4OverlayPanelData = {
   ctaStyle: 'filled',
   ctaBgColor: '#dc2626',
   ctaTextColor: '#ffffff',
+  ctaSize: 20,
+  ctaWeight: 'Semibold',
   ctaBorderRadius: 6,
   ctaBorderWidth: 2,
   ctaBorderColor: '#dc2626',
+  showCta2: false,
+  cta2Text: 'Contact Us',
+  cta2Url: '/contact',
+  cta2Style: 'outline',
+  cta2BgColor: '#ffffff',
+  cta2TextColor: '#111827',
+  cta2Size: 20,
+  cta2Weight: 'Semibold',
+  cta2BorderRadius: 6,
+  cta2BorderWidth: 2,
+  cta2BorderColor: '#111827',
   fontFamily: '',
   headingFont: '',
   descriptionFont: '',
@@ -9731,15 +9775,30 @@ export const ru4OverlayPanelFields: FieldConfig[] = [
   { key: 'descriptionSize', label: 'Description Size (px)', type: 'number', placeholder: '15' },
   fontField('descriptionFont', 'Description Font'),
 
-  { key: '_h_cta', label: 'CTA Button', type: 'header' },
+  { key: '_h_cta', label: 'Button 1', type: 'header' },
   { key: 'ctaText', label: 'Button Text', type: 'text', placeholder: 'e.g. Celebrate Now' },
   { key: 'ctaUrl', label: 'Button URL', type: 'url', placeholder: '/shop' },
   { key: 'ctaStyle', label: 'Button Style', type: 'select', options: ['filled', 'outline'] },
   { key: 'ctaBgColor', label: 'Button Background', type: 'color' },
   { key: 'ctaTextColor', label: 'Button Text Color', type: 'color' },
+  { key: 'ctaSize', label: 'Button Size (px)', type: 'number', placeholder: '13' },
+  { key: 'ctaWeight', label: 'Button Weight', type: 'select', options: ['Light', 'Regular', 'Medium', 'Semibold', 'Bold'] },
   { key: 'ctaBorderRadius', label: 'Button Radius (px)', type: 'number', placeholder: '6' },
   { key: 'ctaBorderWidth', label: 'Button Border Width (px)', type: 'number', placeholder: '2' },
   { key: 'ctaBorderColor', label: 'Button Border Color', type: 'color' },
+
+  { key: '_h_cta2', label: 'Button 2', type: 'header' },
+  { key: 'showCta2', label: 'Show Button 2', type: 'toggle' },
+  { key: 'cta2Text', label: 'Button Text', type: 'text', placeholder: 'e.g. Contact Us' },
+  { key: 'cta2Url', label: 'Button URL', type: 'url', placeholder: '/contact' },
+  { key: 'cta2Style', label: 'Button Style', type: 'select', options: ['filled', 'outline'] },
+  { key: 'cta2BgColor', label: 'Button Background', type: 'color' },
+  { key: 'cta2TextColor', label: 'Button Text Color', type: 'color' },
+  { key: 'cta2Size', label: 'Button Size (px)', type: 'number', placeholder: '13' },
+  { key: 'cta2Weight', label: 'Button Weight', type: 'select', options: ['Light', 'Regular', 'Medium', 'Semibold', 'Bold'] },
+  { key: 'cta2BorderRadius', label: 'Button Radius (px)', type: 'number', placeholder: '6' },
+  { key: 'cta2BorderWidth', label: 'Button Border Width (px)', type: 'number', placeholder: '2' },
+  { key: 'cta2BorderColor', label: 'Button Border Color', type: 'color' },
   fontField('buttonFont', 'Button Font'),
 ]
 
@@ -9806,12 +9865,34 @@ export function renderRu4OverlayPanel(data: Ru4OverlayPanelData): string {
   const alignMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
   const contentAlignFlex = alignMap[data.contentAlign ?? 'left'] ?? 'flex-start'
 
+  // Each button's "size" is its own +/- adjustable font-size (px); padding
+  // scales proportionally from it, independently per button.
+  const ctaPadding = (fontSize: number) => `${Math.round(fontSize * 0.75)}px ${Math.round(fontSize * 2.2)}px`
+  const cta1FontSize = data.ctaSize ?? 13
+  const cta2FontSize = data.cta2Size ?? 13
+  const cta1Size = { padding: ctaPadding(cta1FontSize), fontSize: `${cta1FontSize}px` }
+  const cta2Size = { padding: ctaPadding(cta2FontSize), fontSize: `${cta2FontSize}px` }
+  const cta1Weight = fontWeightMap[data.ctaWeight ?? 'Semibold'] ?? '600'
+  const cta2Weight = fontWeightMap[data.cta2Weight ?? 'Semibold'] ?? '600'
+
   const ctaBtnStyle = data.ctaStyle === 'outline'
     ? `background:transparent;color:${data.ctaBorderColor};border:${data.ctaBorderWidth ?? 2}px solid ${data.ctaBorderColor};`
     : `background:${data.ctaBgColor};color:${data.ctaTextColor};border:${data.ctaBorderWidth ?? 2}px solid ${data.ctaBorderColor};`
 
-  const ctaHtml = data.ctaText
-    ? `<a href="${data.ctaUrl}" style="display:inline-block;margin-top:1.5rem;padding:0.75rem 2rem;text-decoration:none;border-radius:${data.ctaBorderRadius ?? 6}px;font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;${ctaBtnStyle}${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaText}</a>`
+  const cta2BtnStyle = data.cta2Style === 'outline'
+    ? `background:transparent;color:${data.cta2TextColor};border:${data.cta2BorderWidth ?? 2}px solid ${data.cta2BorderColor};`
+    : `background:${data.cta2BgColor};color:${data.cta2TextColor};border:${data.cta2BorderWidth ?? 2}px solid ${data.cta2BorderColor};`
+
+  const cta1Html = data.ctaText
+    ? `<a href="${data.ctaUrl}" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;padding:${cta1Size.padding};text-decoration:none;border-radius:${data.ctaBorderRadius ?? 6}px;font-size:${cta1Size.fontSize};font-weight:${cta1Weight};letter-spacing:0.08em;${ctaBtnStyle}${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaText}</a>`
+    : ''
+
+  const cta2Html = data.showCta2 && data.cta2Text
+    ? `<a href="${data.cta2Url}" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;padding:${cta2Size.padding};text-decoration:none;border-radius:${data.cta2BorderRadius ?? 6}px;font-size:${cta2Size.fontSize};font-weight:${cta2Weight};letter-spacing:0.08em;${cta2BtnStyle}${fontCss(data.buttonFont, data.fontFamily)}">${data.cta2Text}</a>`
+    : ''
+
+  const ctaHtml = (cta1Html || cta2Html)
+    ? `<div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1.5rem;">${cta1Html}${cta2Html}</div>`
     : ''
 
   const panelBg = (data.panelBgOpacity ?? 100) < 100
@@ -9819,13 +9900,25 @@ export function renderRu4OverlayPanel(data: Ru4OverlayPanelData): string {
     : data.panelBgColor
   const panelStyle = `background:${panelBg};${borderRadiusStyle}${shadowStyle}${clipStyle}padding:${data.panelPaddingY ?? 48}px ${data.panelPaddingX ?? 40}px;box-sizing:border-box;`
 
-  return `<section data-component-title="Ru4-Overlay Panel" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${overlayStyle}${aspectStyle}${heightStyle}position:relative;display:flex;align-items:center;overflow:hidden;${fontCss(undefined, data.fontFamily)}">
-  <style>@media(max-width:767px){.ru4-op-panel{width:100%!important;clip-path:none!important;}}</style>
-  <div style="width:100%;padding:40px ${data.sectionPaddingX ?? 48}px;box-sizing:border-box;display:flex;justify-content:${justifyContent};">
-    <div class="ru4-op-panel" style="width:${data.panelWidth ?? '45%'};max-width:100%;${panelStyle}">
+  // Fixed min-height + overflow:hidden works for the desktop split layout,
+  // but on narrow screens the panel stacks full-width and its content
+  // (heading + description + buttons) can grow taller than that min-height
+  // — clip the section instead of the content, so mobile switches to an
+  // auto-height, unclipped section instead of overriding just the panel width.
+  return `<section data-component-title="Ru4-Overlay Panel" data-component-props="${encodeURIComponent(JSON.stringify(data))}" class="ru4-op-section" style="${bgStyle}${overlayStyle}${aspectStyle}${heightStyle}position:relative;display:flex;align-items:center;overflow:hidden;${fontCss(undefined, data.fontFamily)}">
+  <style>
+    @media(max-width:1024px){.ru4-op-panel{width:min(60%,26rem)!important;}}
+    @media(max-width:767px){
+      .ru4-op-section{min-height:auto!important;overflow:visible!important;}
+      .ru4-op-wrap{padding:32px 20px!important;}
+      .ru4-op-panel{width:100%!important;min-width:0!important;clip-path:none!important;border-radius:${data.panelBorderRadius ?? 8}px!important;}
+    }
+  </style>
+  <div class="ru4-op-wrap" style="width:100%;padding:40px min(${data.sectionPaddingX ?? 48}px,6vw);box-sizing:border-box;display:flex;justify-content:${justifyContent};">
+    <div class="ru4-op-panel" style="width:${data.panelWidth ?? '45%'};max-width:100%;min-width:min(280px,100%);${panelStyle}">
       <div style="display:flex;flex-direction:column;align-items:${contentAlignFlex};text-align:${data.contentAlign ?? 'left'};">
-        <h2 style="font-size:${data.headingSize ?? 32}px;font-weight:${fontWeight};color:${data.headingColor};margin:0;line-height:1.2;${fontCss(data.headingFont, data.fontFamily)}">${data.heading}</h2>
-        ${data.description ? `<p style="font-size:${data.descriptionSize ?? 15}px;line-height:1.7;color:${data.descriptionColor};margin:1rem 0 0;max-width:42rem;${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>` : ''}
+        <h2 style="font-size:min(${data.headingSize ?? 32}px,9vw);font-weight:${fontWeight};color:${data.headingColor};margin:0;line-height:1.2;${fontCss(data.headingFont, data.fontFamily)}">${data.heading}</h2>
+        ${data.description ? `<p style="font-size:min(${data.descriptionSize ?? 15}px,4.5vw);line-height:1.7;color:${data.descriptionColor};margin:1rem 0 0;max-width:42rem;${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>` : ''}
         ${ctaHtml}
       </div>
     </div>
@@ -12041,7 +12134,7 @@ export function renderShowMultipleProducts(data: ShowMultipleProductsData): stri
     [data-smp-overlay],[data-smp-viewbtn],[data-smp-arrow]{opacity:1!important;}
   }
 </style>
-  <div style="max-width:${data.contentMaxWidth ?? 1440}px;margin:0 auto;width:100%;">
+  <div style="max-width:${data.contentMaxWidth ?? 1440}px;margin:0 auto;width:100%;${data.showSectionHeader ? '' : `padding-top:${data.paddingY ?? 25}px;`}">
     ${sectionHeaderHtml}
     <div data-showmulti-grid="true" style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:1rem;">
       ${productsHtml}
