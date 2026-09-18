@@ -6285,7 +6285,7 @@ export const bannerDefaults: BannerData = {
   bgImageAspectRatio: 'Auto',
   overlayColor: '#000000',
   overlayOpacity: 0,
-  textColor: '#ffffff',
+  textColor: '#111827',
   textAlign: 'center',
   showCta: false,
   ctaLabel: 'Shop Now',
