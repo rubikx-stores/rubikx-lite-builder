@@ -85,7 +85,7 @@ export default defineEventHandler(async (event): Promise<{ results: CloneResult[
     return Math.max(...targetPage.versions.map((v) => v.version)) + 1
   }
 
-  async function writeClone(html: string, companyId: number, pageKey: string, version: number, results: CloneResult[]) {
+  async function writeClone(html: string, companyId: number, pageKey: string, version: number, results: CloneResult[]): Promise<boolean> {
     try {
       await $fetch('/api/proxy/odoo/cms', {
         method: 'POST',
@@ -93,8 +93,10 @@ export default defineEventHandler(async (event): Promise<{ results: CloneResult[
         body: { key: pageKey, value: html, version: String(version), state: 'draft', companyId },
       })
       results.push({ companyId, pageKey, ok: true, version })
+      return true
     } catch (err: any) {
       results.push({ companyId, pageKey, ok: false, error: err?.data?.message || err?.message || 'Clone failed' })
+      return false
     }
   }
 
@@ -110,9 +112,12 @@ export default defineEventHandler(async (event): Promise<{ results: CloneResult[
   // key computing its own separate number. Mirrors confirmSave()'s normal
   // manual-Save behavior (PageBuilderWrapper.client.vue), which always
   // saves home/global-header/global-footer under one shared version number.
-  // Prefers the target whose pageKey matches the source page (the common
-  // case — cloning into the same page slot); falls back to whichever target
-  // for that company is processed first if none matches exactly.
+  // Only populated when a target's pageKey matches the source page exactly
+  // (home→home, shop→shop) AND that write actually succeeded — global-header/
+  // global-footer must never be republished for a company just because some
+  // other page (e.g. About, FAQ) was also cloned into it in the same request,
+  // nor when the matching home/shop write itself failed (that would publish
+  // a header/footer version with no corresponding page content behind it).
   const sharedVersionByCompany = new Map<number, number>()
   for (const target of body.targets) {
     // nextVersionFor does its own /api/pages fetch, separate from
@@ -132,8 +137,8 @@ export default defineEventHandler(async (event): Promise<{ results: CloneResult[
       })
       continue
     }
-    await writeClone(mainSource.html, target.companyId, target.pageKey, version, results)
-    if (target.pageKey === body.sourcePageKey || !sharedVersionByCompany.has(target.companyId)) {
+    const wrote = await writeClone(mainSource.html, target.companyId, target.pageKey, version, results)
+    if (wrote && target.pageKey === body.sourcePageKey) {
       sharedVersionByCompany.set(target.companyId, version)
     }
   }
