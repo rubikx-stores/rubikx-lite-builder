@@ -33,6 +33,10 @@ import {
   ru7NavbarFields,
   ru7NavbarSvg,
   renderRu7Navbar,
+  ru8NavbarDefaults,
+  ru8NavbarFields,
+  ru8NavbarSvg,
+  renderRu8Navbar,
   bannerDefaults,
   bannerFields,
   bannerSvg,
@@ -271,6 +275,12 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Headers',
       cover_image: ru7NavbarSvg,
       html_code: renderRu7Navbar(ru7NavbarDefaults),
+    },
+    {
+      title: 'Ru8-Navbar',
+      category: 'Headers',
+      cover_image: ru8NavbarSvg,
+      html_code: renderRu8Navbar(ru8NavbarDefaults),
     },
   ],
   Banner: [
@@ -582,6 +592,12 @@ export function useLayouts() {
     defaults: ru7NavbarDefaults,
     fields: ru7NavbarFields,
     render: renderRu7Navbar,
+  })
+
+  blockRegistry.register('Ru8-Navbar', {
+    defaults: ru8NavbarDefaults,
+    fields: ru8NavbarFields,
+    render: renderRu8Navbar,
   })
 
   blockRegistry.register('Ru1-Banner', {

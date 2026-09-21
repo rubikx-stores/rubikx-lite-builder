@@ -275,7 +275,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
 
   const signInBtnStyle = `display:inline-flex;align-items:center;padding:0.4375rem 1rem;border-radius:${data.buttonBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:500;white-space:nowrap;border:1.5px solid ${data.textColor};color:${data.textColor};background:transparent;${fontCss(data.buttonFont, data.fontFamily)}`
   const signInEl = data.showSignIn
-    ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="${signInBtnStyle}">${data.signInLabel}</a><span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" style="position:relative;display:none;align-items:center;"></span>`
+    ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="${signInBtnStyle}">${data.signInLabel}</a><span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" data-text-color="${data.textColor}" style="position:relative;display:none;align-items:center;"></span>`
     : ''
   const cartEl = data.showCart
     ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
@@ -978,7 +978,7 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
     ? `<div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0;">${authLinksArr.join('<span style="opacity:0.5;">|</span>')}</div>`
     : ''
   const authStateEl = (data.showSignIn || data.showCreateAccount)
-    ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" style="position:relative;display:none;align-items:center;flex-shrink:0;"></span>`
+    ? `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" data-text-color="${data.authLinksColor}" style="position:relative;display:none;align-items:center;flex-shrink:0;"></span>`
     : ''
 
   const searchToggleEl = data.showSearch
@@ -1393,7 +1393,7 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
   const signInLinkEl = data.showSignIn !== false
     ? `<a href="${signInUrl}" data-auth-signin-btn="true" style="${signInBtnStyle}">${signInLabel}</a>`
     : ''
-  const authStateEl = `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${signInUrl}" data-profile-url="/me/personal" data-auth-trigger-style="name" data-account-label="My Account" data-logout-label="Logout" style="position:relative;display:none;align-items:center;"></span>`
+  const authStateEl = `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${signInUrl}" data-profile-url="/me/personal" data-auth-trigger-style="name" data-account-label="My Account" data-logout-label="Logout" data-text-color="${data.textColor}" style="position:relative;display:none;align-items:center;"></span>`
   const signInEl = signInLinkEl + authStateEl
 
   const renderTopBarButtons = () => signInEl + renderCtaButtons()
@@ -1648,6 +1648,464 @@ ${responsiveStyle}
   </div>
   ${mobileSearchRow}
   ${desktopNavRow}
+  ${mobileBar}
+  ${mobileDrawer}
+  ${mobileOverlay}
+</nav>
+</section>`
+}
+
+// ─── Ru8-Navbar ────────────────────────────────────────────────────────────
+// Two-row navbar: top bar (logo, search, sign-in/CTA buttons, cart) + a
+// second row of hand-configured nav links, any of which can carry its own
+// narrow categories dropdown via categoryFilter — same CategoryNav/
+// loadCategories shell Ru3-Mega-Header's navLinks already use for this, and
+// the same global [data-cat-nav]:hover CSS in rubikx-hydration.client.ts
+// (keyed off data-cat-nav/data-cat-dropdown, not any one component name), so
+// this needs zero headless-repo or hydration-plugin changes. Search/
+// Sign-in/Cart reuse the SearchBar/AuthState/CartBadge shells +
+// loadSearch/loadAuthState/loadCartCount handlers every other navbar already
+// relies on, for the same reason — this file only renders markup those
+// existing handlers already know how to find.
+export const ru8NavbarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 40">
+  <rect fill="#1f2937" x="0" y="0" width="277.5" height="40"/>
+  <rect fill="#ffffff" x="8" y="8" width="10" height="10" rx="5"/>
+  <rect fill="#ffffff" x="22" y="9" width="42" height="8" rx="1"/>
+  <rect fill="#374151" x="100" y="6" width="120" height="10" rx="2"/>
+  <rect fill="#2563eb" x="220" y="6" width="16" height="10" rx="2"/>
+  <circle fill="none" stroke="#ffffff" stroke-width="1.5" cx="258" cy="11" r="5"/>
+  <rect fill="#9ca3af" x="8" y="26" width="20" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="34" y="26" width="20" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="60" y="26" width="24" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="90" y="26" width="24" height="6" rx="1"/>
+  <rect fill="#9ca3af" x="120" y="26" width="30" height="6" rx="1"/>
+</svg>`
+
+export interface Ru8NavLink {
+  label: string
+  href: string
+  showDropdown: boolean
+  categoryFilter?: string
+  newTab?: boolean
+}
+
+export interface Ru8NavbarData {
+  logoUrl: string
+  logoText: string
+  logoWidth: number
+  brandFontSize: number
+  brandFontWeight: string
+  fontFamily: string
+  brandFont: string
+
+  navLinks: Ru8NavLink[]
+  // Auto-populated from the live category tree: one nav item PER top-level
+  // category (not one combined "Categories" link) — same loadDynamicNav
+  // mechanism Ru5-Dynamic-Navbar's own auto-generated row uses, appended
+  // after the hand-authored navLinks above, not a replacement for them.
+  showDynamicCategories: boolean
+  maxCategories: number
+  // Text colour used INSIDE the white dropdown popups only (both per-link
+  // categoryFilter dropdowns and the dynamic-categories row) — kept separate
+  // from linkColor below, which colours the nav bar's own light-on-dark
+  // trigger text and would otherwise be invisible against the dropdown's
+  // white background.
+  categoryDropdownTextColor: string
+  linkColor: string
+  linkFontSize: number
+  linkFontWeight: string
+  linkFont: string
+
+  showSearch: boolean
+  searchPlaceholder: string
+  searchWidth: number
+  searchFont: string
+  searchBgColor: string
+  searchTextColor: string
+  searchBorderColor: string
+  searchBorderRadius: number
+  searchBtnBgColor: string
+  searchBtnIconColor: string
+
+  showSignIn: boolean
+  signInLabel: string
+  signInUrl: string
+  signInTextColor: string
+  signInBgColor: string
+  signInBorderColor: string
+
+  ctaButtons: CtaButton[]
+  buttonBorderRadius: number
+  buttonFont: string
+
+  showCart: boolean
+  cartUrl: string
+  cartIconColor: string
+  // 'inline' = beside Sign In/Contact Us in the top bar; 'below' = its own
+  // slot at the right end of the nav-links row instead.
+  cartPosition: string
+
+  bgColor: string
+  textColor: string
+  paddingY: number
+  paddingX: number
+  sticky: boolean
+  showBottomBorder: boolean
+  bottomBorderColor: string
+}
+
+export const ru8NavbarDefaults: Ru8NavbarData = {
+  logoUrl: '',
+  logoText: 'Brand',
+  logoWidth: 140,
+  brandFontSize: 20,
+  brandFontWeight: '700',
+  fontFamily: '',
+  brandFont: '',
+
+  navLinks: [
+    { label: 'Home', href: '/', showDropdown: false },
+    { label: 'Shop', href: '/shop', showDropdown: false },
+  ],
+  showDynamicCategories: false,
+  maxCategories: 8,
+  categoryDropdownTextColor: '#111827',
+  linkColor: '#ffffff',
+  linkFontSize: 15,
+  linkFontWeight: '500',
+  linkFont: '',
+
+  showSearch: true,
+  searchPlaceholder: 'Search...',
+  searchWidth: 480,
+  searchFont: '',
+  searchBgColor: '#ffffff',
+  searchTextColor: '#111827',
+  searchBorderColor: '#d1d5db',
+  searchBorderRadius: 6,
+  searchBtnBgColor: '#2563eb',
+  searchBtnIconColor: '#ffffff',
+
+  showSignIn: true,
+  signInLabel: 'Sign in',
+  signInUrl: '/login',
+  signInTextColor: '#ffffff',
+  signInBgColor: 'transparent',
+  signInBorderColor: '#facc15',
+
+  ctaButtons: [
+    { label: 'Contact Us', href: '/contactus', style: 'filled', textColor: '#1f2937', bgColor: '#facc15', borderColor: '#facc15' },
+  ],
+  buttonBorderRadius: 4,
+  buttonFont: '',
+
+  showCart: true,
+  cartUrl: '/cart',
+  cartIconColor: '#ffffff',
+  cartPosition: 'inline',
+
+  bgColor: '#1f2937',
+  textColor: '#ffffff',
+  paddingY: 14,
+  paddingX: 24,
+  sticky: false,
+  showBottomBorder: false,
+  bottomBorderColor: '#374151',
+}
+
+export const ru8NavbarFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_branding', label: 'Branding', type: 'header' },
+  { key: 'logoUrl', label: 'Logo Image', type: 'image', noAspectRatio: true },
+  { key: 'logoText', label: 'Brand Name', type: 'text', placeholder: 'e.g. Acme Co' },
+  { key: 'logoWidth', label: 'Logo Width (px)', type: 'number', placeholder: '140' },
+  { key: 'brandFontSize', label: 'Brand Font Size (px)', type: 'number', placeholder: '20' },
+  { key: 'brandFontWeight', label: 'Brand Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  fontField('brandFont', 'Brand Font'),
+
+  { key: '_h_navigation', label: 'Navigation', type: 'header' },
+  {
+    key: 'navLinks', label: 'Nav Links', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Apparel' },
+      { key: 'href', label: 'URL', type: 'url', placeholder: 'e.g. /apparel' },
+      { key: 'showDropdown', label: 'Show Categories Dropdown', type: 'toggle', siteSpecific: true, cloneValue: false },
+      { key: 'categoryFilter', label: 'Category Name (from backend)', type: 'text', siteSpecific: true, cloneValue: '',
+        placeholder: 'e.g. Apparel — only that category\'s children show; blank shows all' },
+      { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
+    ],
+  },
+  { key: 'showDynamicCategories', label: 'Show Dynamic Categories', type: 'toggle', siteSpecific: true, cloneValue: false,
+    placeholder: 'Adds one nav item per top-level category (e.g. Apparel, Headwear) straight into the nav row, alongside the Nav Links above — each with its own dropdown of that category\'s children' },
+  { key: 'maxCategories', label: 'Max Categories Shown', type: 'number',
+    placeholder: '8 — the row is built automatically from your live category tree, one item per top-level category; it grows or shrinks with your data' },
+  { key: 'categoryDropdownTextColor', label: 'Category Dropdown Text Colour', type: 'color',
+    placeholder: 'Text colour inside the white dropdown popups — keep this dark regardless of the nav bar\'s own colours' },
+  { key: 'linkColor', label: 'Link Colour', type: 'color' },
+  { key: 'linkFontSize', label: 'Link Font Size (px)', type: 'number', placeholder: '15' },
+  { key: 'linkFontWeight', label: 'Link Font Weight', type: 'select', options: ['400', '500', '600', '700'] },
+  fontField('linkFont', 'Link Font'),
+
+  { key: '_h_search', label: 'Search Bar', type: 'header' },
+  { key: 'showSearch', label: 'Show Search Bar', type: 'toggle' },
+  { key: 'searchPlaceholder', label: 'Search Placeholder', type: 'text' },
+  { key: 'searchWidth', label: 'Search Width (px)', type: 'number', placeholder: '480' },
+  { key: 'searchBgColor', label: 'Search Background Colour', type: 'color' },
+  { key: 'searchTextColor', label: 'Search Text Colour', type: 'color' },
+  { key: 'searchBorderColor', label: 'Search Border Colour', type: 'color' },
+  { key: 'searchBorderRadius', label: 'Search Border Radius (px)', type: 'number', placeholder: '6' },
+  { key: 'searchBtnBgColor', label: 'Search Button Colour', type: 'color' },
+  { key: 'searchBtnIconColor', label: 'Search Icon Colour', type: 'color' },
+  fontField('searchFont', 'Search Font'),
+
+  { key: '_h_buttons', label: 'Buttons', type: 'header' },
+  { key: 'showSignIn', label: 'Show Sign In', type: 'toggle' },
+  { key: 'signInLabel', label: 'Sign In Label', type: 'text' },
+  { key: 'signInUrl', label: 'Sign In URL', type: 'url' },
+  { key: 'signInTextColor', label: 'Sign In Text Colour', type: 'color' },
+  { key: 'signInBgColor', label: 'Sign In Background Colour', type: 'color' },
+  { key: 'signInBorderColor', label: 'Sign In Border Colour', type: 'color' },
+  {
+    key: 'ctaButtons', label: 'Top Bar Buttons', type: 'list',
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Contact Us' },
+      { key: 'href', label: 'URL', type: 'url', placeholder: 'e.g. /contactus' },
+      { key: 'style', label: 'Style', type: 'select', options: ['outline', 'filled'] },
+      { key: 'textColor', label: 'Text Colour', type: 'color' },
+      { key: 'bgColor', label: 'BG Colour', type: 'color' },
+      { key: 'borderColor', label: 'Border Colour', type: 'color' },
+    ],
+  },
+  { key: 'buttonBorderRadius', label: 'Button Border Radius (px)', type: 'number', placeholder: '4' },
+  fontField('buttonFont', 'Button Font'),
+
+  { key: '_h_cart', label: 'Cart', type: 'header' },
+  { key: 'showCart', label: 'Show Cart Icon', type: 'toggle' },
+  { key: 'cartUrl', label: 'Cart URL', type: 'url' },
+  { key: 'cartIconColor', label: 'Cart Icon Colour', type: 'color' },
+  { key: 'cartPosition', label: 'Cart Position', type: 'select', options: ['inline', 'below'],
+    placeholder: 'inline = beside Sign In/Contact Us; below = its own slot in the nav-links row' },
+
+  { key: '_h_style', label: 'Style', type: 'header' },
+  { key: 'bgColor', label: 'Background Colour', type: 'color' },
+  { key: 'textColor', label: 'Text Colour', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '14' },
+  { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '24' },
+  { key: 'sticky', label: 'Sticky Navbar', type: 'toggle' },
+  { key: 'showBottomBorder', label: 'Show Bottom Border', type: 'toggle' },
+  { key: 'bottomBorderColor', label: 'Bottom Border Colour', type: 'color' },
+]
+
+export function renderRu8Navbar(data: Ru8NavbarData): string {
+  const navStyle = [
+    `background:${data.bgColor}`,
+    `color:${data.textColor}`,
+    data.showBottomBorder ? `border-bottom:1px solid ${data.bottomBorderColor}` : '',
+  ].filter(Boolean).join(';')
+
+  const logoInner = data.logoUrl
+    ? `<img src="${data.logoUrl}" alt="${data.logoText}" style="width:${data.logoWidth}px;height:auto;display:block;" />`
+    : `<span data-field-key="logoText" style="font-size:${data.brandFontSize}px;font-weight:${data.brandFontWeight};color:inherit;${fontCss(data.brandFont, data.fontFamily)}">${data.logoText}</span>`
+  const logoEl = `<a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;">${logoInner}</a>`
+
+  const searchRadius = data.searchBorderRadius ?? 6
+  const buildSearchEl = (widthStyle: string) => data.showSearch
+    ? `<div style="display:flex;${widthStyle}">
+        <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="flex:1;min-width:0;background:${data.searchBgColor};color:${data.searchTextColor};border:1px solid ${data.searchBorderColor};border-radius:${searchRadius}px 0 0 ${searchRadius}px;padding:0.6rem 1rem;font-size:0.875rem;outline:none;${fontCss(data.searchFont, data.fontFamily)}" />
+        <button type="button" style="background:${data.searchBtnBgColor};border:none;border-radius:0 ${searchRadius}px ${searchRadius}px 0;padding:0 1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${icon('magnifyingGlass', { size: 18, stroke: data.searchBtnIconColor })}</button>
+      </div>`
+    : ''
+  const searchEl = buildSearchEl(`flex:1;max-width:${data.searchWidth || 480}px;`)
+  const mobileSearchEl = buildSearchEl(`width:100%;`)
+
+  const linkStyle = `color:${data.linkColor};text-decoration:none;font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}`
+
+  const buttonBorderRadius = data.buttonBorderRadius ?? 4
+  const renderCtaButtons = () => (data.ctaButtons ?? []).map((btn) => {
+    const bg = btn.style === 'outline' ? (btn.bgColor || 'transparent') : btn.bgColor
+    return `<a href="${btn.href}" style="display:inline-flex;align-items:center;justify-content:center;padding:0.5rem 1.25rem;border-radius:${buttonBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:600;white-space:nowrap;background:${bg};color:${btn.textColor};border:1.5px solid ${btn.borderColor};${fontCss(data.buttonFont, data.fontFamily)}">${btn.label}</a>`
+  }).join('')
+
+  const signInBtnStyle = `display:inline-flex;align-items:center;justify-content:center;padding:0.5rem 1.25rem;border-radius:${buttonBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:600;white-space:nowrap;border:1.5px solid ${data.signInBorderColor};color:${data.signInTextColor};background:${data.signInBgColor || 'transparent'};${fontCss(data.buttonFont, data.fontFamily)}`
+  const signInLinkEl = data.showSignIn !== false
+    ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="${signInBtnStyle}">${data.signInLabel}</a>`
+    : ''
+  const authStateEl = `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" data-text-color="${data.textColor}" style="position:relative;display:none;align-items:center;"></span>`
+  const signInEl = signInLinkEl + authStateEl
+
+  const cartEl = data.showCart
+    ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.cartIconColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.cartIconColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
+    : ''
+  const cartInline = data.cartPosition !== 'below' ? cartEl : ''
+  const cartBelow = data.cartPosition === 'below' ? cartEl : ''
+
+  const topBarButtonsEl = `<div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">${signInEl}${renderCtaButtons()}${cartInline}</div>`
+
+  // Any navLinks entry with showDropdown gets its own narrow categories
+  // dropdown scoped via data-category-filter — same CategoryNav/
+  // loadCategories shell + global [data-cat-nav]:hover CSS every other
+  // per-link dropdown in this file already relies on.
+  const visibleNavLinks = data.navLinks ?? []
+  const renderDesktopNavItem = (l: Ru8NavLink): string => {
+    const target = l.newTab ? ` target="_blank" rel="noopener noreferrer"` : ''
+    if (l.showDropdown) {
+      return `<div
+        data-rubikx-component='CategoryNav'
+        data-category-name='${l.label}'
+        data-category-filter='${l.categoryFilter ?? ''}'
+        data-on-mount='loadCategories'
+        data-max-items='20'
+        data-link-color='${data.categoryDropdownTextColor ?? '#111827'}'
+        data-font-size='${data.linkFontSize}'
+        data-font-weight='${data.linkFontWeight}'
+        style='position:relative;display:inline-block;' data-cat-nav='true'
+      >
+        <a href='${l.href}' style='${linkStyle}cursor:pointer;'${target}>${l.label} ▾</a>
+        <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Loading…</span>
+        </div>
+      </div>`
+    }
+    return `<a href='${l.href}' style='${linkStyle}'${target}>${l.label}</a>`
+  }
+  const navLinksEl = visibleNavLinks.map(renderDesktopNavItem).join('')
+
+  // Trailing, auto-populated dropdown alongside the hand-authored navLinks
+  // above — unscoped (no data-category-filter), so it shows every
+  // top-level category the backend returns, same loadCategories shell, just
+  // without a categoryFilter to narrow it. Left out of the DOM entirely
+  // when off rather than just hidden, matching showDynamicCategories'
+  // toggle semantics elsewhere in this file.
+  // One nav item PER top-level category (Apparel, Headwear, …), built
+  // automatically by loadDynamicNav — the exact same handler + container
+  // contract Ru5-Dynamic-Navbar's own auto-generated row uses
+  // ([data-ru5-desktop-items]/[data-ru5-mobile-items], hardcoded by that
+  // function — not renamed per-block), so this needs no new hydration
+  // handler. A root with children gets its own mega-dropdown item (one
+  // column per grouping level, or a single column when it has none); a
+  // childless root renders as a plain link. Populated after mount, so this
+  // is only the pre-hydration placeholder.
+  const desktopCategoriesPlaceholder = `<span style="color:#9ca3af;font-size:13px;font-style:italic;">⟳ Loading categories…</span>`
+  const mobileCategoriesPlaceholder = `<span style="display:block;padding:6px 0;color:#9ca3af;font-size:13px;font-style:italic;">⟳ Loading categories…</span>`
+  const dynamicCategoriesDesktopEl = data.showDynamicCategories
+    ? `<div data-ru5-desktop-items style="display:flex;align-items:center;gap:1.75rem;">${desktopCategoriesPlaceholder}</div>`
+    : ''
+  const dynamicCategoriesMobileWrap = data.showDynamicCategories
+    ? `<div data-ru5-mobile-items style="display:flex;flex-direction:column;">${mobileCategoriesPlaceholder}</div>`
+    : ''
+
+  const renderMobileNavItem = (l: Ru8NavLink): string => {
+    if (!l.showDropdown) {
+      return `<a href="${l.href}" style="display:block;padding:0.75rem 0;font-size:1.0625rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.08);"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`
+    }
+    return `<div data-rubikx-component='CategoryNav' data-category-name='${l.label}' data-category-filter='${l.categoryFilter ?? ''}' data-on-mount='loadCategories' data-max-items='20' data-link-color='${data.textColor}' data-font-size='17' data-font-weight='500' style='border-bottom:1px solid rgba(255,255,255,0.08);'>
+      <div style='display:flex;align-items:center;justify-content:space-between;'>
+        <a href='${l.href}' style='flex:1;display:block;padding:0.75rem 0;font-size:1.0625rem;font-weight:500;color:${data.textColor};text-decoration:none;'${l.newTab ? ` target='_blank' rel='noopener noreferrer'` : ''}>${l.label}</a>
+        <button type='button' onclick="(function(btn){var d=btn.parentElement.nextElementSibling;var open=d.style.display==='block';d.style.display=open?'none':'block';event.stopPropagation();})(this)" style='background:none;border:none;padding:0.75rem;cursor:pointer;color:${data.textColor};font-size:14px;'>▾</button>
+      </div>
+      <div data-cat-dropdown='true' style='display:none;padding-left:1rem;padding-bottom:0.5rem;'>
+        <span style='display:block;padding:6px 0;color:#999;font-size:12px;font-style:italic;'>⟳ Loading…</span>
+      </div>
+    </div>`
+  }
+  const mobileNavLinksEl = visibleNavLinks.map(renderMobileNavItem).join('')
+
+  const sectionStyle = fontCss(undefined, data.fontFamily) + (data.sticky ? 'position:sticky;top:0;z-index:9999' : '')
+
+  const topRow = `<div data-ru8-desktop-top style="max-width:90rem;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding:${data.paddingY}px ${data.paddingX}px;">
+    <div style="flex-shrink:0;">${logoEl}</div>
+    ${searchEl}
+    ${topBarButtonsEl}
+  </div>`
+
+  const navRow = `<div data-ru8-desktop-nav style="max-width:90rem;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:${cartBelow ? 'space-between' : 'flex-start'};gap:1.75rem;padding:0.625rem ${data.paddingX}px;border-top:1px solid rgba(255,255,255,0.08);">
+    <div style="display:flex;align-items:center;gap:1.75rem;">${navLinksEl}${dynamicCategoriesDesktopEl}</div>
+    ${cartBelow}
+  </div>`
+
+  const mobileBar = `<div data-ru8-mobile-bar style="align-items:center;justify-content:space-between;padding:${data.paddingY}px ${data.paddingX}px;">
+    ${logoEl}
+    <div style="display:flex;align-items:center;gap:1rem;">
+      ${cartEl}
+      <button type="button" onclick="(function(btn){var sec=btn.closest('section');var d=sec&&sec.querySelector('[data-ru8-mobile-drawer]');var o=sec&&sec.querySelector('[data-ru8-mobile-overlay]');if(d){d.style.transform='translateX(0)';}if(o){o.style.display='block';}document.body.style.overflow='hidden';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:6px;display:inline-flex;align-items:center;">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="${data.textColor}" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+  </div>`
+
+  const mobileDrawer = `<div data-ru8-mobile-drawer style="position:fixed;top:0;left:0;width:320px;max-width:85vw;height:100vh;background:${data.bgColor};color:${data.textColor};z-index:99999;transform:translateX(-100%);transition:transform 0.3s ease;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow-y:auto;padding:1.5rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+      ${logoEl}
+      <button type="button" onclick="(function(btn){var sec=btn.closest('section');var d=sec&&sec.querySelector('[data-ru8-mobile-drawer]');var o=sec&&sec.querySelector('[data-ru8-mobile-overlay]');if(d){d.style.transform='translateX(-100%)';}if(o){o.style.display='none';}document.body.style.overflow='';})(this);event.stopPropagation();" style="background:none;border:none;cursor:pointer;padding:0.25rem;display:flex;align-items:center;">
+        ${icon('xMark', { size: 24, stroke: data.textColor })}
+      </button>
+    </div>
+    <div style="margin-bottom:1.25rem;">${mobileSearchEl}</div>
+    <div style="display:flex;flex-direction:column;">${mobileNavLinksEl}</div>
+    ${dynamicCategoriesMobileWrap}
+    <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.25rem;">${signInEl}${renderCtaButtons()}</div>
+  </div>`
+
+  const mobileOverlay = `<div data-ru8-mobile-overlay onclick="(function(el){var sec=el.closest('section');var d=sec&&sec.querySelector('[data-ru8-mobile-drawer]');if(d){d.style.transform='translateX(-100%)';}el.style.display='none';document.body.style.overflow='';})(this);" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;"></div>`
+
+  const responsiveStyle = `<style>
+  [data-ru8-desktop-top] { display: flex; }
+  [data-ru8-desktop-nav] { display: flex; }
+  [data-ru8-mobile-bar] { display: none; }
+  /* loadDynamicNav shares ONE colour between the nav-row trigger text (light,
+     sits on this navbar's own dark background) and the dropdown's contents
+     (needs dark — the dropdown itself has a hardcoded white background). We
+     pass the light colour so the trigger stays legible, then force the
+     dropdown's own contents back to the dedicated dark colour here — scoped
+     to [data-ru5-desktop-items] only, so it never touches the nav-row
+     trigger links (which live outside [data-cat-dropdown]) or mobile (whose
+     drawer background is dark, so the light colour is already correct there). */
+  [data-ru5-desktop-items] [data-cat-dropdown] a { color: ${data.categoryDropdownTextColor ?? '#111827'} !important; }
+  /* data-rubikx-component="DynamicCategoryNav" has to stay on this <nav> —
+     hydrateComponents() only discovers/re-hydrates elements matching
+     [data-rubikx-component] (both its initial pass and its MutationObserver),
+     so dropping it silently stops loadDynamicNav from ever firing at all
+     (no API call). It also opts into Ru5's own full-nav-width mega-dropdown
+     CSS though, which isn't wanted here — data-mega-contained is an extra,
+     Ru8-only attribute on the same <nav> purely to out-specificity those
+     rules (adds one more attribute selector than the originals, so these
+     win regardless of stylesheet order) and force the narrow, anchored
+     sizing back. */
+  nav[data-rubikx-component="DynamicCategoryNav"][data-mega-contained] [data-cat-nav][data-mega] { position: relative !important; }
+  nav[data-rubikx-component="DynamicCategoryNav"][data-mega-contained] [data-cat-nav][data-mega]:hover [data-cat-dropdown] { left: 0 !important; right: auto !important; width: auto !important; min-width: 200px !important; border-radius: 8px !important; }
+  @media (max-width: 1024px) {
+    [data-ru8-desktop-top] { display: none !important; }
+    [data-ru8-desktop-nav] { display: none !important; }
+    [data-ru8-mobile-bar] { display: flex !important; }
+  }
+  @media (min-width: 1025px) {
+    [data-ru8-mobile-drawer] { transform: translateX(-100%) !important; }
+    [data-ru8-mobile-overlay] { display: none !important; }
+  }
+  </style>`
+
+  // data-on-mount="loadDynamicNav" reuses Ru5-Dynamic-Navbar's exact
+  // auto-generated-row mechanism (same handler, same [data-ru5-desktop-
+  // items]/[data-ru5-mobile-items] contract it hardcodes) rather than a
+  // single wrapped "Categories" link — one top-level category becomes one
+  // nav item, same as Ru5. data-rubikx-component="DynamicCategoryNav" MUST
+  // stay — hydrateComponents() only ever discovers/re-hydrates elements
+  // matching [data-rubikx-component] (see the comment on it in
+  // responsiveStyle above), so dropping it stops loadDynamicNav from firing
+  // at all. data-mega-contained is this file's own attribute, read by
+  // nothing but the CSS override above, that cancels the full-nav-width
+  // mega-dropdown styling that attribute would otherwise also opt into.
+  const dynamicNavHydrationAttrs = data.showDynamicCategories
+    ? ` data-rubikx-component="DynamicCategoryNav" data-mega-contained="true" data-on-mount="loadDynamicNav" data-max-categories="${data.maxCategories ?? 8}" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}" data-padding-x="${data.paddingX}"`
+    : ''
+
+  return `<section data-component-title="Ru8-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
+${responsiveStyle}
+<nav style="${navStyle}"${dynamicNavHydrationAttrs}>
+  ${topRow}
+  ${navRow}
   ${mobileBar}
   ${mobileDrawer}
   ${mobileOverlay}
@@ -2198,7 +2656,7 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   // the visitor is logged in, or does the reverse if the auth check fails.
   const signInEl = data.showSignIn
     ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${data.topBarTextColor};font-size:0.8125rem;font-weight:600;text-decoration:none;white-space:nowrap;${fontCss(data.buttonFont, data.fontFamily)}">${data.signInLabel}</a>
-       <span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" style="position:relative;display:none;align-items:center;flex-shrink:0;"></span>`
+       <span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" data-text-color="${data.topBarTextColor}" style="position:relative;display:none;align-items:center;flex-shrink:0;"></span>`
     : ''
   const topBarEl = data.showTopBar !== false
     ? `<div data-ru7-topbar style="background:${data.topBarBgColor};padding:${data.topBarPaddingY}px min(${data.topBarPaddingX}px,6vw);display:flex;align-items:center;justify-content:flex-end;gap:1rem;">${signInEl}</div>`
@@ -4589,7 +5047,7 @@ export const ru7FooterFields: FieldConfig[] = [
   { key: 'logoBoxBg', label: 'Logo Box Background', type: 'color' },
   { key: 'logoBoxPadding', label: 'Logo Box Padding', type: 'number', unit: 'px', step: 2, placeholder: '16' },
   { key: 'logoBoxRadius', label: 'Logo Box Border Radius', type: 'number', unit: 'px', step: 2, placeholder: '0' },
-  { key: 'contentAlign', label: 'Logo & Address Align', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'contentAlign', label: 'Logo & Address Align', type: 'select', options: ['left', 'center', 'right'], pairedContentKeys: ['addressText'] },
 
   { key: '_h_address', label: 'Address', type: 'header' },
   { key: 'addressText', label: 'Address Text', type: 'textarea' },
@@ -5827,7 +6285,7 @@ export const bannerDefaults: BannerData = {
   bgImageAspectRatio: 'Auto',
   overlayColor: '#000000',
   overlayOpacity: 0,
-  textColor: '#ffffff',
+  textColor: '#111827',
   textAlign: 'center',
   showCta: false,
   ctaLabel: 'Shop Now',
@@ -7008,7 +7466,7 @@ export const ru3FaqFields: FieldConfig[] = [
   { key: '_h_title', label: 'Title', type: 'header' },
   { key: 'title', label: 'Title Text', type: 'text', placeholder: 'e.g. Frequently Asked Questions' },
   { key: 'titleColor', label: 'Title Colour', type: 'color' },
-  { key: 'titleAlign', label: 'Content Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'titleAlign', label: 'Content Alignment', type: 'select', options: ['left', 'center', 'right'], pairedContentKeys: ['subtitleText'] },
   fontField('titleFont', 'Title Font'),
 
   { key: '_h_subtitle', label: 'Subtitle', type: 'header' },
@@ -7363,7 +7821,7 @@ export const ru1StatsFields: FieldConfig[] = [
 
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'layout', label: 'Columns', type: 'select', options: ['2-columns', '3-columns', '4-columns'] },
-  { key: 'textAlign', label: 'Text Align', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'textAlign', label: 'Text Align', type: 'select', options: ['left', 'center', 'right'], pairedContentKeys: ['description'] },
   { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '48' },
   { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '24' },
 
@@ -8913,7 +9371,7 @@ export const ru3TextImageHeroFields: FieldConfig[] = [
   { key: 'splitRatio',    label: 'Column Ratio',    type: 'select', options: ['50/50', '40/60', '30/70', '60/40', '70/30'] },
   { key: 'imageSide',     label: 'Image Position',  type: 'select', options: ['right', 'left'] },
   { key: 'sectionHeight', label: 'Section Height',  type: 'select', options: ['Auto', 'Small (300px)', 'Medium (500px)', 'Large (700px)'] },
-  { key: 'contentAlign',  label: 'Text Alignment',  type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'contentAlign',  label: 'Text Alignment',  type: 'select', options: ['left', 'center', 'right'], pairedContentKeys: ['heading', 'subheading', 'description'] },
   { key: 'verticalAlign', label: 'Vertical Align',  type: 'select', options: ['center', 'top', 'bottom'] },
   { key: 'columnGap',     label: 'Column Gap',      type: 'number', unit: 'px', step: 8, placeholder: '48' },
   { key: '_h_spacing', label: 'Spacing', type: 'header' },
@@ -9154,7 +9612,7 @@ export const ru6SplitHeroFields: FieldConfig[] = [
   { key: 'bgColor', label: 'Background Colour', type: 'color' },
 
   { key: '_h_text', label: 'Text', type: 'header' },
-  { key: 'textAlign', label: 'Text Align', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'textAlign', label: 'Text Align', type: 'select', options: ['left', 'center', 'right'], pairedContentKeys: ['title', 'description'] },
   { key: 'eyebrow', label: 'Eyebrow Text', type: 'text', placeholder: 'e.g. NEW COLLECTION' },
   { key: 'eyebrowFontSize', label: 'Eyebrow Size (px)', type: 'number', placeholder: '13' },
   { key: 'eyebrowColor', label: 'Eyebrow Colour', type: 'color' },
@@ -9764,7 +10222,7 @@ export const ru4OverlayPanelFields: FieldConfig[] = [
   { key: '_h_content', label: 'Content', type: 'header' },
   { key: 'heading', label: 'Heading', type: 'textarea', placeholder: 'Heading text' },
   { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Supporting description' },
-  { key: 'contentAlign', label: 'Content Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'contentAlign', label: 'Content Alignment', type: 'select', options: ['left', 'center', 'right'], pairedContentKeys: ['heading', 'description'] },
 
   { key: '_h_typography', label: 'Typography', type: 'header' },
   { key: 'headingColor', label: 'Heading Color', type: 'color' },
