@@ -95,6 +95,75 @@ function _clearBlockStyleProp(html: string, prop: 'lineHeight' | 'textAlign'): s
   return div.innerHTML
 }
 
+// The sync so far only runs one way: a sidebar control (e.g. Text Alignment)
+// wins over a stale rich-text-modal override already in the content. But the
+// modal's OWN Align control (applyTextAlign) and pixel Font Size control
+// (applyFontSizePx) — RichTextEditorModal.client.vue — can just as easily be
+// the one the admin reaches for first, and until now saving there never told
+// the sidebar's Text Alignment / Font Size fields what happened, so they'd
+// silently drift out of sync (the sidebar still showing the old value while
+// the content visually reflects the modal's). These two readers extract a
+// clean value from freshly-saved HTML when — and only when — there's one
+// unambiguous answer to report back:
+//   - _readBlockStyleProp: the align/line-height wrapper spans the WHOLE
+//     field already (same shape _clearBlockStyleProp checks for), so there's
+//     always exactly one value if present at all.
+//   - _readUniformFontSize: a per-selection size mark is fundamentally
+//     different — it can cover just part of the text, and a mixed selection
+//     has no single number the sidebar's one Font Size field could correctly
+//     represent. Only reports back when exactly one size mark exists AND it
+//     covers 100% of the field's visible text (e.g. the admin selected all
+//     before applying) — anything less intentionally returns null so a
+//     partial-selection edit leaves the sidebar field untouched rather than
+//     guessing wrong.
+function _readBlockStyleProp(html: string, prop: 'lineHeight' | 'textAlign'): string | null {
+  const div = document.createElement('div')
+  div.innerHTML = html
+  const wrapper = div.firstElementChild as HTMLElement | null
+  if (div.children.length !== 1 || wrapper?.getAttribute('data-faq-mark') !== 'block') return null
+  return wrapper.style[prop] || null
+}
+
+function _readUniformFontSize(html: string): number | null {
+  const div = document.createElement('div')
+  div.innerHTML = html
+  const wrapper = div.firstElementChild as HTMLElement | null
+  const root = (div.children.length === 1 && wrapper?.getAttribute('data-faq-mark') === 'block') ? wrapper : div
+  const sizeSpans = root.querySelectorAll('span[data-faq-mark="size"]')
+  if (sizeSpans.length !== 1) return null
+  const span = sizeSpans[0] as HTMLElement
+  if ((span.textContent ?? '').trim() !== (root.textContent ?? '').trim()) return null
+  const match = /font-size:\s*([\d.]+)px/.exec(span.getAttribute('style') || '')
+  return match ? Math.round(parseFloat(match[1])) : null
+}
+
+// Reverse of _resolvedPairedKeys: given the rich-text content field that was
+// just saved, finds the sidebar field (if any) whose Align/FontSize category
+// pairs back to it — via the same explicit pairedContentKeys (gated on the
+// SAME suffix-match rule, so a field's override is only honored for the
+// category it actually declares) or naming-convention fallback (e.g.
+// `title` + `Align` -> `titleAlign`) _resolvedPairedKeys already uses.
+function _resolvedSidebarFieldForContent(
+  registry: ReturnType<typeof useBlockRegistry>,
+  id: string,
+  contentKey: string,
+  suffixes: string[],
+): FieldConfig | null {
+  const title = registry.getTitle(id)
+  const config = title ? registry.getConfig(title) : null
+  if (!config) return null
+  const explicit = config.fields.find((f) => {
+    if (!f.pairedContentKeys?.includes(contentKey)) return false
+    return suffixes.some((s) => f.key.length > s.length && f.key.endsWith(s))
+  })
+  if (explicit) return explicit
+  for (const suffix of suffixes) {
+    const guess = config.fields.find((f) => f.key === contentKey + suffix)
+    if (guess) return guess
+  }
+  return null
+}
+
 // _stripRichTextOverride/_clearBlockStyleProp fix ONE field's HTML string —
 // but the field a sidebar control pairs with isn't always a top-level
 // scalar (blockData[baseKey]) like a Hero title, and it isn't always a
@@ -141,8 +210,17 @@ function _resolvedPairedKeys(
   const title = registry.getTitle(id)
   const config = title ? registry.getConfig(title) : null
   const ownField = config?.fields.find((f) => f.key === key)
-  if (ownField?.pairedContentKeys?.length) return ownField.pairedContentKeys
   const prefix = _basePairedKey(key, suffixes)
+  // pairedContentKeys only overrides the *prefix* naming-convention would
+  // have derived for this field's own category (e.g. Ru1-Banner's
+  // `textColor` overriding the 'Color' category's target from 'text' to
+  // ['title','subtitle']) — it must not fire for every OTHER category too.
+  // Gating on `prefix` (i.e. the field's own key actually ending with one of
+  // *this* call's suffixes) keeps a field like `textAlign` from also
+  // stripping Color/FontSize/FontWeight/Font/LineHeight marks off its paired
+  // content whenever alignment changes, which silently discarded unrelated
+  // rich-text formatting (e.g. a custom font size reverting to default).
+  if (prefix && ownField?.pairedContentKeys?.length) return ownField.pairedContentKeys
   return prefix ? [prefix] : []
 }
 
@@ -497,6 +575,29 @@ export function useEditorSidebar() {
     }
     for (const k of _resolvedPairedKeys(registry, id, key, ['Align'])) {
       _syncPairedContentField(registry, id, k, (html) => _clearBlockStyleProp(html, 'textAlign'))
+    }
+
+    // The other direction: `key` itself IS the rich-text field just saved
+    // (a modal Save routes here as updateBlockField('content', html) — see
+    // EditorSidebar.client.vue's handleFaqAnswerSave) — reflect an
+    // unambiguous Align/Font-Size result of that save back onto its paired
+    // sidebar field(s), so the two stay in sync regardless of which control
+    // the admin reaches for. List-item content (FAQ answers, card
+    // descriptions) has no top-level sidebar field to sync into, so this
+    // only applies to a top-level scalar's own rich-text field.
+    if (typeof value === 'string') {
+      const title = registry.getTitle(id)
+      const config = title ? registry.getConfig(title) : null
+      const ownField = config?.fields.find((f) => f.key === key)
+      if (ownField?.type === 'textarea' && !ownField.plainTextarea) {
+        const alignField = _resolvedSidebarFieldForContent(registry, id, key, ['Align'])
+        const align = alignField ? _readBlockStyleProp(value, 'textAlign') : null
+        if (alignField && align) registry.setData(id, alignField.key, align)
+
+        const sizeField = _resolvedSidebarFieldForContent(registry, id, key, ['FontSize', 'Size'])
+        const size = sizeField ? _readUniformFontSize(value) : null
+        if (sizeField && size) registry.setData(id, sizeField.key, size)
+      }
     }
 
     _elementOverrides.delete(id)

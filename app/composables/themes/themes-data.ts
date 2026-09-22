@@ -637,7 +637,12 @@ const _colClass: Record<string, string> = {
 }
 
 function _gridCss(sel: string, cols: number): string {
-  const m = Math.min(cols, 2)
+  // Mobile always shows a single product per row regardless of the
+  // configured "Columns" count (a 2-up grid squeezed a product's image,
+  // name, price and button into ~half a phone's width) — the multi-column
+  // layout only kicks in once there's enough room, starting at the same
+  // 640px/1024px tiers used for the 3-up/full-column steps below.
+  const m = 1
   const t = Math.min(cols, 3)
   let css = `${sel}{display:grid;gap:1rem;grid-template-columns:repeat(${m},1fr)}`
   if (t > m) css += `@media(min-width:640px){${sel}{grid-template-columns:repeat(${t},1fr)}}`
@@ -806,7 +811,7 @@ export function renderRu1Products(data: Ru1ProductsData, title = 'Ru1 Homepage F
   const animStyle = `<style>${styleRules.join('')}</style>`
 
   const sectionBg = data.bgColor ? `background:${data.bgColor}` : ''
-  const innerStyle = `padding:${data.paddingY}px ${data.paddingX}px`
+  const innerStyle = `padding:min(${data.paddingY}px,10vw) min(${data.paddingX}px,6vw)`
 
   const maxVisible = data.columns * (data.rows ?? 1)
   const placeholder = { imageUrl: placeholderSvg, name: 'Product Name', price: '$0.00', oldPrice: '', buttonUrl: '/shop', colors: '' }
@@ -889,7 +894,7 @@ ${animStyle}
 <div style="${innerStyle}">
   <div style="max-width:90rem;margin:0 auto">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:2rem">
-      <h1 data-field-key="sectionTitle" style="margin:0;font-size:2rem;font-weight:600;text-align:${data.titleAlign};color:${data.titleColor};${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h1>
+      <h1 data-field-key="sectionTitle" style="margin:0;font-size:min(2rem,8vw);font-weight:600;text-align:${data.titleAlign};color:${data.titleColor};${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h1>
       ${browseAllHtml}
     </div>
     <div id="${gridId}">
