@@ -27,10 +27,10 @@ export const helperTextFields: FieldConfig[] = [
   { key: '_h_font', label: 'Font', type: 'header' },
   fontField('fontFamily', 'Font Family'),
   { key: 'content', label: 'Text', type: 'textarea', placeholder: 'Enter your text…' },
-  { key: 'fontSize', label: 'Font Size', type: 'number', unit: 'px', step: 1 },
+  { key: 'fontSize', label: 'Font Size', type: 'number', unit: 'px', step: 1, pairedContentKeys: ['content'] },
   { key: 'fontWeight', label: 'Font Weight', type: 'select', options: ['400', '500', '600', '700'] },
   { key: 'color', label: 'Text Color', type: 'color' },
-  { key: 'textAlign', label: 'Text Alignment', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'textAlign', label: 'Text Alignment', type: 'select', options: ['left', 'center', 'right'], pairedContentKeys: ['content'] },
   { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4 },
 ]
 
@@ -75,7 +75,7 @@ function makeHeaderBlock(tag: string, title: string, defaultFontSize: number) {
     { key: 'fontSize', label: 'Font Size', type: 'number', unit: 'px', step: 1 },
     { key: 'fontWeight', label: 'Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
     { key: 'color', label: 'Text Color', type: 'color' },
-    { key: 'textAlign', label: 'Text Alignment', type: 'select', options: ['left', 'center', 'right'] },
+    { key: 'textAlign', label: 'Text Alignment', type: 'select', options: ['left', 'center', 'right'], pairedContentKeys: ['content'] },
     { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4 },
   ]
 
