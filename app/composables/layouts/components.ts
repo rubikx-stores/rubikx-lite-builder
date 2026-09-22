@@ -6396,7 +6396,15 @@ export function renderBanner(data: BannerData): string {
   // Section uses display:flex so the inner div can flex:1 and fill the full
   // aspect-ratio height — the builder's hover/select arm fires on that div,
   // so it must cover the entire section area, not just the text content height.
+  //
+  // On mobile the banner needs to stay a prominent, full hero-style block
+  // rather than shrinking down to a thin strip — so vertical padding is kept
+  // at its full configured value (no vw shrink) at every width, and a
+  // min-height kicks in below 640px for cases where padding + a short
+  // title/no-subtitle/no-CTA wouldn't otherwise add up to much height (no
+  // effect above that width — desktop already sizes from content as before).
   return `<section data-component-title="Ru1-Banner" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${bgStyle}${aspectStyle}${overlayShadow}display:flex;flex-direction:column;${fontCss(undefined, data.fontFamily)}">
+  <style>@media(max-width:640px){[data-component-title="Ru1-Banner"]{min-height:50vh;}}</style>
   ${autoRatioScript}
   <div style="width:100%;box-sizing:border-box;flex:1;display:flex;align-items:center;padding:${data.paddingY}px 1rem;">
     <div style="max-width:80rem;margin:0 auto;width:100%;display:flex;flex-direction:column;align-items:${itemsAlign};text-align:${textAlign};">
@@ -6518,7 +6526,7 @@ export function renderRu8FeaturedBrands(data: Ru8FeaturedBrandsData): string {
       ${brands.map((b) => {
         const src = productImageSrc(b.imageUrl)
         if (!src) return ''
-        const img = `<img src="${src}" alt="" style="max-height:${data.logoHeight}px;width:auto;object-fit:contain;display:block;" />`
+        const img = `<img src="${src}" alt="" style="max-height:min(${data.logoHeight}px,15vw);width:auto;object-fit:contain;display:block;" />`
         return b.url
           ? `<a href="${b.url}" style="display:inline-flex;align-items:center;">${img}</a>`
           : img
@@ -6526,7 +6534,7 @@ export function renderRu8FeaturedBrands(data: Ru8FeaturedBrandsData): string {
     </div>`
     : ''
 
-  return `<section data-component-title="Ru8-Featured-Brands" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px 1rem;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru8-Featured-Brands" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
   <div style="max-width:80rem;margin:0 auto;width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;">
     <h2 data-field-key="title" style="font-size:min(2.5rem,8vw);font-weight:700;color:${data.titleColor};margin:0;line-height:1.2;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
     <p data-field-key="subtitle" style="font-size:min(1.125rem,4.5vw);color:${data.subtitleColor};margin:1rem 0 0;max-width:42rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>
@@ -7018,7 +7026,43 @@ export function renderRu10ShopByCategory(data: Ru10ShopByCategoryData): string {
   // per-breakpoint count. Only applies in "Wrap to Rows" mode — the whole
   // point of "Horizontal Scroll" is that card size never has to change,
   // there's always room to scroll into instead.
-  const basisAt = (count: number) => cardBasis(Math.min(maxCategories, count))
+  // capAt() is the row's actual capacity at a given tier — never more than
+  // maxCategories even on the widest breakpoint bucket, so a low "Categories
+  // Per Row" setting is still respected.
+  const capAt = (tierCap: number) => Math.min(maxCategories, tierCap)
+  const basisAt = (tierCap: number) => cardBasis(capAt(tierCap))
+
+  // When the synced categories don't fill a full row (e.g. a company has 2-3
+  // categories but "Categories Per Row" is 5), center the row instead of
+  // leaving it left-hugged with empty space on the right — this is what makes
+  // 2 categories sit together in the middle, 3 read as left/center/right, etc.
+  // Only applies to a genuinely single row: once synced categories overflow
+  // past maxCategories the existing left-aligned wrap (partially-empty
+  // trailing row) is kept as-is, since justify-content applies per wrapped
+  // line and centering a leftover partial line independently of the full
+  // ones above it isn't what was asked for here.
+  const fitsSingleRow = !isSlider && rawCategories.length > 0 && rawCategories.length <= maxCategories
+
+  // A centered partial row also gets pulled apart a bit more than the tight
+  // per-card gap used for a full row — e.g. 2 categories out of 5 leaves 3
+  // "slots" of empty room, so give them noticeably more breathing space
+  // instead of just nudging them together at the same snug gap (capped at 3
+  // extra slots so it stays proportionate even when maxCategories is large).
+  // This has to be recomputed per responsive tier (not just once for
+  // desktop): each breakpoint caps the row at fewer cards (capAt above), so
+  // the same real card count has less — or no — leftover room to spread into
+  // once the row's own capacity has shrunk down to it. Reusing one gap value
+  // everywhere would overflow the row on narrower screens, since basisAt()'s
+  // card width is sized assuming only the plain per-card gap.
+  const gapAt = (tierCap: number) => {
+    if (!fitsSingleRow) return gap
+    const cap = capAt(tierCap)
+    if (rawCategories.length >= cap) return gap
+    const leftover = Math.min(cap - rawCategories.length, 3)
+    return gap + gap * leftover
+  }
+  const rowGap = gapAt(maxCategories)
+
   const styleRules = [
     // Hovering a card zooms its image in slightly — clipped to the card's
     // own rounded corners since the image sits inside an overflow:hidden
@@ -7027,9 +7071,9 @@ export function renderRu10ShopByCategory(data: Ru10ShopByCategoryData): string {
     ...(isSlider
       ? []
       : [
-          `@media(max-width:1024px){[data-ru10-grid] [data-ru10-card]{flex-basis:${basisAt(4)}!important;max-width:${basisAt(4)}!important;}}`,
-          `@media(max-width:768px){[data-ru10-grid] [data-ru10-card]{flex-basis:${basisAt(3)}!important;max-width:${basisAt(3)}!important;}}`,
-          `@media(max-width:480px){[data-ru10-grid] [data-ru10-card]{flex-basis:${basisAt(2)}!important;max-width:${basisAt(2)}!important;}}`,
+          `@media(max-width:1024px){[data-ru10-grid]{gap:${gapAt(4)}px!important;}[data-ru10-grid] [data-ru10-card]{flex-basis:${basisAt(4)}!important;max-width:${basisAt(4)}!important;}}`,
+          `@media(max-width:768px){[data-ru10-grid]{gap:${gapAt(3)}px!important;}[data-ru10-grid] [data-ru10-card]{flex-basis:${basisAt(3)}!important;max-width:${basisAt(3)}!important;}}`,
+          `@media(max-width:480px){[data-ru10-grid]{gap:${gapAt(2)}px!important;}[data-ru10-grid] [data-ru10-card]{flex-basis:${basisAt(2)}!important;max-width:${basisAt(2)}!important;}}`,
         ]),
   ]
 
@@ -7050,7 +7094,7 @@ export function renderRu10ShopByCategory(data: Ru10ShopByCategoryData): string {
 
   const gridStyle = isSlider
     ? `display:flex;flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:${gap}px;padding-bottom:4px;`
-    : `display:flex;flex-wrap:wrap;gap:${gap}px;${hasBgImage ? 'justify-content:center;' : ''}`
+    : `display:flex;flex-wrap:wrap;gap:${rowGap}px;${(hasBgImage || fitsSingleRow) ? 'justify-content:center;' : ''}`
 
   const innerHtml = `<div style="max-width:90rem;margin:0 auto;${hasBgImage ? 'position:relative;z-index:1;' : ''}">
     ${headerHtml}
@@ -9196,7 +9240,7 @@ export function renderRu5ImageCarousel(data: Ru5ImageCarouselData): string {
   const slidesHtml = (data.slides ?? []).map((slide, i) => {
     const overlayOpacity = Math.min(100, Math.max(0, slide.overlayOpacity ?? 40)) / 100
     const bgStyle = slide.bgImage
-      ? `background-image:url('${slide.bgImage}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;`
+      ? `background-image:url('${slide.bgImage}');background-size:cover;background-position:center;background-repeat:no-repeat;`
       : `background-color:#1f2937;`
     const overlayStyle = `position:absolute;inset:0;background:${slide.overlayColor ?? '#000'};opacity:${overlayOpacity};pointer-events:none;`
     const ctaHtml = slide.showCta !== false
@@ -9206,7 +9250,7 @@ export function renderRu5ImageCarousel(data: Ru5ImageCarouselData): string {
       <div style="${overlayStyle}"></div>
       <div style="position:relative;z-index:1;height:100%;display:flex;${posStyle}padding:3rem clamp(1.25rem,6vw,5rem);">
         <div style="max-width:600px;text-align:${data.textAlign ?? 'left'};">
-          ${slide.subtitle ? `<p style="margin:0 0 0.75rem;font-size:${data.subtitleFontSize}px;font-weight:600;color:${data.subtitleColor};letter-spacing:0.12em;text-transform:uppercase;${fontCss(data.subtitleFont, data.fontFamily)}">${slide.subtitle}</p>` : ''}
+          ${slide.subtitle ? `<p style="margin:0 0 0.75rem;font-size:min(${data.subtitleFontSize}px,4vw);font-weight:600;color:${data.subtitleColor};letter-spacing:0.12em;text-transform:uppercase;${fontCss(data.subtitleFont, data.fontFamily)}">${slide.subtitle}</p>` : ''}
           <h2 style="margin:0 0 1rem;font-size:min(${data.titleFontSize}px,9vw);font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.15;${fontCss(data.titleFont, data.fontFamily)}">${slide.title}</h2>
           ${slide.description ? `<p style="margin:0;font-size:min(${data.descriptionFontSize}px,4.5vw);color:${data.descriptionColor};line-height:1.6;${fontCss(data.descriptionFont, data.fontFamily)}">${slide.description}</p>` : ''}
           ${ctaHtml}
@@ -9675,8 +9719,22 @@ export function renderRu6SplitHero(data: Ru6SplitHeroData): string {
   const vAlignMap: Record<string, string> = { top: 'flex-start', center: 'center', bottom: 'flex-end' }
   const vAlign = vAlignMap[data.verticalAlign ?? 'center'] ?? 'center'
 
+  // Image Height was a fixed px value applied at every screen width — fine
+  // side-by-side on desktop, but once the grid collapses to a single column
+  // below 820px (see the @media rule further down) that same fixed height
+  // (e.g. the 480px default) makes the image take up far more of a phone's
+  // screen than the two-column desktop layout ever intended. Scales it down
+  // on narrower viewports the same way Ru5-Image-Carousel's slide height
+  // does, but capped at the configured value as its max (never grows past
+  // what the admin set — there's no full-bleed reason to enlarge it like the
+  // carousel's background does on very wide screens).
+  const baseImgHeight = data.imageHeight ?? 480
+  const minImgHeight = Math.round(baseImgHeight * 0.5)
+  const imgVwRatio = (baseImgHeight / 1280) * 100
+  const responsiveImgHeight = `clamp(${minImgHeight}px, ${imgVwRatio.toFixed(2)}vw, ${baseImgHeight}px)`
+
   const eyebrowHtml = data.eyebrow
-    ? `<p style="margin:0 0 12px;font-size:${data.eyebrowFontSize}px;font-weight:600;color:${data.eyebrowColor};letter-spacing:0.1em;text-transform:uppercase;${fontCss(data.eyebrowFont, data.fontFamily)}">${data.eyebrow}</p>`
+    ? `<p style="margin:0 0 12px;font-size:min(${data.eyebrowFontSize}px,3.5vw);font-weight:600;color:${data.eyebrowColor};letter-spacing:0.1em;text-transform:uppercase;${fontCss(data.eyebrowFont, data.fontFamily)}">${data.eyebrow}</p>`
     : ''
 
   const titleHtml = data.title
@@ -9684,7 +9742,7 @@ export function renderRu6SplitHero(data: Ru6SplitHeroData): string {
     : ''
 
   const descHtml = data.description
-    ? `<p style="margin:0 0 28px;font-size:${data.descriptionFontSize}px;color:${data.descriptionColor};line-height:1.7;${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>`
+    ? `<p style="margin:0 0 28px;font-size:min(${data.descriptionFontSize}px,4.5vw);color:${data.descriptionColor};line-height:1.7;${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>`
     : ''
 
   const primaryCtaHtml = data.showCta !== false
@@ -9707,8 +9765,8 @@ export function renderRu6SplitHero(data: Ru6SplitHeroData): string {
   </div>`
 
   const imgInner = data.imageUrl
-    ? `<img src="${data.imageUrl}" alt="${data.title}" style="width:100%;height:${data.imageHeight}px;object-fit:${data.imageObjectFit};border-radius:${data.cardMode ? '0' : data.imageBorderRadius}px;display:block;" />`
-    : `<div style="width:100%;height:${data.imageHeight}px;background:#e5e7eb;border-radius:${data.cardMode ? '0' : data.imageBorderRadius}px;display:flex;align-items:center;justify-content:center;"><span style="color:#9ca3af;font-size:14px;">Add an image</span></div>`
+    ? `<img src="${data.imageUrl}" alt="${data.title}" style="width:100%;height:${responsiveImgHeight};object-fit:${data.imageObjectFit};border-radius:${data.cardMode ? '0' : data.imageBorderRadius}px;display:block;" />`
+    : `<div style="width:100%;height:${responsiveImgHeight};background:#e5e7eb;border-radius:${data.cardMode ? '0' : data.imageBorderRadius}px;display:flex;align-items:center;justify-content:center;"><span style="color:#9ca3af;font-size:14px;">Add an image</span></div>`
 
   const imageCol = data.cardMode
     ? `<div style="display:flex;align-items:${vAlign};">
