@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-
-interface Website {
-  id: number
-  name: string
-  domain: string
-}
+import { INTERNAL_CMS_KEYS } from '~/composables/useGlobalSections'
+import type { Website } from '~/types/website'
 
 interface Page {
   id: string
@@ -39,7 +35,7 @@ const results = ref<Array<{ companyId: number; pageKey: string; ok: boolean; ver
 // they're internal CMS keys (navbar/footer/theme settings). Cloning design
 // into them through this generic page picker is not the intended use of
 // this modal, so they're filtered out of the list entirely.
-const HIDDEN_KEYS = new Set(['global-header', 'global-footer', 'global-theme', 'global-config'])
+const HIDDEN_KEYS = INTERNAL_CMS_KEYS
 
 async function loadWebsites() {
   loadingWebsites.value = true

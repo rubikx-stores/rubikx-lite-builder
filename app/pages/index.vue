@@ -2,14 +2,10 @@
 import { useSiteConfig } from '~/composables/useSiteConfig'
 import { splitShopSectionsForPublish, GLOBAL_OWNER_PAGES } from '~/composables/useGlobalSections'
 import { resetThemeToDefaults } from '~/composables/editor/useThemeColors'
+import CloneSiteModal from '~/components/builder/CloneSiteModal.client.vue'
+import type { Website } from '~/types/website'
 
 definePageMeta({ layout: 'dashboard' })
-
-interface Website {
-  id: number
-  name: string
-  domain: string
-}
 
 interface PageVersion {
   version: number
@@ -51,6 +47,9 @@ const showNewPageModal = ref(false)
 const newPageName = ref('')
 const newPageNameInput = ref<HTMLInputElement | null>(null)
 const newPageError = ref('')
+
+// Clone Site modal state
+const showCloneSiteModal = ref(false)
 
 // Site configuration composable
 const siteConfig = useSiteConfig()
@@ -500,10 +499,27 @@ function handleModalKeydown(e: KeyboardEvent) {
           >
             <span class="material-symbols-outlined text-2xl leading-none">settings</span>
           </NuxtLink>
+          <button
+            v-if="websites && websites.length > 1"
+            title="Clone this site's pages to another site"
+            class="flex h-10 items-center gap-1.5 cursor-pointer rounded-xl bg-gray-100 px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 border-none shadow-xs"
+            @click="showCloneSiteModal = true"
+          >
+            <span class="material-symbols-outlined text-xl leading-none">content_copy</span>
+            Clone Site
+          </button>
         </div>
         <p class="mt-1 text-sm text-gray-500">Manage and publish your store pages</p>
       </div>
     </div>
+
+    <CloneSiteModal
+      v-if="showCloneSiteModal && selectedWebsiteId"
+      :websites="websites ?? []"
+      :source-company-id="selectedWebsiteId"
+      @close="showCloneSiteModal = false"
+      @cloned="fetchPages"
+    />
 
     <!-- Loading -->
     <div v-if="loadingPages" class="py-16 text-center text-sm text-gray-400">
