@@ -5,6 +5,46 @@ import { icon } from '../useIconSvg'
 import { fontField, fontCss } from '../editor/fontFields'
 import type { Product } from '../themes/themes-data'
 
+// Shared by every navbar/header block's "auto-generated categories row" —
+// one nav item PER top-level category, auto-built at hydration time by
+// loadDynamicNav (rubikx-hydration.client.ts). Each caller only differs in
+// its own gap spacing and its own field's fallback text colour (used before
+// categoryDropdownTextColor existed on that block), so those are the only
+// two things passed in; everything else (markup, CSS override, hydration
+// attrs) is identical across callers.
+export function renderDynamicCategoriesRow(data: {
+  showDynamicCategories: boolean
+  maxCategories: number
+  linkColor: string
+  linkFontSize: number
+  linkFontWeight: string
+  paddingX: number
+  categoryDropdownTextColor?: string
+}, gap: string, fallbackColor: string): {
+  desktopEl: string
+  mobileEl: string
+  css: string
+  hydrationAttrs: string
+} {
+  if (!data.showDynamicCategories) return { desktopEl: '', mobileEl: '', css: '', hydrationAttrs: '' }
+
+  const desktopPlaceholder = `<span style="color:#9ca3af;font-size:13px;font-style:italic;">⟳ Loading categories…</span>`
+  const mobilePlaceholder = `<span style="display:block;padding:6px 0;color:#9ca3af;font-size:13px;font-style:italic;">⟳ Loading categories…</span>`
+  const textColor = data.categoryDropdownTextColor ?? fallbackColor
+
+  return {
+    desktopEl: `<div data-ru5-desktop-items style="display:flex;align-items:center;gap:${gap};">${desktopPlaceholder}</div>`,
+    mobileEl: `<div data-ru5-mobile-items style="display:flex;flex-direction:column;">${mobilePlaceholder}</div>`,
+    // loadDynamicNav shares one colour between its own nav-row trigger text
+    // and the white dropdown's contents — force the dropdown text back to
+    // the dedicated dark colour here.
+    css: `[data-ru5-desktop-items] [data-cat-dropdown] a { color: ${textColor} !important; }
+  nav[data-rubikx-component="DynamicCategoryNav"][data-mega-contained] [data-cat-nav][data-mega] { position: relative !important; }
+  nav[data-rubikx-component="DynamicCategoryNav"][data-mega-contained] [data-cat-nav][data-mega]:hover [data-cat-dropdown] { left: 0 !important; right: auto !important; width: auto !important; min-width: 200px !important; border-radius: 8px !important; }`,
+    hydrationAttrs: ` data-rubikx-component="DynamicCategoryNav" data-mega-contained="true" data-on-mount="loadDynamicNav" data-max-categories="${data.maxCategories ?? 8}" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}" data-padding-x="${data.paddingX}"`,
+  }
+}
+
 
 export const megaMenuHeaderSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 32">
   <rect fill="#394152" x="0" y="0" width="277.5" height="32"/>
@@ -39,6 +79,16 @@ export interface MegaMenuHeaderData {
   navLinksAlign: string
   dynamicCategoriesFloating: boolean
   dynamicCategoriesInline: boolean
+  // One nav item PER top-level category, auto-built from the live category
+  // tree by loadDynamicNav — a second, independent way to show categories
+  // alongside the "Categories" dropdown above (both can be on at once).
+  showDynamicCategories: boolean
+  maxCategories: number
+  // Text colour used INSIDE the white "Categories" dropdown popup only —
+  // kept separate from linkColor below, which colours the nav bar's own
+  // trigger text and would otherwise be invisible against the dropdown's
+  // white background if the nav bar itself uses light text.
+  categoryDropdownTextColor: string
   linkFontSize: number
   linkFontWeight: string
   linkColor: string
@@ -85,6 +135,9 @@ export const megaMenuHeaderDefaults: MegaMenuHeaderData = {
   navLinksAlign: 'center',
   dynamicCategoriesFloating: true,
   dynamicCategoriesInline: false,
+  showDynamicCategories: false,
+  maxCategories: 8,
+  categoryDropdownTextColor: '#000000',
   linkFontSize: 14,
   linkFontWeight: '500',
   linkColor: '#1f2937',
@@ -162,6 +215,10 @@ export const megaMenuHeaderFields: FieldConfig[] = [
   { key: 'showSearch',        label: 'Show Search Bar',               type: 'toggle'  },
   { key: 'dynamicCategoriesFloating', label: 'Dynamic Categories (Floating)', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'dynamicCategoriesInline', label: 'Dynamic Categories (Inline)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'showDynamicCategories', label: 'Show Categories Row (one item per category)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'maxCategories', label: 'Max Categories Shown', type: 'number', placeholder: '8' },
+  { key: 'categoryDropdownTextColor', label: 'Category Dropdown Text Colour', type: 'color',
+    placeholder: 'Text colour inside the white "Categories" dropdown popup — keep this dark regardless of Link Colour below' },
   { key: 'searchPlaceholder', label: 'Search Placeholder',  type: 'text',
     placeholder: 'e.g. Search products…'                                    },
   { key: 'searchAlign',     label: 'Search Position',       type: 'select',
@@ -256,7 +313,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
         data-on-mount='loadCategories'
         data-max-items='20'
         data-label='Categories'
-        data-link-color='${data.linkColor}'
+        data-link-color='${data.categoryDropdownTextColor ?? '#000000'}'
         data-font-size='${data.linkFontSize}'
         data-font-weight='${data.linkFontWeight}'
         data-category-dropdown-style='${data.dynamicCategoriesInline ? 'inline' : 'floating'}'
@@ -269,8 +326,14 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
       </div>`
     : ''
 
-  const linksEl = (staticLinks || dynamicPlaceholder)
-    ? `<nav style='display:flex;align-items:center;gap:1.5rem;'>${staticLinks}${dynamicPlaceholder}</nav>`
+  // Second, independent way to show categories — one nav item PER top-level
+  // category, auto-built by loadDynamicNav (same handler Ru5-Dynamic-Navbar
+  // uses). Can be on at the same time as the "Categories" dropdown above.
+  const dynamicCategoriesRow = renderDynamicCategoriesRow(data, '1.5rem', '#000000')
+  const { desktopEl: dynamicCategoriesRowEl, mobileEl: dynamicCategoriesMobileEl } = dynamicCategoriesRow
+
+  const linksEl = (staticLinks || dynamicPlaceholder || dynamicCategoriesRowEl)
+    ? `<nav style='display:flex;align-items:center;gap:1.5rem;'>${staticLinks}${dynamicPlaceholder}${dynamicCategoriesRowEl}</nav>`
     : ''
 
   const signInBtnStyle = `display:inline-flex;align-items:center;padding:0.4375rem 1rem;border-radius:${data.buttonBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:500;white-space:nowrap;border:1.5px solid ${data.textColor};color:${data.textColor};background:transparent;${fontCss(data.buttonFont, data.fontFamily)}`
@@ -362,6 +425,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
   <div style="display:flex;flex-direction:column;">
     ${mobileDrawerLinks}
     ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;cursor:pointer;">Categories</a>` : ''}
+    ${dynamicCategoriesMobileEl}
   </div>
   <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
     ${mobileCTAButtons}
@@ -377,13 +441,16 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     ? `<script>(function(){function wireTiles(sec){sec.querySelectorAll('.ru-ptile').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var panel=sec.querySelector('.ru-pd');if(!panel)return;var imgEl=a.querySelector('img');var imgSrc=imgEl?imgEl.src:'';var name=(a.querySelector('.ru-ptile-name')||{}).textContent||'';var price=(a.querySelector('.ru-ptile-price')||{}).textContent||'';var imgCol=imgSrc?'<img src="'+imgSrc+'" style="width:100%;height:100%;object-fit:cover;display:block;" />':'<div style="width:100%;height:100%;background:#f3f4f6;"></div>';panel.innerHTML='<div style="display:grid;grid-template-columns:40% 60%;height:380px;position:relative;">'+  '<div style="overflow:hidden;">'+imgCol+'</div>'+  '<div style="padding:40px 48px;display:flex;flex-direction:column;justify-content:center;background:#fff;">'+    '<div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;">Featured Product</div>'+    '<div style="font-size:26px;font-weight:700;color:#111827;line-height:1.25;margin-bottom:12px;">'+name+'</div>'+    '<div style="font-size:22px;font-weight:600;color:#374151;margin-bottom:28px;">'+price+'</div>'+    '<div><a href="'+a.href+'" style="display:inline-block;padding:12px 28px;background:#111827;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:500;letter-spacing:.02em;">View Product →</a></div>'+  '</div>'+  '<button onclick="this.closest(\\'.ru-pd\\').style.display=\\'none\\'" style="position:absolute;top:12px;right:16px;background:rgba(255,255,255,.9);border:1px solid #e5e7eb;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;color:#6b7280;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>'+  '</div>';panel.style.display='block';panel.scrollIntoView({behavior:'smooth',block:'nearest'});});})}function init(){var ts=document.querySelectorAll('.ru-mega-item[data-mega-json]');if(!ts.length)return;var allIds=[];ts.forEach(function(t){try{JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"')).forEach(function(g){(g.ids||[]).forEach(function(id){if(allIds.indexOf(id)<0)allIds.push(id);});});}catch(e){}});ts.forEach(function(t){var sec=t.closest('section');if(sec)wireTiles(sec);});if(!allIds.length)return;fetch('/api/products?ids='+allIds.join(',')).then(function(r){return r.json();}).then(function(prods){var map={};prods.forEach(function(p){map[p.id]=p;});ts.forEach(function(t){var groups;try{groups=JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"'));}catch(e){return;}var drop=t.querySelector('.ru-mega-drop');if(!drop)return;var html=groups.map(function(g){var items=(g.ids||[]).map(function(id){var p=map[id];if(!p)return'';var img=p.image?'<img src="data:image/png;base64,'+p.image+'" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;"/>':'<div style="width:44px;height:44px;background:#f3f4f6;border-radius:6px;flex-shrink:0;"></div>';var price=p.price!=null?'<span class="ru-ptile-price" style="font-size:11px;color:#6b7280;">$'+Number(p.price).toFixed(2)+'</span>':'';return'<a href="/shop/'+p.id+'" class="ru-ptile" style="display:flex;align-items:center;gap:10px;padding:7px 14px;text-decoration:none;cursor:pointer;" onmouseover="this.style.background=\\'#f9fafb\\'" onmouseout="this.style.background=\\'\\''">'+img+'<div style="min-width:0;"><div class="ru-ptile-name" style="font-size:13px;font-weight:500;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">'+p.name+'</div>'+price+'</div></a>';}).join('');if(!items.trim())return'';return'<div><a href="'+(g.href||'#')+'" style="display:block;padding:8px 14px 4px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;">'+g.label+'</a>'+items+'</div>';}).filter(Boolean).join('<div style="height:1px;background:#f3f4f6;margin:4px 0;"></div>');drop.innerHTML=html;var sec=t.closest('section');if(sec)wireTiles(sec);});}).catch(function(){});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();<\/script>`
     : ''
 
+  const { css: dynamicCategoriesRowCss, hydrationAttrs: dynamicNavHydrationAttrs } = dynamicCategoriesRow
+
   const sectionFontStyle = fontCss(undefined, data.fontFamily) + (data.sticky ? 'position:sticky;top:0;z-index:9999' : '')
   return `<section data-component-title="Ru2-Mega-Menu-Header" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionFontStyle ? ` style="${sectionFontStyle}"` : ''}>
 <style>
 .ru-mega-item:hover .ru-mega-drop{display:block !important;}
 .ru-pd{display:none;width:100%;border-top:1px solid #e5e7eb;overflow:hidden;}
+${dynamicCategoriesRowCss}
 </style>
-<nav style="${navStyle}">
+<nav style="${navStyle}"${dynamicNavHydrationAttrs}>
   ${mobileNav}
   <div data-nav-desktop="true" style="max-width:90rem;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
     ${zone(cols.left,   'flex-start')}
@@ -422,6 +489,17 @@ export interface Ru3MegaHeaderData {
 
   navLinks: Ru3NavLink[]
   overflowLinks: OverflowLink[]
+  // Standalone "Categories" trigger + auto-generated categories row — two
+  // more, independent ways to show categories alongside the per-link
+  // showDropdown above (any/all can be on at once).
+  dynamicCategoriesFloating: boolean
+  dynamicCategoriesInline: boolean
+  showDynamicCategories: boolean
+  maxCategories: number
+  // Text colour used INSIDE the white per-link categories dropdown popup
+  // only — kept separate from linkColor below, which colours the nav bar's
+  // own trigger text.
+  categoryDropdownTextColor: string
   linkFontSize: number
   linkFontWeight: string
   linkColor: string
@@ -459,6 +537,11 @@ export const ru3MegaHeaderDefaults: Ru3MegaHeaderData = {
     { label: 'Home', href: '/', showDropdown: false },
   ],
   overflowLinks: [],
+  dynamicCategoriesFloating: false,
+  dynamicCategoriesInline: false,
+  showDynamicCategories: false,
+  maxCategories: 8,
+  categoryDropdownTextColor: '#000000',
   linkFontSize: 14,
   linkFontWeight: '500',
   linkColor: '#1f2937',
@@ -519,6 +602,12 @@ export const ru3MegaHeaderFields: FieldConfig[] = [
       { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
+  { key: 'dynamicCategoriesFloating', label: 'Dynamic Categories (Floating)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'dynamicCategoriesInline', label: 'Dynamic Categories (Inline)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'showDynamicCategories', label: 'Show Categories Row (one item per category)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'maxCategories', label: 'Max Categories Shown', type: 'number', placeholder: '8' },
+  { key: 'categoryDropdownTextColor', label: 'Category Dropdown Text Colour', type: 'color',
+    placeholder: 'Text colour inside the white categories dropdown popups — keep this dark regardless of Link Colour below' },
   { key: 'linkColor',       label: 'Link Colour',            type: 'color'   },
   { key: 'linkFontSize',    label: 'Link Font Size (px)',    type: 'number',
     placeholder: '14'                                                        },
@@ -595,7 +684,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
         data-category-name='${l.label}'
         data-on-mount='loadCategories'
         data-max-items='20'
-        data-link-color='${data.linkColor}'
+        data-link-color='${data.categoryDropdownTextColor ?? '#000000'}'
         data-font-size='${data.linkFontSize}'
         data-font-weight='${data.linkFontWeight}'
         data-category-filter='${l.categoryFilter ?? ''}'
@@ -617,6 +706,34 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
     .join('')
 
   const linksHtml = navLinksHtml + overflowLinksHtml
+
+  // Standalone "Categories" trigger — unscoped, shows the whole tree, same
+  // mechanism Ru1-Navbar/Ru4-Navbar use. Independent of the per-link
+  // showDropdown items above.
+  const dynamicPlaceholder = (data.dynamicCategoriesFloating || data.dynamicCategoriesInline)
+    ? `<div
+        data-rubikx-component='CategoryNav'
+        data-on-mount='loadCategories'
+        data-max-items='20'
+        data-label='Categories'
+        data-link-color='${data.categoryDropdownTextColor ?? '#000000'}'
+        data-font-size='${data.linkFontSize}'
+        data-font-weight='${data.linkFontWeight}'
+        data-category-dropdown-style='${data.dynamicCategoriesInline ? 'inline' : 'floating'}'
+        style='position:relative;display:inline-block;' data-cat-nav='true'
+      >
+        <a style='${linkStyle}cursor:pointer;'>Categories ▾</a>
+        <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Load Categories</span>
+        </div>
+      </div>`
+    : ''
+
+  // Second, independent way to show categories — one nav item PER top-level
+  // category, auto-built by loadDynamicNav (same handler Ru5-Dynamic-Navbar
+  // uses).
+  const dynamicCategoriesRow = renderDynamicCategoriesRow(data, '2rem', '#000000')
+  const { desktopEl: dynamicCategoriesRowEl, mobileEl: dynamicCategoriesMobileEl } = dynamicCategoriesRow
 
   // "+" overflow — always present but hidden by default; its dropdown starts
   // empty. mountCmsNavOverflow (headless repo) shows this wrapper and moves
@@ -704,6 +821,8 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
     ? `<a href="${data.accountUrl}" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;">Login</a>`
     : ''
 
+  const { css: dynamicCategoriesRowCss } = dynamicCategoriesRow
+
   const mobileNav = `
 <style>
   [data-nav-mobile] { display: none; }
@@ -712,6 +831,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
     [data-nav-mobile] { display: flex !important; }
     [data-nav-desktop] { display: none !important; }
   }
+  ${dynamicCategoriesRowCss}
 </style>
 <!-- Mobile header -->
 <div data-nav-mobile="true" style="display:none;align-items:center;justify-content:space-between;padding:1.25rem ${data.paddingX}px;${data.showBottomBorder ? `border-bottom:1px solid ${data.bottomBorderColor};` : ''}">
@@ -734,6 +854,8 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
   ${mobileSearchEl}
   <div style="display:flex;flex-direction:column;">
     ${mobileDrawerLinks}
+    ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;cursor:pointer;">Categories</a>` : ''}
+    ${dynamicCategoriesMobileEl}
   </div>
   <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
     ${mobileAccountLinks}
@@ -744,12 +866,14 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
 
   const sectionStyle = `width:100%;display:block;${fontCss(undefined, data.fontFamily)}${data.sticky ? 'position:sticky;top:0;z-index:9999;' : ''}`
 
+  const { hydrationAttrs: dynamicNavHydrationAttrs } = dynamicCategoriesRow
+
   return `<section data-component-title="Ru3-Mega-Header" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
-<nav style="${navStyle}">
+<nav style="${navStyle}"${dynamicNavHydrationAttrs}>
   ${mobileNav}
   <div data-nav-desktop="true" style="width:100%;display:flex;align-items:center;gap:3rem;">
     <div style="display:flex;align-items:center;flex-shrink:0;">${logoEl}</div>
-    <nav data-rubikx-component="MainNavRow" data-on-mount="loadNavOverflow" style="display:flex;align-items:center;justify-content:flex-start;gap:2rem;flex:1;min-width:0;">${linksHtml}${overflowHtml}</nav>
+    <nav data-rubikx-component="MainNavRow" data-on-mount="loadNavOverflow" style="display:flex;align-items:center;justify-content:flex-start;gap:2rem;flex:1;min-width:0;">${linksHtml}${overflowHtml}${dynamicPlaceholder}${dynamicCategoriesRowEl}</nav>
     <div style="display:flex;align-items:center;justify-content:flex-end;gap:2.5rem;flex-shrink:0;">${searchEl}${cartEl}${accountEl}</div>
   </div>
   <div data-ru3-search-bar style="display:none;border-top:1px solid ${data.bottomBorderColor};">
@@ -791,6 +915,15 @@ export interface Ru4NavbarData {
   navLinks: Ru4NavLink[]
   navLinksAlign: string
   dynamicCategories: boolean
+  // One nav item PER top-level category, auto-built from the live category
+  // tree by loadDynamicNav — a second, independent way to show categories
+  // alongside the "Categories" dropdown above (both can be on at once).
+  showDynamicCategories: boolean
+  maxCategories: number
+  // Text colour used INSIDE the white "Categories" dropdown popup only —
+  // kept separate from linkColor below, which colours the nav bar's own
+  // trigger text.
+  categoryDropdownTextColor: string
   linkColor: string
   linkFontSize: number
   linkFontWeight: string
@@ -838,6 +971,9 @@ export const ru4NavbarDefaults: Ru4NavbarData = {
   ],
   navLinksAlign: 'left',
   dynamicCategories: false,
+  showDynamicCategories: false,
+  maxCategories: 8,
+  categoryDropdownTextColor: '#000000',
   linkColor: '#111827',
   linkFontSize: 14,
   linkFontWeight: '500',
@@ -894,6 +1030,10 @@ export const ru4NavbarFields: FieldConfig[] = [
   },
   { key: 'navLinksAlign', label: 'Links Position', type: 'select', options: ['left', 'center', 'right'] },
   { key: 'dynamicCategories', label: 'Dynamic Categories', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'showDynamicCategories', label: 'Show Categories Row (one item per category)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'maxCategories', label: 'Max Categories Shown', type: 'number', placeholder: '8' },
+  { key: 'categoryDropdownTextColor', label: 'Category Dropdown Text Colour', type: 'color',
+    placeholder: 'Text colour inside the white "Categories" dropdown popup — keep this dark regardless of Link Colour below' },
   { key: 'linkColor', label: 'Link Colour', type: 'color' },
   { key: 'linkFontSize', label: 'Link Font Size (px)', type: 'number', step: 1, placeholder: '14' },
   { key: 'linkFontWeight', label: 'Link Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
@@ -956,7 +1096,7 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
         data-rubikx-component='CategoryNav'
         data-on-mount='loadCategories'
         data-max-items='20'
-        data-link-color='${data.linkColor}'
+        data-link-color='${data.categoryDropdownTextColor ?? '#000000'}'
         data-font-size='${data.linkFontSize}'
         data-font-weight='${data.linkFontWeight}'
         style='position:relative;display:inline-block;' data-cat-nav='true'
@@ -967,8 +1107,13 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
         </div>
       </div>`
     : ''
+  // Second, independent way to show categories — one nav item PER top-level
+  // category, auto-built by loadDynamicNav (same handler Ru5-Dynamic-Navbar
+  // uses). Can be on at the same time as the "Categories" dropdown above.
+  const dynamicCategoriesRow = renderDynamicCategoriesRow(data, '1.75rem', '#000000')
+  const { desktopEl: dynamicCategoriesRowEl, mobileEl: dynamicCategoriesMobileEl } = dynamicCategoriesRow
   const navLinksJustifyMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
-  const linksEl = `<nav style="display:flex;align-items:center;justify-content:${navLinksJustifyMap[data.navLinksAlign] ?? 'flex-start'};gap:1.75rem;">${staticLinksHtml}${dynamicCategoriesHtml}</nav>`
+  const linksEl = `<nav style="display:flex;align-items:center;justify-content:${navLinksJustifyMap[data.navLinksAlign] ?? 'flex-start'};gap:1.75rem;">${staticLinksHtml}${dynamicCategoriesHtml}${dynamicCategoriesRowEl}</nav>`
 
   const authLinksArr = [
     data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${data.authLinksColor};font-size:0.875rem;font-weight:500;text-decoration:none;white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}">${data.signInLabel}</a>` : '',
@@ -1005,6 +1150,8 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
       </div>`
     : ''
 
+  const { css: dynamicCategoriesRowCss } = dynamicCategoriesRow
+
   const mobileNav = `
 <style>
   [data-nav-mobile] { display: none; }
@@ -1013,6 +1160,7 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
     [data-nav-mobile] { display: flex !important; }
     [data-nav-desktop] { display: none !important; }
   }
+  ${dynamicCategoriesRowCss}
 </style>
 <!-- Mobile header -->
 <div data-nav-mobile="true" style="display:none;align-items:center;justify-content:space-between;padding:1rem ${data.paddingX}px;${data.showBottomBorder ? `border-bottom:1px solid ${data.bottomBorderColor};` : ''}">
@@ -1036,6 +1184,7 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
   <div style="display:flex;flex-direction:column;">
     ${mobileDrawerLinks}
     ${data.dynamicCategories ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.15);cursor:pointer;">Categories</a>` : ''}
+    ${dynamicCategoriesMobileEl}
   </div>
   <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
     ${data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;">${data.signInLabel}</a>` : ''}
@@ -1047,8 +1196,10 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
 
   const sectionStyle = `width:100%;display:block;${fontCss(undefined, data.fontFamily)}${data.sticky ? 'position:sticky;top:0;z-index:9999;' : ''}`
 
+  const { hydrationAttrs: dynamicNavHydrationAttrs } = dynamicCategoriesRow
+
   return `<section data-component-title="Ru4-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
-<nav style="${navStyle}">
+<nav style="${navStyle}"${dynamicNavHydrationAttrs}>
   ${mobileNav}
   <div data-nav-desktop="true" style="width:100%;display:flex;align-items:center;gap:2rem;">
     <div style="display:flex;align-items:center;flex-shrink:0;">${logoEl}</div>
@@ -1123,6 +1274,11 @@ export interface Ru5DynamicNavbarData {
 
   homeLabel: string
   homeHref: string
+  // Standalone "Categories" trigger — a second, independent way to show
+  // categories alongside the auto-generated row below (both can be on at
+  // once).
+  dynamicCategoriesFloating: boolean
+  dynamicCategoriesInline: boolean
   showDynamicCategories: boolean
   maxCategories: number
   // Hand-authored links, rendered between Home and the auto-generated
@@ -1130,6 +1286,11 @@ export interface Ru5DynamicNavbarData {
   // AND logoFilterByCategory is on — otherwise it renders as a plain link.
   logoNavLinks: Ru5LogoNavLink[]
 
+  // Text colour used INSIDE the white category/logo dropdown popups only —
+  // kept separate from linkColor below, which colours the nav-row trigger
+  // text and would otherwise be invisible against the dropdown's white
+  // background.
+  categoryDropdownTextColor: string
   linkColor: string
   linkFontSize: number
   linkFontWeight: string
@@ -1177,10 +1338,13 @@ export const ru5DynamicNavbarDefaults: Ru5DynamicNavbarData = {
 
   homeLabel: 'Home',
   homeHref: '/',
+  dynamicCategoriesFloating: false,
+  dynamicCategoriesInline: false,
   showDynamicCategories: true,
   maxCategories: 8,
   logoNavLinks: [],
 
+  categoryDropdownTextColor: '#000000',
   linkColor: '#1f2937',
   linkFontSize: 14,
   linkFontWeight: '500',
@@ -1231,6 +1395,8 @@ export const ru5DynamicNavbarFields: FieldConfig[] = [
   { key: '_h_nav', label: 'Navigation', type: 'header' },
   { key: 'homeLabel', label: 'Home Link Label', type: 'text', placeholder: 'Home' },
   { key: 'homeHref',  label: 'Home Link URL',   type: 'url',  placeholder: '/'    },
+  { key: 'dynamicCategoriesFloating', label: 'Dynamic Categories (Floating)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'dynamicCategoriesInline', label: 'Dynamic Categories (Inline)', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'showDynamicCategories', label: 'Show Dynamic Categories', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'maxCategories', label: 'Max Categories Shown', type: 'number',
     placeholder: '8 — the nav row is built automatically from your live category tree, one item per top-level category (each with its own mega dropdown); it grows or shrinks with your data, nothing to configure by hand' },
@@ -1244,6 +1410,8 @@ export const ru5DynamicNavbarFields: FieldConfig[] = [
   },
   { key: 'logoFilterByCategory', label: 'Show Logo/Brand Nav Link Dropdowns', type: 'toggle', siteSpecific: true, cloneValue: false,
     placeholder: 'Must be on for any Logo/Brand Nav Link above to show its dropdown — off shows those links as plain links instead' },
+  { key: 'categoryDropdownTextColor', label: 'Category Dropdown Text Colour', type: 'color',
+    placeholder: 'Text colour inside the white category/logo dropdown popups — keep this dark regardless of Link Colour below' },
   { key: 'linkColor',       label: 'Link Colour',            type: 'color'   },
   { key: 'linkFontSize',    label: 'Link Font Size (px)',    type: 'number',
     placeholder: '14'                                                        },
@@ -1462,7 +1630,7 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     const indexAttrs = ` data-logo-nav-index="${idx}"`
     const hydrationAttrs = forMobile
       ? ` data-rubikx-component="LogoNav"`
-      : ` data-rubikx-component="LogoNav" data-on-mount="loadLogoNav" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}"`
+      : ` data-rubikx-component="LogoNav" data-on-mount="loadLogoNav" data-link-color="${data.categoryDropdownTextColor ?? '#000000'}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}"`
     // data-logo-group carries the raw group name URL-encoded (groupName is
     // free text off Odoo, not a numeric id) so it survives round-tripping
     // through an HTML attribute intact; loadLogoNav decodeURIComponent()s it
@@ -1536,10 +1704,33 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     ? `<div data-ru5-desktop-items style="display:flex;align-items:center;gap:1.75rem;">${desktopPlaceholder}</div>`
     : ''
 
+  // Standalone "Categories" trigger — unscoped, shows the whole tree, same
+  // mechanism Ru1-Navbar/Ru4-Navbar use. Independent of logoNavLinks/the
+  // auto-generated row above.
+  const dynamicCategoriesDropdown = (data.dynamicCategoriesFloating || data.dynamicCategoriesInline)
+    ? `<div
+        data-rubikx-component='CategoryNav'
+        data-on-mount='loadCategories'
+        data-max-items='20'
+        data-label='Categories'
+        data-link-color='${data.categoryDropdownTextColor ?? '#000000'}'
+        data-font-size='${data.linkFontSize}'
+        data-font-weight='${data.linkFontWeight}'
+        data-category-dropdown-style='${data.dynamicCategoriesInline ? 'inline' : 'floating'}'
+        style='position:relative;display:inline-block;' data-cat-nav='true'
+      >
+        <a style='${linkStyle}cursor:pointer;'>Categories ▾</a>
+        <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Load Categories</span>
+        </div>
+      </div>`
+    : ''
+
   const desktopNavRow = `<div data-ru5-desktop-nav style="max-width:90rem;margin:0 auto;width:100%;align-items:center;justify-content:space-between;gap:1.5rem;padding:0.625rem ${data.paddingX}px;${data.showBottomBorder ? `border-top:1px solid ${data.bottomBorderColor};` : ''}">
     <div style="display:flex;align-items:center;gap:1.75rem;flex:1;min-width:0;">
       <a href="${data.homeHref}" style="${homeLinkStyle}">${data.homeLabel}</a>
       ${desktopLogoLinksEl}
+      ${dynamicCategoriesDropdown}
       ${desktopItemsEl}
     </div>
     ${cartEl}
@@ -1572,6 +1763,7 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     </div>
     <a href="${data.homeHref}" style="display:block;padding:0.7rem 0;${homeLinkStyle}">${data.homeLabel}</a>
     ${mobileLogoLinksEl}
+    ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="display:block;padding:0.75rem 0;font-size:1rem;font-weight:600;color:${data.textColor};text-decoration:none;cursor:pointer;">Categories</a>` : ''}
     ${mobileItemsEl}
     <div style="padding:0.75rem 0;">${cartEl}</div>
     <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:0.75rem;">${renderTopBarButtons()}</div>
@@ -1588,6 +1780,15 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     [data-ru5-desktop-nav] { display: none !important; }
     [data-ru5-mobile-bar] { display: flex !important; }
   }
+  /* loadDynamicNav shares ONE colour between the nav-row trigger text (light,
+     sits on this navbar's own dark background) and the dropdown's contents
+     (needs dark — the dropdown itself has a hardcoded white background). We
+     pass the light colour so the trigger stays legible, then force the
+     dropdown's own contents back to the dedicated dark colour here — scoped
+     to [data-ru5-desktop-items] only, so it never touches the nav-row
+     trigger links (which live outside [data-cat-dropdown]) or mobile (whose
+     drawer background is dark, so the light colour is already correct there). */
+  [data-ru5-desktop-items] [data-cat-dropdown] a { color: ${data.categoryDropdownTextColor ?? '#000000'} !important; }
   /* Search bar keeps its own, narrower breakpoint (tablet/768px) rather than
      sharing the nav's 1024px one — on a tablet-width screen there's still
      enough room for it inline next to the logo (just the nav links move
@@ -1705,6 +1906,11 @@ export interface Ru8NavbarData {
   // after the hand-authored navLinks above, not a replacement for them.
   showDynamicCategories: boolean
   maxCategories: number
+  // Standalone "Categories" trigger — a third, independent way to show
+  // categories alongside the per-link categoryFilter dropdowns and the
+  // auto-generated row above (any/all can be on at once).
+  dynamicCategoriesFloating: boolean
+  dynamicCategoriesInline: boolean
   // Text colour used INSIDE the white dropdown popups only (both per-link
   // categoryFilter dropdowns and the dynamic-categories row) — kept separate
   // from linkColor below, which colours the nav bar's own light-on-dark
@@ -1769,6 +1975,8 @@ export const ru8NavbarDefaults: Ru8NavbarData = {
   ],
   showDynamicCategories: false,
   maxCategories: 8,
+  dynamicCategoriesFloating: false,
+  dynamicCategoriesInline: false,
   categoryDropdownTextColor: '#111827',
   linkColor: '#ffffff',
   linkFontSize: 15,
@@ -1841,6 +2049,8 @@ export const ru8NavbarFields: FieldConfig[] = [
     placeholder: 'Adds one nav item per top-level category (e.g. Apparel, Headwear) straight into the nav row, alongside the Nav Links above — each with its own dropdown of that category\'s children' },
   { key: 'maxCategories', label: 'Max Categories Shown', type: 'number',
     placeholder: '8 — the row is built automatically from your live category tree, one item per top-level category; it grows or shrinks with your data' },
+  { key: 'dynamicCategoriesFloating', label: 'Standalone "Categories" Trigger (Floating)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'dynamicCategoriesInline', label: 'Standalone "Categories" Trigger (Inline)', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'categoryDropdownTextColor', label: 'Category Dropdown Text Colour', type: 'color',
     placeholder: 'Text colour inside the white dropdown popups — keep this dark regardless of the nav bar\'s own colours' },
   { key: 'linkColor', label: 'Link Colour', type: 'color' },
@@ -1972,6 +2182,28 @@ export function renderRu8Navbar(data: Ru8NavbarData): string {
   }
   const navLinksEl = visibleNavLinks.map(renderDesktopNavItem).join('')
 
+  // Standalone "Categories" trigger — unscoped, shows the whole tree, same
+  // mechanism Ru1-Navbar/Ru4-Navbar use. Independent of the per-link
+  // showDropdown items and the auto-generated row below.
+  const dynamicCategoriesDropdown = (data.dynamicCategoriesFloating || data.dynamicCategoriesInline)
+    ? `<div
+        data-rubikx-component='CategoryNav'
+        data-on-mount='loadCategories'
+        data-max-items='20'
+        data-label='Categories'
+        data-link-color='${data.categoryDropdownTextColor ?? '#111827'}'
+        data-font-size='${data.linkFontSize}'
+        data-font-weight='${data.linkFontWeight}'
+        data-category-dropdown-style='${data.dynamicCategoriesInline ? 'inline' : 'floating'}'
+        style='position:relative;display:inline-block;' data-cat-nav='true'
+      >
+        <a style='${linkStyle}cursor:pointer;'>Categories ▾</a>
+        <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Load Categories</span>
+        </div>
+      </div>`
+    : ''
+
   // Trailing, auto-populated dropdown alongside the hand-authored navLinks
   // above — unscoped (no data-category-filter), so it shows every
   // top-level category the backend returns, same loadCategories shell, just
@@ -2021,7 +2253,7 @@ export function renderRu8Navbar(data: Ru8NavbarData): string {
   </div>`
 
   const navRow = `<div data-ru8-desktop-nav style="max-width:90rem;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:${cartBelow ? 'space-between' : 'flex-start'};gap:1.75rem;padding:0.625rem ${data.paddingX}px;border-top:1px solid rgba(255,255,255,0.08);">
-    <div style="display:flex;align-items:center;gap:1.75rem;">${navLinksEl}${dynamicCategoriesDesktopEl}</div>
+    <div style="display:flex;align-items:center;gap:1.75rem;">${navLinksEl}${dynamicCategoriesDropdown}${dynamicCategoriesDesktopEl}</div>
     ${cartBelow}
   </div>`
 
@@ -2044,6 +2276,7 @@ export function renderRu8Navbar(data: Ru8NavbarData): string {
     </div>
     <div style="margin-bottom:1.25rem;">${mobileSearchEl}</div>
     <div style="display:flex;flex-direction:column;">${mobileNavLinksEl}</div>
+    ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="display:block;padding:0.75rem 0;font-size:1.0625rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.08);cursor:pointer;">Categories</a>` : ''}
     ${dynamicCategoriesMobileWrap}
     <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.25rem;">${signInEl}${renderCtaButtons()}</div>
   </div>`
@@ -2149,6 +2382,11 @@ export interface Ru6HamburgerNavbarData {
 
   homeLabel: string
   homeHref: string
+  // Standalone "Categories" row inside the menu panel — a second,
+  // independent way to show categories alongside the auto-generated list
+  // below (both can be on at once).
+  dynamicCategoriesFloating: boolean
+  dynamicCategoriesInline: boolean
   showDynamicCategories: boolean
   maxCategories: number
   menuLinks: { label: string; url: string; newTab?: boolean }[]
@@ -2187,6 +2425,8 @@ export const ru6HamburgerNavbarDefaults: Ru6HamburgerNavbarData = {
 
   homeLabel: 'Home',
   homeHref: '/',
+  dynamicCategoriesFloating: false,
+  dynamicCategoriesInline: false,
   showDynamicCategories: true,
   maxCategories: 20,
   menuLinks: [{ label: 'Home', url: '/', newTab: false }],
@@ -2236,6 +2476,8 @@ export const ru6HamburgerNavbarFields: FieldConfig[] = [
       { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
+  { key: 'dynamicCategoriesFloating', label: 'Standalone "Categories" Row (Floating)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'dynamicCategoriesInline', label: 'Standalone "Categories" Row (Inline)', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'showDynamicCategories', label: 'Show Categories from Store', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'linkColor', label: 'Menu Link Colour', type: 'color' },
   { key: 'linkFontSize', label: 'Menu Link Font Size (px)', type: 'number', placeholder: '15' },
@@ -2331,6 +2573,30 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
     .map(l => `<a href="${l.url}" style="display:block;padding:0.65rem 0;${homeLinkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`)
     .join('')
 
+  // Standalone "Categories" row — unscoped, shows the whole tree, same
+  // mechanism Ru1-Navbar/Ru4-Navbar use. The menu panel is always a white
+  // box, so data.linkColor (already dark by default) works directly here —
+  // no separate dropdown text colour needed, unlike navbars where the
+  // trigger sits on a dark bar.
+  const dynamicCategoriesRow = (data.dynamicCategoriesFloating || data.dynamicCategoriesInline)
+    ? `<div
+        data-rubikx-component='CategoryNav'
+        data-on-mount='loadCategories'
+        data-max-items='20'
+        data-label='Categories'
+        data-link-color='${data.linkColor}'
+        data-font-size='${data.linkFontSize}'
+        data-font-weight='${data.linkFontWeight}'
+        data-category-dropdown-style='${data.dynamicCategoriesInline ? 'inline' : 'floating'}'
+        style='position:relative;display:block;' data-cat-nav='true'
+      >
+        <a style='display:block;padding:0.65rem 0;${homeLinkStyle}cursor:pointer;'>Categories ▾</a>
+        <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Load Categories</span>
+        </div>
+      </div>`
+    : ''
+
   // On mobile, Cart/Profile relocate INTO the hamburger panel entirely
   // (not just losing their text labels) — this renders plain Cart/profile
   // link rows matching the Home link's styling, hidden by default and only
@@ -2355,6 +2621,7 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
   // pointer back to the button that opened it.
   const menuPanel = `<div data-ru6-menu-panel ${menuHydrationAttrs} style="display:none;position:absolute;top:100%;left:0;width:100%;max-width:500px;background:#fff;box-shadow:0 12px 24px rgba(0,0,0,0.12);padding:1.25rem min(${data.paddingX}px,5vw) 1.5rem;z-index:9999;">
     ${menuLinksHtml}
+    ${dynamicCategoriesRow}
     ${menuItemsEl}
     ${mobileMenuExtras}
   </div>
@@ -2518,6 +2785,16 @@ export interface Ru7NavbarData {
   brandFontWeight: string
 
   navLinks: { label: string; url: string; newTab?: boolean }[]
+  // Standalone "Categories" trigger + auto-generated categories row — two
+  // independent ways to show categories, same mechanisms every other
+  // navbar in this file uses (both can be on at once).
+  dynamicCategoriesFloating: boolean
+  dynamicCategoriesInline: boolean
+  showDynamicCategories: boolean
+  maxCategories: number
+  // Text colour used INSIDE the white dropdown popups — kept separate from
+  // linkColor below, which colours the nav bar's own trigger text.
+  categoryDropdownTextColor: string
   linkColor: string
   linkFontSize: number
   linkFontWeight: string
@@ -2558,6 +2835,11 @@ export const ru7NavbarDefaults: Ru7NavbarData = {
   brandFontWeight: '700',
 
   navLinks: [{ label: 'Shop', url: '/shop' }],
+  dynamicCategoriesFloating: false,
+  dynamicCategoriesInline: false,
+  showDynamicCategories: false,
+  maxCategories: 8,
+  categoryDropdownTextColor: '#111827',
   linkColor: '#111827',
   linkFontSize: 15,
   linkFontWeight: '600',
@@ -2616,6 +2898,12 @@ export const ru7NavbarFields: FieldConfig[] = [
       { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
+  { key: 'dynamicCategoriesFloating', label: 'Dynamic Categories (Floating)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'dynamicCategoriesInline', label: 'Dynamic Categories (Inline)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'showDynamicCategories', label: 'Show Categories Row (one item per category)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'maxCategories', label: 'Max Categories Shown', type: 'number', placeholder: '8' },
+  { key: 'categoryDropdownTextColor', label: 'Category Dropdown Text Colour', type: 'color',
+    placeholder: 'Text colour inside the white "Categories" dropdown popup — keep this dark regardless of Link Colour below' },
   { key: 'linkColor', label: 'Link Colour', type: 'color' },
   { key: 'linkFontSize', label: 'Link Font Size (px)', type: 'number', unit: 'px', step: 1, placeholder: '15' },
   { key: 'linkFontWeight', label: 'Link Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
@@ -2646,8 +2934,36 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   const navLinksHtml = (data.navLinks ?? [])
     .map(l => `<a href="${l.url}" style="${linkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`)
     .join('')
-  const desktopLinksEl = navLinksHtml
-    ? `<nav data-ru7-desktop-links style="display:flex;align-items:center;gap:1.75rem;">${navLinksHtml}</nav>`
+  // Standalone "Categories" trigger — unscoped, shows the whole tree, same
+  // mechanism Ru1-Navbar/Ru4-Navbar use.
+  const dynamicPlaceholder = (data.dynamicCategoriesFloating || data.dynamicCategoriesInline)
+    ? `<div
+        data-rubikx-component='CategoryNav'
+        data-on-mount='loadCategories'
+        data-max-items='20'
+        data-label='Categories'
+        data-link-color='${data.categoryDropdownTextColor ?? '#111827'}'
+        data-font-size='${data.linkFontSize}'
+        data-font-weight='${data.linkFontWeight}'
+        data-category-dropdown-style='${data.dynamicCategoriesInline ? 'inline' : 'floating'}'
+        style='position:relative;display:inline-block;' data-cat-nav='true'
+      >
+        <a style='${linkStyle}cursor:pointer;'>Categories ▾</a>
+        <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Load Categories</span>
+        </div>
+      </div>`
+    : ''
+
+  // Second, independent way to show categories — one nav item PER top-level
+  // category, auto-built by loadDynamicNav (same handler Ru5-Dynamic-Navbar
+  // uses). Can be on at the same time as the "Categories" dropdown above.
+  // paddingX comes from mainBarPaddingX — this navbar has no plain paddingX field.
+  const dynamicCategoriesRow = renderDynamicCategoriesRow({ ...data, paddingX: data.mainBarPaddingX }, '1.75rem', '#111827')
+  const { desktopEl: dynamicCategoriesRowEl, mobileEl: dynamicCategoriesMobileEl } = dynamicCategoriesRow
+
+  const desktopLinksEl = (navLinksHtml || dynamicPlaceholder || dynamicCategoriesRowEl)
+    ? `<nav data-ru7-desktop-links style="display:flex;align-items:center;gap:1.75rem;">${navLinksHtml}${dynamicPlaceholder}${dynamicCategoriesRowEl}</nav>`
     : ''
 
   // Sign In: static link + hidden AuthState shell, same coexistence pattern
@@ -2702,7 +3018,7 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
     ? `<div style="height:1px;background:#e5e7eb;margin:0.25rem 0 0.75rem;"></div>`
     : ''
 
-  const showMobileMenu = !!(navLinksHtml || data.showSearch || data.showSignIn)
+  const showMobileMenu = !!(navLinksHtml || data.showSearch || data.showSignIn || dynamicPlaceholder || data.showDynamicCategories)
   const hamburgerEl = showMobileMenu
     ? `<button type="button" data-ru7-menu-toggle onclick="${hamburgerToggleScript}" style="display:none;background:none;border:none;cursor:pointer;padding:0;align-items:center;flex-shrink:0;">
         <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.linkColor}" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -2716,6 +3032,8 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
         </div>
         ${mobileSearchEl}
         ${mobileNavLinksHtml}
+        ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="${mobileLinkStyle}cursor:pointer;">Categories ▾</a>` : ''}
+        ${dynamicCategoriesMobileEl}
         ${mobileDividerEl}
         ${mobileSignInEl}
       </div>
@@ -2765,8 +3083,11 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   // the hamburger/icons on a phone screen. The cart icon is scoped to
   // data-ru7-not-home (set by homePageScript below) so it only shows on
   // mobile when the visitor is actually on the home page.
-  const responsiveStyle = showMobileMenu
+  const { css: dynamicCategoriesRowCss } = dynamicCategoriesRow
+
+  const responsiveStyle = (showMobileMenu || dynamicCategoriesRowCss)
     ? `<style>
+  ${dynamicCategoriesRowCss}
   @media (max-width: 640px) {
     [data-ru7-desktop-links] { display: none !important; }
     [data-ru7-menu-toggle] { display: inline-flex !important; }
@@ -2795,11 +3116,13 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   // cart icon on mobile everywhere except the home page.
   const homePageScript = `<script>(function(){var sec=document.currentScript.closest('section');if(location.pathname!=='/')sec.setAttribute('data-ru7-not-home','true');})()</script>`
 
+  const { hydrationAttrs: dynamicNavHydrationAttrs } = dynamicCategoriesRow
+
   return `<section data-component-title="Ru7-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
 ${responsiveStyle}
 ${homePageScript}
 ${topBarEl}
-<nav data-ru7-main style="position:relative;background:${data.mainBarBgColor};padding:${data.mainBarPaddingY}px min(${data.mainBarPaddingX}px,6vw);display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+<nav data-ru7-main${dynamicNavHydrationAttrs} style="position:relative;background:${data.mainBarBgColor};padding:${data.mainBarPaddingY}px min(${data.mainBarPaddingX}px,6vw);display:flex;align-items:center;justify-content:space-between;gap:1rem;">
   <div data-ru7-logo style="display:flex;align-items:center;min-width:0;">
     ${logoEl}
   </div>
