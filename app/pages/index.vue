@@ -2,14 +2,10 @@
 import { useSiteConfig } from '~/composables/useSiteConfig'
 import { splitShopSectionsForPublish, GLOBAL_OWNER_PAGES } from '~/composables/useGlobalSections'
 import { resetThemeToDefaults } from '~/composables/editor/useThemeColors'
+import CloneSiteModal from '~/components/builder/CloneSiteModal.client.vue'
+import type { Website } from '~/types/website'
 
 definePageMeta({ layout: 'dashboard' })
-
-interface Website {
-  id: number
-  name: string
-  domain: string
-}
 
 interface PageVersion {
   version: number
@@ -51,6 +47,9 @@ const showNewPageModal = ref(false)
 const newPageName = ref('')
 const newPageNameInput = ref<HTMLInputElement | null>(null)
 const newPageError = ref('')
+
+// Clone Site modal state
+const showCloneSiteModal = ref(false)
 
 // Site configuration composable
 const siteConfig = useSiteConfig()
@@ -387,6 +386,26 @@ function editPage(page: Page) {
   navigateTo(`/editor?pageId=${page.id}&pageName=${encodeURIComponent(page.name)}&pageVersion=${vData.version}&pageVersionStatus=${vData.status}&nextVersion=${nextVersion}&companyId=${selectedWebsiteId.value}`)
 }
 
+const showPreviewModal = ref(false)
+const previewPageName = ref('')
+const previewHtml = ref('')
+
+function openPreview(page: Page) {
+  const vData = selectedVersionData(page)
+  const headerHtml = pages.value.find(p => p.id === 'global-header')?.versions[0]?.value ?? ''
+  const footerHtml = pages.value.find(p => p.id === 'global-footer')?.versions[0]?.value ?? ''
+  const bodyHtml = [headerHtml, vData?.value, footerHtml].filter(Boolean).join('\n')
+
+  previewPageName.value = page.name
+  previewHtml.value = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}</style></head><body>${bodyHtml}</body></html>`
+  showPreviewModal.value = true
+}
+
+function closePreview() {
+  showPreviewModal.value = false
+  previewHtml.value = ''
+}
+
 function formatDate(iso: string) {
   const date = new Date(iso.replace(' ', 'T'))
   return date.toLocaleString('en-US', {
@@ -500,10 +519,27 @@ function handleModalKeydown(e: KeyboardEvent) {
           >
             <span class="material-symbols-outlined text-2xl leading-none">settings</span>
           </NuxtLink>
+          <button
+            v-if="websites && websites.length > 1"
+            title="Clone this site's pages to another site"
+            class="flex h-10 items-center gap-1.5 cursor-pointer rounded-xl bg-gray-100 px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 border-none shadow-xs"
+            @click="showCloneSiteModal = true"
+          >
+            <span class="material-symbols-outlined text-xl leading-none">content_copy</span>
+            Clone Site
+          </button>
         </div>
         <p class="mt-1 text-sm text-gray-500">Manage and publish your store pages</p>
       </div>
     </div>
+
+    <CloneSiteModal
+      v-if="showCloneSiteModal && selectedWebsiteId"
+      :websites="websites ?? []"
+      :source-company-id="selectedWebsiteId"
+      @close="showCloneSiteModal = false"
+      @cloned="fetchPages"
+    />
 
     <!-- Loading -->
     <div v-if="loadingPages" class="py-16 text-center text-sm text-gray-400">
@@ -519,7 +555,12 @@ function handleModalKeydown(e: KeyboardEvent) {
         class="flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white"
       >
         <!-- Browser mockup preview -->
-        <div class="relative flex h-36 items-center justify-center bg-slate-50">
+        <button
+          type="button"
+          class="group relative flex h-36 w-full items-center justify-center bg-slate-50"
+          :aria-label="`Preview ${page.name}`"
+          @click="openPreview(page)"
+        >
           <svg width="130" height="84" viewBox="0 0 130 84" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="0.5" y="0.5" width="129" height="83" rx="5.5" fill="white" stroke="#CBD5E1" />
             <rect x="0.5" y="0.5" width="129" height="16" rx="5.5" fill="#F1F5F9" stroke="#CBD5E1" />
@@ -534,6 +575,19 @@ function handleModalKeydown(e: KeyboardEvent) {
             <rect x="68" y="58" width="50" height="15" rx="3" fill="#E2E8F0" />
           </svg>
 
+          <span
+            class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 to-transparent opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100"
+          />
+          <span
+            class="pointer-events-none absolute bottom-2 left-2.5 flex items-center gap-1.5 text-gray-500 transition-colors duration-300 ease-out group-hover:text-white"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span class="text-[11px] font-semibold">Preview</span>
+          </span>
+
           <!-- Status badge -->
           <span
             class="absolute right-2.5 top-2.5 rounded-full px-2 py-0.5 text-xs font-medium leading-none"
@@ -545,7 +599,7 @@ function handleModalKeydown(e: KeyboardEvent) {
           >
             {{ selectedVersionData(page)?.status ?? page.status }}
           </span>
-        </div>
+        </button>
 
         <!-- Card body -->
         <div class="flex flex-1 flex-col gap-2 p-4">
@@ -616,6 +670,36 @@ function handleModalKeydown(e: KeyboardEvent) {
         <span class="mt-2 text-sm text-gray-400">New Page</span>
       </button>
     </div>
+
+    <!-- Preview modal -->
+    <Teleport to="body">
+      <div
+        v-if="showPreviewModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-4"
+        @click.self="closePreview"
+      >
+        <div class="flex h-full w-full max-w-[1600px] flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
+          <div class="flex shrink-0 items-center justify-between border-b border-gray-200 px-4 py-3">
+            <span class="text-sm font-semibold text-gray-900">{{ previewPageName }}</span>
+            <button
+              class="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              title="Close preview"
+              @click="closePreview"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <iframe
+            :srcdoc="previewHtml"
+            title="Page preview"
+            class="min-h-0 flex-1 border-0"
+            sandbox="allow-same-origin"
+          />
+        </div>
+      </div>
+    </Teleport>
 
     <!-- New Page modal -->
     <Teleport to="body">

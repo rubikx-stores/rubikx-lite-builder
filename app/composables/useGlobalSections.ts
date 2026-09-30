@@ -6,6 +6,11 @@ export const FOOTER_TITLES = ['Ru1 Techwire Footer', 'Footer-1', 'Ru1 Homepage F
 // onto its editor canvas for preview, but must never re-publish them on save.
 export const GLOBAL_OWNER_PAGES = ['home', 'shop']
 
+// CMS keys that are internal storage slots, not real content pages — never
+// offered as a page to clone/select in page pickers (Clone Design/Clone Site
+// modals, etc).
+export const INTERNAL_CMS_KEYS = new Set(['global-header', 'global-footer', 'global-theme', 'global-config'])
+
 // Shop theme mockup blocks (product grid/filters/breadcrumb) — live product data
 // replaces these on the real storefront, so they're stripped out at publish time.
 export const SHOP_TITLES = ['Ru1 Shop Hero', 'Ru1 Shop Content', 'Ru2 Shop Header', 'Ru2 Shop Filters', 'Ru2 Shop Products']

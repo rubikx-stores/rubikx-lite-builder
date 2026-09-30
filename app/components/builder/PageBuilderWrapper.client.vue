@@ -67,14 +67,6 @@ const showVersionModal = ref(false)
 const selectedVersion = ref(1)
 const saveInFlight = ref(false)
 
-// Set when the version-save modal was opened via "Clone Design" rather than
-// the builder's own Save button — Clone Design must always operate on
-// whatever's actually on screen, so it forces the same Save step first
-// (same modal, same confirmSave()) and only opens the site/page picker once
-// that save genuinely succeeds. Reset on cancel so a declined save never
-// opens the picker.
-const pendingCloneAfterSave = ref(false)
-
 async function handleSaveClick() {
   if (saveInFlight.value || !props.pageId) return
 
@@ -91,17 +83,7 @@ async function handleSaveClick() {
   showVersionModal.value = true
 }
 
-async function startCloneFlow() {
-  pendingCloneAfterSave.value = true
-  await handleSaveClick()
-  // handleSaveClick bails out without opening the modal when there's
-  // nothing on the canvas to save (getSavedPageHtml() returns falsy) — don't
-  // leave the flag armed for some unrelated future save to trigger.
-  if (!showVersionModal.value) pendingCloneAfterSave.value = false
-}
-
 function cancelVersionModal() {
-  pendingCloneAfterSave.value = false
   showVersionModal.value = false
 }
 
@@ -201,7 +183,6 @@ async function confirmSave() {
     if (saves.length === 0) {
       console.warn('[CMS] Nothing to save — canvas is empty')
       showVersionModal.value = false
-      pendingCloneAfterSave.value = false
       await navigateTo('/')
       return
     }
@@ -217,10 +198,6 @@ async function confirmSave() {
     if (canEditGlobals && footerSections.length > 0) pageHtmlCache.value['global-footer'] = toHtml(footerSections)
 
     showVersionModal.value = false
-    if (pendingCloneAfterSave.value) {
-      pendingCloneAfterSave.value = false
-      showCloneDesignModal.value = true
-    }
   } catch (error) {
     console.error('[CMS] Save error:', error)
   } finally {
@@ -436,8 +413,8 @@ onMounted(async () => {
             v-if="props.pageId"
             type="button"
             class="h-10 px-3 cursor-pointer rounded-full flex items-center gap-1 border-none justify-center bg-gray-50 hover:bg-myPrimaryLinkColor focus-visible:ring-0 text-black hover:text-white text-xs font-medium"
-            title="Save, then clone this page's design to other sites"
-            @click="startCloneFlow"
+            title="Clone this page's last saved design to other sites"
+            @click="showCloneDesignModal = true"
           >
             <span class="pbx-myMediumIcon material-symbols-outlined text-base leading-none">content_copy</span>
             Clone Design

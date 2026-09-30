@@ -5,6 +5,46 @@ import { icon } from '../useIconSvg'
 import { fontField, fontCss } from '../editor/fontFields'
 import type { Product } from '../themes/themes-data'
 
+// Shared by every navbar/header block's "auto-generated categories row" —
+// one nav item PER top-level category, auto-built at hydration time by
+// loadDynamicNav (rubikx-hydration.client.ts). Each caller only differs in
+// its own gap spacing and its own field's fallback text colour (used before
+// categoryDropdownTextColor existed on that block), so those are the only
+// two things passed in; everything else (markup, CSS override, hydration
+// attrs) is identical across callers.
+export function renderDynamicCategoriesRow(data: {
+  showDynamicCategories: boolean
+  maxCategories: number
+  linkColor: string
+  linkFontSize: number
+  linkFontWeight: string
+  paddingX: number
+  categoryDropdownTextColor?: string
+}, gap: string, fallbackColor: string): {
+  desktopEl: string
+  mobileEl: string
+  css: string
+  hydrationAttrs: string
+} {
+  if (!data.showDynamicCategories) return { desktopEl: '', mobileEl: '', css: '', hydrationAttrs: '' }
+
+  const desktopPlaceholder = `<span style="color:#9ca3af;font-size:13px;font-style:italic;">⟳ Loading categories…</span>`
+  const mobilePlaceholder = `<span style="display:block;padding:6px 0;color:#9ca3af;font-size:13px;font-style:italic;">⟳ Loading categories…</span>`
+  const textColor = data.categoryDropdownTextColor ?? fallbackColor
+
+  return {
+    desktopEl: `<div data-ru5-desktop-items style="display:flex;align-items:center;gap:${gap};">${desktopPlaceholder}</div>`,
+    mobileEl: `<div data-ru5-mobile-items style="display:flex;flex-direction:column;">${mobilePlaceholder}</div>`,
+    // loadDynamicNav shares one colour between its own nav-row trigger text
+    // and the white dropdown's contents — force the dropdown text back to
+    // the dedicated dark colour here.
+    css: `[data-ru5-desktop-items] [data-cat-dropdown] a { color: ${textColor} !important; }
+  nav[data-rubikx-component="DynamicCategoryNav"][data-mega-contained] [data-cat-nav][data-mega] { position: relative !important; }
+  nav[data-rubikx-component="DynamicCategoryNav"][data-mega-contained] [data-cat-nav][data-mega]:hover [data-cat-dropdown] { left: 0 !important; right: auto !important; width: auto !important; min-width: 200px !important; border-radius: 8px !important; }`,
+    hydrationAttrs: ` data-rubikx-component="DynamicCategoryNav" data-mega-contained="true" data-on-mount="loadDynamicNav" data-max-categories="${data.maxCategories ?? 8}" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}" data-padding-x="${data.paddingX}"`,
+  }
+}
+
 
 export const megaMenuHeaderSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 32">
   <rect fill="#394152" x="0" y="0" width="277.5" height="32"/>
@@ -39,6 +79,16 @@ export interface MegaMenuHeaderData {
   navLinksAlign: string
   dynamicCategoriesFloating: boolean
   dynamicCategoriesInline: boolean
+  // One nav item PER top-level category, auto-built from the live category
+  // tree by loadDynamicNav — a second, independent way to show categories
+  // alongside the "Categories" dropdown above (both can be on at once).
+  showDynamicCategories: boolean
+  maxCategories: number
+  // Text colour used INSIDE the white "Categories" dropdown popup only —
+  // kept separate from linkColor below, which colours the nav bar's own
+  // trigger text and would otherwise be invisible against the dropdown's
+  // white background if the nav bar itself uses light text.
+  categoryDropdownTextColor: string
   linkFontSize: number
   linkFontWeight: string
   linkColor: string
@@ -85,6 +135,9 @@ export const megaMenuHeaderDefaults: MegaMenuHeaderData = {
   navLinksAlign: 'center',
   dynamicCategoriesFloating: true,
   dynamicCategoriesInline: false,
+  showDynamicCategories: false,
+  maxCategories: 8,
+  categoryDropdownTextColor: '#000000',
   linkFontSize: 14,
   linkFontWeight: '500',
   linkColor: '#1f2937',
@@ -162,6 +215,10 @@ export const megaMenuHeaderFields: FieldConfig[] = [
   { key: 'showSearch',        label: 'Show Search Bar',               type: 'toggle'  },
   { key: 'dynamicCategoriesFloating', label: 'Dynamic Categories (Floating)', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'dynamicCategoriesInline', label: 'Dynamic Categories (Inline)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'showDynamicCategories', label: 'Show Categories Row (one item per category)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'maxCategories', label: 'Max Categories Shown', type: 'number', placeholder: '8' },
+  { key: 'categoryDropdownTextColor', label: 'Category Dropdown Text Colour', type: 'color',
+    placeholder: 'Text colour inside the white "Categories" dropdown popup — keep this dark regardless of Link Colour below' },
   { key: 'searchPlaceholder', label: 'Search Placeholder',  type: 'text',
     placeholder: 'e.g. Search products…'                                    },
   { key: 'searchAlign',     label: 'Search Position',       type: 'select',
@@ -256,7 +313,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
         data-on-mount='loadCategories'
         data-max-items='20'
         data-label='Categories'
-        data-link-color='${data.linkColor}'
+        data-link-color='${data.categoryDropdownTextColor ?? '#000000'}'
         data-font-size='${data.linkFontSize}'
         data-font-weight='${data.linkFontWeight}'
         data-category-dropdown-style='${data.dynamicCategoriesInline ? 'inline' : 'floating'}'
@@ -269,8 +326,14 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
       </div>`
     : ''
 
-  const linksEl = (staticLinks || dynamicPlaceholder)
-    ? `<nav style='display:flex;align-items:center;gap:1.5rem;'>${staticLinks}${dynamicPlaceholder}</nav>`
+  // Second, independent way to show categories — one nav item PER top-level
+  // category, auto-built by loadDynamicNav (same handler Ru5-Dynamic-Navbar
+  // uses). Can be on at the same time as the "Categories" dropdown above.
+  const dynamicCategoriesRow = renderDynamicCategoriesRow(data, '1.5rem', '#000000')
+  const { desktopEl: dynamicCategoriesRowEl, mobileEl: dynamicCategoriesMobileEl } = dynamicCategoriesRow
+
+  const linksEl = (staticLinks || dynamicPlaceholder || dynamicCategoriesRowEl)
+    ? `<nav style='display:flex;align-items:center;gap:1.5rem;'>${staticLinks}${dynamicPlaceholder}${dynamicCategoriesRowEl}</nav>`
     : ''
 
   const signInBtnStyle = `display:inline-flex;align-items:center;padding:0.4375rem 1rem;border-radius:${data.buttonBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:500;white-space:nowrap;border:1.5px solid ${data.textColor};color:${data.textColor};background:transparent;${fontCss(data.buttonFont, data.fontFamily)}`
@@ -362,6 +425,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
   <div style="display:flex;flex-direction:column;">
     ${mobileDrawerLinks}
     ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;cursor:pointer;">Categories</a>` : ''}
+    ${dynamicCategoriesMobileEl}
   </div>
   <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
     ${mobileCTAButtons}
@@ -377,13 +441,16 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     ? `<script>(function(){function wireTiles(sec){sec.querySelectorAll('.ru-ptile').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var panel=sec.querySelector('.ru-pd');if(!panel)return;var imgEl=a.querySelector('img');var imgSrc=imgEl?imgEl.src:'';var name=(a.querySelector('.ru-ptile-name')||{}).textContent||'';var price=(a.querySelector('.ru-ptile-price')||{}).textContent||'';var imgCol=imgSrc?'<img src="'+imgSrc+'" style="width:100%;height:100%;object-fit:cover;display:block;" />':'<div style="width:100%;height:100%;background:#f3f4f6;"></div>';panel.innerHTML='<div style="display:grid;grid-template-columns:40% 60%;height:380px;position:relative;">'+  '<div style="overflow:hidden;">'+imgCol+'</div>'+  '<div style="padding:40px 48px;display:flex;flex-direction:column;justify-content:center;background:#fff;">'+    '<div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;">Featured Product</div>'+    '<div style="font-size:26px;font-weight:700;color:#111827;line-height:1.25;margin-bottom:12px;">'+name+'</div>'+    '<div style="font-size:22px;font-weight:600;color:#374151;margin-bottom:28px;">'+price+'</div>'+    '<div><a href="'+a.href+'" style="display:inline-block;padding:12px 28px;background:#111827;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:500;letter-spacing:.02em;">View Product →</a></div>'+  '</div>'+  '<button onclick="this.closest(\\'.ru-pd\\').style.display=\\'none\\'" style="position:absolute;top:12px;right:16px;background:rgba(255,255,255,.9);border:1px solid #e5e7eb;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;color:#6b7280;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>'+  '</div>';panel.style.display='block';panel.scrollIntoView({behavior:'smooth',block:'nearest'});});})}function init(){var ts=document.querySelectorAll('.ru-mega-item[data-mega-json]');if(!ts.length)return;var allIds=[];ts.forEach(function(t){try{JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"')).forEach(function(g){(g.ids||[]).forEach(function(id){if(allIds.indexOf(id)<0)allIds.push(id);});});}catch(e){}});ts.forEach(function(t){var sec=t.closest('section');if(sec)wireTiles(sec);});if(!allIds.length)return;fetch('/api/products?ids='+allIds.join(',')).then(function(r){return r.json();}).then(function(prods){var map={};prods.forEach(function(p){map[p.id]=p;});ts.forEach(function(t){var groups;try{groups=JSON.parse(t.getAttribute('data-mega-json').replace(/&quot;/g,'"'));}catch(e){return;}var drop=t.querySelector('.ru-mega-drop');if(!drop)return;var html=groups.map(function(g){var items=(g.ids||[]).map(function(id){var p=map[id];if(!p)return'';var img=p.image?'<img src="data:image/png;base64,'+p.image+'" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;"/>':'<div style="width:44px;height:44px;background:#f3f4f6;border-radius:6px;flex-shrink:0;"></div>';var price=p.price!=null?'<span class="ru-ptile-price" style="font-size:11px;color:#6b7280;">$'+Number(p.price).toFixed(2)+'</span>':'';return'<a href="/shop/'+p.id+'" class="ru-ptile" style="display:flex;align-items:center;gap:10px;padding:7px 14px;text-decoration:none;cursor:pointer;" onmouseover="this.style.background=\\'#f9fafb\\'" onmouseout="this.style.background=\\'\\''">'+img+'<div style="min-width:0;"><div class="ru-ptile-name" style="font-size:13px;font-weight:500;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">'+p.name+'</div>'+price+'</div></a>';}).join('');if(!items.trim())return'';return'<div><a href="'+(g.href||'#')+'" style="display:block;padding:8px 14px 4px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;">'+g.label+'</a>'+items+'</div>';}).filter(Boolean).join('<div style="height:1px;background:#f3f4f6;margin:4px 0;"></div>');drop.innerHTML=html;var sec=t.closest('section');if(sec)wireTiles(sec);});}).catch(function(){});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();<\/script>`
     : ''
 
+  const { css: dynamicCategoriesRowCss, hydrationAttrs: dynamicNavHydrationAttrs } = dynamicCategoriesRow
+
   const sectionFontStyle = fontCss(undefined, data.fontFamily) + (data.sticky ? 'position:sticky;top:0;z-index:9999' : '')
   return `<section data-component-title="Ru2-Mega-Menu-Header" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionFontStyle ? ` style="${sectionFontStyle}"` : ''}>
 <style>
 .ru-mega-item:hover .ru-mega-drop{display:block !important;}
 .ru-pd{display:none;width:100%;border-top:1px solid #e5e7eb;overflow:hidden;}
+${dynamicCategoriesRowCss}
 </style>
-<nav style="${navStyle}">
+<nav style="${navStyle}"${dynamicNavHydrationAttrs}>
   ${mobileNav}
   <div data-nav-desktop="true" style="max-width:90rem;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;">
     ${zone(cols.left,   'flex-start')}
@@ -422,6 +489,17 @@ export interface Ru3MegaHeaderData {
 
   navLinks: Ru3NavLink[]
   overflowLinks: OverflowLink[]
+  // Standalone "Categories" trigger + auto-generated categories row — two
+  // more, independent ways to show categories alongside the per-link
+  // showDropdown above (any/all can be on at once).
+  dynamicCategoriesFloating: boolean
+  dynamicCategoriesInline: boolean
+  showDynamicCategories: boolean
+  maxCategories: number
+  // Text colour used INSIDE the white per-link categories dropdown popup
+  // only — kept separate from linkColor below, which colours the nav bar's
+  // own trigger text.
+  categoryDropdownTextColor: string
   linkFontSize: number
   linkFontWeight: string
   linkColor: string
@@ -459,6 +537,11 @@ export const ru3MegaHeaderDefaults: Ru3MegaHeaderData = {
     { label: 'Home', href: '/', showDropdown: false },
   ],
   overflowLinks: [],
+  dynamicCategoriesFloating: false,
+  dynamicCategoriesInline: false,
+  showDynamicCategories: false,
+  maxCategories: 8,
+  categoryDropdownTextColor: '#000000',
   linkFontSize: 14,
   linkFontWeight: '500',
   linkColor: '#1f2937',
@@ -519,6 +602,12 @@ export const ru3MegaHeaderFields: FieldConfig[] = [
       { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
+  { key: 'dynamicCategoriesFloating', label: 'Dynamic Categories (Floating)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'dynamicCategoriesInline', label: 'Dynamic Categories (Inline)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'showDynamicCategories', label: 'Show Categories Row (one item per category)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'maxCategories', label: 'Max Categories Shown', type: 'number', placeholder: '8' },
+  { key: 'categoryDropdownTextColor', label: 'Category Dropdown Text Colour', type: 'color',
+    placeholder: 'Text colour inside the white categories dropdown popups — keep this dark regardless of Link Colour below' },
   { key: 'linkColor',       label: 'Link Colour',            type: 'color'   },
   { key: 'linkFontSize',    label: 'Link Font Size (px)',    type: 'number',
     placeholder: '14'                                                        },
@@ -595,7 +684,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
         data-category-name='${l.label}'
         data-on-mount='loadCategories'
         data-max-items='20'
-        data-link-color='${data.linkColor}'
+        data-link-color='${data.categoryDropdownTextColor ?? '#000000'}'
         data-font-size='${data.linkFontSize}'
         data-font-weight='${data.linkFontWeight}'
         data-category-filter='${l.categoryFilter ?? ''}'
@@ -617,6 +706,34 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
     .join('')
 
   const linksHtml = navLinksHtml + overflowLinksHtml
+
+  // Standalone "Categories" trigger — unscoped, shows the whole tree, same
+  // mechanism Ru1-Navbar/Ru4-Navbar use. Independent of the per-link
+  // showDropdown items above.
+  const dynamicPlaceholder = (data.dynamicCategoriesFloating || data.dynamicCategoriesInline)
+    ? `<div
+        data-rubikx-component='CategoryNav'
+        data-on-mount='loadCategories'
+        data-max-items='20'
+        data-label='Categories'
+        data-link-color='${data.categoryDropdownTextColor ?? '#000000'}'
+        data-font-size='${data.linkFontSize}'
+        data-font-weight='${data.linkFontWeight}'
+        data-category-dropdown-style='${data.dynamicCategoriesInline ? 'inline' : 'floating'}'
+        style='position:relative;display:inline-block;' data-cat-nav='true'
+      >
+        <a style='${linkStyle}cursor:pointer;'>Categories ▾</a>
+        <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Load Categories</span>
+        </div>
+      </div>`
+    : ''
+
+  // Second, independent way to show categories — one nav item PER top-level
+  // category, auto-built by loadDynamicNav (same handler Ru5-Dynamic-Navbar
+  // uses).
+  const dynamicCategoriesRow = renderDynamicCategoriesRow(data, '2rem', '#000000')
+  const { desktopEl: dynamicCategoriesRowEl, mobileEl: dynamicCategoriesMobileEl } = dynamicCategoriesRow
 
   // "+" overflow — always present but hidden by default; its dropdown starts
   // empty. mountCmsNavOverflow (headless repo) shows this wrapper and moves
@@ -704,6 +821,8 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
     ? `<a href="${data.accountUrl}" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;">Login</a>`
     : ''
 
+  const { css: dynamicCategoriesRowCss } = dynamicCategoriesRow
+
   const mobileNav = `
 <style>
   [data-nav-mobile] { display: none; }
@@ -712,6 +831,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
     [data-nav-mobile] { display: flex !important; }
     [data-nav-desktop] { display: none !important; }
   }
+  ${dynamicCategoriesRowCss}
 </style>
 <!-- Mobile header -->
 <div data-nav-mobile="true" style="display:none;align-items:center;justify-content:space-between;padding:1.25rem ${data.paddingX}px;${data.showBottomBorder ? `border-bottom:1px solid ${data.bottomBorderColor};` : ''}">
@@ -734,6 +854,8 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
   ${mobileSearchEl}
   <div style="display:flex;flex-direction:column;">
     ${mobileDrawerLinks}
+    ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid #f3f4f6;cursor:pointer;">Categories</a>` : ''}
+    ${dynamicCategoriesMobileEl}
   </div>
   <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
     ${mobileAccountLinks}
@@ -744,12 +866,14 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
 
   const sectionStyle = `width:100%;display:block;${fontCss(undefined, data.fontFamily)}${data.sticky ? 'position:sticky;top:0;z-index:9999;' : ''}`
 
+  const { hydrationAttrs: dynamicNavHydrationAttrs } = dynamicCategoriesRow
+
   return `<section data-component-title="Ru3-Mega-Header" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
-<nav style="${navStyle}">
+<nav style="${navStyle}"${dynamicNavHydrationAttrs}>
   ${mobileNav}
   <div data-nav-desktop="true" style="width:100%;display:flex;align-items:center;gap:3rem;">
     <div style="display:flex;align-items:center;flex-shrink:0;">${logoEl}</div>
-    <nav data-rubikx-component="MainNavRow" data-on-mount="loadNavOverflow" style="display:flex;align-items:center;justify-content:flex-start;gap:2rem;flex:1;min-width:0;">${linksHtml}${overflowHtml}</nav>
+    <nav data-rubikx-component="MainNavRow" data-on-mount="loadNavOverflow" style="display:flex;align-items:center;justify-content:flex-start;gap:2rem;flex:1;min-width:0;">${linksHtml}${overflowHtml}${dynamicPlaceholder}${dynamicCategoriesRowEl}</nav>
     <div style="display:flex;align-items:center;justify-content:flex-end;gap:2.5rem;flex-shrink:0;">${searchEl}${cartEl}${accountEl}</div>
   </div>
   <div data-ru3-search-bar style="display:none;border-top:1px solid ${data.bottomBorderColor};">
@@ -791,6 +915,15 @@ export interface Ru4NavbarData {
   navLinks: Ru4NavLink[]
   navLinksAlign: string
   dynamicCategories: boolean
+  // One nav item PER top-level category, auto-built from the live category
+  // tree by loadDynamicNav — a second, independent way to show categories
+  // alongside the "Categories" dropdown above (both can be on at once).
+  showDynamicCategories: boolean
+  maxCategories: number
+  // Text colour used INSIDE the white "Categories" dropdown popup only —
+  // kept separate from linkColor below, which colours the nav bar's own
+  // trigger text.
+  categoryDropdownTextColor: string
   linkColor: string
   linkFontSize: number
   linkFontWeight: string
@@ -838,6 +971,9 @@ export const ru4NavbarDefaults: Ru4NavbarData = {
   ],
   navLinksAlign: 'left',
   dynamicCategories: false,
+  showDynamicCategories: false,
+  maxCategories: 8,
+  categoryDropdownTextColor: '#000000',
   linkColor: '#111827',
   linkFontSize: 14,
   linkFontWeight: '500',
@@ -894,6 +1030,10 @@ export const ru4NavbarFields: FieldConfig[] = [
   },
   { key: 'navLinksAlign', label: 'Links Position', type: 'select', options: ['left', 'center', 'right'] },
   { key: 'dynamicCategories', label: 'Dynamic Categories', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'showDynamicCategories', label: 'Show Categories Row (one item per category)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'maxCategories', label: 'Max Categories Shown', type: 'number', placeholder: '8' },
+  { key: 'categoryDropdownTextColor', label: 'Category Dropdown Text Colour', type: 'color',
+    placeholder: 'Text colour inside the white "Categories" dropdown popup — keep this dark regardless of Link Colour below' },
   { key: 'linkColor', label: 'Link Colour', type: 'color' },
   { key: 'linkFontSize', label: 'Link Font Size (px)', type: 'number', step: 1, placeholder: '14' },
   { key: 'linkFontWeight', label: 'Link Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
@@ -956,7 +1096,7 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
         data-rubikx-component='CategoryNav'
         data-on-mount='loadCategories'
         data-max-items='20'
-        data-link-color='${data.linkColor}'
+        data-link-color='${data.categoryDropdownTextColor ?? '#000000'}'
         data-font-size='${data.linkFontSize}'
         data-font-weight='${data.linkFontWeight}'
         style='position:relative;display:inline-block;' data-cat-nav='true'
@@ -967,8 +1107,13 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
         </div>
       </div>`
     : ''
+  // Second, independent way to show categories — one nav item PER top-level
+  // category, auto-built by loadDynamicNav (same handler Ru5-Dynamic-Navbar
+  // uses). Can be on at the same time as the "Categories" dropdown above.
+  const dynamicCategoriesRow = renderDynamicCategoriesRow(data, '1.75rem', '#000000')
+  const { desktopEl: dynamicCategoriesRowEl, mobileEl: dynamicCategoriesMobileEl } = dynamicCategoriesRow
   const navLinksJustifyMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
-  const linksEl = `<nav style="display:flex;align-items:center;justify-content:${navLinksJustifyMap[data.navLinksAlign] ?? 'flex-start'};gap:1.75rem;">${staticLinksHtml}${dynamicCategoriesHtml}</nav>`
+  const linksEl = `<nav style="display:flex;align-items:center;justify-content:${navLinksJustifyMap[data.navLinksAlign] ?? 'flex-start'};gap:1.75rem;">${staticLinksHtml}${dynamicCategoriesHtml}${dynamicCategoriesRowEl}</nav>`
 
   const authLinksArr = [
     data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${data.authLinksColor};font-size:0.875rem;font-weight:500;text-decoration:none;white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}">${data.signInLabel}</a>` : '',
@@ -1005,6 +1150,8 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
       </div>`
     : ''
 
+  const { css: dynamicCategoriesRowCss } = dynamicCategoriesRow
+
   const mobileNav = `
 <style>
   [data-nav-mobile] { display: none; }
@@ -1013,6 +1160,7 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
     [data-nav-mobile] { display: flex !important; }
     [data-nav-desktop] { display: none !important; }
   }
+  ${dynamicCategoriesRowCss}
 </style>
 <!-- Mobile header -->
 <div data-nav-mobile="true" style="display:none;align-items:center;justify-content:space-between;padding:1rem ${data.paddingX}px;${data.showBottomBorder ? `border-bottom:1px solid ${data.bottomBorderColor};` : ''}">
@@ -1036,6 +1184,7 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
   <div style="display:flex;flex-direction:column;">
     ${mobileDrawerLinks}
     ${data.dynamicCategories ? `<a style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.15);cursor:pointer;">Categories</a>` : ''}
+    ${dynamicCategoriesMobileEl}
   </div>
   <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
     ${data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="display:flex;align-items:center;justify-content:center;border:1px solid ${data.textColor};border-radius:0.375rem;padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:${data.textColor};text-decoration:none;">${data.signInLabel}</a>` : ''}
@@ -1047,8 +1196,10 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
 
   const sectionStyle = `width:100%;display:block;${fontCss(undefined, data.fontFamily)}${data.sticky ? 'position:sticky;top:0;z-index:9999;' : ''}`
 
+  const { hydrationAttrs: dynamicNavHydrationAttrs } = dynamicCategoriesRow
+
   return `<section data-component-title="Ru4-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
-<nav style="${navStyle}">
+<nav style="${navStyle}"${dynamicNavHydrationAttrs}>
   ${mobileNav}
   <div data-nav-desktop="true" style="width:100%;display:flex;align-items:center;gap:2rem;">
     <div style="display:flex;align-items:center;flex-shrink:0;">${logoEl}</div>
@@ -1123,6 +1274,11 @@ export interface Ru5DynamicNavbarData {
 
   homeLabel: string
   homeHref: string
+  // Standalone "Categories" trigger — a second, independent way to show
+  // categories alongside the auto-generated row below (both can be on at
+  // once).
+  dynamicCategoriesFloating: boolean
+  dynamicCategoriesInline: boolean
   showDynamicCategories: boolean
   maxCategories: number
   // Hand-authored links, rendered between Home and the auto-generated
@@ -1130,6 +1286,11 @@ export interface Ru5DynamicNavbarData {
   // AND logoFilterByCategory is on — otherwise it renders as a plain link.
   logoNavLinks: Ru5LogoNavLink[]
 
+  // Text colour used INSIDE the white category/logo dropdown popups only —
+  // kept separate from linkColor below, which colours the nav-row trigger
+  // text and would otherwise be invisible against the dropdown's white
+  // background.
+  categoryDropdownTextColor: string
   linkColor: string
   linkFontSize: number
   linkFontWeight: string
@@ -1177,10 +1338,13 @@ export const ru5DynamicNavbarDefaults: Ru5DynamicNavbarData = {
 
   homeLabel: 'Home',
   homeHref: '/',
+  dynamicCategoriesFloating: false,
+  dynamicCategoriesInline: false,
   showDynamicCategories: true,
   maxCategories: 8,
   logoNavLinks: [],
 
+  categoryDropdownTextColor: '#000000',
   linkColor: '#1f2937',
   linkFontSize: 14,
   linkFontWeight: '500',
@@ -1231,6 +1395,8 @@ export const ru5DynamicNavbarFields: FieldConfig[] = [
   { key: '_h_nav', label: 'Navigation', type: 'header' },
   { key: 'homeLabel', label: 'Home Link Label', type: 'text', placeholder: 'Home' },
   { key: 'homeHref',  label: 'Home Link URL',   type: 'url',  placeholder: '/'    },
+  { key: 'dynamicCategoriesFloating', label: 'Dynamic Categories (Floating)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'dynamicCategoriesInline', label: 'Dynamic Categories (Inline)', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'showDynamicCategories', label: 'Show Dynamic Categories', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'maxCategories', label: 'Max Categories Shown', type: 'number',
     placeholder: '8 — the nav row is built automatically from your live category tree, one item per top-level category (each with its own mega dropdown); it grows or shrinks with your data, nothing to configure by hand' },
@@ -1244,6 +1410,8 @@ export const ru5DynamicNavbarFields: FieldConfig[] = [
   },
   { key: 'logoFilterByCategory', label: 'Show Logo/Brand Nav Link Dropdowns', type: 'toggle', siteSpecific: true, cloneValue: false,
     placeholder: 'Must be on for any Logo/Brand Nav Link above to show its dropdown — off shows those links as plain links instead' },
+  { key: 'categoryDropdownTextColor', label: 'Category Dropdown Text Colour', type: 'color',
+    placeholder: 'Text colour inside the white category/logo dropdown popups — keep this dark regardless of Link Colour below' },
   { key: 'linkColor',       label: 'Link Colour',            type: 'color'   },
   { key: 'linkFontSize',    label: 'Link Font Size (px)',    type: 'number',
     placeholder: '14'                                                        },
@@ -1462,7 +1630,7 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     const indexAttrs = ` data-logo-nav-index="${idx}"`
     const hydrationAttrs = forMobile
       ? ` data-rubikx-component="LogoNav"`
-      : ` data-rubikx-component="LogoNav" data-on-mount="loadLogoNav" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}"`
+      : ` data-rubikx-component="LogoNav" data-on-mount="loadLogoNav" data-link-color="${data.categoryDropdownTextColor ?? '#000000'}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}"`
     // data-logo-group carries the raw group name URL-encoded (groupName is
     // free text off Odoo, not a numeric id) so it survives round-tripping
     // through an HTML attribute intact; loadLogoNav decodeURIComponent()s it
@@ -1536,10 +1704,33 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     ? `<div data-ru5-desktop-items style="display:flex;align-items:center;gap:1.75rem;">${desktopPlaceholder}</div>`
     : ''
 
+  // Standalone "Categories" trigger — unscoped, shows the whole tree, same
+  // mechanism Ru1-Navbar/Ru4-Navbar use. Independent of logoNavLinks/the
+  // auto-generated row above.
+  const dynamicCategoriesDropdown = (data.dynamicCategoriesFloating || data.dynamicCategoriesInline)
+    ? `<div
+        data-rubikx-component='CategoryNav'
+        data-on-mount='loadCategories'
+        data-max-items='20'
+        data-label='Categories'
+        data-link-color='${data.categoryDropdownTextColor ?? '#000000'}'
+        data-font-size='${data.linkFontSize}'
+        data-font-weight='${data.linkFontWeight}'
+        data-category-dropdown-style='${data.dynamicCategoriesInline ? 'inline' : 'floating'}'
+        style='position:relative;display:inline-block;' data-cat-nav='true'
+      >
+        <a style='${linkStyle}cursor:pointer;'>Categories ▾</a>
+        <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Load Categories</span>
+        </div>
+      </div>`
+    : ''
+
   const desktopNavRow = `<div data-ru5-desktop-nav style="max-width:90rem;margin:0 auto;width:100%;align-items:center;justify-content:space-between;gap:1.5rem;padding:0.625rem ${data.paddingX}px;${data.showBottomBorder ? `border-top:1px solid ${data.bottomBorderColor};` : ''}">
     <div style="display:flex;align-items:center;gap:1.75rem;flex:1;min-width:0;">
       <a href="${data.homeHref}" style="${homeLinkStyle}">${data.homeLabel}</a>
       ${desktopLogoLinksEl}
+      ${dynamicCategoriesDropdown}
       ${desktopItemsEl}
     </div>
     ${cartEl}
@@ -1572,6 +1763,7 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     </div>
     <a href="${data.homeHref}" style="display:block;padding:0.7rem 0;${homeLinkStyle}">${data.homeLabel}</a>
     ${mobileLogoLinksEl}
+    ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="display:block;padding:0.75rem 0;font-size:1rem;font-weight:600;color:${data.textColor};text-decoration:none;cursor:pointer;">Categories</a>` : ''}
     ${mobileItemsEl}
     <div style="padding:0.75rem 0;">${cartEl}</div>
     <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:0.75rem;">${renderTopBarButtons()}</div>
@@ -1588,6 +1780,15 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     [data-ru5-desktop-nav] { display: none !important; }
     [data-ru5-mobile-bar] { display: flex !important; }
   }
+  /* loadDynamicNav shares ONE colour between the nav-row trigger text (light,
+     sits on this navbar's own dark background) and the dropdown's contents
+     (needs dark — the dropdown itself has a hardcoded white background). We
+     pass the light colour so the trigger stays legible, then force the
+     dropdown's own contents back to the dedicated dark colour here — scoped
+     to [data-ru5-desktop-items] only, so it never touches the nav-row
+     trigger links (which live outside [data-cat-dropdown]) or mobile (whose
+     drawer background is dark, so the light colour is already correct there). */
+  [data-ru5-desktop-items] [data-cat-dropdown] a { color: ${data.categoryDropdownTextColor ?? '#000000'} !important; }
   /* Search bar keeps its own, narrower breakpoint (tablet/768px) rather than
      sharing the nav's 1024px one — on a tablet-width screen there's still
      enough room for it inline next to the logo (just the nav links move
@@ -1705,6 +1906,11 @@ export interface Ru8NavbarData {
   // after the hand-authored navLinks above, not a replacement for them.
   showDynamicCategories: boolean
   maxCategories: number
+  // Standalone "Categories" trigger — a third, independent way to show
+  // categories alongside the per-link categoryFilter dropdowns and the
+  // auto-generated row above (any/all can be on at once).
+  dynamicCategoriesFloating: boolean
+  dynamicCategoriesInline: boolean
   // Text colour used INSIDE the white dropdown popups only (both per-link
   // categoryFilter dropdowns and the dynamic-categories row) — kept separate
   // from linkColor below, which colours the nav bar's own light-on-dark
@@ -1769,6 +1975,8 @@ export const ru8NavbarDefaults: Ru8NavbarData = {
   ],
   showDynamicCategories: false,
   maxCategories: 8,
+  dynamicCategoriesFloating: false,
+  dynamicCategoriesInline: false,
   categoryDropdownTextColor: '#111827',
   linkColor: '#ffffff',
   linkFontSize: 15,
@@ -1841,6 +2049,8 @@ export const ru8NavbarFields: FieldConfig[] = [
     placeholder: 'Adds one nav item per top-level category (e.g. Apparel, Headwear) straight into the nav row, alongside the Nav Links above — each with its own dropdown of that category\'s children' },
   { key: 'maxCategories', label: 'Max Categories Shown', type: 'number',
     placeholder: '8 — the row is built automatically from your live category tree, one item per top-level category; it grows or shrinks with your data' },
+  { key: 'dynamicCategoriesFloating', label: 'Standalone "Categories" Trigger (Floating)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'dynamicCategoriesInline', label: 'Standalone "Categories" Trigger (Inline)', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'categoryDropdownTextColor', label: 'Category Dropdown Text Colour', type: 'color',
     placeholder: 'Text colour inside the white dropdown popups — keep this dark regardless of the nav bar\'s own colours' },
   { key: 'linkColor', label: 'Link Colour', type: 'color' },
@@ -1972,6 +2182,28 @@ export function renderRu8Navbar(data: Ru8NavbarData): string {
   }
   const navLinksEl = visibleNavLinks.map(renderDesktopNavItem).join('')
 
+  // Standalone "Categories" trigger — unscoped, shows the whole tree, same
+  // mechanism Ru1-Navbar/Ru4-Navbar use. Independent of the per-link
+  // showDropdown items and the auto-generated row below.
+  const dynamicCategoriesDropdown = (data.dynamicCategoriesFloating || data.dynamicCategoriesInline)
+    ? `<div
+        data-rubikx-component='CategoryNav'
+        data-on-mount='loadCategories'
+        data-max-items='20'
+        data-label='Categories'
+        data-link-color='${data.categoryDropdownTextColor ?? '#111827'}'
+        data-font-size='${data.linkFontSize}'
+        data-font-weight='${data.linkFontWeight}'
+        data-category-dropdown-style='${data.dynamicCategoriesInline ? 'inline' : 'floating'}'
+        style='position:relative;display:inline-block;' data-cat-nav='true'
+      >
+        <a style='${linkStyle}cursor:pointer;'>Categories ▾</a>
+        <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Load Categories</span>
+        </div>
+      </div>`
+    : ''
+
   // Trailing, auto-populated dropdown alongside the hand-authored navLinks
   // above — unscoped (no data-category-filter), so it shows every
   // top-level category the backend returns, same loadCategories shell, just
@@ -2021,7 +2253,7 @@ export function renderRu8Navbar(data: Ru8NavbarData): string {
   </div>`
 
   const navRow = `<div data-ru8-desktop-nav style="max-width:90rem;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:${cartBelow ? 'space-between' : 'flex-start'};gap:1.75rem;padding:0.625rem ${data.paddingX}px;border-top:1px solid rgba(255,255,255,0.08);">
-    <div style="display:flex;align-items:center;gap:1.75rem;">${navLinksEl}${dynamicCategoriesDesktopEl}</div>
+    <div style="display:flex;align-items:center;gap:1.75rem;">${navLinksEl}${dynamicCategoriesDropdown}${dynamicCategoriesDesktopEl}</div>
     ${cartBelow}
   </div>`
 
@@ -2044,6 +2276,7 @@ export function renderRu8Navbar(data: Ru8NavbarData): string {
     </div>
     <div style="margin-bottom:1.25rem;">${mobileSearchEl}</div>
     <div style="display:flex;flex-direction:column;">${mobileNavLinksEl}</div>
+    ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="display:block;padding:0.75rem 0;font-size:1.0625rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.08);cursor:pointer;">Categories</a>` : ''}
     ${dynamicCategoriesMobileWrap}
     <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.25rem;">${signInEl}${renderCtaButtons()}</div>
   </div>`
@@ -2149,6 +2382,11 @@ export interface Ru6HamburgerNavbarData {
 
   homeLabel: string
   homeHref: string
+  // Standalone "Categories" row inside the menu panel — a second,
+  // independent way to show categories alongside the auto-generated list
+  // below (both can be on at once).
+  dynamicCategoriesFloating: boolean
+  dynamicCategoriesInline: boolean
   showDynamicCategories: boolean
   maxCategories: number
   menuLinks: { label: string; url: string; newTab?: boolean }[]
@@ -2187,6 +2425,8 @@ export const ru6HamburgerNavbarDefaults: Ru6HamburgerNavbarData = {
 
   homeLabel: 'Home',
   homeHref: '/',
+  dynamicCategoriesFloating: false,
+  dynamicCategoriesInline: false,
   showDynamicCategories: true,
   maxCategories: 20,
   menuLinks: [{ label: 'Home', url: '/', newTab: false }],
@@ -2236,6 +2476,8 @@ export const ru6HamburgerNavbarFields: FieldConfig[] = [
       { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
+  { key: 'dynamicCategoriesFloating', label: 'Standalone "Categories" Row (Floating)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'dynamicCategoriesInline', label: 'Standalone "Categories" Row (Inline)', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'showDynamicCategories', label: 'Show Categories from Store', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'linkColor', label: 'Menu Link Colour', type: 'color' },
   { key: 'linkFontSize', label: 'Menu Link Font Size (px)', type: 'number', placeholder: '15' },
@@ -2331,6 +2573,30 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
     .map(l => `<a href="${l.url}" style="display:block;padding:0.65rem 0;${homeLinkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`)
     .join('')
 
+  // Standalone "Categories" row — unscoped, shows the whole tree, same
+  // mechanism Ru1-Navbar/Ru4-Navbar use. The menu panel is always a white
+  // box, so data.linkColor (already dark by default) works directly here —
+  // no separate dropdown text colour needed, unlike navbars where the
+  // trigger sits on a dark bar.
+  const dynamicCategoriesRow = (data.dynamicCategoriesFloating || data.dynamicCategoriesInline)
+    ? `<div
+        data-rubikx-component='CategoryNav'
+        data-on-mount='loadCategories'
+        data-max-items='20'
+        data-label='Categories'
+        data-link-color='${data.linkColor}'
+        data-font-size='${data.linkFontSize}'
+        data-font-weight='${data.linkFontWeight}'
+        data-category-dropdown-style='${data.dynamicCategoriesInline ? 'inline' : 'floating'}'
+        style='position:relative;display:block;' data-cat-nav='true'
+      >
+        <a style='display:block;padding:0.65rem 0;${homeLinkStyle}cursor:pointer;'>Categories ▾</a>
+        <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Load Categories</span>
+        </div>
+      </div>`
+    : ''
+
   // On mobile, Cart/Profile relocate INTO the hamburger panel entirely
   // (not just losing their text labels) — this renders plain Cart/profile
   // link rows matching the Home link's styling, hidden by default and only
@@ -2355,6 +2621,7 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
   // pointer back to the button that opened it.
   const menuPanel = `<div data-ru6-menu-panel ${menuHydrationAttrs} style="display:none;position:absolute;top:100%;left:0;width:100%;max-width:500px;background:#fff;box-shadow:0 12px 24px rgba(0,0,0,0.12);padding:1.25rem min(${data.paddingX}px,5vw) 1.5rem;z-index:9999;">
     ${menuLinksHtml}
+    ${dynamicCategoriesRow}
     ${menuItemsEl}
     ${mobileMenuExtras}
   </div>
@@ -2518,6 +2785,16 @@ export interface Ru7NavbarData {
   brandFontWeight: string
 
   navLinks: { label: string; url: string; newTab?: boolean }[]
+  // Standalone "Categories" trigger + auto-generated categories row — two
+  // independent ways to show categories, same mechanisms every other
+  // navbar in this file uses (both can be on at once).
+  dynamicCategoriesFloating: boolean
+  dynamicCategoriesInline: boolean
+  showDynamicCategories: boolean
+  maxCategories: number
+  // Text colour used INSIDE the white dropdown popups — kept separate from
+  // linkColor below, which colours the nav bar's own trigger text.
+  categoryDropdownTextColor: string
   linkColor: string
   linkFontSize: number
   linkFontWeight: string
@@ -2558,6 +2835,11 @@ export const ru7NavbarDefaults: Ru7NavbarData = {
   brandFontWeight: '700',
 
   navLinks: [{ label: 'Shop', url: '/shop' }],
+  dynamicCategoriesFloating: false,
+  dynamicCategoriesInline: false,
+  showDynamicCategories: false,
+  maxCategories: 8,
+  categoryDropdownTextColor: '#111827',
   linkColor: '#111827',
   linkFontSize: 15,
   linkFontWeight: '600',
@@ -2616,6 +2898,12 @@ export const ru7NavbarFields: FieldConfig[] = [
       { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
+  { key: 'dynamicCategoriesFloating', label: 'Dynamic Categories (Floating)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'dynamicCategoriesInline', label: 'Dynamic Categories (Inline)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'showDynamicCategories', label: 'Show Categories Row (one item per category)', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'maxCategories', label: 'Max Categories Shown', type: 'number', placeholder: '8' },
+  { key: 'categoryDropdownTextColor', label: 'Category Dropdown Text Colour', type: 'color',
+    placeholder: 'Text colour inside the white "Categories" dropdown popup — keep this dark regardless of Link Colour below' },
   { key: 'linkColor', label: 'Link Colour', type: 'color' },
   { key: 'linkFontSize', label: 'Link Font Size (px)', type: 'number', unit: 'px', step: 1, placeholder: '15' },
   { key: 'linkFontWeight', label: 'Link Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
@@ -2646,8 +2934,36 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   const navLinksHtml = (data.navLinks ?? [])
     .map(l => `<a href="${l.url}" style="${linkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`)
     .join('')
-  const desktopLinksEl = navLinksHtml
-    ? `<nav data-ru7-desktop-links style="display:flex;align-items:center;gap:1.75rem;">${navLinksHtml}</nav>`
+  // Standalone "Categories" trigger — unscoped, shows the whole tree, same
+  // mechanism Ru1-Navbar/Ru4-Navbar use.
+  const dynamicPlaceholder = (data.dynamicCategoriesFloating || data.dynamicCategoriesInline)
+    ? `<div
+        data-rubikx-component='CategoryNav'
+        data-on-mount='loadCategories'
+        data-max-items='20'
+        data-label='Categories'
+        data-link-color='${data.categoryDropdownTextColor ?? '#111827'}'
+        data-font-size='${data.linkFontSize}'
+        data-font-weight='${data.linkFontWeight}'
+        data-category-dropdown-style='${data.dynamicCategoriesInline ? 'inline' : 'floating'}'
+        style='position:relative;display:inline-block;' data-cat-nav='true'
+      >
+        <a style='${linkStyle}cursor:pointer;'>Categories ▾</a>
+        <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
+          <span style='display:block;padding:8px 16px;color:#999;font-size:12px;font-style:italic;'>⟳ Load Categories</span>
+        </div>
+      </div>`
+    : ''
+
+  // Second, independent way to show categories — one nav item PER top-level
+  // category, auto-built by loadDynamicNav (same handler Ru5-Dynamic-Navbar
+  // uses). Can be on at the same time as the "Categories" dropdown above.
+  // paddingX comes from mainBarPaddingX — this navbar has no plain paddingX field.
+  const dynamicCategoriesRow = renderDynamicCategoriesRow({ ...data, paddingX: data.mainBarPaddingX }, '1.75rem', '#111827')
+  const { desktopEl: dynamicCategoriesRowEl, mobileEl: dynamicCategoriesMobileEl } = dynamicCategoriesRow
+
+  const desktopLinksEl = (navLinksHtml || dynamicPlaceholder || dynamicCategoriesRowEl)
+    ? `<nav data-ru7-desktop-links style="display:flex;align-items:center;gap:1.75rem;">${navLinksHtml}${dynamicPlaceholder}${dynamicCategoriesRowEl}</nav>`
     : ''
 
   // Sign In: static link + hidden AuthState shell, same coexistence pattern
@@ -2702,7 +3018,7 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
     ? `<div style="height:1px;background:#e5e7eb;margin:0.25rem 0 0.75rem;"></div>`
     : ''
 
-  const showMobileMenu = !!(navLinksHtml || data.showSearch || data.showSignIn)
+  const showMobileMenu = !!(navLinksHtml || data.showSearch || data.showSignIn || dynamicPlaceholder || data.showDynamicCategories)
   const hamburgerEl = showMobileMenu
     ? `<button type="button" data-ru7-menu-toggle onclick="${hamburgerToggleScript}" style="display:none;background:none;border:none;cursor:pointer;padding:0;align-items:center;flex-shrink:0;">
         <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.linkColor}" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -2716,6 +3032,8 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
         </div>
         ${mobileSearchEl}
         ${mobileNavLinksHtml}
+        ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="${mobileLinkStyle}cursor:pointer;">Categories ▾</a>` : ''}
+        ${dynamicCategoriesMobileEl}
         ${mobileDividerEl}
         ${mobileSignInEl}
       </div>
@@ -2765,8 +3083,11 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   // the hamburger/icons on a phone screen. The cart icon is scoped to
   // data-ru7-not-home (set by homePageScript below) so it only shows on
   // mobile when the visitor is actually on the home page.
-  const responsiveStyle = showMobileMenu
+  const { css: dynamicCategoriesRowCss } = dynamicCategoriesRow
+
+  const responsiveStyle = (showMobileMenu || dynamicCategoriesRowCss)
     ? `<style>
+  ${dynamicCategoriesRowCss}
   @media (max-width: 640px) {
     [data-ru7-desktop-links] { display: none !important; }
     [data-ru7-menu-toggle] { display: inline-flex !important; }
@@ -2795,11 +3116,13 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   // cart icon on mobile everywhere except the home page.
   const homePageScript = `<script>(function(){var sec=document.currentScript.closest('section');if(location.pathname!=='/')sec.setAttribute('data-ru7-not-home','true');})()</script>`
 
+  const { hydrationAttrs: dynamicNavHydrationAttrs } = dynamicCategoriesRow
+
   return `<section data-component-title="Ru7-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
 ${responsiveStyle}
 ${homePageScript}
 ${topBarEl}
-<nav data-ru7-main style="position:relative;background:${data.mainBarBgColor};padding:${data.mainBarPaddingY}px min(${data.mainBarPaddingX}px,6vw);display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+<nav data-ru7-main${dynamicNavHydrationAttrs} style="position:relative;background:${data.mainBarBgColor};padding:${data.mainBarPaddingY}px min(${data.mainBarPaddingX}px,6vw);display:flex;align-items:center;justify-content:space-between;gap:1rem;">
   <div data-ru7-logo style="display:flex;align-items:center;min-width:0;">
     ${logoEl}
   </div>
@@ -3041,6 +3364,24 @@ export const ru1FormFields: FieldConfig[] = [
 const iconBuilding = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="height:28px;width:24px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"/></svg>`
 const iconPhone   = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="height:28px;width:24px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 6.75Z"/></svg>`
 const iconEnvelope = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="height:28px;width:24px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>`
+
+// Compact (18px) variants for single-line info rows (Ru3 contact-form info
+// panel) — same Heroicons-outline style as the three above, just sized down
+// since that panel's rows sit tighter than Ru1-Form's spaced-out column.
+const iconLocationPinSm = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="height:18px;width:18px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>`
+const iconPersonSm = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="height:18px;width:18px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>`
+const iconPhoneSm = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="height:18px;width:18px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 6.75Z"/></svg>`
+const iconEnvelopeSm = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="height:18px;width:18px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>`
+const iconBuildingSm = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="height:18px;width:18px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"/></svg>`
+
+// Solid (filled) counterparts — same info-panel icon choices, Heroicons
+// 20/solid style (fill instead of stroke). This is the default icon style
+// (infoIconStyle: 'filled'); the outline set above is the alternative.
+const iconLocationPinFilled = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="height:18px;width:18px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path fill-rule="evenodd" d="M9.69 18.933a.75.75 0 0 0 .582.025l.018-.008.006-.003a12.253 12.253 0 0 0 1.746-1.068 12.13 12.13 0 0 0 3.24-3.283 8.14 8.14 0 0 0 1.719-4.833 6.5 6.5 0 1 0-13 0 8.14 8.14 0 0 0 1.719 4.833 12.13 12.13 0 0 0 3.24 3.283 12.26 12.26 0 0 0 1.746 1.068l.006.003.018.008ZM10 8.75a1.75 1.75 0 1 0 0-3.5 1.75 1.75 0 0 0 0 3.5Z" clip-rule="evenodd"/></svg>`
+const iconPersonFilled = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="height:18px;width:18px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path d="M10 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3.465 14.493a1.23 1.23 0 0 0 .41 1.412A9.957 9.957 0 0 0 10 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 0 0-13.074.003Z"/></svg>`
+const iconPhoneFilled = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="height:18px;width:18px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path fill-rule="evenodd" d="M2 3.5A1.5 1.5 0 0 1 3.5 2h1.148a1.5 1.5 0 0 1 1.465 1.175l.716 3.223a1.5 1.5 0 0 1-.94 1.703l-.756.279c-.484.18-.724.635-.632 1.15a15.075 15.075 0 0 0 5.923 5.923c.515.092.97-.148 1.15-.632l.279-.756a1.5 1.5 0 0 1 1.703-.94l3.223.716A1.5 1.5 0 0 1 18 15.352V16.5a1.5 1.5 0 0 1-1.5 1.5H15c-1.149 0-2.263-.15-3.326-.43A13.022 13.022 0 0 1 2.43 8.326 13.019 13.019 0 0 1 2 5V3.5Z" clip-rule="evenodd"/></svg>`
+const iconEnvelopeFilled = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="height:18px;width:18px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path d="M3 4a2 2 0 0 0-2 2v.161l8.441 4.221a1.25 1.25 0 0 0 1.118 0L19 6.162V6a2 2 0 0 0-2-2H3Z"/><path d="m19 8.839-7.77 3.885a2.75 2.75 0 0 1-2.46 0L1 8.839V14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.839Z"/></svg>`
+const iconBuildingFilled = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="height:18px;width:18px;flex-shrink:0;color:#9ca3af;" aria-hidden="true"><path fill-rule="evenodd" d="M4 16.5v-13h-.25a.75.75 0 0 1 0-1.5h12.5a.75.75 0 0 1 0 1.5H16v13h.25a.75.75 0 0 1 0 1.5h-3.5a.75.75 0 0 1-.75-.75v-2.5a1 1 0 0 0-1-1h-1a1 1 0 0 0-1 1v2.5a.75.75 0 0 1-.75.75h-3.5a.75.75 0 0 1 0-1.5H4Zm3-11a.75.75 0 0 1 .75-.75h.5a.75.75 0 0 1 0 1.5h-.5A.75.75 0 0 1 7 5.5Zm.75 2.25a.75.75 0 0 0 0 1.5h.5a.75.75 0 0 0 0-1.5h-.5ZM7 10.5a.75.75 0 0 1 .75-.75h.5a.75.75 0 0 1 0 1.5h-.5a.75.75 0 0 1-.75-.75Zm4.25-5a.75.75 0 0 0 0 1.5h.5a.75.75 0 0 0 0-1.5h-.5Zm-.75 3a.75.75 0 0 1 .75-.75h.5a.75.75 0 0 1 0 1.5h-.5a.75.75 0 0 1-.75-.75Zm.75 2.25a.75.75 0 0 0 0 1.5h.5a.75.75 0 0 0 0-1.5h-.5Z" clip-rule="evenodd"/></svg>`
 
 
 const inputStyle = 'display:block;width:100%;box-sizing:border-box;border-radius:6px;background:#fff;padding:0.5rem 0.875rem;font-size:1rem;color:#111827;outline:1px solid #d1d5db;outline-offset:-1px;'
@@ -3532,6 +3873,14 @@ export interface Ru3BannerData {
   contactMessageAlign: string
 }
 
+// One row of the info panel beside the form — `icon` picks which of the
+// fixed icon glyphs to show (mapped in buildRu3ContactFormHtml), `value` is
+// the free-text line next to it (e.g. "yourcompany@gmail.com").
+export interface Ru3ContactInfoItem {
+  icon: string
+  value: string
+}
+
 export interface Ru3ContactFormData {
   fontFamily: string
 
@@ -3561,6 +3910,22 @@ export interface Ru3ContactFormData {
 
   // Fields — user-editable list, so any number of fields can be added/removed/reordered
   fields: Ru3FormBannerFieldItem[]
+
+  // Info panel beside the form — every row is independently optional (an
+  // empty/removed value is filtered out at render time, see
+  // buildRu3ContactFormHtml), so hiding one just lets the rows below it move
+  // up rather than leaving a gap.
+  showInfoPanel: boolean
+  infoPanelTitle: string
+  infoPanelTitleColor: string
+  infoPanelTitleFont: string
+  infoPanelTitleWeight: string
+  infoPanelTitleSize: number
+  infoTextColor: string
+  // Applies to every row's icon at once (not per-row) — 'filled' (solid) or
+  // 'outline'.
+  infoIconStyle: string
+  infoItems: Ru3ContactInfoItem[]
 }
 
 export interface Ru3FormBannerData extends Ru3BannerData, Ru3ContactFormData {}
@@ -3626,14 +3991,29 @@ export const ru3ContactFormDefaults: Ru3ContactFormData = {
     { name: 'subject', label: 'Subject', field_type: 'text', is_required: true, default_value: '', values: '' },
     { name: 'note', label: 'Your Question', field_type: 'textarea', is_required: true, default_value: '', values: '' },
   ],
+
+  showInfoPanel: true,
+  infoPanelTitle: 'Your Company Name',
+  infoPanelTitleColor: '#0a1e5e',
+  infoPanelTitleFont: '',
+  infoPanelTitleWeight: '700',
+  infoPanelTitleSize: 20,
+  infoTextColor: '#374151',
+  infoIconStyle: 'filled',
+  infoItems: [
+    { icon: 'location', value: 'Your City, Country' },
+    { icon: 'email', value: 'yourcompany@gmail.com' },
+    { icon: 'person', value: 'Contact: Your Name' },
+  ],
 }
 
 export const ru3FormBannerDefaults: Ru3FormBannerData = {
   ...ru3BannerDefaults,
   ...ru3ContactFormDefaults,
-  // Spread copies `fields` by reference — clone it so this object never
-  // shares a mutable array with ru3ContactFormDefaults.
+  // Spread copies `fields`/`infoItems` by reference — clone both so this
+  // object never shares a mutable array with ru3ContactFormDefaults.
   fields: [...ru3ContactFormDefaults.fields],
+  infoItems: [...ru3ContactFormDefaults.infoItems],
 }
 
 export const ru3BannerFields: FieldConfig[] = [
@@ -3703,6 +4083,25 @@ export const ru3ContactFormFields: FieldConfig[] = [
   // the actual fields are added/edited/reordered last.
   { key: '_h_fields', label: 'Form Fields', type: 'header' },
   { key: 'fields', label: 'Form Fields', type: 'list', listFields: contactFormFieldListConfig },
+
+  { key: '_h_infopanel', label: 'Info Panel', type: 'header' },
+  { key: 'showInfoPanel', label: 'Show Info Panel', type: 'toggle' },
+  { key: 'infoPanelTitle', label: 'Info Panel Title', type: 'text', placeholder: 'e.g. Your Company Name' },
+  { key: 'infoPanelTitleColor', label: 'Info Panel Title Colour', type: 'color' },
+  fontField('infoPanelTitleFont', 'Info Panel Title Font'),
+  { key: 'infoPanelTitleWeight', label: 'Info Panel Title Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  { key: 'infoPanelTitleSize', label: 'Info Panel Title Size', type: 'number', unit: 'px', step: 1, placeholder: '20' },
+  { key: 'infoTextColor', label: 'Info Text Colour', type: 'color' },
+  { key: 'infoIconStyle', label: 'Icon Style', type: 'select', options: ['filled', 'outline'] },
+  {
+    key: 'infoItems', label: 'Info Rows', type: 'list',
+    listFields: [
+      { key: 'icon', label: 'Icon', type: 'select',
+        options: ['location', 'email', 'phone', 'person', 'building'],
+        optionLabels: { location: 'Location', email: 'Email', phone: 'Phone', person: 'Person', building: 'Building' } },
+      { key: 'value', label: 'Text', type: 'text', placeholder: 'e.g. yourcompany@gmail.com' },
+    ],
+  },
 ]
 
 export const ru3FormBannerFields: FieldConfig[] = [
@@ -3762,6 +4161,25 @@ export const ru3FormBannerFields: FieldConfig[] = [
   // then the actual fields are added/edited/reordered last.
   { key: '_h_fields', label: 'Form Fields', type: 'header' },
   { key: 'fields', label: 'Form Fields', type: 'list', listFields: contactFormFieldListConfig },
+
+  { key: '_h_infopanel', label: 'Info Panel', type: 'header' },
+  { key: 'showInfoPanel', label: 'Show Info Panel', type: 'toggle' },
+  { key: 'infoPanelTitle', label: 'Info Panel Title', type: 'text', placeholder: 'e.g. Your Company Name' },
+  { key: 'infoPanelTitleColor', label: 'Info Panel Title Colour', type: 'color' },
+  fontField('infoPanelTitleFont', 'Info Panel Title Font'),
+  { key: 'infoPanelTitleWeight', label: 'Info Panel Title Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  { key: 'infoPanelTitleSize', label: 'Info Panel Title Size', type: 'number', unit: 'px', step: 1, placeholder: '20' },
+  { key: 'infoTextColor', label: 'Info Text Colour', type: 'color' },
+  { key: 'infoIconStyle', label: 'Icon Style', type: 'select', options: ['filled', 'outline'] },
+  {
+    key: 'infoItems', label: 'Info Rows', type: 'list',
+    listFields: [
+      { key: 'icon', label: 'Icon', type: 'select',
+        options: ['location', 'email', 'phone', 'person', 'building'],
+        optionLabels: { location: 'Location', email: 'Email', phone: 'Phone', person: 'Person', building: 'Building' } },
+      { key: 'value', label: 'Text', type: 'text', placeholder: 'e.g. yourcompany@gmail.com' },
+    ],
+  },
 ]
 
 // Returns just the banner + breadcrumb + page title markup (no <section>
@@ -3861,7 +4279,52 @@ function buildRu3ContactFormHtml(data: Ru3ContactFormData): { html: string; reso
   const submitBtnStyle = `background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:${data.submitRadius ?? 4}px;padding:0.75rem 1.5rem;font-size:0.9375rem;font-weight:600;cursor:pointer;${isFullWidth ? 'width:100%;' : ''}${fontCss(data.buttonFont, data.fontFamily)}`
 
   const alignMarginMap: Record<string, string> = { left: '0 auto 0 0', center: '0 auto', right: '0 0 0 auto' }
-  const formMargin = alignMarginMap[data.formAlign ?? 'left'] ?? '0 auto 0 0'
+  // This margin used to sit on the <form> itself (a single-column layout had
+  // nothing else to align) — now that a second column can sit beside it, it
+  // moves onto the row wrapper below so left/center/right still aligns the
+  // form+info-panel pair as one unit instead of just the form.
+  const formRowMargin = alignMarginMap[data.formAlign ?? 'left'] ?? '0 auto 0 0'
+
+  // Info panel beside the form — every row is independently optional: a row
+  // with no text is dropped entirely (not just hidden) so the rows below it
+  // shift up with no gap left behind, and the whole panel disappears if
+  // there's nothing left to show or it's toggled off.
+  const infoIconMapOutline: Record<string, string> = {
+    location: iconLocationPinSm,
+    email: iconEnvelopeSm,
+    phone: iconPhoneSm,
+    person: iconPersonSm,
+    building: iconBuildingSm,
+  }
+  const infoIconMapFilled: Record<string, string> = {
+    location: iconLocationPinFilled,
+    email: iconEnvelopeFilled,
+    phone: iconPhoneFilled,
+    person: iconPersonFilled,
+    building: iconBuildingFilled,
+  }
+  const infoIconMap = (data.infoIconStyle ?? 'filled') === 'outline' ? infoIconMapOutline : infoIconMapFilled
+  const infoRows = ((data.infoItems && data.infoItems.length) ? data.infoItems : ru3ContactFormDefaults.infoItems)
+    .filter(item => item.value)
+  const infoItemsHtml = infoRows.map(item => {
+    const icon = infoIconMap[item.icon] ?? infoIconMap.location
+    const valueHtml = item.icon === 'email'
+      ? `<a href="mailto:${item.value}" style="color:inherit;text-decoration:none;">${item.value}</a>`
+      : item.value
+    return `<div style="display:flex;align-items:flex-start;gap:0.75rem;">
+      <span style="flex:none;display:inline-flex;margin-top:0.125rem;">${icon}</span>
+      <span>${valueHtml}</span>
+    </div>`
+  }).join('')
+
+  const infoPanelHtml = data.showInfoPanel !== false && (data.infoPanelTitle || infoItemsHtml)
+    ? `<div data-ru3form-info="true" style="flex:1 1 260px;max-width:360px;min-width:220px;display:flex;flex-direction:column;gap:1rem;">
+      ${data.infoPanelTitle ? `<h3 style="margin:0;font-size:${data.infoPanelTitleSize ?? 20}px;font-weight:${data.infoPanelTitleWeight ?? '700'};color:${data.infoPanelTitleColor};${fontCss(data.infoPanelTitleFont, data.fontFamily)}">${data.infoPanelTitle}</h3>` : ''}
+      <div style="display:flex;flex-direction:column;gap:0.875rem;font-size:0.9375rem;line-height:1.6;color:${data.infoTextColor};">
+        ${infoItemsHtml}
+      </div>
+    </div>`
+    : ''
 
   // email_from/email_to are NOT added to data.fields — they already exist as
   // real hidden <input>s in the <form> below, which any form submission
@@ -3870,14 +4333,18 @@ function buildRu3ContactFormHtml(data: Ru3ContactFormData): { html: string; reso
   // that walks `fields` show a visible "Email From"/"Email To" label for
   // every entry regardless of field_type.
   const html = `<div style="padding:${data.paddingY}px min(${data.paddingX}px,6vw);">
-    <form enctype="multipart/form-data" style="width:100%;max-width:${data.formMaxWidth ?? 640}px;margin:${formMargin};box-sizing:border-box;">
-      <input type="hidden" name="email_from" value="${data.submitFromEmail ?? ''}" />
-      <input type="hidden" name="email_to" value="${data.submitToEmail ?? ''}" />
-      ${fieldsHtml}
-      <div style="${submitWrapperStyle}margin-top:0.5rem;">
-        <button type="submit" style="${submitBtnStyle}">${data.submitLabel}</button>
-      </div>
-    </form>
+    <style>@media(max-width:900px){[data-ru3form-row]{flex-direction:column!important;}[data-ru3form-info]{max-width:100%!important;}}</style>
+    <div data-ru3form-row="true" style="display:flex;align-items:flex-start;gap:10rem;flex-wrap:wrap;width:100%;max-width:${(data.formMaxWidth ?? 640) + (infoPanelHtml ? 520 : 0)}px;margin:${formRowMargin};box-sizing:border-box;">
+      <form enctype="multipart/form-data" style="flex:1 1 ${data.formMaxWidth ?? 640}px;max-width:${data.formMaxWidth ?? 640}px;box-sizing:border-box;">
+        <input type="hidden" name="email_from" value="${data.submitFromEmail ?? ''}" />
+        <input type="hidden" name="email_to" value="${data.submitToEmail ?? ''}" />
+        ${fieldsHtml}
+        <div style="${submitWrapperStyle}margin-top:0.5rem;">
+          <button type="submit" style="${submitBtnStyle}">${data.submitLabel}</button>
+        </div>
+      </form>
+      ${infoPanelHtml}
+    </div>
   </div>`
 
   return { html, resolvedFields }
@@ -7926,13 +8393,13 @@ export function renderRu1Stats(data: Ru1StatsData): string {
 
     return `<div style="background:${data.cardBgColor};${borderStyle}border-radius:${data.cardBorderRadius}px;padding:28px 24px;display:flex;flex-direction:column;align-items:${alignMap[data.textAlign ?? 'left']};text-align:${data.textAlign ?? 'left'};">
       ${iconHtml}
-      <div style="font-size:${data.valueFontSize}px;font-weight:${data.valueFontWeight};color:${data.valueColor};line-height:1.1;margin-bottom:6px;${fontCss(data.valueFont, data.fontFamily)}">${item.value}</div>
+      <div style="font-size:min(${data.valueFontSize}px,9vw);font-weight:${data.valueFontWeight};color:${data.valueColor};line-height:1.1;margin-bottom:6px;${fontCss(data.valueFont, data.fontFamily)}">${item.value}</div>
       <div style="font-size:${data.labelFontSize}px;color:${data.labelColor};font-weight:500;${fontCss(data.labelFont, data.fontFamily)}">${item.label}</div>
       ${descHtml}
     </div>`
   }).join('')
 
-  return `<section data-component-title="Ru1-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru1-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:min(${data.paddingY}px,10vw) min(${data.paddingX}px,6vw);${fontCss(undefined, data.fontFamily)}">
 <style>
   @media(max-width:768px){[data-ru1-stats-grid]{grid-template-columns:repeat(2,1fr)!important}}
   @media(max-width:480px){[data-ru1-stats-grid]{grid-template-columns:1fr!important;gap:12px!important}}
@@ -8336,13 +8803,13 @@ export function renderRu2Stats(data: Ru2StatsData): string {
       ? `<p style="margin:6px 0 0;font-size:${data.descriptionFontSize}px;color:${data.descriptionColor};line-height:1.5;${fontCss(data.descriptionFont, data.fontFamily)}">${item.description}</p>`
       : ''
     return `<div style="${divider}padding:0 24px;">
-      <div style="font-size:${data.valueFontSize}px;font-weight:${data.valueFontWeight};color:${data.valueColor};line-height:1.1;margin-bottom:4px;${fontCss(data.valueFont, data.fontFamily)}">${item.value}</div>
+      <div style="font-size:min(${data.valueFontSize}px,9vw);font-weight:${data.valueFontWeight};color:${data.valueColor};line-height:1.1;margin-bottom:4px;${fontCss(data.valueFont, data.fontFamily)}">${item.value}</div>
       <div style="font-size:${data.labelFontSize}px;font-weight:${data.labelFontWeight};color:${data.labelColor};margin-bottom:2px;${fontCss(data.labelFont, data.fontFamily)}">${item.label}</div>
       ${descHtml}
     </div>`
   }).join('')
 
-  return `<section data-component-title="Ru2-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru2-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:min(${data.paddingY}px,10vw) min(${data.paddingX}px,6vw);${fontCss(undefined, data.fontFamily)}">
 <style>
   @media(max-width:768px){[data-ru2-stats-grid]{grid-template-columns:repeat(2,1fr)!important;gap:20px!important}[data-ru2-stats-grid]>div{border-left:none!important;padding:0 12px!important}[data-ru2-stats-card]{padding:24px!important}}
   @media(max-width:480px){[data-ru2-stats-grid]{grid-template-columns:1fr!important;gap:0!important}[data-ru2-stats-grid]>div{border-top:1px solid rgba(0,0,0,0.08);padding:20px 0 0!important}[data-ru2-stats-grid]>div:first-child{border-top:none!important;padding-top:0!important}[data-ru2-stats-card]{padding:20px!important}}
@@ -8351,7 +8818,7 @@ export function renderRu2Stats(data: Ru2StatsData): string {
     <div data-ru2-stats-card="true" style="background:${data.cardBgColor};${cardBorder}border-radius:${data.cardBorderRadius}px;padding:32px;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap;">
         <div>
-          <h3 style="margin:0 0 6px;font-size:${data.titleFontSize}px;font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.3;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h3>
+          <h3 style="margin:0 0 6px;font-size:min(${data.titleFontSize}px,8vw);font-weight:${data.titleFontWeight};color:${data.titleColor};line-height:1.3;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h3>
           ${data.subtitle ? `<p style="margin:0;font-size:14px;color:${data.subtitleColor};${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>` : ''}
         </div>
         ${(cta1Html || cta2Html) ? `<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">${cta1Html}${cta2Html}</div>` : ''}
@@ -8533,7 +9000,7 @@ export function renderRu3Stats(data: Ru3StatsData): string {
 
   const sectionHeaderHtml = data.showSectionTitle
     ? `<div style="text-align:center;margin-bottom:24px;">
-        <h2 style="margin:0 0 8px;font-size:${data.sectionTitleSize}px;font-weight:${data.sectionTitleWeight};color:${data.sectionTitleColor};line-height:1.3;${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h2>
+        <h2 style="margin:0 0 8px;font-size:min(${data.sectionTitleSize}px,9vw);font-weight:${data.sectionTitleWeight};color:${data.sectionTitleColor};line-height:1.3;${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h2>
         ${data.sectionSubtitle ? `<p style="margin:0;font-size:15px;color:${data.sectionSubtitleColor};${fontCss(data.sectionSubtitleFont, data.fontFamily)}">${data.sectionSubtitle}</p>` : ''}
       </div>`
     : ''
@@ -8561,7 +9028,7 @@ export function renderRu3Stats(data: Ru3StatsData): string {
     return stepHtml + sep
   }).join('')
 
-  return `<section data-component-title="Ru3-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px min(${data.paddingX}px,5vw);${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru3-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:min(${data.paddingY}px,8vw) min(${data.paddingX}px,5vw);${fontCss(undefined, data.fontFamily)}">
 <style>
   @media(max-width:900px){
     [data-ru3-stats-row]{gap:28px!important}
@@ -8757,19 +9224,19 @@ export function renderRu4Stats(data: Ru4StatsData): string {
 
   const titleHtml = data.showSectionTitle
     ? `<div style="text-align:center;margin-bottom:${data.gridGap}px;max-width:700px;margin-left:auto;margin-right:auto;">
-        <h2 style="margin:0 0 12px;font-size:${data.sectionTitleSize}px;font-weight:${data.sectionTitleWeight};color:${data.sectionTitleColor};line-height:1.25;${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h2>
+        <h2 style="margin:0 0 12px;font-size:min(${data.sectionTitleSize}px,9vw);font-weight:${data.sectionTitleWeight};color:${data.sectionTitleColor};line-height:1.25;${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h2>
         ${data.sectionSubtitle ? `<p style="margin:0;font-size:${data.sectionSubtitleSize}px;color:${data.sectionSubtitleColor};${fontCss(data.sectionSubtitleFont, data.fontFamily)}">${data.sectionSubtitle}</p>` : ''}
       </div>`
     : ''
 
   const statsGrid = (data.items ?? []).map(item => `
     <div>
-      <div style="font-size:${data.valueFontSize}px;font-weight:${data.valueFontWeight};color:${data.valueColor};line-height:1.1;margin-bottom:6px;${fontCss(data.valueFont, data.fontFamily)}">${item.value}</div>
+      <div style="font-size:min(${data.valueFontSize}px,10vw);font-weight:${data.valueFontWeight};color:${data.valueColor};line-height:1.1;margin-bottom:6px;${fontCss(data.valueFont, data.fontFamily)}">${item.value}</div>
       <div style="font-size:${data.labelFontSize}px;color:${data.labelColor};line-height:1.4;${fontCss(data.labelFont, data.fontFamily)}">${item.label}</div>
     </div>`
   ).join('')
 
-  return `<section data-component-title="Ru4-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px min(${data.paddingX}px,6vw);${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru4-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:min(${data.paddingY}px,10vw) min(${data.paddingX}px,6vw);${fontCss(undefined, data.fontFamily)}">
 <style>
   @media(max-width:768px){[data-ru4-stats-outer]{grid-template-columns:1fr!important;gap:24px!important}}
   @media(max-width:480px){[data-ru4-stats-inner]{grid-template-columns:1fr!important}}
@@ -8779,7 +9246,7 @@ export function renderRu4Stats(data: Ru4StatsData): string {
     ${dividerHtml}
     <div data-ru4-stats-outer="true" style="display:grid;grid-template-columns:1fr 2fr;gap:${data.gridGap}px;align-items:start;">
       <div>
-        <div style="font-size:${data.sectionNumberSize}px;font-weight:${data.sectionTitleWeight};color:${data.sectionNumberColor};line-height:1;margin-bottom:16px;${fontCss(data.sectionNumberFont, data.fontFamily)}">${data.sectionNumber}</div>
+        <div style="font-size:min(${data.sectionNumberSize}px,18vw);font-weight:${data.sectionTitleWeight};color:${data.sectionNumberColor};line-height:1;margin-bottom:16px;${fontCss(data.sectionNumberFont, data.fontFamily)}">${data.sectionNumber}</div>
         <p style="margin:0;font-size:${data.sectionDescriptionSize}px;color:${data.sectionDescriptionColor};line-height:1.7;max-width:280px;${fontCss(data.sectionDescriptionFont, data.fontFamily)}">${data.sectionDescription}</p>
       </div>
       <div data-ru4-stats-inner="true" style="display:grid;grid-template-columns:1fr 1fr;gap:${data.gridGap}px;">
@@ -8997,10 +9464,10 @@ export function renderRu5Stats(data: Ru5StatsData): string {
     </a>`
   ).join('')
 
-  return `<section data-component-title="Ru5-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px ${data.paddingX}px;${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru5-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:min(${data.paddingY}px,10vw) min(${data.paddingX}px,6vw);${fontCss(undefined, data.fontFamily)}">
 <style>
   @media(max-width:900px){[data-ru5-stats-row]{grid-template-columns:1fr!important}[data-ru5-stats-right]{flex-direction:column!important;align-items:flex-start!important}[data-ru5-stats-links]{flex-direction:row!important;width:100%!important;gap:16px!important}[data-ru5-stats-links] a{width:100%!important}}
-  @media(max-width:600px){[data-ru5-stats-row]{gap:16px!important}[data-ru5-stats-card]{padding:28px 24px!important}[data-ru5-stats-links]{flex-direction:column!important}}
+  @media(max-width:600px){[data-ru5-stats-row]{gap:16px!important}[data-ru5-stats-card]{padding:28px 24px!important}[data-ru5-stats-links]{flex-direction:column!important}[data-ru5-stats-links] a{white-space:normal!important;gap:12px!important}}
 </style>
   <div style="width:100%;max-width:1400px;margin:0 auto;">
     <div data-ru5-stats-row="true" style="display:grid;grid-template-columns:1fr 1fr;gap:${data.gap}px;align-items:stretch;">
@@ -9009,7 +9476,7 @@ export function renderRu5Stats(data: Ru5StatsData): string {
           ${logoInner}
         </div>
         <div style="min-width:0;">
-          <h3 style="margin:0 0 12px;font-size:${data.leftTitleFontSize}px;font-weight:${data.leftTitleFontWeight};color:${data.leftTitleColor};line-height:1.3;${fontCss(data.leftTitleFont, data.fontFamily)}">${data.leftTitle}</h3>
+          <h3 style="margin:0 0 12px;font-size:min(${data.leftTitleFontSize}px,7vw);font-weight:${data.leftTitleFontWeight};color:${data.leftTitleColor};line-height:1.3;${fontCss(data.leftTitleFont, data.fontFamily)}">${data.leftTitle}</h3>
           <div style="font-size:${data.leftDescriptionFontSize}px;color:${data.leftDescriptionColor};line-height:1.6;${fontCss(data.leftDescriptionFont, data.fontFamily)}">
             ${leftDescriptionHtml}
           </div>
@@ -9019,7 +9486,7 @@ export function renderRu5Stats(data: Ru5StatsData): string {
         <div data-ru5-stats-right="true" style="display:flex;align-items:center;justify-content:space-between;gap:32px;width:100%;">
           <div style="min-width:0;">
             <div style="font-size:${data.eyebrowFontSize}px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${data.eyebrowColor};margin-bottom:10px;${fontCss(data.eyebrowFont, data.fontFamily)}">${data.eyebrowText}</div>
-            <h3 style="margin:0 0 12px;font-size:${data.headlineFontSize}px;font-weight:${data.headlineFontWeight};line-height:1.2;background:linear-gradient(90deg,${data.headlineGradientFrom},${data.headlineGradientTo});-webkit-background-clip:text;background-clip:text;color:transparent;${fontCss(data.headlineFont, data.fontFamily)}">${data.headline}</h3>
+            <h3 style="margin:0 0 12px;font-size:min(${data.headlineFontSize}px,9vw);font-weight:${data.headlineFontWeight};line-height:1.2;background:linear-gradient(90deg,${data.headlineGradientFrom},${data.headlineGradientTo});-webkit-background-clip:text;background-clip:text;color:transparent;${fontCss(data.headlineFont, data.fontFamily)}">${data.headline}</h3>
             <p style="margin:0;font-size:${data.rightDescriptionFontSize}px;color:${data.rightDescriptionColor};line-height:1.6;${fontCss(data.rightDescriptionFont, data.fontFamily)}">${data.rightDescription}</p>
           </div>
           <div data-ru5-stats-links="true" style="flex-shrink:0;display:flex;flex-direction:column;gap:20px;">
@@ -12542,14 +13009,14 @@ export function renderShowMultipleProducts(data: ShowMultipleProductsData): stri
 
   const sectionHeaderHtml = data.showSectionHeader
     ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding-top:${data.paddingY ?? 25}px;margin-bottom:1.5rem;">
-      <h2 style="margin:0;font-size:1.75rem;font-weight:600;color:${data.titleColor || '#111827'};${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h2>
+      <h2 style="margin:0;font-size:min(1.75rem,7vw);font-weight:600;color:${data.titleColor || '#111827'};${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h2>
       ${data.browseAllLabel ? `<a href="${data.browseAllUrl || '#'}" style="display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;white-space:nowrap;color:${data.browseAllColor || '#2563eb'};font-weight:600;font-size:15px;${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.browseAllLabel}${data.browseAllArrow !== false ? `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><path d="M3 8h9M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ''}</a>` : ''}
     </div>`
     : ''
 
   if (!products.length) {
     return `<section data-component-title="Ru2-Show-Multiple-Products" style="background:${data.bgColor};padding:0 0 ${data.paddingY}px;${fontCss(undefined, data.fontFamily)}">
-  <div style="max-width:${data.contentMaxWidth ?? 1440}px;margin:0 auto;">
+  <div style="max-width:${data.contentMaxWidth ?? 1440}px;margin:0 auto;box-sizing:border-box;padding-left:min(${data.paddingX ?? 16}px,6vw);padding-right:min(${data.paddingX ?? 16}px,6vw);">
     ${sectionHeaderHtml}
     <p style="color:#999;text-align:center;">No products added</p>
   </div>
@@ -12650,7 +13117,7 @@ export function renderShowMultipleProducts(data: ShowMultipleProductsData): stri
     [data-smp-overlay],[data-smp-viewbtn],[data-smp-arrow]{opacity:1!important;}
   }
 </style>
-  <div style="max-width:${data.contentMaxWidth ?? 1440}px;margin:0 auto;width:100%;${data.showSectionHeader ? '' : `padding-top:${data.paddingY ?? 25}px;`}">
+  <div style="max-width:${data.contentMaxWidth ?? 1440}px;margin:0 auto;width:100%;box-sizing:border-box;padding-left:min(${data.paddingX ?? 16}px,6vw);padding-right:min(${data.paddingX ?? 16}px,6vw);${data.showSectionHeader ? '' : `padding-top:${data.paddingY ?? 25}px;`}">
     ${sectionHeaderHtml}
     <div data-showmulti-grid="true" style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:1rem;">
       ${productsHtml}
@@ -12866,6 +13333,1104 @@ export function renderRu2ScrollingTicker(data: Ru2ScrollingTickerData): string {
     <div style="display:inline-flex;width:max-content;animation:ru2-ticker-scroll ${data.speed}s linear infinite;">
       ${track}
     </div>
+  </div>
+</section>`
+}
+
+// ─── Ru1-Sign In ─────────────────────────────────────────────────────────────
+// A standalone, centered sign-in card: title, email/password fields (with a
+// show/hide toggle on the password field), a "forgot password" link, a
+// full-width submit button and a "Register here" line. Purely presentational
+// markup — like every other block here, wiring the form up to a real
+// authentication endpoint is a separate concern outside this renderer.
+
+export const ru1SignInSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
+  <rect fill="#1f2937" width="277.5" height="80"/>
+  <rect fill="#374151" x="88.75" y="8" width="100" height="64" rx="6"/>
+  <rect fill="#9ca3af" x="118.75" y="18" width="40" height="7" rx="1"/>
+  <rect fill="#6b7280" x="98.75" y="34" width="30" height="4" rx="1"/>
+  <rect fill="#4b5563" x="98.75" y="40" width="80" height="9" rx="2"/>
+  <rect fill="#6b7280" x="98.75" y="53" width="40" height="4" rx="1"/>
+  <rect fill="#4b5563" x="98.75" y="59" width="80" height="9" rx="2"/>
+</svg>`
+
+// Eye / eye-slash toggle icons for the password field — kept local to this
+// block (same convention as RU2_TICKER_ICONS above) since nothing else in
+// the codebase needs a password-visibility icon pair yet.
+const ru1SignInEyeIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="height:20px;width:20px;" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>`
+const ru1SignInEyeSlashIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" style="height:20px;width:20px;" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>`
+
+export interface Ru1SignInData {
+  fontFamily: string
+
+  sectionBgColor: string
+  bgImage: string
+  overlayColor: string
+  overlayOpacity: number
+  bgImageAspectRatio: string
+  paddingY: number
+
+  cardBgColor: string
+  cardOpacity: number
+  cardBorderRadius: number
+  cardMaxWidth: number
+
+  title: string
+  titleColor: string
+  titleSize: number
+  titleFontWeight: string
+  titleFont: string
+
+  labelColor: string
+  labelFont: string
+  inputBorderColor: string
+  inputBgColor: string
+  inputTextColor: string
+  inputRadius: number
+
+  emailLabel: string
+  emailPlaceholder: string
+  passwordLabel: string
+  passwordPlaceholder: string
+
+  showForgotPassword: boolean
+  forgotPasswordLabel: string
+  forgotPasswordHref: string
+  forgotPasswordColor: string
+
+  submitLabel: string
+  submitBgColor: string
+  submitTextColor: string
+  submitRadius: number
+  buttonFont: string
+
+  showRegisterLink: boolean
+  registerText: string
+  registerLinkLabel: string
+  registerLinkHref: string
+  registerTextColor: string
+  registerLinkColor: string
+}
+
+export const ru1SignInDefaults: Ru1SignInData = {
+  fontFamily: '',
+
+  sectionBgColor: '#ffffff',
+  bgImage: '',
+  overlayColor: '#000000',
+  overlayOpacity: 0,
+  bgImageAspectRatio: 'Auto',
+  paddingY: 64,
+
+  cardBgColor: '#ffffff',
+  cardOpacity: 100,
+  cardBorderRadius: 16,
+  cardMaxWidth: 880,
+
+  title: 'Sign In',
+  titleColor: '#0a1e5e',
+  titleSize: 28,
+  titleFontWeight: '600',
+  titleFont: '',
+
+  labelColor: '#0a1e5e',
+  labelFont: '',
+  inputBorderColor: '#d1d5db',
+  inputBgColor: '#ffffff',
+  inputTextColor: '#111827',
+  inputRadius: 8,
+
+  emailLabel: 'Email',
+  emailPlaceholder: 'Enter your email',
+  passwordLabel: 'Password',
+  passwordPlaceholder: '',
+
+  showForgotPassword: true,
+  forgotPasswordLabel: 'Forgot/Reset your password?',
+  forgotPasswordHref: '/password/reset',
+  forgotPasswordColor: '#0a1e5e',
+
+  submitLabel: 'Sign in',
+  submitBgColor: '#0a1e5e',
+  submitTextColor: '#ffffff',
+  submitRadius: 8,
+  buttonFont: '',
+
+  showRegisterLink: true,
+  registerText: "Don't have an account ",
+  registerLinkLabel: 'Register here',
+  registerLinkHref: '/signup',
+  registerTextColor: '#374151',
+  registerLinkColor: '#0a1e5e',
+}
+
+export const ru1SignInFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_section', label: 'Section', type: 'header' },
+  { key: 'sectionBgColor', label: 'Background Colour', type: 'color' },
+  { key: 'bgImage', label: 'Background Image', type: 'image', noAspectRatio: true },
+  { key: 'overlayColor', label: 'Overlay Colour', type: 'color' },
+  { key: 'overlayOpacity', label: 'Overlay Opacity (0-100)', type: 'number', step: 5, placeholder: '0' },
+  { key: 'bgImageAspectRatio', label: 'Background Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '64' },
+
+  { key: '_h_card', label: 'Card', type: 'header' },
+  { key: 'cardBgColor', label: 'Card Background', type: 'color' },
+  { key: 'cardOpacity', label: 'Card Opacity (%)', type: 'number', unit: '%', step: 5, placeholder: '100' },
+  { key: 'cardBorderRadius', label: 'Card Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '16' },
+  { key: 'cardMaxWidth', label: 'Card Width', type: 'number', unit: 'px', step: 10, placeholder: '880' },
+
+  { key: '_h_title', label: 'Title', type: 'header' },
+  { key: 'title', label: 'Title Text', type: 'text', placeholder: 'e.g. Sign In' },
+  { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  { key: 'titleSize', label: 'Title Size', type: 'number', unit: 'px', step: 1, placeholder: '28' },
+  { key: 'titleFontWeight', label: 'Title Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  fontField('titleFont', 'Title Font'),
+
+  { key: '_h_fieldstyle', label: 'Field Style', type: 'header' },
+  { key: 'labelColor', label: 'Label Colour', type: 'color' },
+  fontField('labelFont', 'Label Font'),
+  { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
+  { key: 'inputBgColor', label: 'Input Background', type: 'color' },
+  { key: 'inputTextColor', label: 'Input Text Colour', type: 'color' },
+  { key: 'inputRadius', label: 'Input Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '8' },
+  { key: 'emailLabel', label: 'Email Label', type: 'text', placeholder: 'Email' },
+  { key: 'emailPlaceholder', label: 'Email Placeholder', type: 'text', placeholder: 'Enter your email' },
+  { key: 'passwordLabel', label: 'Password Label', type: 'text', placeholder: 'Password' },
+  { key: 'passwordPlaceholder', label: 'Password Placeholder', type: 'text' },
+
+  { key: '_h_forgot', label: 'Forgot Password', type: 'header' },
+  { key: 'showForgotPassword', label: 'Show Link', type: 'toggle' },
+  { key: 'forgotPasswordLabel', label: 'Link Text', type: 'text', placeholder: 'Forgot/Reset your password?' },
+  { key: 'forgotPasswordHref', label: 'Link URL', type: 'url', placeholder: '/password/reset' },
+  { key: 'forgotPasswordColor', label: 'Link Colour', type: 'color' },
+
+  { key: '_h_submit', label: 'Submit Button', type: 'header' },
+  { key: 'submitLabel', label: 'Button Text', type: 'text', placeholder: 'Sign in' },
+  { key: 'submitBgColor', label: 'Button Background', type: 'color' },
+  { key: 'submitTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'submitRadius', label: 'Button Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '8' },
+  fontField('buttonFont', 'Button Font'),
+
+  { key: '_h_register', label: 'Register Link', type: 'header' },
+  { key: 'showRegisterLink', label: 'Show Register Line', type: 'toggle' },
+  { key: 'registerText', label: 'Text', type: 'text', placeholder: "Don't have an account " },
+  { key: 'registerLinkLabel', label: 'Link Label', type: 'text', placeholder: 'Register here' },
+  { key: 'registerLinkHref', label: 'Link URL', type: 'url', placeholder: '/register' },
+  { key: 'registerTextColor', label: 'Text Colour', type: 'color' },
+  { key: 'registerLinkColor', label: 'Link Colour', type: 'color' },
+]
+
+export function renderRu1SignIn(data: Ru1SignInData): string {
+  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:${data.inputRadius ?? 8}px;background:${data.inputBgColor};padding:0.625rem 0.875rem;font-size:0.9375rem;color:${data.inputTextColor};border:1px solid ${data.inputBorderColor};outline:none;`
+  const labelStyle = `display:block;font-size:0.9375rem;font-weight:600;color:${data.labelColor};margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
+
+  const forgotHtml = data.showForgotPassword !== false
+    ? `<div style="display:flex;justify-content:flex-end;margin:0.75rem 0 1.75rem;">
+        <a href="${data.forgotPasswordHref || '#'}" style="font-size:0.875rem;font-weight:700;color:${data.forgotPasswordColor};text-decoration:none;">${data.forgotPasswordLabel}</a>
+      </div>`
+    : ''
+
+  const registerHtml = data.showRegisterLink !== false
+    ? `<p style="margin:1.5rem 0 0;text-align:center;font-size:0.9375rem;color:${data.registerTextColor};">${data.registerText}<a href="${data.registerLinkHref || '#'}" style="color:${data.registerLinkColor};font-weight:700;text-decoration:none;">${data.registerLinkLabel}</a></p>`
+    : ''
+
+  // Icon-swap toggle on the password field, same idiom as Ru6-Hamburger-
+  // Navbar's menu button: stopImmediatePropagation so the builder's own
+  // click-to-select handler on this element doesn't re-fight the toggle,
+  // then flip the input's type and both icon spans' display together.
+  // setProperty(...,'important') rather than a plain .style.display=
+  // assignment — some published-site stylesheets carry their own
+  // !important display rule for spans/icons, which a plain assignment
+  // loses to (both on first paint and after every click).
+  const passwordToggleScript = `event.stopImmediatePropagation();(function(btn){var wrap=btn.closest('[data-ru1signin-pwdwrap]');var input=wrap.querySelector('input');var eye=btn.querySelector('[data-icon-eye]');var slash=btn.querySelector('[data-icon-eye-slash]');var show=input.type==='password';input.type=show?'text':'password';eye.style.setProperty('display',show?'none':'flex','important');slash.style.setProperty('display',show?'flex':'none','important');})(this);`
+
+  const bgImgSrc = productImageSrc(data.bgImage)
+  const aspectRatioMap: Record<string, string> = {
+    'Wide (16:9)':      'aspect-ratio:16/9;',
+    'Standard (4:3)':   'aspect-ratio:4/3;',
+    'Square (1:1)':     'aspect-ratio:1/1;',
+    'Tall (3:4)':       'aspect-ratio:3/4;',
+    'Cinematic (21:9)': 'aspect-ratio:21/9;',
+  }
+  const bgAspect = (data.bgImageAspectRatio && data.bgImageAspectRatio !== 'Auto')
+    ? (aspectRatioMap[data.bgImageAspectRatio] ?? '')
+    : ''
+  // The box's height matches the image's own natural ratio (auto-measured
+  // once it loads, vw-based so it stays responsive to width like Ru1 Hero's
+  // padding-bottom-percent trick), and background-size:100% 100% stretches
+  // to fill that box exactly — so a wide banner-shaped photo never crops or
+  // letterboxes. Capped at 640px (matching this project's other hero-style
+  // blocks) so an unusually tall/square photo can't blow the section up far
+  // beyond what a compact card (e.g. Sign In) actually needs — past that
+  // cap the image is slightly vertically squeezed rather than growing the
+  // section further, which stays far less jarring than a huge empty-feeling
+  // section around a small form.
+  const autoRatioScript = bgImgSrc
+    ? `<script>(function(){var s=document.currentScript.parentElement;var i=new Image();i.onload=function(){s.style.minHeight='min('+(i.naturalHeight/i.naturalWidth*100)+'vw, 640px)';};i.src='${bgImgSrc}';})()</script>`
+    : ''
+  const sectionBgStyle = bgImgSrc
+    ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};${bgAspect}`
+    : `background-color:${data.sectionBgColor};`
+  const overlayOpacity = Math.min(100, Math.max(0, data.overlayOpacity ?? 0)) / 100
+  const overlayHtml = (bgImgSrc && overlayOpacity > 0)
+    ? `<div style="position:absolute;inset:0;background:${hexToRgba(data.overlayColor || '#000000', overlayOpacity)};pointer-events:none;"></div>`
+    : ''
+
+  return `<section data-component-title="Ru1-Sign In" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;${sectionBgStyle}padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
+  ${autoRatioScript}
+  ${overlayHtml}
+  <div style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 880}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
+    <h2 style="margin:0 0 2rem;text-align:center;font-size:min(${data.titleSize ?? 28}px,8vw);font-weight:${data.titleFontWeight ?? '600'};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+    <form>
+      <div style="margin-bottom:1.5rem;">
+        <label style="${labelStyle}">${data.emailLabel}</label>
+        <input type="email" name="email" required placeholder="${data.emailPlaceholder ?? ''}" style="${inputStyle}" />
+      </div>
+      <div>
+        <label style="${labelStyle}">${data.passwordLabel}</label>
+        <div data-ru1signin-pwdwrap="true" style="position:relative;">
+          <input type="password" name="password" required placeholder="${data.passwordPlaceholder ?? ''}" style="${inputStyle}padding-right:2.75rem;" />
+          <button type="button" onclick="${passwordToggleScript}" aria-label="Show password" style="position:absolute;top:50%;right:0.75rem;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;color:#6b7280;">
+            <span data-icon-eye style="display:flex!important;">${ru1SignInEyeIcon}</span>
+            <span data-icon-eye-slash style="display:none!important;">${ru1SignInEyeSlashIcon}</span>
+          </button>
+        </div>
+      </div>
+      ${forgotHtml}
+      <button type="submit" style="width:100%;background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.submitLabel}</button>
+    </form>
+    ${registerHtml}
+  </div>
+</section>`
+}
+
+// ─── Ru1-Sign Up ─────────────────────────────────────────────────────────────
+// A standalone, centered sign-up card: title, First Name / Last Name / Email
+// fields (each independently toggleable as required, matching the browser's
+// native "Please fill out this field" validation), a full-width submit
+// button and a "Login here" line. Same conventions as Ru1-Sign In (card
+// width/background-image/overlay, colour + font fields) but with no
+// password field, matching the reference design. Purely presentational
+// markup — wiring the form up to a real account-creation endpoint is a
+// separate concern outside this renderer.
+
+export const ru1SignUpSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
+  <rect fill="#1f2937" width="277.5" height="80"/>
+  <rect fill="#374151" x="78.75" y="4" width="120" height="72" rx="6"/>
+  <rect fill="#9ca3af" x="118.75" y="12" width="40" height="7" rx="1"/>
+  <rect fill="#6b7280" x="88.75" y="26" width="30" height="4" rx="1"/>
+  <rect fill="#4b5563" x="88.75" y="32" width="100" height="8" rx="2"/>
+  <rect fill="#6b7280" x="88.75" y="45" width="30" height="4" rx="1"/>
+  <rect fill="#4b5563" x="88.75" y="51" width="100" height="8" rx="2"/>
+  <rect fill="#6b7280" x="88.75" y="63" width="100" height="9" rx="2"/>
+</svg>`
+
+export interface Ru1SignUpData {
+  fontFamily: string
+
+  sectionBgColor: string
+  bgImage: string
+  overlayColor: string
+  overlayOpacity: number
+  bgImageAspectRatio: string
+  paddingY: number
+
+  cardBgColor: string
+  cardOpacity: number
+  cardBorderRadius: number
+  cardMaxWidth: number
+
+  title: string
+  titleColor: string
+  titleSize: number
+  titleFontWeight: string
+  titleFont: string
+
+  labelColor: string
+  labelFont: string
+  requiredColor: string
+  inputBorderColor: string
+  inputBgColor: string
+  inputTextColor: string
+  inputRadius: number
+
+  firstNameLabel: string
+  firstNamePlaceholder: string
+  firstNameRequired: boolean
+  lastNameLabel: string
+  lastNamePlaceholder: string
+  lastNameRequired: boolean
+  emailLabel: string
+  emailPlaceholder: string
+  emailRequired: boolean
+
+  submitLabel: string
+  submitBgColor: string
+  submitTextColor: string
+  submitRadius: number
+  buttonFont: string
+
+  showLoginLink: boolean
+  loginText: string
+  loginLinkLabel: string
+  loginLinkHref: string
+  loginTextColor: string
+  loginLinkColor: string
+}
+
+export const ru1SignUpDefaults: Ru1SignUpData = {
+  fontFamily: '',
+
+  sectionBgColor: '#ffffff',
+  bgImage: '',
+  overlayColor: '#000000',
+  overlayOpacity: 0,
+  bgImageAspectRatio: 'Auto',
+  paddingY: 64,
+
+  cardBgColor: '#ffffff',
+  cardOpacity: 100,
+  cardBorderRadius: 16,
+  cardMaxWidth: 880,
+
+  title: 'Sign up',
+  titleColor: '#0a1e5e',
+  titleSize: 28,
+  titleFontWeight: '600',
+  titleFont: '',
+
+  labelColor: '#0a1e5e',
+  labelFont: '',
+  requiredColor: '#0a1e5e',
+  inputBorderColor: '#d1d5db',
+  inputBgColor: '#ffffff',
+  inputTextColor: '#111827',
+  inputRadius: 8,
+
+  firstNameLabel: 'First Name',
+  firstNamePlaceholder: 'Enter your first name',
+  firstNameRequired: true,
+  lastNameLabel: 'Last Name',
+  lastNamePlaceholder: 'Enter your last name',
+  lastNameRequired: true,
+  emailLabel: 'Email',
+  emailPlaceholder: 'Enter your email',
+  emailRequired: true,
+
+  submitLabel: 'Create Account',
+  submitBgColor: '#0a1e5e',
+  submitTextColor: '#ffffff',
+  submitRadius: 8,
+  buttonFont: '',
+
+  showLoginLink: true,
+  loginText: 'Already have an account ',
+  loginLinkLabel: 'Login here',
+  loginLinkHref: '/login',
+  loginTextColor: '#374151',
+  loginLinkColor: '#0a1e5e',
+}
+
+export const ru1SignUpFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_section', label: 'Section', type: 'header' },
+  { key: 'sectionBgColor', label: 'Background Colour', type: 'color' },
+  { key: 'bgImage', label: 'Background Image', type: 'image', noAspectRatio: true },
+  { key: 'overlayColor', label: 'Overlay Colour', type: 'color' },
+  { key: 'overlayOpacity', label: 'Overlay Opacity (0-100)', type: 'number', step: 5, placeholder: '0' },
+  { key: 'bgImageAspectRatio', label: 'Background Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '64' },
+
+  { key: '_h_card', label: 'Card', type: 'header' },
+  { key: 'cardBgColor', label: 'Card Background', type: 'color' },
+  { key: 'cardOpacity', label: 'Card Opacity (%)', type: 'number', unit: '%', step: 5, placeholder: '100' },
+  { key: 'cardBorderRadius', label: 'Card Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '16' },
+  { key: 'cardMaxWidth', label: 'Card Width', type: 'number', unit: 'px', step: 10, placeholder: '880' },
+
+  { key: '_h_title', label: 'Title', type: 'header' },
+  { key: 'title', label: 'Title Text', type: 'text', placeholder: 'e.g. Sign up' },
+  { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  { key: 'titleSize', label: 'Title Size', type: 'number', unit: 'px', step: 1, placeholder: '28' },
+  { key: 'titleFontWeight', label: 'Title Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  fontField('titleFont', 'Title Font'),
+
+  { key: '_h_fieldstyle', label: 'Field Style', type: 'header' },
+  { key: 'labelColor', label: 'Label Colour', type: 'color' },
+  fontField('labelFont', 'Label Font'),
+  { key: 'requiredColor', label: 'Required Asterisk Colour', type: 'color' },
+  { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
+  { key: 'inputBgColor', label: 'Input Background', type: 'color' },
+  { key: 'inputTextColor', label: 'Input Text Colour', type: 'color' },
+  { key: 'inputRadius', label: 'Input Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '8' },
+
+  { key: 'firstNameLabel', label: 'First Name Label', type: 'text', placeholder: 'First Name' },
+  { key: 'firstNamePlaceholder', label: 'First Name Placeholder', type: 'text', placeholder: 'Enter your first name' },
+  { key: 'firstNameRequired', label: 'First Name Required', type: 'toggle' },
+  { key: 'lastNameLabel', label: 'Last Name Label', type: 'text', placeholder: 'Last Name' },
+  { key: 'lastNamePlaceholder', label: 'Last Name Placeholder', type: 'text', placeholder: 'Enter your last name' },
+  { key: 'lastNameRequired', label: 'Last Name Required', type: 'toggle' },
+  { key: 'emailLabel', label: 'Email Label', type: 'text', placeholder: 'Email' },
+  { key: 'emailPlaceholder', label: 'Email Placeholder', type: 'text', placeholder: 'Enter your email' },
+  { key: 'emailRequired', label: 'Email Required', type: 'toggle' },
+
+  { key: '_h_submit', label: 'Submit Button', type: 'header' },
+  { key: 'submitLabel', label: 'Button Text', type: 'text', placeholder: 'Create Account' },
+  { key: 'submitBgColor', label: 'Button Background', type: 'color' },
+  { key: 'submitTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'submitRadius', label: 'Button Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '8' },
+  fontField('buttonFont', 'Button Font'),
+
+  { key: '_h_login', label: 'Login Link', type: 'header' },
+  { key: 'showLoginLink', label: 'Show Login Line', type: 'toggle' },
+  { key: 'loginText', label: 'Text', type: 'text', placeholder: 'Already have an account ' },
+  { key: 'loginLinkLabel', label: 'Link Label', type: 'text', placeholder: 'Login here' },
+  { key: 'loginLinkHref', label: 'Link URL', type: 'url', placeholder: '/login' },
+  { key: 'loginTextColor', label: 'Text Colour', type: 'color' },
+  { key: 'loginLinkColor', label: 'Link Colour', type: 'color' },
+]
+
+export function renderRu1SignUp(data: Ru1SignUpData): string {
+  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:${data.inputRadius ?? 8}px;background:${data.inputBgColor};padding:0.625rem 0.875rem;font-size:0.9375rem;color:${data.inputTextColor};border:1px solid ${data.inputBorderColor};outline:none;`
+  const labelStyle = `display:block;font-size:0.9375rem;font-weight:600;color:${data.labelColor};margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
+  const requiredMark = `<span style="color:${data.requiredColor};">*</span>`
+
+  const fieldHtml = (label: string, placeholder: string, required: boolean, type: string, name: string) => `
+      <div style="margin-bottom:1.5rem;">
+        <label style="${labelStyle}">${label}${required ? ` ${requiredMark}` : ''}</label>
+        <input type="${type}" name="${name}" placeholder="${placeholder ?? ''}" style="${inputStyle}"${required ? ' required' : ''} />
+      </div>`
+
+  const loginHtml = data.showLoginLink !== false
+    ? `<p style="margin:1.5rem 0 0;text-align:center;font-size:0.9375rem;color:${data.loginTextColor};">${data.loginText}<a href="${data.loginLinkHref || '#'}" style="color:${data.loginLinkColor};font-weight:700;text-decoration:none;">${data.loginLinkLabel}</a></p>`
+    : ''
+
+  const bgImgSrc = productImageSrc(data.bgImage)
+  const aspectRatioMap: Record<string, string> = {
+    'Wide (16:9)':      'aspect-ratio:16/9;',
+    'Standard (4:3)':   'aspect-ratio:4/3;',
+    'Square (1:1)':     'aspect-ratio:1/1;',
+    'Tall (3:4)':       'aspect-ratio:3/4;',
+    'Cinematic (21:9)': 'aspect-ratio:21/9;',
+  }
+  const bgAspect = (data.bgImageAspectRatio && data.bgImageAspectRatio !== 'Auto')
+    ? (aspectRatioMap[data.bgImageAspectRatio] ?? '')
+    : ''
+  // The box's height matches the image's own natural ratio (auto-measured
+  // once it loads, vw-based so it stays responsive to width like Ru1 Hero's
+  // padding-bottom-percent trick), and background-size:100% 100% stretches
+  // to fill that box exactly — so a wide banner-shaped photo never crops or
+  // letterboxes. Capped at 640px (matching this project's other hero-style
+  // blocks) so an unusually tall/square photo can't blow the section up far
+  // beyond what a compact card (e.g. Sign In) actually needs — past that
+  // cap the image is slightly vertically squeezed rather than growing the
+  // section further, which stays far less jarring than a huge empty-feeling
+  // section around a small form.
+  const autoRatioScript = bgImgSrc
+    ? `<script>(function(){var s=document.currentScript.parentElement;var i=new Image();i.onload=function(){s.style.minHeight='min('+(i.naturalHeight/i.naturalWidth*100)+'vw, 640px)';};i.src='${bgImgSrc}';})()</script>`
+    : ''
+  const sectionBgStyle = bgImgSrc
+    ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};${bgAspect}`
+    : `background-color:${data.sectionBgColor};`
+  const overlayOpacity = Math.min(100, Math.max(0, data.overlayOpacity ?? 0)) / 100
+  const overlayHtml = (bgImgSrc && overlayOpacity > 0)
+    ? `<div style="position:absolute;inset:0;background:${hexToRgba(data.overlayColor || '#000000', overlayOpacity)};pointer-events:none;"></div>`
+    : ''
+
+  return `<section data-component-title="Ru1-Sign Up" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;${sectionBgStyle}padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
+  ${autoRatioScript}
+  ${overlayHtml}
+  <div style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 880}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
+    <h2 style="margin:0 0 2rem;text-align:center;font-size:min(${data.titleSize ?? 28}px,8vw);font-weight:${data.titleFontWeight ?? '600'};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+    <form>
+      ${fieldHtml(data.firstNameLabel, data.firstNamePlaceholder, data.firstNameRequired !== false, 'text', 'first_name')}
+      ${fieldHtml(data.lastNameLabel, data.lastNamePlaceholder, data.lastNameRequired !== false, 'text', 'last_name')}
+      ${fieldHtml(data.emailLabel, data.emailPlaceholder, data.emailRequired !== false, 'email', 'email')}
+      <button type="submit" style="width:100%;background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.submitLabel}</button>
+    </form>
+    ${loginHtml}
+  </div>
+</section>`
+}
+
+// ─── Ru1-Forgot Password ─────────────────────────────────────────────────────
+// A standalone, centered "forgot password" card: title, a short quoted
+// instructions paragraph, an email field, a two-button row ("I have a code" /
+// "Continue") and a "Back to login" line. Same conventions as Ru1-Sign In /
+// Ru1-Sign Up (card width/background-image/overlay, colour + font fields).
+// Purely presentational markup — wiring the form up to a real password-reset
+// endpoint is a separate concern outside this renderer.
+
+export const ru1ForgotPasswordSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
+  <rect fill="#1f2937" width="277.5" height="80"/>
+  <rect fill="#374151" x="68.75" y="4" width="140" height="72" rx="6"/>
+  <rect fill="#9ca3af" x="98.75" y="12" width="80" height="7" rx="1"/>
+  <rect fill="#6b7280" x="78.75" y="26" width="120" height="4" rx="1"/>
+  <rect fill="#6b7280" x="78.75" y="33" width="100" height="4" rx="1"/>
+  <rect fill="#4b5563" x="78.75" y="45" width="120" height="9" rx="2"/>
+  <rect fill="#4b5563" x="78.75" y="60" width="56" height="9" rx="2"/>
+  <rect fill="#6b7280" x="142.75" y="60" width="56" height="9" rx="2"/>
+</svg>`
+
+export interface Ru1ForgotPasswordData {
+  fontFamily: string
+
+  sectionBgColor: string
+  bgImage: string
+  overlayColor: string
+  overlayOpacity: number
+  bgImageAspectRatio: string
+  paddingY: number
+
+  cardBgColor: string
+  cardOpacity: number
+  cardBorderRadius: number
+  cardMaxWidth: number
+
+  title: string
+  titleColor: string
+  titleSize: number
+  titleFontWeight: string
+  titleFont: string
+
+  description: string
+  descriptionColor: string
+  descriptionFont: string
+
+  labelColor: string
+  labelFont: string
+  inputBorderColor: string
+  inputBgColor: string
+  inputTextColor: string
+  inputRadius: number
+  emailLabel: string
+  emailPlaceholder: string
+
+  showCodeButton: boolean
+  codeButtonLabel: string
+  codeButtonHref: string
+  codeButtonTextColor: string
+  codeButtonBorderColor: string
+
+  continueLabel: string
+  continueBgColor: string
+  continueTextColor: string
+  submitRadius: number
+  buttonFont: string
+
+  showBackToLogin: boolean
+  backText: string
+  backLinkLabel: string
+  backLinkHref: string
+  backTextColor: string
+  backLinkColor: string
+}
+
+export const ru1ForgotPasswordDefaults: Ru1ForgotPasswordData = {
+  fontFamily: '',
+
+  sectionBgColor: '#ffffff',
+  bgImage: '',
+  overlayColor: '#000000',
+  overlayOpacity: 0,
+  bgImageAspectRatio: 'Auto',
+  paddingY: 64,
+
+  cardBgColor: '#ffffff',
+  cardOpacity: 100,
+  cardBorderRadius: 16,
+  cardMaxWidth: 880,
+
+  title: 'Forget your password',
+  titleColor: '#0a1e5e',
+  titleSize: 28,
+  titleFontWeight: '600',
+  titleFont: '',
+
+  description: '"Enter the email address you used to sign up. We will send you a password reset instructions, that you\'ll be able to use to set a new password for your account."',
+  descriptionColor: '#0a1e5e',
+  descriptionFont: '',
+
+  labelColor: '#0a1e5e',
+  labelFont: '',
+  inputBorderColor: '#d1d5db',
+  inputBgColor: '#ffffff',
+  inputTextColor: '#111827',
+  inputRadius: 8,
+  emailLabel: 'Email',
+  emailPlaceholder: 'Enter your email',
+
+  showCodeButton: true,
+  codeButtonLabel: 'I have a code',
+  codeButtonHref: '/password/create',
+  codeButtonTextColor: '#0a1e5e',
+  codeButtonBorderColor: '#fca5a5',
+
+  continueLabel: 'Continue',
+  continueBgColor: '#0a1e5e',
+  continueTextColor: '#ffffff',
+  submitRadius: 8,
+  buttonFont: '',
+
+  showBackToLogin: true,
+  backText: 'Back to login ',
+  backLinkLabel: 'Login here',
+  backLinkHref: '/login',
+  backTextColor: '#374151',
+  backLinkColor: '#0a1e5e',
+}
+
+export const ru1ForgotPasswordFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_section', label: 'Section', type: 'header' },
+  { key: 'sectionBgColor', label: 'Background Colour', type: 'color' },
+  { key: 'bgImage', label: 'Background Image', type: 'image', noAspectRatio: true },
+  { key: 'overlayColor', label: 'Overlay Colour', type: 'color' },
+  { key: 'overlayOpacity', label: 'Overlay Opacity (0-100)', type: 'number', step: 5, placeholder: '0' },
+  { key: 'bgImageAspectRatio', label: 'Background Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '64' },
+
+  { key: '_h_card', label: 'Card', type: 'header' },
+  { key: 'cardBgColor', label: 'Card Background', type: 'color' },
+  { key: 'cardOpacity', label: 'Card Opacity (%)', type: 'number', unit: '%', step: 5, placeholder: '100' },
+  { key: 'cardBorderRadius', label: 'Card Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '16' },
+  { key: 'cardMaxWidth', label: 'Card Width', type: 'number', unit: 'px', step: 10, placeholder: '880' },
+
+  { key: '_h_title', label: 'Title', type: 'header' },
+  { key: 'title', label: 'Title Text', type: 'text', placeholder: 'e.g. Forget your password' },
+  { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  { key: 'titleSize', label: 'Title Size', type: 'number', unit: 'px', step: 1, placeholder: '28' },
+  { key: 'titleFontWeight', label: 'Title Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  fontField('titleFont', 'Title Font'),
+
+  { key: '_h_description', label: 'Description', type: 'header' },
+  { key: 'description', label: 'Description Text', type: 'textarea', placeholder: 'Instructions shown below the title' },
+  { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
+  fontField('descriptionFont', 'Description Font'),
+
+  { key: '_h_fieldstyle', label: 'Field Style', type: 'header' },
+  { key: 'labelColor', label: 'Label Colour', type: 'color' },
+  fontField('labelFont', 'Label Font'),
+  { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
+  { key: 'inputBgColor', label: 'Input Background', type: 'color' },
+  { key: 'inputTextColor', label: 'Input Text Colour', type: 'color' },
+  { key: 'inputRadius', label: 'Input Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '8' },
+  { key: 'emailLabel', label: 'Email Label', type: 'text', placeholder: 'Email' },
+  { key: 'emailPlaceholder', label: 'Email Placeholder', type: 'text', placeholder: 'Enter your email' },
+
+  { key: '_h_code', label: '"I have a code" Button', type: 'header' },
+  { key: 'showCodeButton', label: 'Show Button', type: 'toggle' },
+  { key: 'codeButtonLabel', label: 'Button Text', type: 'text', placeholder: 'I have a code' },
+  { key: 'codeButtonHref', label: 'Button URL', type: 'url', placeholder: '/password/create' },
+  { key: 'codeButtonTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'codeButtonBorderColor', label: 'Button Border Colour', type: 'color' },
+
+  { key: '_h_continue', label: 'Continue Button', type: 'header' },
+  { key: 'continueLabel', label: 'Button Text', type: 'text', placeholder: 'Continue' },
+  { key: 'continueBgColor', label: 'Button Background', type: 'color' },
+  { key: 'continueTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'submitRadius', label: 'Button Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '8' },
+  fontField('buttonFont', 'Button Font'),
+
+  { key: '_h_back', label: 'Back to Login Link', type: 'header' },
+  { key: 'showBackToLogin', label: 'Show Link', type: 'toggle' },
+  { key: 'backText', label: 'Text', type: 'text', placeholder: 'Back to login ' },
+  { key: 'backLinkLabel', label: 'Link Label', type: 'text', placeholder: 'Login here' },
+  { key: 'backLinkHref', label: 'Link URL', type: 'url', placeholder: '/login' },
+  { key: 'backTextColor', label: 'Text Colour', type: 'color' },
+  { key: 'backLinkColor', label: 'Link Colour', type: 'color' },
+]
+
+export function renderRu1ForgotPassword(data: Ru1ForgotPasswordData): string {
+  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:${data.inputRadius ?? 8}px;background:${data.inputBgColor};padding:0.625rem 0.875rem;font-size:0.9375rem;color:${data.inputTextColor};border:1px solid ${data.inputBorderColor};outline:none;`
+  const labelStyle = `display:block;font-size:0.9375rem;font-weight:600;color:${data.labelColor};margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
+
+  const codeButtonHtml = data.showCodeButton !== false
+    ? `<a href="${data.codeButtonHref || '#'}" style="flex:1;display:flex;align-items:center;justify-content:center;box-sizing:border-box;background:transparent;color:${data.codeButtonTextColor};border:1.5px solid ${data.codeButtonBorderColor};border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;text-decoration:none;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.codeButtonLabel}</a>`
+    : ''
+
+  const backHtml = data.showBackToLogin !== false
+    ? `<p style="margin:1.5rem 0 0;text-align:center;font-size:0.9375rem;color:${data.backTextColor};">${data.backText}<a href="${data.backLinkHref || '#'}" style="color:${data.backLinkColor};font-weight:700;text-decoration:none;">${data.backLinkLabel}</a></p>`
+    : ''
+
+  const bgImgSrc = productImageSrc(data.bgImage)
+  const aspectRatioMap: Record<string, string> = {
+    'Wide (16:9)':      'aspect-ratio:16/9;',
+    'Standard (4:3)':   'aspect-ratio:4/3;',
+    'Square (1:1)':     'aspect-ratio:1/1;',
+    'Tall (3:4)':       'aspect-ratio:3/4;',
+    'Cinematic (21:9)': 'aspect-ratio:21/9;',
+  }
+  const bgAspect = (data.bgImageAspectRatio && data.bgImageAspectRatio !== 'Auto')
+    ? (aspectRatioMap[data.bgImageAspectRatio] ?? '')
+    : ''
+  // The box's height matches the image's own natural ratio (auto-measured
+  // once it loads, vw-based so it stays responsive to width like Ru1 Hero's
+  // padding-bottom-percent trick), and background-size:100% 100% stretches
+  // to fill that box exactly — so a wide banner-shaped photo never crops or
+  // letterboxes. Capped at 640px (matching this project's other hero-style
+  // blocks) so an unusually tall/square photo can't blow the section up far
+  // beyond what a compact card (e.g. Sign In) actually needs — past that
+  // cap the image is slightly vertically squeezed rather than growing the
+  // section further, which stays far less jarring than a huge empty-feeling
+  // section around a small form.
+  const autoRatioScript = bgImgSrc
+    ? `<script>(function(){var s=document.currentScript.parentElement;var i=new Image();i.onload=function(){s.style.minHeight='min('+(i.naturalHeight/i.naturalWidth*100)+'vw, 640px)';};i.src='${bgImgSrc}';})()</script>`
+    : ''
+  const sectionBgStyle = bgImgSrc
+    ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};${bgAspect}`
+    : `background-color:${data.sectionBgColor};`
+  const overlayOpacity = Math.min(100, Math.max(0, data.overlayOpacity ?? 0)) / 100
+  const overlayHtml = (bgImgSrc && overlayOpacity > 0)
+    ? `<div style="position:absolute;inset:0;background:${hexToRgba(data.overlayColor || '#000000', overlayOpacity)};pointer-events:none;"></div>`
+    : ''
+
+  return `<section data-component-title="Ru1-Forgot Password" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;${sectionBgStyle}padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
+  ${autoRatioScript}
+  ${overlayHtml}
+  <div style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 880}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
+    <h2 style="margin:0 0 1.5rem;text-align:center;font-size:min(${data.titleSize ?? 28}px,8vw);font-weight:${data.titleFontWeight ?? '600'};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+    ${data.description ? `<p style="margin:0 0 2rem;font-size:0.9375rem;line-height:1.6;color:${data.descriptionColor};${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>` : ''}
+    <form>
+      <div style="margin-bottom:1.75rem;">
+        <label style="${labelStyle}">${data.emailLabel}</label>
+        <input type="email" name="email" required placeholder="${data.emailPlaceholder ?? ''}" style="${inputStyle}" />
+      </div>
+      <div style="display:flex;gap:1rem;">
+        ${codeButtonHtml}
+        <button type="submit" style="flex:1;background:${data.continueBgColor};color:${data.continueTextColor};border:none;border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.continueLabel}</button>
+      </div>
+    </form>
+    ${backHtml}
+  </div>
+</section>`
+}
+
+// ─── Ru1-Create New Password ─────────────────────────────────────────────────
+// A standalone, centered "create new password" card: title, Email/Password/
+// Confirm Password (both with a show/hide toggle)/Code fields, a two-button
+// row ("Don't have code" / "Continue") and a static password-requirements
+// checklist. The checklist's title/description text and the individual
+// requirement lines are fixed copy (not admin-editable) — only whether it
+// shows at all, plus a font weight + colour each for the title and the list,
+// are exposed in the sidebar.
+
+export const ru1CreateNewPasswordSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
+  <rect fill="#1f2937" width="277.5" height="80"/>
+  <rect fill="#374151" x="58.75" y="2" width="160" height="76" rx="6"/>
+  <rect fill="#9ca3af" x="98.75" y="9" width="80" height="7" rx="1"/>
+  <rect fill="#6b7280" x="68.75" y="21" width="30" height="4" rx="1"/>
+  <rect fill="#4b5563" x="68.75" y="27" width="140" height="8" rx="2"/>
+  <rect fill="#6b7280" x="68.75" y="41" width="30" height="4" rx="1"/>
+  <rect fill="#4b5563" x="68.75" y="47" width="140" height="8" rx="2"/>
+  <rect fill="#4b5563" x="68.75" y="61" width="66" height="8" rx="2"/>
+  <rect fill="#6b7280" x="142.75" y="61" width="66" height="8" rx="2"/>
+  <circle fill="#22c55e" cx="72" cy="76" r="1.6"/>
+  <circle fill="#6b7280" cx="79" cy="76" r="1.6"/>
+  <circle fill="#6b7280" cx="86" cy="76" r="1.6"/>
+</svg>`
+
+export interface Ru1CreateNewPasswordData {
+  fontFamily: string
+
+  sectionBgColor: string
+  bgImage: string
+  overlayColor: string
+  overlayOpacity: number
+  bgImageAspectRatio: string
+  paddingY: number
+
+  cardBgColor: string
+  cardOpacity: number
+  cardBorderRadius: number
+  cardMaxWidth: number
+
+  title: string
+  titleColor: string
+  titleSize: number
+  titleFontWeight: string
+  titleFont: string
+
+  labelColor: string
+  labelFont: string
+  inputBorderColor: string
+  inputBgColor: string
+  inputTextColor: string
+  inputRadius: number
+
+  emailLabel: string
+  emailPlaceholder: string
+  passwordLabel: string
+  confirmPasswordLabel: string
+  codeLabel: string
+  codePlaceholder: string
+
+  showNoCodeButton: boolean
+  noCodeButtonLabel: string
+  noCodeButtonHref: string
+  noCodeButtonStyle: string
+  noCodeButtonBgColor: string
+  noCodeButtonTextColor: string
+  noCodeButtonBorderColor: string
+
+  continueLabel: string
+  continueStyle: string
+  continueBgColor: string
+  continueBorderColor: string
+  continueTextColor: string
+  submitRadius: number
+  buttonFont: string
+
+  showRequirements: boolean
+  requirementsTitleColor: string
+  requirementsTitleWeight: string
+  requirementsDescColor: string
+  requirementsDescWeight: string
+}
+
+export const ru1CreateNewPasswordDefaults: Ru1CreateNewPasswordData = {
+  fontFamily: '',
+
+  sectionBgColor: '#ffffff',
+  bgImage: '',
+  overlayColor: '#000000',
+  overlayOpacity: 0,
+  bgImageAspectRatio: 'Auto',
+  paddingY: 64,
+
+  cardBgColor: '#ffffff',
+  cardOpacity: 100,
+  cardBorderRadius: 16,
+  cardMaxWidth: 560,
+
+  title: 'Create new password',
+  titleColor: '#0a1e5e',
+  titleSize: 28,
+  titleFontWeight: '600',
+  titleFont: '',
+
+  labelColor: '#0a1e5e',
+  labelFont: '',
+  inputBorderColor: '#d1d5db',
+  inputBgColor: '#ffffff',
+  inputTextColor: '#111827',
+  inputRadius: 8,
+
+  emailLabel: 'Email',
+  emailPlaceholder: 'Enter your email',
+  passwordLabel: 'Password',
+  confirmPasswordLabel: 'Confirm Password',
+  codeLabel: 'Code',
+  codePlaceholder: 'Enter your code',
+
+  showNoCodeButton: true,
+  noCodeButtonLabel: "Don't have code",
+  noCodeButtonHref: '/password/reset',
+  noCodeButtonStyle: 'outline',
+  noCodeButtonBgColor: '#0a1e5e',
+  noCodeButtonTextColor: '#0a1e5e',
+  noCodeButtonBorderColor: '#fca5a5',
+
+  continueLabel: 'Continue',
+  continueStyle: 'filled',
+  continueBgColor: '#0a1e5e',
+  continueBorderColor: '#0a1e5e',
+  continueTextColor: '#ffffff',
+  submitRadius: 8,
+  buttonFont: '',
+
+  showRequirements: true,
+  requirementsTitleColor: '#0a1e5e',
+  requirementsTitleWeight: '700',
+  requirementsDescColor: '#0a1e5e',
+  requirementsDescWeight: '400',
+}
+
+export const ru1CreateNewPasswordFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_section', label: 'Section', type: 'header' },
+  { key: 'sectionBgColor', label: 'Background Colour', type: 'color' },
+  { key: 'bgImage', label: 'Background Image', type: 'image', noAspectRatio: true },
+  { key: 'overlayColor', label: 'Overlay Colour', type: 'color' },
+  { key: 'overlayOpacity', label: 'Overlay Opacity (0-100)', type: 'number', step: 5, placeholder: '0' },
+  { key: 'bgImageAspectRatio', label: 'Background Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '64' },
+
+  { key: '_h_card', label: 'Card', type: 'header' },
+  { key: 'cardBgColor', label: 'Card Background', type: 'color' },
+  { key: 'cardOpacity', label: 'Card Opacity (%)', type: 'number', unit: '%', step: 5, placeholder: '100' },
+  { key: 'cardBorderRadius', label: 'Card Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '16' },
+  { key: 'cardMaxWidth', label: 'Card Width', type: 'number', unit: 'px', step: 10, placeholder: '560' },
+
+  { key: '_h_title', label: 'Title', type: 'header' },
+  { key: 'title', label: 'Title Text', type: 'text', placeholder: 'e.g. Create new password' },
+  { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  { key: 'titleSize', label: 'Title Size', type: 'number', unit: 'px', step: 1, placeholder: '28' },
+  { key: 'titleFontWeight', label: 'Title Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  fontField('titleFont', 'Title Font'),
+
+  { key: '_h_fieldstyle', label: 'Field Style', type: 'header' },
+  { key: 'labelColor', label: 'Label Colour', type: 'color' },
+  fontField('labelFont', 'Label Font'),
+  { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
+  { key: 'inputBgColor', label: 'Input Background', type: 'color' },
+  { key: 'inputTextColor', label: 'Input Text Colour', type: 'color' },
+  { key: 'inputRadius', label: 'Input Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '8' },
+  { key: 'emailLabel', label: 'Email Label', type: 'text', placeholder: 'Email' },
+  { key: 'emailPlaceholder', label: 'Email Placeholder', type: 'text', placeholder: 'Enter your email' },
+  { key: 'passwordLabel', label: 'Password Label', type: 'text', placeholder: 'Password' },
+  { key: 'confirmPasswordLabel', label: 'Confirm Password Label', type: 'text', placeholder: 'Confirm Password' },
+  { key: 'codeLabel', label: 'Code Label', type: 'text', placeholder: 'Code' },
+  { key: 'codePlaceholder', label: 'Code Placeholder', type: 'text', placeholder: 'Enter your code' },
+
+  { key: '_h_nocode', label: '"Don\'t have code" Button', type: 'header' },
+  { key: 'showNoCodeButton', label: 'Show Button', type: 'toggle' },
+  { key: 'noCodeButtonLabel', label: 'Button Text', type: 'text', placeholder: "Don't have code" },
+  { key: 'noCodeButtonHref', label: 'Link URL', type: 'url', placeholder: '/resend-code' },
+  { key: 'noCodeButtonStyle', label: 'Button Style', type: 'select', options: ['filled', 'outline'] },
+  { key: 'noCodeButtonBgColor', label: 'Button Background', type: 'color' },
+  { key: 'noCodeButtonTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'noCodeButtonBorderColor', label: 'Button Border Colour', type: 'color' },
+
+  { key: '_h_continue', label: 'Continue Button', type: 'header' },
+  { key: 'continueLabel', label: 'Button Text', type: 'text', placeholder: 'Continue' },
+  { key: 'continueStyle', label: 'Button Style', type: 'select', options: ['filled', 'outline'] },
+  { key: 'continueBgColor', label: 'Button Background', type: 'color' },
+  { key: 'continueBorderColor', label: 'Button Border Colour', type: 'color' },
+  { key: 'continueTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'submitRadius', label: 'Button Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '8' },
+  fontField('buttonFont', 'Button Font'),
+
+  { key: '_h_requirements', label: 'Password Requirements', type: 'header' },
+  { key: 'showRequirements', label: 'Show Requirements Checklist', type: 'toggle' },
+  { key: 'requirementsTitleWeight', label: 'Title Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  { key: 'requirementsTitleColor', label: 'Title Colour', type: 'color' },
+  { key: 'requirementsDescWeight', label: 'Description Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  { key: 'requirementsDescColor', label: 'Description Colour', type: 'color' },
+]
+
+export function renderRu1CreateNewPassword(data: Ru1CreateNewPasswordData): string {
+  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:${data.inputRadius ?? 8}px;background:${data.inputBgColor};padding:0.625rem 0.875rem;font-size:0.9375rem;color:${data.inputTextColor};border:1px solid ${data.inputBorderColor};outline:none;`
+  const labelStyle = `display:block;font-size:0.9375rem;font-weight:600;color:${data.labelColor};margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
+
+  // Two independent show/hide toggles on the same card — each wrapper carries
+  // its own data attribute so the two onclick scripts never reach into the
+  // wrong field. Same icon-swap + stopImmediatePropagation idiom as
+  // Ru1-Sign In's password toggle.
+  // setProperty(...,'important') rather than a plain .style.display=
+  // assignment — some published-site stylesheets carry their own
+  // !important display rule for spans/icons, which a plain assignment
+  // loses to (both on first paint and after every click, since a plain
+  // reassignment never outranks an external !important rule).
+  const passwordToggleScript = (wrapAttr: string) =>
+    `event.stopImmediatePropagation();(function(btn){var wrap=btn.closest('[${wrapAttr}]');var input=wrap.querySelector('input');var eye=btn.querySelector('[data-icon-eye]');var slash=btn.querySelector('[data-icon-eye-slash]');var show=input.type==='password';input.type=show?'text':'password';eye.style.setProperty('display',show?'none':'flex','important');slash.style.setProperty('display',show?'flex':'none','important');})(this);`
+
+  const passwordEyeButton = (wrapAttr: string) => `
+          <button type="button" onclick="${passwordToggleScript(wrapAttr)}" aria-label="Show password" style="position:absolute;top:50%;right:0.75rem;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;color:#6b7280;">
+            <span data-icon-eye style="display:flex!important;">${ru1SignInEyeIcon}</span>
+            <span data-icon-eye-slash style="display:none!important;">${ru1SignInEyeSlashIcon}</span>
+          </button>`
+
+
+  // Title/description copy and the minimum length itself are fixed here
+  // rather than admin-editable — the sidebar only exposes whether this shows
+  // at all, plus a font weight + colour each for the title and the list.
+  const requirementsHtml = data.showRequirements !== false
+    ? `<div style="margin-top:1.75rem;padding-top:1.5rem;border-top:1px solid #e5e7eb;">
+        <h3 style="margin:0 0 0.75rem;font-size:1.0625rem;font-weight:${data.requirementsTitleWeight ?? '700'};color:${data.requirementsTitleColor};${fontCss(data.labelFont, data.fontFamily)}">Your password must contain:</h3>
+        <ul style="margin:0;padding-left:1.25rem;list-style:disc;list-style-position:outside;display:flex;flex-direction:column;gap:0.375rem;font-size:0.9375rem;font-weight:${data.requirementsDescWeight ?? '400'};color:${data.requirementsDescColor};">
+          <li>Minimum number of characters is 6</li>
+          <li>Should contain lowercase</li>
+          <li>Should contain uppercase</li>
+          <li>Should contain numbers</li>
+          <li>Should contain special characters(!@#$%^&*)</li>
+        </ul>
+      </div>`
+    : ''
+
+  const noCodeButtonHtml = data.showNoCodeButton !== false
+    ? `<a href="${data.noCodeButtonHref || '#'}" style="flex:1;display:flex;align-items:center;justify-content:center;box-sizing:border-box;background:${data.noCodeButtonStyle === 'filled' ? data.noCodeButtonBgColor : 'transparent'};color:${data.noCodeButtonTextColor};border:1.5px solid ${data.noCodeButtonBorderColor};border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;text-decoration:none;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.noCodeButtonLabel}</a>`
+    : ''
+
+  const bgImgSrc = productImageSrc(data.bgImage)
+  const aspectRatioMap: Record<string, string> = {
+    'Wide (16:9)':      'aspect-ratio:16/9;',
+    'Standard (4:3)':   'aspect-ratio:4/3;',
+    'Square (1:1)':     'aspect-ratio:1/1;',
+    'Tall (3:4)':       'aspect-ratio:3/4;',
+    'Cinematic (21:9)': 'aspect-ratio:21/9;',
+  }
+  const bgAspect = (data.bgImageAspectRatio && data.bgImageAspectRatio !== 'Auto')
+    ? (aspectRatioMap[data.bgImageAspectRatio] ?? '')
+    : ''
+  // The box's height matches the image's own natural ratio (auto-measured
+  // once it loads, vw-based so it stays responsive to width like Ru1 Hero's
+  // padding-bottom-percent trick), and background-size:100% 100% stretches
+  // to fill that box exactly — so a wide banner-shaped photo never crops or
+  // letterboxes. Capped at 640px (matching this project's other hero-style
+  // blocks) so an unusually tall/square photo can't blow the section up far
+  // beyond what a compact card (e.g. Sign In) actually needs — past that
+  // cap the image is slightly vertically squeezed rather than growing the
+  // section further, which stays far less jarring than a huge empty-feeling
+  // section around a small form.
+  const autoRatioScript = bgImgSrc
+    ? `<script>(function(){var s=document.currentScript.parentElement;var i=new Image();i.onload=function(){s.style.minHeight='min('+(i.naturalHeight/i.naturalWidth*100)+'vw, 640px)';};i.src='${bgImgSrc}';})()</script>`
+    : ''
+  const sectionBgStyle = bgImgSrc
+    ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};${bgAspect}`
+    : `background-color:${data.sectionBgColor};`
+  const overlayOpacity = Math.min(100, Math.max(0, data.overlayOpacity ?? 0)) / 100
+  const overlayHtml = (bgImgSrc && overlayOpacity > 0)
+    ? `<div style="position:absolute;inset:0;background:${hexToRgba(data.overlayColor || '#000000', overlayOpacity)};pointer-events:none;"></div>`
+    : ''
+
+  return `<section data-component-title="Ru1-Create New Password" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;${sectionBgStyle}padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
+  ${autoRatioScript}
+  ${overlayHtml}
+  <div data-ru1cnp-card="true" style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 560}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
+    <h2 style="margin:0 0 2rem;text-align:center;font-size:min(${data.titleSize ?? 28}px,8vw);font-weight:${data.titleFontWeight ?? '600'};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+    <form>
+      <div style="margin-bottom:1.5rem;">
+        <label style="${labelStyle}">${data.emailLabel}</label>
+        <input type="email" name="email" placeholder="${data.emailPlaceholder ?? ''}" style="${inputStyle}" />
+      </div>
+      <div style="margin-bottom:1.5rem;">
+        <label style="${labelStyle}">${data.passwordLabel}</label>
+        <div data-ru1cnp-pwdwrap="true" style="position:relative;">
+          <!-- Enforces the checklist below via native browser validation
+               (no custom JS needed) — submitting with a password that
+               doesn't satisfy the pattern shows the browser's own error
+               bubble, pre-filled from the title attribute below, pointing
+               at this field. -->
+          <input type="password" name="password" required pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*]).{6,}" title="Minimum number of characters is 6&#10;Should contain lowercase&#10;Should contain uppercase&#10;Should contain numbers&#10;Should contain special characters(!@#$%^&*)" style="${inputStyle}padding-right:2.75rem;" />
+          ${passwordEyeButton('data-ru1cnp-pwdwrap')}
+        </div>
+      </div>
+      <div style="margin-bottom:1.5rem;">
+        <label style="${labelStyle}">${data.confirmPasswordLabel}</label>
+        <div data-ru1cnp-confirmwrap="true" style="position:relative;">
+          <input type="password" name="confirm_password" style="${inputStyle}padding-right:2.75rem;" />
+          ${passwordEyeButton('data-ru1cnp-confirmwrap')}
+        </div>
+      </div>
+      <div style="margin-bottom:1.75rem;">
+        <label style="${labelStyle}">${data.codeLabel}</label>
+        <input type="text" name="code" placeholder="${data.codePlaceholder ?? ''}" style="${inputStyle}" />
+      </div>
+      <div style="display:flex;gap:1rem;">
+        ${noCodeButtonHtml}
+        <button type="submit" style="flex:1;background:${data.continueStyle === 'outline' ? 'transparent' : data.continueBgColor};color:${data.continueTextColor};border:1.5px solid ${data.continueBorderColor};border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.continueLabel}</button>
+      </div>
+    </form>
+    ${requirementsHtml}
   </div>
 </section>`
 }
