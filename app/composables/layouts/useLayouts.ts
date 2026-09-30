@@ -201,6 +201,22 @@ import {
   ru2ScrollingTickerFields,
   ru2ScrollingTickerSvg,
   renderRu2ScrollingTicker,
+  ru1SignInDefaults,
+  ru1SignInFields,
+  ru1SignInSvg,
+  renderRu1SignIn,
+  ru1SignUpDefaults,
+  ru1SignUpFields,
+  ru1SignUpSvg,
+  renderRu1SignUp,
+  ru1ForgotPasswordDefaults,
+  ru1ForgotPasswordFields,
+  ru1ForgotPasswordSvg,
+  renderRu1ForgotPassword,
+  ru1CreateNewPasswordDefaults,
+  ru1CreateNewPasswordFields,
+  ru1CreateNewPasswordSvg,
+  renderRu1CreateNewPassword,
 } from './components'
 
 export interface LayoutComponentItem {
@@ -553,6 +569,38 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       html_code: renderRu2ScrollingTicker(ru2ScrollingTickerDefaults),
     },
   ],
+  'Login': [
+    {
+      title: 'Ru1-Sign In',
+      category: 'Login',
+      cover_image: ru1SignInSvg,
+      html_code: renderRu1SignIn(ru1SignInDefaults),
+    },
+  ],
+  'Register': [
+    {
+      title: 'Ru1-Sign Up',
+      category: 'Register',
+      cover_image: ru1SignUpSvg,
+      html_code: renderRu1SignUp(ru1SignUpDefaults),
+    },
+  ],
+  'Reset Password': [
+    {
+      title: 'Ru1-Forgot Password',
+      category: 'Reset Password',
+      cover_image: ru1ForgotPasswordSvg,
+      html_code: renderRu1ForgotPassword(ru1ForgotPasswordDefaults),
+    },
+  ],
+  'New Password': [
+    {
+      title: 'Ru1-Create New Password',
+      category: 'New Password',
+      cover_image: ru1CreateNewPasswordSvg,
+      html_code: renderRu1CreateNewPassword(ru1CreateNewPasswordDefaults),
+    },
+  ],
 }
 
 export function useLayouts() {
@@ -850,6 +898,30 @@ export function useLayouts() {
     defaults: ru2ScrollingTickerDefaults,
     fields: ru2ScrollingTickerFields,
     render: renderRu2ScrollingTicker,
+  })
+
+  blockRegistry.register('Ru1-Sign In', {
+    defaults: ru1SignInDefaults,
+    fields: ru1SignInFields,
+    render: renderRu1SignIn,
+  })
+
+  blockRegistry.register('Ru1-Sign Up', {
+    defaults: ru1SignUpDefaults,
+    fields: ru1SignUpFields,
+    render: renderRu1SignUp,
+  })
+
+  blockRegistry.register('Ru1-Forgot Password', {
+    defaults: ru1ForgotPasswordDefaults,
+    fields: ru1ForgotPasswordFields,
+    render: renderRu1ForgotPassword,
+  })
+
+  blockRegistry.register('Ru1-Create New Password', {
+    defaults: ru1CreateNewPasswordDefaults,
+    fields: ru1CreateNewPasswordFields,
+    render: renderRu1CreateNewPassword,
   })
 
   return { layoutComponentRegistry }
