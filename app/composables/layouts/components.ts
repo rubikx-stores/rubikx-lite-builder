@@ -13367,49 +13367,14 @@ export interface Ru1SignInData {
   bgImage: string
   overlayColor: string
   overlayOpacity: number
-  bgImageAspectRatio: string
   paddingY: number
 
-  cardBgColor: string
-  cardOpacity: number
-  cardBorderRadius: number
-  cardMaxWidth: number
+  showRichContent: boolean
+  richContent: string
 
-  title: string
-  titleColor: string
-  titleSize: number
-  titleFontWeight: string
   titleFont: string
-
-  labelColor: string
   labelFont: string
-  inputBorderColor: string
-  inputBgColor: string
-  inputTextColor: string
-  inputRadius: number
-
-  emailLabel: string
-  emailPlaceholder: string
-  passwordLabel: string
-  passwordPlaceholder: string
-
-  showForgotPassword: boolean
-  forgotPasswordLabel: string
-  forgotPasswordHref: string
-  forgotPasswordColor: string
-
-  submitLabel: string
-  submitBgColor: string
-  submitTextColor: string
-  submitRadius: number
   buttonFont: string
-
-  showRegisterLink: boolean
-  registerText: string
-  registerLinkLabel: string
-  registerLinkHref: string
-  registerTextColor: string
-  registerLinkColor: string
 }
 
 export const ru1SignInDefaults: Ru1SignInData = {
@@ -13419,49 +13384,14 @@ export const ru1SignInDefaults: Ru1SignInData = {
   bgImage: '',
   overlayColor: '#000000',
   overlayOpacity: 0,
-  bgImageAspectRatio: 'Auto',
   paddingY: 64,
 
-  cardBgColor: '#ffffff',
-  cardOpacity: 100,
-  cardBorderRadius: 16,
-  cardMaxWidth: 880,
+  showRichContent: false,
+  richContent: '',
 
-  title: 'Sign In',
-  titleColor: '#0a1e5e',
-  titleSize: 28,
-  titleFontWeight: '600',
   titleFont: '',
-
-  labelColor: '#0a1e5e',
   labelFont: '',
-  inputBorderColor: '#d1d5db',
-  inputBgColor: '#ffffff',
-  inputTextColor: '#111827',
-  inputRadius: 8,
-
-  emailLabel: 'Email',
-  emailPlaceholder: 'Enter your email',
-  passwordLabel: 'Password',
-  passwordPlaceholder: '',
-
-  showForgotPassword: true,
-  forgotPasswordLabel: 'Forgot/Reset your password?',
-  forgotPasswordHref: '/password/reset',
-  forgotPasswordColor: '#0a1e5e',
-
-  submitLabel: 'Sign in',
-  submitBgColor: '#0a1e5e',
-  submitTextColor: '#ffffff',
-  submitRadius: 8,
   buttonFont: '',
-
-  showRegisterLink: true,
-  registerText: "Don't have an account ",
-  registerLinkLabel: 'Register here',
-  registerLinkHref: '/signup',
-  registerTextColor: '#374151',
-  registerLinkColor: '#0a1e5e',
 }
 
 export const ru1SignInFields: FieldConfig[] = [
@@ -13472,70 +13402,32 @@ export const ru1SignInFields: FieldConfig[] = [
   { key: 'sectionBgColor', label: 'Background Colour', type: 'color' },
   { key: 'bgImage', label: 'Background Image', type: 'image', noAspectRatio: true },
   { key: 'overlayColor', label: 'Overlay Colour', type: 'color' },
-  { key: 'overlayOpacity', label: 'Overlay Opacity (0-100)', type: 'number', step: 5, placeholder: '0' },
-  { key: 'bgImageAspectRatio', label: 'Background Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
+  { key: 'overlayOpacity', label: 'Overlay Opacity (0-100)', type: 'number', unit: '%', step: 5, placeholder: '0' },
   { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '64' },
 
-  { key: '_h_card', label: 'Card', type: 'header' },
-  { key: 'cardBgColor', label: 'Card Background', type: 'color' },
-  { key: 'cardOpacity', label: 'Card Opacity (%)', type: 'number', unit: '%', step: 5, placeholder: '100' },
-  { key: 'cardBorderRadius', label: 'Card Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '16' },
-  { key: 'cardMaxWidth', label: 'Card Width', type: 'number', unit: 'px', step: 10, placeholder: '880' },
+  { key: '_h_content', label: 'Extra Content', type: 'header' },
+  { key: 'showRichContent', label: 'Show Content', type: 'toggle' },
+  { key: 'richContent', label: 'Content', type: 'textarea', placeholder: 'Add your content…' },
 
   { key: '_h_title', label: 'Title', type: 'header' },
-  { key: 'title', label: 'Title Text', type: 'text', placeholder: 'e.g. Sign In' },
-  { key: 'titleColor', label: 'Title Colour', type: 'color' },
-  { key: 'titleSize', label: 'Title Size', type: 'number', unit: 'px', step: 1, placeholder: '28' },
-  { key: 'titleFontWeight', label: 'Title Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
   fontField('titleFont', 'Title Font'),
 
   { key: '_h_fieldstyle', label: 'Field Style', type: 'header' },
-  { key: 'labelColor', label: 'Label Colour', type: 'color' },
   fontField('labelFont', 'Label Font'),
-  { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
-  { key: 'inputBgColor', label: 'Input Background', type: 'color' },
-  { key: 'inputTextColor', label: 'Input Text Colour', type: 'color' },
-  { key: 'inputRadius', label: 'Input Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '8' },
-  { key: 'emailLabel', label: 'Email Label', type: 'text', placeholder: 'Email' },
-  { key: 'emailPlaceholder', label: 'Email Placeholder', type: 'text', placeholder: 'Enter your email' },
-  { key: 'passwordLabel', label: 'Password Label', type: 'text', placeholder: 'Password' },
-  { key: 'passwordPlaceholder', label: 'Password Placeholder', type: 'text' },
-
-  { key: '_h_forgot', label: 'Forgot Password', type: 'header' },
-  { key: 'showForgotPassword', label: 'Show Link', type: 'toggle' },
-  { key: 'forgotPasswordLabel', label: 'Link Text', type: 'text', placeholder: 'Forgot/Reset your password?' },
-  { key: 'forgotPasswordHref', label: 'Link URL', type: 'url', placeholder: '/password/reset' },
-  { key: 'forgotPasswordColor', label: 'Link Colour', type: 'color' },
 
   { key: '_h_submit', label: 'Submit Button', type: 'header' },
-  { key: 'submitLabel', label: 'Button Text', type: 'text', placeholder: 'Sign in' },
-  { key: 'submitBgColor', label: 'Button Background', type: 'color' },
-  { key: 'submitTextColor', label: 'Button Text Colour', type: 'color' },
-  { key: 'submitRadius', label: 'Button Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '8' },
   fontField('buttonFont', 'Button Font'),
-
-  { key: '_h_register', label: 'Register Link', type: 'header' },
-  { key: 'showRegisterLink', label: 'Show Register Line', type: 'toggle' },
-  { key: 'registerText', label: 'Text', type: 'text', placeholder: "Don't have an account " },
-  { key: 'registerLinkLabel', label: 'Link Label', type: 'text', placeholder: 'Register here' },
-  { key: 'registerLinkHref', label: 'Link URL', type: 'url', placeholder: '/register' },
-  { key: 'registerTextColor', label: 'Text Colour', type: 'color' },
-  { key: 'registerLinkColor', label: 'Link Colour', type: 'color' },
 ]
 
 export function renderRu1SignIn(data: Ru1SignInData): string {
-  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:${data.inputRadius ?? 8}px;background:${data.inputBgColor};padding:0.625rem 0.875rem;font-size:0.9375rem;color:${data.inputTextColor};border:1px solid ${data.inputBorderColor};outline:none;`
-  const labelStyle = `display:block;font-size:0.9375rem;font-weight:600;color:${data.labelColor};margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
+  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:8px;background:#ffffff;padding:0.625rem 0.875rem;font-size:0.9375rem;color:#111827;border:1px solid #d1d5db;outline:none;`
+  const labelStyle = `display:block;font-size:0.9375rem;font-weight:600;color:#0a1e5e;margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
 
-  const forgotHtml = data.showForgotPassword !== false
-    ? `<div style="display:flex;justify-content:flex-end;margin:0.75rem 0 1.75rem;">
-        <a href="${data.forgotPasswordHref || '#'}" style="font-size:0.875rem;font-weight:700;color:${data.forgotPasswordColor};text-decoration:none;">${data.forgotPasswordLabel}</a>
+  const forgotHtml = `<div style="display:flex;justify-content:flex-end;margin:0.75rem 0 1.75rem;">
+        <a href="/password/reset" style="font-size:0.875rem;font-weight:700;color:#0a1e5e;text-decoration:none;">Forgot/Reset your password?</a>
       </div>`
-    : ''
 
-  const registerHtml = data.showRegisterLink !== false
-    ? `<p style="margin:1.5rem 0 0;text-align:center;font-size:0.9375rem;color:${data.registerTextColor};">${data.registerText}<a href="${data.registerLinkHref || '#'}" style="color:${data.registerLinkColor};font-weight:700;text-decoration:none;">${data.registerLinkLabel}</a></p>`
-    : ''
+  const registerHtml = `<p style="margin:1.5rem 0 0;text-align:center;font-size:0.9375rem;color:#374151;">Don't have an account <a href="/signup" style="color:#0a1e5e;font-weight:700;text-decoration:none;">Register here</a></p>`
 
   // Icon-swap toggle on the password field, same idiom as Ru6-Hamburger-
   // Navbar's menu button: stopImmediatePropagation so the builder's own
@@ -13547,52 +13439,44 @@ export function renderRu1SignIn(data: Ru1SignInData): string {
   // loses to (both on first paint and after every click).
   const passwordToggleScript = `event.stopImmediatePropagation();(function(btn){var wrap=btn.closest('[data-ru1signin-pwdwrap]');var input=wrap.querySelector('input');var eye=btn.querySelector('[data-icon-eye]');var slash=btn.querySelector('[data-icon-eye-slash]');var show=input.type==='password';input.type=show?'text':'password';eye.style.setProperty('display',show?'none':'flex','important');slash.style.setProperty('display',show?'flex':'none','important');})(this);`
 
+  // Background image sits behind just the card (full-bleed `cover` on a
+  // wrapper around the card only), not the whole section — so Extra
+  // Content renders above it in the section's own plain background, not
+  // overlaid on top of the image.
   const bgImgSrc = productImageSrc(data.bgImage)
-  const aspectRatioMap: Record<string, string> = {
-    'Wide (16:9)':      'aspect-ratio:16/9;',
-    'Standard (4:3)':   'aspect-ratio:4/3;',
-    'Square (1:1)':     'aspect-ratio:1/1;',
-    'Tall (3:4)':       'aspect-ratio:3/4;',
-    'Cinematic (21:9)': 'aspect-ratio:21/9;',
-  }
-  const bgAspect = (data.bgImageAspectRatio && data.bgImageAspectRatio !== 'Auto')
-    ? (aspectRatioMap[data.bgImageAspectRatio] ?? '')
-    : ''
-  // The box's height matches the image's own natural ratio (auto-measured
-  // once it loads, vw-based so it stays responsive to width like Ru1 Hero's
-  // padding-bottom-percent trick), and background-size:100% 100% stretches
-  // to fill that box exactly — so a wide banner-shaped photo never crops or
-  // letterboxes. Capped at 640px (matching this project's other hero-style
-  // blocks) so an unusually tall/square photo can't blow the section up far
-  // beyond what a compact card (e.g. Sign In) actually needs — past that
-  // cap the image is slightly vertically squeezed rather than growing the
-  // section further, which stays far less jarring than a huge empty-feeling
-  // section around a small form.
-  const autoRatioScript = bgImgSrc
-    ? `<script>(function(){var s=document.currentScript.parentElement;var i=new Image();i.onload=function(){s.style.minHeight='min('+(i.naturalHeight/i.naturalWidth*100)+'vw, 640px)';};i.src='${bgImgSrc}';})()</script>`
-    : ''
-  const sectionBgStyle = bgImgSrc
-    ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};${bgAspect}`
-    : `background-color:${data.sectionBgColor};`
   const overlayOpacity = Math.min(100, Math.max(0, data.overlayOpacity ?? 0)) / 100
   const overlayHtml = (bgImgSrc && overlayOpacity > 0)
     ? `<div style="position:absolute;inset:0;background:${hexToRgba(data.overlayColor || '#000000', overlayOpacity)};pointer-events:none;"></div>`
     : ''
+  // The frame's box shape (card height + padding) rarely matches a wide
+  // banner photo's own aspect ratio, so `cover` was zooming in hard and
+  // cropping off its edges (logo/text cut off). `100% 100%` stretches the
+  // image to exactly fill the frame instead, showing the whole photo.
+  const cardWrapStyle = bgImgSrc
+    ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};`
+    : ''
+  const richContentHtml = (data.showRichContent && data.richContent && data.richContent.trim())
+    ? `<div style="margin-bottom:1.5rem;">${data.richContent}</div>`
+    : ''
 
-  return `<section data-component-title="Ru1-Sign In" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;${sectionBgStyle}padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
-  ${autoRatioScript}
+  return `<section data-component-title="Ru1-Sign In" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.sectionBgColor};padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
+  <div style="width:100%;max-width:90rem;margin:0 auto;">
+  ${richContentHtml}
+  </div>
+  <div style="position:relative;width:calc(100% + 2rem);margin:0 -1rem;overflow:hidden;box-sizing:border-box;${bgImgSrc ? 'padding:min(5rem,12vw) 1rem;' : ''}${cardWrapStyle}">
   ${overlayHtml}
-  <div style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 880}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
-    <h2 style="margin:0 0 2rem;text-align:center;font-size:min(${data.titleSize ?? 28}px,8vw);font-weight:${data.titleFontWeight ?? '600'};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+  <div style="position:relative;width:100%;max-width:760px;margin:0 auto;">
+  <div style="position:relative;width:100%;background:#ffffff;border-radius:16px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
+    <h2 style="margin:0 0 2rem;text-align:center;font-size:min(28px,8vw);font-weight:600;color:#0a1e5e;${fontCss(data.titleFont, data.fontFamily)}">Sign In</h2>
     <form>
       <div style="margin-bottom:1.5rem;">
-        <label style="${labelStyle}">${data.emailLabel}</label>
-        <input type="email" name="email" required placeholder="${data.emailPlaceholder ?? ''}" style="${inputStyle}" />
+        <label style="${labelStyle}">Email</label>
+        <input type="email" name="email" required placeholder="Enter your email" style="${inputStyle}" />
       </div>
       <div>
-        <label style="${labelStyle}">${data.passwordLabel}</label>
+        <label style="${labelStyle}">Password</label>
         <div data-ru1signin-pwdwrap="true" style="position:relative;">
-          <input type="password" name="password" required placeholder="${data.passwordPlaceholder ?? ''}" style="${inputStyle}padding-right:2.75rem;" />
+          <input type="password" name="password" required placeholder="" style="${inputStyle}padding-right:2.75rem;" />
           <button type="button" onclick="${passwordToggleScript}" aria-label="Show password" style="position:absolute;top:50%;right:0.75rem;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;color:#6b7280;">
             <span data-icon-eye style="display:flex!important;">${ru1SignInEyeIcon}</span>
             <span data-icon-eye-slash style="display:none!important;">${ru1SignInEyeSlashIcon}</span>
@@ -13600,9 +13484,11 @@ export function renderRu1SignIn(data: Ru1SignInData): string {
         </div>
       </div>
       ${forgotHtml}
-      <button type="submit" style="width:100%;background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.submitLabel}</button>
+      <button type="submit" style="width:100%;background:#0a1e5e;color:#ffffff;border:none;border-radius:8px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">Sign in</button>
     </form>
     ${registerHtml}
+  </div>
+  </div>
   </div>
 </section>`
 }
@@ -13635,50 +13521,14 @@ export interface Ru1SignUpData {
   bgImage: string
   overlayColor: string
   overlayOpacity: number
-  bgImageAspectRatio: string
   paddingY: number
 
-  cardBgColor: string
-  cardOpacity: number
-  cardBorderRadius: number
-  cardMaxWidth: number
+  showRichContent: boolean
+  richContent: string
 
-  title: string
-  titleColor: string
-  titleSize: number
-  titleFontWeight: string
   titleFont: string
-
-  labelColor: string
   labelFont: string
-  requiredColor: string
-  inputBorderColor: string
-  inputBgColor: string
-  inputTextColor: string
-  inputRadius: number
-
-  firstNameLabel: string
-  firstNamePlaceholder: string
-  firstNameRequired: boolean
-  lastNameLabel: string
-  lastNamePlaceholder: string
-  lastNameRequired: boolean
-  emailLabel: string
-  emailPlaceholder: string
-  emailRequired: boolean
-
-  submitLabel: string
-  submitBgColor: string
-  submitTextColor: string
-  submitRadius: number
   buttonFont: string
-
-  showLoginLink: boolean
-  loginText: string
-  loginLinkLabel: string
-  loginLinkHref: string
-  loginTextColor: string
-  loginLinkColor: string
 }
 
 export const ru1SignUpDefaults: Ru1SignUpData = {
@@ -13688,50 +13538,14 @@ export const ru1SignUpDefaults: Ru1SignUpData = {
   bgImage: '',
   overlayColor: '#000000',
   overlayOpacity: 0,
-  bgImageAspectRatio: 'Auto',
   paddingY: 64,
 
-  cardBgColor: '#ffffff',
-  cardOpacity: 100,
-  cardBorderRadius: 16,
-  cardMaxWidth: 880,
+  showRichContent: false,
+  richContent: '',
 
-  title: 'Sign up',
-  titleColor: '#0a1e5e',
-  titleSize: 28,
-  titleFontWeight: '600',
   titleFont: '',
-
-  labelColor: '#0a1e5e',
   labelFont: '',
-  requiredColor: '#0a1e5e',
-  inputBorderColor: '#d1d5db',
-  inputBgColor: '#ffffff',
-  inputTextColor: '#111827',
-  inputRadius: 8,
-
-  firstNameLabel: 'First Name',
-  firstNamePlaceholder: 'Enter your first name',
-  firstNameRequired: true,
-  lastNameLabel: 'Last Name',
-  lastNamePlaceholder: 'Enter your last name',
-  lastNameRequired: true,
-  emailLabel: 'Email',
-  emailPlaceholder: 'Enter your email',
-  emailRequired: true,
-
-  submitLabel: 'Create Account',
-  submitBgColor: '#0a1e5e',
-  submitTextColor: '#ffffff',
-  submitRadius: 8,
   buttonFont: '',
-
-  showLoginLink: true,
-  loginText: 'Already have an account ',
-  loginLinkLabel: 'Login here',
-  loginLinkHref: '/login',
-  loginTextColor: '#374151',
-  loginLinkColor: '#0a1e5e',
 }
 
 export const ru1SignUpFields: FieldConfig[] = [
@@ -13742,62 +13556,27 @@ export const ru1SignUpFields: FieldConfig[] = [
   { key: 'sectionBgColor', label: 'Background Colour', type: 'color' },
   { key: 'bgImage', label: 'Background Image', type: 'image', noAspectRatio: true },
   { key: 'overlayColor', label: 'Overlay Colour', type: 'color' },
-  { key: 'overlayOpacity', label: 'Overlay Opacity (0-100)', type: 'number', step: 5, placeholder: '0' },
-  { key: 'bgImageAspectRatio', label: 'Background Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
+  { key: 'overlayOpacity', label: 'Overlay Opacity (0-100)', type: 'number', unit: '%', step: 5, placeholder: '0' },
   { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '64' },
 
-  { key: '_h_card', label: 'Card', type: 'header' },
-  { key: 'cardBgColor', label: 'Card Background', type: 'color' },
-  { key: 'cardOpacity', label: 'Card Opacity (%)', type: 'number', unit: '%', step: 5, placeholder: '100' },
-  { key: 'cardBorderRadius', label: 'Card Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '16' },
-  { key: 'cardMaxWidth', label: 'Card Width', type: 'number', unit: 'px', step: 10, placeholder: '880' },
+  { key: '_h_content', label: 'Extra Content', type: 'header' },
+  { key: 'showRichContent', label: 'Show Content', type: 'toggle' },
+  { key: 'richContent', label: 'Content', type: 'textarea', placeholder: 'Add your content…' },
 
   { key: '_h_title', label: 'Title', type: 'header' },
-  { key: 'title', label: 'Title Text', type: 'text', placeholder: 'e.g. Sign up' },
-  { key: 'titleColor', label: 'Title Colour', type: 'color' },
-  { key: 'titleSize', label: 'Title Size', type: 'number', unit: 'px', step: 1, placeholder: '28' },
-  { key: 'titleFontWeight', label: 'Title Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
   fontField('titleFont', 'Title Font'),
 
   { key: '_h_fieldstyle', label: 'Field Style', type: 'header' },
-  { key: 'labelColor', label: 'Label Colour', type: 'color' },
   fontField('labelFont', 'Label Font'),
-  { key: 'requiredColor', label: 'Required Asterisk Colour', type: 'color' },
-  { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
-  { key: 'inputBgColor', label: 'Input Background', type: 'color' },
-  { key: 'inputTextColor', label: 'Input Text Colour', type: 'color' },
-  { key: 'inputRadius', label: 'Input Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '8' },
-
-  { key: 'firstNameLabel', label: 'First Name Label', type: 'text', placeholder: 'First Name' },
-  { key: 'firstNamePlaceholder', label: 'First Name Placeholder', type: 'text', placeholder: 'Enter your first name' },
-  { key: 'firstNameRequired', label: 'First Name Required', type: 'toggle' },
-  { key: 'lastNameLabel', label: 'Last Name Label', type: 'text', placeholder: 'Last Name' },
-  { key: 'lastNamePlaceholder', label: 'Last Name Placeholder', type: 'text', placeholder: 'Enter your last name' },
-  { key: 'lastNameRequired', label: 'Last Name Required', type: 'toggle' },
-  { key: 'emailLabel', label: 'Email Label', type: 'text', placeholder: 'Email' },
-  { key: 'emailPlaceholder', label: 'Email Placeholder', type: 'text', placeholder: 'Enter your email' },
-  { key: 'emailRequired', label: 'Email Required', type: 'toggle' },
 
   { key: '_h_submit', label: 'Submit Button', type: 'header' },
-  { key: 'submitLabel', label: 'Button Text', type: 'text', placeholder: 'Create Account' },
-  { key: 'submitBgColor', label: 'Button Background', type: 'color' },
-  { key: 'submitTextColor', label: 'Button Text Colour', type: 'color' },
-  { key: 'submitRadius', label: 'Button Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '8' },
   fontField('buttonFont', 'Button Font'),
-
-  { key: '_h_login', label: 'Login Link', type: 'header' },
-  { key: 'showLoginLink', label: 'Show Login Line', type: 'toggle' },
-  { key: 'loginText', label: 'Text', type: 'text', placeholder: 'Already have an account ' },
-  { key: 'loginLinkLabel', label: 'Link Label', type: 'text', placeholder: 'Login here' },
-  { key: 'loginLinkHref', label: 'Link URL', type: 'url', placeholder: '/login' },
-  { key: 'loginTextColor', label: 'Text Colour', type: 'color' },
-  { key: 'loginLinkColor', label: 'Link Colour', type: 'color' },
 ]
 
 export function renderRu1SignUp(data: Ru1SignUpData): string {
-  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:${data.inputRadius ?? 8}px;background:${data.inputBgColor};padding:0.625rem 0.875rem;font-size:0.9375rem;color:${data.inputTextColor};border:1px solid ${data.inputBorderColor};outline:none;`
-  const labelStyle = `display:block;font-size:0.9375rem;font-weight:600;color:${data.labelColor};margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
-  const requiredMark = `<span style="color:${data.requiredColor};">*</span>`
+  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:8px;background:#ffffff;padding:0.625rem 0.875rem;font-size:0.9375rem;color:#111827;border:1px solid #d1d5db;outline:none;`
+  const labelStyle = `display:block;font-size:0.9375rem;font-weight:600;color:#0a1e5e;margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
+  const requiredMark = `<span style="color:#0a1e5e;">*</span>`
 
   const fieldHtml = (label: string, placeholder: string, required: boolean, type: string, name: string) => `
       <div style="margin-bottom:1.5rem;">
@@ -13805,54 +13584,43 @@ export function renderRu1SignUp(data: Ru1SignUpData): string {
         <input type="${type}" name="${name}" placeholder="${placeholder ?? ''}" style="${inputStyle}"${required ? ' required' : ''} />
       </div>`
 
-  const loginHtml = data.showLoginLink !== false
-    ? `<p style="margin:1.5rem 0 0;text-align:center;font-size:0.9375rem;color:${data.loginTextColor};">${data.loginText}<a href="${data.loginLinkHref || '#'}" style="color:${data.loginLinkColor};font-weight:700;text-decoration:none;">${data.loginLinkLabel}</a></p>`
-    : ''
+  const loginHtml = `<p style="margin:1.5rem 0 0;text-align:center;font-size:0.9375rem;color:#374151;">Already have an account <a href="/login" style="color:#0a1e5e;font-weight:700;text-decoration:none;">Login here</a></p>`
 
+  // Background image sits behind just the card (full-bleed, edge-to-edge
+  // of the section) — not the whole section, so Extra Content renders
+  // above it in the section's own plain background, not overlaid on the
+  // image. `100% 100%` stretches the image to fill the frame without
+  // cropping, since the frame's box shape rarely matches the photo's own.
   const bgImgSrc = productImageSrc(data.bgImage)
-  const aspectRatioMap: Record<string, string> = {
-    'Wide (16:9)':      'aspect-ratio:16/9;',
-    'Standard (4:3)':   'aspect-ratio:4/3;',
-    'Square (1:1)':     'aspect-ratio:1/1;',
-    'Tall (3:4)':       'aspect-ratio:3/4;',
-    'Cinematic (21:9)': 'aspect-ratio:21/9;',
-  }
-  const bgAspect = (data.bgImageAspectRatio && data.bgImageAspectRatio !== 'Auto')
-    ? (aspectRatioMap[data.bgImageAspectRatio] ?? '')
-    : ''
-  // The box's height matches the image's own natural ratio (auto-measured
-  // once it loads, vw-based so it stays responsive to width like Ru1 Hero's
-  // padding-bottom-percent trick), and background-size:100% 100% stretches
-  // to fill that box exactly — so a wide banner-shaped photo never crops or
-  // letterboxes. Capped at 640px (matching this project's other hero-style
-  // blocks) so an unusually tall/square photo can't blow the section up far
-  // beyond what a compact card (e.g. Sign In) actually needs — past that
-  // cap the image is slightly vertically squeezed rather than growing the
-  // section further, which stays far less jarring than a huge empty-feeling
-  // section around a small form.
-  const autoRatioScript = bgImgSrc
-    ? `<script>(function(){var s=document.currentScript.parentElement;var i=new Image();i.onload=function(){s.style.minHeight='min('+(i.naturalHeight/i.naturalWidth*100)+'vw, 640px)';};i.src='${bgImgSrc}';})()</script>`
-    : ''
-  const sectionBgStyle = bgImgSrc
-    ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};${bgAspect}`
-    : `background-color:${data.sectionBgColor};`
   const overlayOpacity = Math.min(100, Math.max(0, data.overlayOpacity ?? 0)) / 100
   const overlayHtml = (bgImgSrc && overlayOpacity > 0)
     ? `<div style="position:absolute;inset:0;background:${hexToRgba(data.overlayColor || '#000000', overlayOpacity)};pointer-events:none;"></div>`
     : ''
+  const cardWrapStyle = bgImgSrc
+    ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};`
+    : ''
+  const richContentHtml = (data.showRichContent && data.richContent && data.richContent.trim())
+    ? `<div style="margin-bottom:1.5rem;">${data.richContent}</div>`
+    : ''
 
-  return `<section data-component-title="Ru1-Sign Up" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;${sectionBgStyle}padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
-  ${autoRatioScript}
+  return `<section data-component-title="Ru1-Sign Up" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.sectionBgColor};padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
+  <div style="width:100%;max-width:90rem;margin:0 auto;">
+  ${richContentHtml}
+  </div>
+  <div style="position:relative;width:calc(100% + 2rem);margin:0 -1rem;overflow:hidden;box-sizing:border-box;${bgImgSrc ? 'padding:min(5rem,12vw) 1rem;' : ''}${cardWrapStyle}">
   ${overlayHtml}
-  <div style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 880}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
-    <h2 style="margin:0 0 2rem;text-align:center;font-size:min(${data.titleSize ?? 28}px,8vw);font-weight:${data.titleFontWeight ?? '600'};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+  <div style="position:relative;width:100%;max-width:760px;margin:0 auto;">
+  <div style="position:relative;width:100%;background:#ffffff;border-radius:16px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
+    <h2 style="margin:0 0 2rem;text-align:center;font-size:min(28px,8vw);font-weight:600;color:#0a1e5e;${fontCss(data.titleFont, data.fontFamily)}">Sign up</h2>
     <form>
-      ${fieldHtml(data.firstNameLabel, data.firstNamePlaceholder, data.firstNameRequired !== false, 'text', 'first_name')}
-      ${fieldHtml(data.lastNameLabel, data.lastNamePlaceholder, data.lastNameRequired !== false, 'text', 'last_name')}
-      ${fieldHtml(data.emailLabel, data.emailPlaceholder, data.emailRequired !== false, 'email', 'email')}
-      <button type="submit" style="width:100%;background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.submitLabel}</button>
+      ${fieldHtml('First Name', 'Enter your first name', true, 'text', 'first_name')}
+      ${fieldHtml('Last Name', 'Enter your last name', true, 'text', 'last_name')}
+      ${fieldHtml('Email', 'Enter your email', true, 'email', 'email')}
+      <button type="submit" style="width:100%;background:#0a1e5e;color:#ffffff;border:none;border-radius:8px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">Create Account</button>
     </form>
     ${loginHtml}
+  </div>
+  </div>
   </div>
 </section>`
 }
@@ -13883,51 +13651,15 @@ export interface Ru1ForgotPasswordData {
   bgImage: string
   overlayColor: string
   overlayOpacity: number
-  bgImageAspectRatio: string
   paddingY: number
 
-  cardBgColor: string
-  cardOpacity: number
-  cardBorderRadius: number
-  cardMaxWidth: number
+  showRichContent: boolean
+  richContent: string
 
-  title: string
-  titleColor: string
-  titleSize: number
-  titleFontWeight: string
   titleFont: string
-
-  description: string
-  descriptionColor: string
   descriptionFont: string
-
-  labelColor: string
   labelFont: string
-  inputBorderColor: string
-  inputBgColor: string
-  inputTextColor: string
-  inputRadius: number
-  emailLabel: string
-  emailPlaceholder: string
-
-  showCodeButton: boolean
-  codeButtonLabel: string
-  codeButtonHref: string
-  codeButtonTextColor: string
-  codeButtonBorderColor: string
-
-  continueLabel: string
-  continueBgColor: string
-  continueTextColor: string
-  submitRadius: number
   buttonFont: string
-
-  showBackToLogin: boolean
-  backText: string
-  backLinkLabel: string
-  backLinkHref: string
-  backTextColor: string
-  backLinkColor: string
 }
 
 export const ru1ForgotPasswordDefaults: Ru1ForgotPasswordData = {
@@ -13937,51 +13669,15 @@ export const ru1ForgotPasswordDefaults: Ru1ForgotPasswordData = {
   bgImage: '',
   overlayColor: '#000000',
   overlayOpacity: 0,
-  bgImageAspectRatio: 'Auto',
   paddingY: 64,
 
-  cardBgColor: '#ffffff',
-  cardOpacity: 100,
-  cardBorderRadius: 16,
-  cardMaxWidth: 880,
+  showRichContent: false,
+  richContent: '',
 
-  title: 'Forget your password',
-  titleColor: '#0a1e5e',
-  titleSize: 28,
-  titleFontWeight: '600',
   titleFont: '',
-
-  description: '"Enter the email address you used to sign up. We will send you a password reset instructions, that you\'ll be able to use to set a new password for your account."',
-  descriptionColor: '#0a1e5e',
   descriptionFont: '',
-
-  labelColor: '#0a1e5e',
   labelFont: '',
-  inputBorderColor: '#d1d5db',
-  inputBgColor: '#ffffff',
-  inputTextColor: '#111827',
-  inputRadius: 8,
-  emailLabel: 'Email',
-  emailPlaceholder: 'Enter your email',
-
-  showCodeButton: true,
-  codeButtonLabel: 'I have a code',
-  codeButtonHref: '/password/create',
-  codeButtonTextColor: '#0a1e5e',
-  codeButtonBorderColor: '#fca5a5',
-
-  continueLabel: 'Continue',
-  continueBgColor: '#0a1e5e',
-  continueTextColor: '#ffffff',
-  submitRadius: 8,
   buttonFont: '',
-
-  showBackToLogin: true,
-  backText: 'Back to login ',
-  backLinkLabel: 'Login here',
-  backLinkHref: '/login',
-  backTextColor: '#374151',
-  backLinkColor: '#0a1e5e',
 }
 
 export const ru1ForgotPasswordFields: FieldConfig[] = [
@@ -13992,122 +13688,74 @@ export const ru1ForgotPasswordFields: FieldConfig[] = [
   { key: 'sectionBgColor', label: 'Background Colour', type: 'color' },
   { key: 'bgImage', label: 'Background Image', type: 'image', noAspectRatio: true },
   { key: 'overlayColor', label: 'Overlay Colour', type: 'color' },
-  { key: 'overlayOpacity', label: 'Overlay Opacity (0-100)', type: 'number', step: 5, placeholder: '0' },
-  { key: 'bgImageAspectRatio', label: 'Background Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
+  { key: 'overlayOpacity', label: 'Overlay Opacity (0-100)', type: 'number', unit: '%', step: 5, placeholder: '0' },
   { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '64' },
 
-  { key: '_h_card', label: 'Card', type: 'header' },
-  { key: 'cardBgColor', label: 'Card Background', type: 'color' },
-  { key: 'cardOpacity', label: 'Card Opacity (%)', type: 'number', unit: '%', step: 5, placeholder: '100' },
-  { key: 'cardBorderRadius', label: 'Card Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '16' },
-  { key: 'cardMaxWidth', label: 'Card Width', type: 'number', unit: 'px', step: 10, placeholder: '880' },
+  { key: '_h_content', label: 'Extra Content', type: 'header' },
+  { key: 'showRichContent', label: 'Show Content', type: 'toggle' },
+  { key: 'richContent', label: 'Content', type: 'textarea', placeholder: 'Add your content…' },
 
   { key: '_h_title', label: 'Title', type: 'header' },
-  { key: 'title', label: 'Title Text', type: 'text', placeholder: 'e.g. Forget your password' },
-  { key: 'titleColor', label: 'Title Colour', type: 'color' },
-  { key: 'titleSize', label: 'Title Size', type: 'number', unit: 'px', step: 1, placeholder: '28' },
-  { key: 'titleFontWeight', label: 'Title Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
   fontField('titleFont', 'Title Font'),
 
   { key: '_h_description', label: 'Description', type: 'header' },
-  { key: 'description', label: 'Description Text', type: 'textarea', placeholder: 'Instructions shown below the title' },
-  { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
   fontField('descriptionFont', 'Description Font'),
 
   { key: '_h_fieldstyle', label: 'Field Style', type: 'header' },
-  { key: 'labelColor', label: 'Label Colour', type: 'color' },
   fontField('labelFont', 'Label Font'),
-  { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
-  { key: 'inputBgColor', label: 'Input Background', type: 'color' },
-  { key: 'inputTextColor', label: 'Input Text Colour', type: 'color' },
-  { key: 'inputRadius', label: 'Input Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '8' },
-  { key: 'emailLabel', label: 'Email Label', type: 'text', placeholder: 'Email' },
-  { key: 'emailPlaceholder', label: 'Email Placeholder', type: 'text', placeholder: 'Enter your email' },
 
-  { key: '_h_code', label: '"I have a code" Button', type: 'header' },
-  { key: 'showCodeButton', label: 'Show Button', type: 'toggle' },
-  { key: 'codeButtonLabel', label: 'Button Text', type: 'text', placeholder: 'I have a code' },
-  { key: 'codeButtonHref', label: 'Button URL', type: 'url', placeholder: '/password/create' },
-  { key: 'codeButtonTextColor', label: 'Button Text Colour', type: 'color' },
-  { key: 'codeButtonBorderColor', label: 'Button Border Colour', type: 'color' },
-
-  { key: '_h_continue', label: 'Continue Button', type: 'header' },
-  { key: 'continueLabel', label: 'Button Text', type: 'text', placeholder: 'Continue' },
-  { key: 'continueBgColor', label: 'Button Background', type: 'color' },
-  { key: 'continueTextColor', label: 'Button Text Colour', type: 'color' },
-  { key: 'submitRadius', label: 'Button Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '8' },
+  { key: '_h_submit', label: 'Buttons', type: 'header' },
   fontField('buttonFont', 'Button Font'),
-
-  { key: '_h_back', label: 'Back to Login Link', type: 'header' },
-  { key: 'showBackToLogin', label: 'Show Link', type: 'toggle' },
-  { key: 'backText', label: 'Text', type: 'text', placeholder: 'Back to login ' },
-  { key: 'backLinkLabel', label: 'Link Label', type: 'text', placeholder: 'Login here' },
-  { key: 'backLinkHref', label: 'Link URL', type: 'url', placeholder: '/login' },
-  { key: 'backTextColor', label: 'Text Colour', type: 'color' },
-  { key: 'backLinkColor', label: 'Link Colour', type: 'color' },
 ]
 
 export function renderRu1ForgotPassword(data: Ru1ForgotPasswordData): string {
-  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:${data.inputRadius ?? 8}px;background:${data.inputBgColor};padding:0.625rem 0.875rem;font-size:0.9375rem;color:${data.inputTextColor};border:1px solid ${data.inputBorderColor};outline:none;`
-  const labelStyle = `display:block;font-size:0.9375rem;font-weight:600;color:${data.labelColor};margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
+  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:8px;background:#ffffff;padding:0.625rem 0.875rem;font-size:0.9375rem;color:#111827;border:1px solid #d1d5db;outline:none;`
+  const labelStyle = `display:block;font-size:0.9375rem;font-weight:600;color:#0a1e5e;margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
 
-  const codeButtonHtml = data.showCodeButton !== false
-    ? `<a href="${data.codeButtonHref || '#'}" style="flex:1;display:flex;align-items:center;justify-content:center;box-sizing:border-box;background:transparent;color:${data.codeButtonTextColor};border:1.5px solid ${data.codeButtonBorderColor};border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;text-decoration:none;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.codeButtonLabel}</a>`
-    : ''
+  const codeButtonHtml = `<a href="/password/create" style="flex:1;display:flex;align-items:center;justify-content:center;box-sizing:border-box;background:transparent;color:#0a1e5e;border:1.5px solid #fca5a5;border-radius:8px;padding:0.875rem;font-size:1rem;font-weight:600;text-decoration:none;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">I have a code</a>`
 
-  const backHtml = data.showBackToLogin !== false
-    ? `<p style="margin:1.5rem 0 0;text-align:center;font-size:0.9375rem;color:${data.backTextColor};">${data.backText}<a href="${data.backLinkHref || '#'}" style="color:${data.backLinkColor};font-weight:700;text-decoration:none;">${data.backLinkLabel}</a></p>`
-    : ''
+  const backHtml = `<p style="margin:1.5rem 0 0;text-align:center;font-size:0.9375rem;color:#374151;">Back to login <a href="/login" style="color:#0a1e5e;font-weight:700;text-decoration:none;">Login here</a></p>`
 
+  // Background image sits behind just the card (full-bleed, edge-to-edge
+  // of the section) — not the whole section, so Extra Content renders
+  // above it in the section's own plain background, not overlaid on the
+  // image. `100% 100%` stretches the image to fill the frame without
+  // cropping, since the frame's box shape rarely matches the photo's own.
   const bgImgSrc = productImageSrc(data.bgImage)
-  const aspectRatioMap: Record<string, string> = {
-    'Wide (16:9)':      'aspect-ratio:16/9;',
-    'Standard (4:3)':   'aspect-ratio:4/3;',
-    'Square (1:1)':     'aspect-ratio:1/1;',
-    'Tall (3:4)':       'aspect-ratio:3/4;',
-    'Cinematic (21:9)': 'aspect-ratio:21/9;',
-  }
-  const bgAspect = (data.bgImageAspectRatio && data.bgImageAspectRatio !== 'Auto')
-    ? (aspectRatioMap[data.bgImageAspectRatio] ?? '')
-    : ''
-  // The box's height matches the image's own natural ratio (auto-measured
-  // once it loads, vw-based so it stays responsive to width like Ru1 Hero's
-  // padding-bottom-percent trick), and background-size:100% 100% stretches
-  // to fill that box exactly — so a wide banner-shaped photo never crops or
-  // letterboxes. Capped at 640px (matching this project's other hero-style
-  // blocks) so an unusually tall/square photo can't blow the section up far
-  // beyond what a compact card (e.g. Sign In) actually needs — past that
-  // cap the image is slightly vertically squeezed rather than growing the
-  // section further, which stays far less jarring than a huge empty-feeling
-  // section around a small form.
-  const autoRatioScript = bgImgSrc
-    ? `<script>(function(){var s=document.currentScript.parentElement;var i=new Image();i.onload=function(){s.style.minHeight='min('+(i.naturalHeight/i.naturalWidth*100)+'vw, 640px)';};i.src='${bgImgSrc}';})()</script>`
-    : ''
-  const sectionBgStyle = bgImgSrc
-    ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};${bgAspect}`
-    : `background-color:${data.sectionBgColor};`
   const overlayOpacity = Math.min(100, Math.max(0, data.overlayOpacity ?? 0)) / 100
   const overlayHtml = (bgImgSrc && overlayOpacity > 0)
     ? `<div style="position:absolute;inset:0;background:${hexToRgba(data.overlayColor || '#000000', overlayOpacity)};pointer-events:none;"></div>`
     : ''
+  const cardWrapStyle = bgImgSrc
+    ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};`
+    : ''
+  const richContentHtml = (data.showRichContent && data.richContent && data.richContent.trim())
+    ? `<div style="margin-bottom:1.5rem;">${data.richContent}</div>`
+    : ''
 
-  return `<section data-component-title="Ru1-Forgot Password" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;${sectionBgStyle}padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
-  ${autoRatioScript}
+  return `<section data-component-title="Ru1-Forgot Password" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.sectionBgColor};padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
+  <div style="width:100%;max-width:90rem;margin:0 auto;">
+  ${richContentHtml}
+  </div>
+  <div style="position:relative;width:calc(100% + 2rem);margin:0 -1rem;overflow:hidden;box-sizing:border-box;${bgImgSrc ? 'padding:min(5rem,12vw) 1rem;' : ''}${cardWrapStyle}">
   ${overlayHtml}
-  <div style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 880}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
-    <h2 style="margin:0 0 1.5rem;text-align:center;font-size:min(${data.titleSize ?? 28}px,8vw);font-weight:${data.titleFontWeight ?? '600'};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
-    ${data.description ? `<p style="margin:0 0 2rem;font-size:0.9375rem;line-height:1.6;color:${data.descriptionColor};${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>` : ''}
+  <div style="position:relative;width:100%;max-width:760px;margin:0 auto;">
+  <div style="position:relative;width:100%;background:#ffffff;border-radius:16px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
+    <h2 style="margin:0 0 1.5rem;text-align:center;font-size:min(28px,8vw);font-weight:600;color:#0a1e5e;${fontCss(data.titleFont, data.fontFamily)}">Forget your password</h2>
+    <p style="margin:0 0 2rem;font-size:0.9375rem;line-height:1.6;color:#0a1e5e;${fontCss(data.descriptionFont, data.fontFamily)}">"Enter the email address you used to sign up. We will send you a password reset instructions, that you'll be able to use to set a new password for your account."</p>
     <form>
       <div style="margin-bottom:1.75rem;">
-        <label style="${labelStyle}">${data.emailLabel}</label>
-        <input type="email" name="email" required placeholder="${data.emailPlaceholder ?? ''}" style="${inputStyle}" />
+        <label style="${labelStyle}">Email</label>
+        <input type="email" name="email" required placeholder="Enter your email" style="${inputStyle}" />
       </div>
       <div style="display:flex;gap:1rem;">
         ${codeButtonHtml}
-        <button type="submit" style="flex:1;background:${data.continueBgColor};color:${data.continueTextColor};border:none;border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.continueLabel}</button>
+        <button type="submit" style="flex:1;background:#0a1e5e;color:#ffffff;border:none;border-radius:8px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">Continue</button>
       </div>
     </form>
     ${backHtml}
+  </div>
+  </div>
   </div>
 </section>`
 }
@@ -14143,55 +13791,14 @@ export interface Ru1CreateNewPasswordData {
   bgImage: string
   overlayColor: string
   overlayOpacity: number
-  bgImageAspectRatio: string
   paddingY: number
 
-  cardBgColor: string
-  cardOpacity: number
-  cardBorderRadius: number
-  cardMaxWidth: number
+  showRichContent: boolean
+  richContent: string
 
-  title: string
-  titleColor: string
-  titleSize: number
-  titleFontWeight: string
   titleFont: string
-
-  labelColor: string
   labelFont: string
-  inputBorderColor: string
-  inputBgColor: string
-  inputTextColor: string
-  inputRadius: number
-
-  emailLabel: string
-  emailPlaceholder: string
-  passwordLabel: string
-  confirmPasswordLabel: string
-  codeLabel: string
-  codePlaceholder: string
-
-  showNoCodeButton: boolean
-  noCodeButtonLabel: string
-  noCodeButtonHref: string
-  noCodeButtonStyle: string
-  noCodeButtonBgColor: string
-  noCodeButtonTextColor: string
-  noCodeButtonBorderColor: string
-
-  continueLabel: string
-  continueStyle: string
-  continueBgColor: string
-  continueBorderColor: string
-  continueTextColor: string
-  submitRadius: number
   buttonFont: string
-
-  showRequirements: boolean
-  requirementsTitleColor: string
-  requirementsTitleWeight: string
-  requirementsDescColor: string
-  requirementsDescWeight: string
 }
 
 export const ru1CreateNewPasswordDefaults: Ru1CreateNewPasswordData = {
@@ -14201,55 +13808,14 @@ export const ru1CreateNewPasswordDefaults: Ru1CreateNewPasswordData = {
   bgImage: '',
   overlayColor: '#000000',
   overlayOpacity: 0,
-  bgImageAspectRatio: 'Auto',
   paddingY: 64,
 
-  cardBgColor: '#ffffff',
-  cardOpacity: 100,
-  cardBorderRadius: 16,
-  cardMaxWidth: 560,
+  showRichContent: false,
+  richContent: '',
 
-  title: 'Create new password',
-  titleColor: '#0a1e5e',
-  titleSize: 28,
-  titleFontWeight: '600',
   titleFont: '',
-
-  labelColor: '#0a1e5e',
   labelFont: '',
-  inputBorderColor: '#d1d5db',
-  inputBgColor: '#ffffff',
-  inputTextColor: '#111827',
-  inputRadius: 8,
-
-  emailLabel: 'Email',
-  emailPlaceholder: 'Enter your email',
-  passwordLabel: 'Password',
-  confirmPasswordLabel: 'Confirm Password',
-  codeLabel: 'Code',
-  codePlaceholder: 'Enter your code',
-
-  showNoCodeButton: true,
-  noCodeButtonLabel: "Don't have code",
-  noCodeButtonHref: '/password/reset',
-  noCodeButtonStyle: 'outline',
-  noCodeButtonBgColor: '#0a1e5e',
-  noCodeButtonTextColor: '#0a1e5e',
-  noCodeButtonBorderColor: '#fca5a5',
-
-  continueLabel: 'Continue',
-  continueStyle: 'filled',
-  continueBgColor: '#0a1e5e',
-  continueBorderColor: '#0a1e5e',
-  continueTextColor: '#ffffff',
-  submitRadius: 8,
   buttonFont: '',
-
-  showRequirements: true,
-  requirementsTitleColor: '#0a1e5e',
-  requirementsTitleWeight: '700',
-  requirementsDescColor: '#0a1e5e',
-  requirementsDescWeight: '400',
 }
 
 export const ru1CreateNewPasswordFields: FieldConfig[] = [
@@ -14260,66 +13826,26 @@ export const ru1CreateNewPasswordFields: FieldConfig[] = [
   { key: 'sectionBgColor', label: 'Background Colour', type: 'color' },
   { key: 'bgImage', label: 'Background Image', type: 'image', noAspectRatio: true },
   { key: 'overlayColor', label: 'Overlay Colour', type: 'color' },
-  { key: 'overlayOpacity', label: 'Overlay Opacity (0-100)', type: 'number', step: 5, placeholder: '0' },
-  { key: 'bgImageAspectRatio', label: 'Background Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
+  { key: 'overlayOpacity', label: 'Overlay Opacity (0-100)', type: 'number', unit: '%', step: 5, placeholder: '0' },
   { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '64' },
 
-  { key: '_h_card', label: 'Card', type: 'header' },
-  { key: 'cardBgColor', label: 'Card Background', type: 'color' },
-  { key: 'cardOpacity', label: 'Card Opacity (%)', type: 'number', unit: '%', step: 5, placeholder: '100' },
-  { key: 'cardBorderRadius', label: 'Card Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '16' },
-  { key: 'cardMaxWidth', label: 'Card Width', type: 'number', unit: 'px', step: 10, placeholder: '560' },
+  { key: '_h_content', label: 'Extra Content', type: 'header' },
+  { key: 'showRichContent', label: 'Show Content', type: 'toggle' },
+  { key: 'richContent', label: 'Content', type: 'textarea', placeholder: 'Add your content…' },
 
   { key: '_h_title', label: 'Title', type: 'header' },
-  { key: 'title', label: 'Title Text', type: 'text', placeholder: 'e.g. Create new password' },
-  { key: 'titleColor', label: 'Title Colour', type: 'color' },
-  { key: 'titleSize', label: 'Title Size', type: 'number', unit: 'px', step: 1, placeholder: '28' },
-  { key: 'titleFontWeight', label: 'Title Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
   fontField('titleFont', 'Title Font'),
 
   { key: '_h_fieldstyle', label: 'Field Style', type: 'header' },
-  { key: 'labelColor', label: 'Label Colour', type: 'color' },
   fontField('labelFont', 'Label Font'),
-  { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
-  { key: 'inputBgColor', label: 'Input Background', type: 'color' },
-  { key: 'inputTextColor', label: 'Input Text Colour', type: 'color' },
-  { key: 'inputRadius', label: 'Input Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '8' },
-  { key: 'emailLabel', label: 'Email Label', type: 'text', placeholder: 'Email' },
-  { key: 'emailPlaceholder', label: 'Email Placeholder', type: 'text', placeholder: 'Enter your email' },
-  { key: 'passwordLabel', label: 'Password Label', type: 'text', placeholder: 'Password' },
-  { key: 'confirmPasswordLabel', label: 'Confirm Password Label', type: 'text', placeholder: 'Confirm Password' },
-  { key: 'codeLabel', label: 'Code Label', type: 'text', placeholder: 'Code' },
-  { key: 'codePlaceholder', label: 'Code Placeholder', type: 'text', placeholder: 'Enter your code' },
 
-  { key: '_h_nocode', label: '"Don\'t have code" Button', type: 'header' },
-  { key: 'showNoCodeButton', label: 'Show Button', type: 'toggle' },
-  { key: 'noCodeButtonLabel', label: 'Button Text', type: 'text', placeholder: "Don't have code" },
-  { key: 'noCodeButtonHref', label: 'Link URL', type: 'url', placeholder: '/resend-code' },
-  { key: 'noCodeButtonStyle', label: 'Button Style', type: 'select', options: ['filled', 'outline'] },
-  { key: 'noCodeButtonBgColor', label: 'Button Background', type: 'color' },
-  { key: 'noCodeButtonTextColor', label: 'Button Text Colour', type: 'color' },
-  { key: 'noCodeButtonBorderColor', label: 'Button Border Colour', type: 'color' },
-
-  { key: '_h_continue', label: 'Continue Button', type: 'header' },
-  { key: 'continueLabel', label: 'Button Text', type: 'text', placeholder: 'Continue' },
-  { key: 'continueStyle', label: 'Button Style', type: 'select', options: ['filled', 'outline'] },
-  { key: 'continueBgColor', label: 'Button Background', type: 'color' },
-  { key: 'continueBorderColor', label: 'Button Border Colour', type: 'color' },
-  { key: 'continueTextColor', label: 'Button Text Colour', type: 'color' },
-  { key: 'submitRadius', label: 'Button Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '8' },
+  { key: '_h_submit', label: 'Buttons', type: 'header' },
   fontField('buttonFont', 'Button Font'),
-
-  { key: '_h_requirements', label: 'Password Requirements', type: 'header' },
-  { key: 'showRequirements', label: 'Show Requirements Checklist', type: 'toggle' },
-  { key: 'requirementsTitleWeight', label: 'Title Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
-  { key: 'requirementsTitleColor', label: 'Title Colour', type: 'color' },
-  { key: 'requirementsDescWeight', label: 'Description Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
-  { key: 'requirementsDescColor', label: 'Description Colour', type: 'color' },
 ]
 
 export function renderRu1CreateNewPassword(data: Ru1CreateNewPasswordData): string {
-  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:${data.inputRadius ?? 8}px;background:${data.inputBgColor};padding:0.625rem 0.875rem;font-size:0.9375rem;color:${data.inputTextColor};border:1px solid ${data.inputBorderColor};outline:none;`
-  const labelStyle = `display:block;font-size:0.9375rem;font-weight:600;color:${data.labelColor};margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
+  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:8px;background:#ffffff;padding:0.625rem 0.875rem;font-size:0.9375rem;color:#111827;border:1px solid #d1d5db;outline:none;`
+  const labelStyle = `display:block;font-size:0.9375rem;font-weight:600;color:#0a1e5e;margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
 
   // Two independent show/hide toggles on the same card — each wrapper carries
   // its own data attribute so the two onclick scripts never reach into the
@@ -14340,13 +13866,13 @@ export function renderRu1CreateNewPassword(data: Ru1CreateNewPasswordData): stri
           </button>`
 
 
-  // Title/description copy and the minimum length itself are fixed here
-  // rather than admin-editable — the sidebar only exposes whether this shows
-  // at all, plus a font weight + colour each for the title and the list.
-  const requirementsHtml = data.showRequirements !== false
-    ? `<div style="margin-top:1.75rem;padding-top:1.5rem;border-top:1px solid #e5e7eb;">
-        <h3 style="margin:0 0 0.75rem;font-size:1.0625rem;font-weight:${data.requirementsTitleWeight ?? '700'};color:${data.requirementsTitleColor};${fontCss(data.labelFont, data.fontFamily)}">Your password must contain:</h3>
-        <ul style="margin:0;padding-left:1.25rem;list-style:disc;list-style-position:outside;display:flex;flex-direction:column;gap:0.375rem;font-size:0.9375rem;font-weight:${data.requirementsDescWeight ?? '400'};color:${data.requirementsDescColor};">
+  // Title/description copy, colours, weights and the minimum length itself
+  // are all fixed here rather than admin-editable — only whether it shows
+  // at all is a real behavioural toggle, and even that was removed from the
+  // sidebar per the "font fields only" simplification, so it always shows.
+  const requirementsHtml = `<div style="margin-top:1.75rem;padding-top:1.5rem;border-top:1px solid #e5e7eb;">
+        <h3 style="margin:0 0 0.75rem;font-size:1.0625rem;font-weight:700;color:#0a1e5e;${fontCss(data.labelFont, data.fontFamily)}">Your password must contain:</h3>
+        <ul style="margin:0;padding-left:1.25rem;list-style:disc;list-style-position:outside;display:flex;flex-direction:column;gap:0.375rem;font-size:0.9375rem;font-weight:400;color:#0a1e5e;">
           <li>Minimum number of characters is 6</li>
           <li>Should contain lowercase</li>
           <li>Should contain uppercase</li>
@@ -14354,56 +13880,44 @@ export function renderRu1CreateNewPassword(data: Ru1CreateNewPasswordData): stri
           <li>Should contain special characters(!@#$%^&*)</li>
         </ul>
       </div>`
-    : ''
 
-  const noCodeButtonHtml = data.showNoCodeButton !== false
-    ? `<a href="${data.noCodeButtonHref || '#'}" style="flex:1;display:flex;align-items:center;justify-content:center;box-sizing:border-box;background:${data.noCodeButtonStyle === 'filled' ? data.noCodeButtonBgColor : 'transparent'};color:${data.noCodeButtonTextColor};border:1.5px solid ${data.noCodeButtonBorderColor};border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;text-decoration:none;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.noCodeButtonLabel}</a>`
-    : ''
+  const noCodeButtonHtml = `<a href="/password/reset" style="flex:1;display:flex;align-items:center;justify-content:center;box-sizing:border-box;background:transparent;color:#0a1e5e;border:1.5px solid #fca5a5;border-radius:8px;padding:0.875rem;font-size:1rem;font-weight:600;text-decoration:none;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">Don't have code</a>`
 
+  // Background image sits behind just the card (full-bleed, edge-to-edge
+  // of the section) — not the whole section, so Extra Content renders
+  // above it in the section's own plain background, not overlaid on the
+  // image. `100% 100%` stretches the image to fill the frame without
+  // cropping, since the frame's box shape rarely matches the photo's own
+  // (this card is also the tallest of the 4 auth templates, so `cover`
+  // would have zoomed in on a landscape photo far more aggressively here).
   const bgImgSrc = productImageSrc(data.bgImage)
-  const aspectRatioMap: Record<string, string> = {
-    'Wide (16:9)':      'aspect-ratio:16/9;',
-    'Standard (4:3)':   'aspect-ratio:4/3;',
-    'Square (1:1)':     'aspect-ratio:1/1;',
-    'Tall (3:4)':       'aspect-ratio:3/4;',
-    'Cinematic (21:9)': 'aspect-ratio:21/9;',
-  }
-  const bgAspect = (data.bgImageAspectRatio && data.bgImageAspectRatio !== 'Auto')
-    ? (aspectRatioMap[data.bgImageAspectRatio] ?? '')
-    : ''
-  // The box's height matches the image's own natural ratio (auto-measured
-  // once it loads, vw-based so it stays responsive to width like Ru1 Hero's
-  // padding-bottom-percent trick), and background-size:100% 100% stretches
-  // to fill that box exactly — so a wide banner-shaped photo never crops or
-  // letterboxes. Capped at 640px (matching this project's other hero-style
-  // blocks) so an unusually tall/square photo can't blow the section up far
-  // beyond what a compact card (e.g. Sign In) actually needs — past that
-  // cap the image is slightly vertically squeezed rather than growing the
-  // section further, which stays far less jarring than a huge empty-feeling
-  // section around a small form.
-  const autoRatioScript = bgImgSrc
-    ? `<script>(function(){var s=document.currentScript.parentElement;var i=new Image();i.onload=function(){s.style.minHeight='min('+(i.naturalHeight/i.naturalWidth*100)+'vw, 640px)';};i.src='${bgImgSrc}';})()</script>`
-    : ''
-  const sectionBgStyle = bgImgSrc
-    ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};${bgAspect}`
-    : `background-color:${data.sectionBgColor};`
   const overlayOpacity = Math.min(100, Math.max(0, data.overlayOpacity ?? 0)) / 100
   const overlayHtml = (bgImgSrc && overlayOpacity > 0)
     ? `<div style="position:absolute;inset:0;background:${hexToRgba(data.overlayColor || '#000000', overlayOpacity)};pointer-events:none;"></div>`
     : ''
+  const cardWrapStyle = bgImgSrc
+    ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};`
+    : ''
+  const richContentHtml = (data.showRichContent && data.richContent && data.richContent.trim())
+    ? `<div style="margin-bottom:1.5rem;">${data.richContent}</div>`
+    : ''
 
-  return `<section data-component-title="Ru1-Create New Password" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;${sectionBgStyle}padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
-  ${autoRatioScript}
+  return `<section data-component-title="Ru1-Create New Password" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.sectionBgColor};padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
+  <div style="width:100%;max-width:90rem;margin:0 auto;">
+  ${richContentHtml}
+  </div>
+  <div style="position:relative;width:calc(100% + 2rem);margin:0 -1rem;overflow:hidden;box-sizing:border-box;${bgImgSrc ? 'padding:min(5rem,12vw) 1rem;' : ''}${cardWrapStyle}">
   ${overlayHtml}
-  <div data-ru1cnp-card="true" style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 560}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
-    <h2 style="margin:0 0 2rem;text-align:center;font-size:min(${data.titleSize ?? 28}px,8vw);font-weight:${data.titleFontWeight ?? '600'};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+  <div style="position:relative;width:100%;max-width:480px;margin:0 auto;">
+  <div data-ru1cnp-card="true" style="position:relative;width:100%;background:#ffffff;border-radius:16px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
+    <h2 style="margin:0 0 2rem;text-align:center;font-size:min(28px,8vw);font-weight:600;color:#0a1e5e;${fontCss(data.titleFont, data.fontFamily)}">Create new password</h2>
     <form>
       <div style="margin-bottom:1.5rem;">
-        <label style="${labelStyle}">${data.emailLabel}</label>
-        <input type="email" name="email" placeholder="${data.emailPlaceholder ?? ''}" style="${inputStyle}" />
+        <label style="${labelStyle}">Email</label>
+        <input type="email" name="email" placeholder="Enter your email" style="${inputStyle}" />
       </div>
       <div style="margin-bottom:1.5rem;">
-        <label style="${labelStyle}">${data.passwordLabel}</label>
+        <label style="${labelStyle}">Password</label>
         <div data-ru1cnp-pwdwrap="true" style="position:relative;">
           <!-- Enforces the checklist below via native browser validation
                (no custom JS needed) — submitting with a password that
@@ -14415,22 +13929,24 @@ export function renderRu1CreateNewPassword(data: Ru1CreateNewPasswordData): stri
         </div>
       </div>
       <div style="margin-bottom:1.5rem;">
-        <label style="${labelStyle}">${data.confirmPasswordLabel}</label>
+        <label style="${labelStyle}">Confirm Password</label>
         <div data-ru1cnp-confirmwrap="true" style="position:relative;">
           <input type="password" name="confirm_password" style="${inputStyle}padding-right:2.75rem;" />
           ${passwordEyeButton('data-ru1cnp-confirmwrap')}
         </div>
       </div>
       <div style="margin-bottom:1.75rem;">
-        <label style="${labelStyle}">${data.codeLabel}</label>
-        <input type="text" name="code" placeholder="${data.codePlaceholder ?? ''}" style="${inputStyle}" />
+        <label style="${labelStyle}">Code</label>
+        <input type="text" name="code" placeholder="Enter your code" style="${inputStyle}" />
       </div>
       <div style="display:flex;gap:1rem;">
         ${noCodeButtonHtml}
-        <button type="submit" style="flex:1;background:${data.continueStyle === 'outline' ? 'transparent' : data.continueBgColor};color:${data.continueTextColor};border:1.5px solid ${data.continueBorderColor};border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.continueLabel}</button>
+        <button type="submit" style="flex:1;background:#0a1e5e;color:#ffffff;border:1.5px solid #0a1e5e;border-radius:8px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">Continue</button>
       </div>
     </form>
     ${requirementsHtml}
+  </div>
+  </div>
   </div>
 </section>`
 }
