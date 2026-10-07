@@ -47,6 +47,24 @@ const showNewPageModal = ref(false)
 const newPageName = ref('')
 const newPageNameInput = ref<HTMLInputElement | null>(null)
 const newPageError = ref('')
+// '' = nothing chosen yet, NEW_PAGE_TYPE = a regular page named by the user;
+// otherwise the slug of one of PAGE_TYPE_OPTIONS, i.e. a key the storefront
+// reads for a specific page (so it must not be typed by hand).
+const NEW_PAGE_TYPE = '__new__'
+const newPageType = ref('')
+const PAGE_TYPE_OPTIONS = [
+  { group: 'Pages', slug: 'about-us', name: 'About Us' },
+  { group: 'Pages', slug: 'faqs', name: 'FAQs' },
+  { group: 'Pages', slug: 'contact', name: 'Contact Us' },
+  { group: 'Pages', slug: 'privacy-policy', name: 'Privacy Policy' },
+  { group: 'Pages', slug: 'terms-and-conditions', name: 'Terms & Conditions' },
+  { group: 'Pages', slug: 'returns', name: 'Returns' },
+  { group: 'Auth', slug: 'login', name: 'Sign In' },
+  { group: 'Auth', slug: 'signup', name: 'Sign Up' },
+  { group: 'Auth', slug: 'password/reset', name: 'Forgot Password' },
+  { group: 'Auth', slug: 'password/create', name: 'Create New Password' },
+]
+const PAGE_TYPE_GROUPS = ['Pages', 'Auth']
 
 // Clone Site modal state
 const showCloneSiteModal = ref(false)
@@ -332,7 +350,7 @@ async function deletePage() {
     })
     if (isAll) {
       // Deleting all of Home's versions cascades its matching global-header/
-      // global-footer versions on the backend (see [key].delete.ts) — refetch
+      // global-footer versions on the backend (see [...key].delete.ts) — refetch
       // so pages.value picks up the reset default theme instead of leaving
       // editPage()'s pageHtmlCache seeding stuck on stale cached entries.
       if (page.id === 'home') {
@@ -417,34 +435,52 @@ function formatDate(iso: string) {
   })
 }
 
+// Keeps "/" as a segment separator (e.g. "password/reset") so nested CMS keys
+// like the auth pages' slugs survive; every other symbol still collapses to "-".
 function toSlug(name: string) {
   return name
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
+    .split('/')
+    .map((part) => part.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''))
+    .filter(Boolean)
+    .join('/')
 }
+
+const selectedPreset = computed(() => PAGE_TYPE_OPTIONS.find((o) => o.slug === newPageType.value))
+const isCustomPage = computed(() => newPageType.value === NEW_PAGE_TYPE)
+const canCreatePage = computed(() => !!selectedPreset.value || (isCustomPage.value && !!newPageName.value.trim()))
+
+watch(newPageType, (type) => {
+  if (type === NEW_PAGE_TYPE) nextTick(() => newPageNameInput.value?.focus())
+})
 
 function openNewPageModal() {
   newPageName.value = ''
+  newPageType.value = ''
   newPageError.value = ''
   showNewPageModal.value = true
-  nextTick(() => newPageNameInput.value?.focus())
 }
 
 function closeNewPageModal() {
   showNewPageModal.value = false
   newPageName.value = ''
+  newPageType.value = ''
   newPageError.value = ''
 }
 
 async function createNewPage() {
-  const name = newPageName.value.trim()
+  const preset = selectedPreset.value
+  if (!preset && !isCustomPage.value) {
+    newPageError.value = 'Select a page type.'
+    return
+  }
+  const name = preset ? preset.name : newPageName.value.trim()
   if (!name) {
     newPageError.value = 'Page name is required.'
     return
   }
-  const slug = toSlug(name)
+  const slug = preset ? preset.slug : toSlug(name)
   if (!slug) {
     newPageError.value = 'Please enter a valid page name.'
     return
@@ -713,10 +749,29 @@ function handleModalKeydown(e: KeyboardEvent) {
           @keydown="handleModalKeydown"
         >
           <h2 class="text-base font-semibold text-gray-900">New Page</h2>
-          <p class="mt-1 text-xs text-gray-500">Give your page a name to get started.</p>
+          <p class="mt-1 text-xs text-gray-500">Choose a page type, or give your page a name to get started.</p>
 
           <div class="mt-4">
+            <select
+              v-model="newPageType"
+              class="mb-3 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+              @change="newPageError = ''"
+            >
+              <option value="" disabled>Select a page type…</option>
+              <option :value="NEW_PAGE_TYPE">New page</option>
+              <optgroup v-for="group in PAGE_TYPE_GROUPS" :key="group" :label="group">
+                <option
+                  v-for="opt in PAGE_TYPE_OPTIONS.filter((o) => o.group === group)"
+                  :key="opt.slug"
+                  :value="opt.slug"
+                  :disabled="pages.some((p) => p.id === opt.slug)"
+                >
+                  {{ opt.name }}{{ pages.some((p) => p.id === opt.slug) ? ' (already created)' : '' }}
+                </option>
+              </optgroup>
+            </select>
             <input
+              v-if="isCustomPage"
               ref="newPageNameInput"
               v-model="newPageName"
               type="text"
@@ -725,7 +780,10 @@ function handleModalKeydown(e: KeyboardEvent) {
               @input="newPageError = ''"
             />
             <!-- Slug preview -->
-            <p v-if="newPageName.trim()" class="mt-1.5 text-xs text-gray-400">
+            <p v-if="selectedPreset" class="mt-1.5 text-xs text-gray-400">
+              Slug: <span class="font-mono text-gray-600">/{{ selectedPreset.slug }}</span>
+            </p>
+            <p v-else-if="isCustomPage && newPageName.trim()" class="mt-1.5 text-xs text-gray-400">
               Slug: <span class="font-mono text-gray-600">/{{ toSlug(newPageName) }}</span>
             </p>
             <!-- Error -->
@@ -741,7 +799,7 @@ function handleModalKeydown(e: KeyboardEvent) {
             </button>
             <button
               class="flex-1 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:opacity-40"
-              :disabled="!newPageName.trim()"
+              :disabled="!canCreatePage"
               @click="createNewPage"
             >
               Create Page

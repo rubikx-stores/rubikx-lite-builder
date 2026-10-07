@@ -13558,18 +13558,17 @@ export function renderRu1SignIn(data: Ru1SignInData): string {
   const bgAspect = (data.bgImageAspectRatio && data.bgImageAspectRatio !== 'Auto')
     ? (aspectRatioMap[data.bgImageAspectRatio] ?? '')
     : ''
-  // The box's height matches the image's own natural ratio (auto-measured
-  // once it loads, vw-based so it stays responsive to width like Ru1 Hero's
-  // padding-bottom-percent trick), and background-size:100% 100% stretches
-  // to fill that box exactly — so a wide banner-shaped photo never crops or
-  // letterboxes. Capped at 640px (matching this project's other hero-style
-  // blocks) so an unusually tall/square photo can't blow the section up far
-  // beyond what a compact card (e.g. Sign In) actually needs — past that
-  // cap the image is slightly vertically squeezed rather than growing the
-  // section further, which stays far less jarring than a huge empty-feeling
-  // section around a small form.
-  const autoRatioScript = bgImgSrc
-    ? `<script>(function(){var s=document.currentScript.parentElement;var i=new Image();i.onload=function(){s.style.minHeight='min('+(i.naturalHeight/i.naturalWidth*100)+'vw, 640px)';};i.src='${bgImgSrc}';})()</script>`
+  // CSS-only replacement for the old inline <script> that measured the image
+  // and set min-height (scripts never run when the storefront inserts this
+  // HTML via innerHTML/v-html, so the section collapsed once the card hid).
+  // An invisible in-flow <img> shares the section's single grid cell with the
+  // card: width:100% + height:auto gives the image's own natural-ratio height
+  // (capped at 640px so a tall photo can't blow the section up around a small
+  // card), and the section's own background-image still stretches 100% 100%
+  // over the whole box. The spacer is skipped when a fixed aspect ratio is
+  // chosen, since that ratio then sets the height instead.
+  const bgSpacerHtml = (bgImgSrc && !bgAspect)
+    ? `<img src="${bgImgSrc}" alt="" aria-hidden="true" style="grid-area:1/1;display:block;width:100%;height:auto;max-height:640px;visibility:hidden;pointer-events:none;" />`
     : ''
   const sectionBgStyle = bgImgSrc
     ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};${bgAspect}`
@@ -13579,12 +13578,13 @@ export function renderRu1SignIn(data: Ru1SignInData): string {
     ? `<div style="position:absolute;inset:0;background:${hexToRgba(data.overlayColor || '#000000', overlayOpacity)};pointer-events:none;"></div>`
     : ''
 
-  return `<section data-component-title="Ru1-Sign In" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;${sectionBgStyle}padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
-  ${autoRatioScript}
+  return `<section data-component-title="Ru1-Sign In" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;display:grid;${sectionBgStyle}${fontCss(undefined, data.fontFamily)}">
+  ${bgSpacerHtml}
   ${overlayHtml}
-  <div style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 880}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
+  <div style="grid-area:1/1;position:relative;display:flex;align-items:flex-start;min-width:0;padding:min(${data.paddingY}px,10vw) 1rem;">
+  <div data-cms-auth-card style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 880}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
     <h2 style="margin:0 0 2rem;text-align:center;font-size:min(${data.titleSize ?? 28}px,8vw);font-weight:${data.titleFontWeight ?? '600'};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
-    <form>
+    <form data-cms-auth="login">
       <div style="margin-bottom:1.5rem;">
         <label style="${labelStyle}">${data.emailLabel}</label>
         <input type="email" name="email" required placeholder="${data.emailPlaceholder ?? ''}" style="${inputStyle}" />
@@ -13593,16 +13593,18 @@ export function renderRu1SignIn(data: Ru1SignInData): string {
         <label style="${labelStyle}">${data.passwordLabel}</label>
         <div data-ru1signin-pwdwrap="true" style="position:relative;">
           <input type="password" name="password" required placeholder="${data.passwordPlaceholder ?? ''}" style="${inputStyle}padding-right:2.75rem;" />
-          <button type="button" onclick="${passwordToggleScript}" aria-label="Show password" style="position:absolute;top:50%;right:0.75rem;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;color:#6b7280;">
+          <button type="button" data-cms-toggle-password onclick="${passwordToggleScript}" aria-label="Show password" style="position:absolute;top:50%;right:0.75rem;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;color:#6b7280;">
             <span data-icon-eye style="display:flex!important;">${ru1SignInEyeIcon}</span>
             <span data-icon-eye-slash style="display:none!important;">${ru1SignInEyeSlashIcon}</span>
           </button>
         </div>
       </div>
       ${forgotHtml}
+      <div data-cms-turnstile></div>
       <button type="submit" style="width:100%;background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.submitLabel}</button>
     </form>
     ${registerHtml}
+  </div>
   </div>
 </section>`
 }
@@ -13820,18 +13822,17 @@ export function renderRu1SignUp(data: Ru1SignUpData): string {
   const bgAspect = (data.bgImageAspectRatio && data.bgImageAspectRatio !== 'Auto')
     ? (aspectRatioMap[data.bgImageAspectRatio] ?? '')
     : ''
-  // The box's height matches the image's own natural ratio (auto-measured
-  // once it loads, vw-based so it stays responsive to width like Ru1 Hero's
-  // padding-bottom-percent trick), and background-size:100% 100% stretches
-  // to fill that box exactly — so a wide banner-shaped photo never crops or
-  // letterboxes. Capped at 640px (matching this project's other hero-style
-  // blocks) so an unusually tall/square photo can't blow the section up far
-  // beyond what a compact card (e.g. Sign In) actually needs — past that
-  // cap the image is slightly vertically squeezed rather than growing the
-  // section further, which stays far less jarring than a huge empty-feeling
-  // section around a small form.
-  const autoRatioScript = bgImgSrc
-    ? `<script>(function(){var s=document.currentScript.parentElement;var i=new Image();i.onload=function(){s.style.minHeight='min('+(i.naturalHeight/i.naturalWidth*100)+'vw, 640px)';};i.src='${bgImgSrc}';})()</script>`
+  // CSS-only replacement for the old inline <script> that measured the image
+  // and set min-height (scripts never run when the storefront inserts this
+  // HTML via innerHTML/v-html, so the section collapsed once the card hid).
+  // An invisible in-flow <img> shares the section's single grid cell with the
+  // card: width:100% + height:auto gives the image's own natural-ratio height
+  // (capped at 640px so a tall photo can't blow the section up around a small
+  // card), and the section's own background-image still stretches 100% 100%
+  // over the whole box. The spacer is skipped when a fixed aspect ratio is
+  // chosen, since that ratio then sets the height instead.
+  const bgSpacerHtml = (bgImgSrc && !bgAspect)
+    ? `<img src="${bgImgSrc}" alt="" aria-hidden="true" style="grid-area:1/1;display:block;width:100%;height:auto;max-height:640px;visibility:hidden;pointer-events:none;" />`
     : ''
   const sectionBgStyle = bgImgSrc
     ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};${bgAspect}`
@@ -13841,18 +13842,21 @@ export function renderRu1SignUp(data: Ru1SignUpData): string {
     ? `<div style="position:absolute;inset:0;background:${hexToRgba(data.overlayColor || '#000000', overlayOpacity)};pointer-events:none;"></div>`
     : ''
 
-  return `<section data-component-title="Ru1-Sign Up" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;${sectionBgStyle}padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
-  ${autoRatioScript}
+  return `<section data-component-title="Ru1-Sign Up" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;display:grid;${sectionBgStyle}${fontCss(undefined, data.fontFamily)}">
+  ${bgSpacerHtml}
   ${overlayHtml}
-  <div style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 880}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
+  <div style="grid-area:1/1;position:relative;display:flex;align-items:flex-start;min-width:0;padding:min(${data.paddingY}px,10vw) 1rem;">
+  <div data-cms-auth-card style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 880}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
     <h2 style="margin:0 0 2rem;text-align:center;font-size:min(${data.titleSize ?? 28}px,8vw);font-weight:${data.titleFontWeight ?? '600'};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
-    <form>
+    <form data-cms-auth="signup">
       ${fieldHtml(data.firstNameLabel, data.firstNamePlaceholder, data.firstNameRequired !== false, 'text', 'first_name')}
       ${fieldHtml(data.lastNameLabel, data.lastNamePlaceholder, data.lastNameRequired !== false, 'text', 'last_name')}
       ${fieldHtml(data.emailLabel, data.emailPlaceholder, data.emailRequired !== false, 'email', 'email')}
+      <div data-cms-turnstile></div>
       <button type="submit" style="width:100%;background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.submitLabel}</button>
     </form>
     ${loginHtml}
+  </div>
   </div>
 </section>`
 }
@@ -14070,18 +14074,17 @@ export function renderRu1ForgotPassword(data: Ru1ForgotPasswordData): string {
   const bgAspect = (data.bgImageAspectRatio && data.bgImageAspectRatio !== 'Auto')
     ? (aspectRatioMap[data.bgImageAspectRatio] ?? '')
     : ''
-  // The box's height matches the image's own natural ratio (auto-measured
-  // once it loads, vw-based so it stays responsive to width like Ru1 Hero's
-  // padding-bottom-percent trick), and background-size:100% 100% stretches
-  // to fill that box exactly — so a wide banner-shaped photo never crops or
-  // letterboxes. Capped at 640px (matching this project's other hero-style
-  // blocks) so an unusually tall/square photo can't blow the section up far
-  // beyond what a compact card (e.g. Sign In) actually needs — past that
-  // cap the image is slightly vertically squeezed rather than growing the
-  // section further, which stays far less jarring than a huge empty-feeling
-  // section around a small form.
-  const autoRatioScript = bgImgSrc
-    ? `<script>(function(){var s=document.currentScript.parentElement;var i=new Image();i.onload=function(){s.style.minHeight='min('+(i.naturalHeight/i.naturalWidth*100)+'vw, 640px)';};i.src='${bgImgSrc}';})()</script>`
+  // CSS-only replacement for the old inline <script> that measured the image
+  // and set min-height (scripts never run when the storefront inserts this
+  // HTML via innerHTML/v-html, so the section collapsed once the card hid).
+  // An invisible in-flow <img> shares the section's single grid cell with the
+  // card: width:100% + height:auto gives the image's own natural-ratio height
+  // (capped at 640px so a tall photo can't blow the section up around a small
+  // card), and the section's own background-image still stretches 100% 100%
+  // over the whole box. The spacer is skipped when a fixed aspect ratio is
+  // chosen, since that ratio then sets the height instead.
+  const bgSpacerHtml = (bgImgSrc && !bgAspect)
+    ? `<img src="${bgImgSrc}" alt="" aria-hidden="true" style="grid-area:1/1;display:block;width:100%;height:auto;max-height:640px;visibility:hidden;pointer-events:none;" />`
     : ''
   const sectionBgStyle = bgImgSrc
     ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};${bgAspect}`
@@ -14091,23 +14094,26 @@ export function renderRu1ForgotPassword(data: Ru1ForgotPasswordData): string {
     ? `<div style="position:absolute;inset:0;background:${hexToRgba(data.overlayColor || '#000000', overlayOpacity)};pointer-events:none;"></div>`
     : ''
 
-  return `<section data-component-title="Ru1-Forgot Password" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;${sectionBgStyle}padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
-  ${autoRatioScript}
+  return `<section data-component-title="Ru1-Forgot Password" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;display:grid;${sectionBgStyle}${fontCss(undefined, data.fontFamily)}">
+  ${bgSpacerHtml}
   ${overlayHtml}
-  <div style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 880}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
+  <div style="grid-area:1/1;position:relative;display:flex;align-items:flex-start;min-width:0;padding:min(${data.paddingY}px,10vw) 1rem;">
+  <div data-cms-auth-card style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 880}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
     <h2 style="margin:0 0 1.5rem;text-align:center;font-size:min(${data.titleSize ?? 28}px,8vw);font-weight:${data.titleFontWeight ?? '600'};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
     ${data.description ? `<p style="margin:0 0 2rem;font-size:0.9375rem;line-height:1.6;color:${data.descriptionColor};${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>` : ''}
-    <form>
+    <form data-cms-auth="password-reset">
       <div style="margin-bottom:1.75rem;">
         <label style="${labelStyle}">${data.emailLabel}</label>
         <input type="email" name="email" required placeholder="${data.emailPlaceholder ?? ''}" style="${inputStyle}" />
       </div>
+      <div data-cms-turnstile></div>
       <div style="display:flex;gap:1rem;">
         ${codeButtonHtml}
         <button type="submit" style="flex:1;background:${data.continueBgColor};color:${data.continueTextColor};border:none;border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.continueLabel}</button>
       </div>
     </form>
     ${backHtml}
+  </div>
   </div>
 </section>`
 }
@@ -14334,7 +14340,7 @@ export function renderRu1CreateNewPassword(data: Ru1CreateNewPasswordData): stri
     `event.stopImmediatePropagation();(function(btn){var wrap=btn.closest('[${wrapAttr}]');var input=wrap.querySelector('input');var eye=btn.querySelector('[data-icon-eye]');var slash=btn.querySelector('[data-icon-eye-slash]');var show=input.type==='password';input.type=show?'text':'password';eye.style.setProperty('display',show?'none':'flex','important');slash.style.setProperty('display',show?'flex':'none','important');})(this);`
 
   const passwordEyeButton = (wrapAttr: string) => `
-          <button type="button" onclick="${passwordToggleScript(wrapAttr)}" aria-label="Show password" style="position:absolute;top:50%;right:0.75rem;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;color:#6b7280;">
+          <button type="button" data-cms-toggle-password onclick="${passwordToggleScript(wrapAttr)}" aria-label="Show password" style="position:absolute;top:50%;right:0.75rem;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;color:#6b7280;">
             <span data-icon-eye style="display:flex!important;">${ru1SignInEyeIcon}</span>
             <span data-icon-eye-slash style="display:none!important;">${ru1SignInEyeSlashIcon}</span>
           </button>`
@@ -14371,18 +14377,17 @@ export function renderRu1CreateNewPassword(data: Ru1CreateNewPasswordData): stri
   const bgAspect = (data.bgImageAspectRatio && data.bgImageAspectRatio !== 'Auto')
     ? (aspectRatioMap[data.bgImageAspectRatio] ?? '')
     : ''
-  // The box's height matches the image's own natural ratio (auto-measured
-  // once it loads, vw-based so it stays responsive to width like Ru1 Hero's
-  // padding-bottom-percent trick), and background-size:100% 100% stretches
-  // to fill that box exactly — so a wide banner-shaped photo never crops or
-  // letterboxes. Capped at 640px (matching this project's other hero-style
-  // blocks) so an unusually tall/square photo can't blow the section up far
-  // beyond what a compact card (e.g. Sign In) actually needs — past that
-  // cap the image is slightly vertically squeezed rather than growing the
-  // section further, which stays far less jarring than a huge empty-feeling
-  // section around a small form.
-  const autoRatioScript = bgImgSrc
-    ? `<script>(function(){var s=document.currentScript.parentElement;var i=new Image();i.onload=function(){s.style.minHeight='min('+(i.naturalHeight/i.naturalWidth*100)+'vw, 640px)';};i.src='${bgImgSrc}';})()</script>`
+  // CSS-only replacement for the old inline <script> that measured the image
+  // and set min-height (scripts never run when the storefront inserts this
+  // HTML via innerHTML/v-html, so the section collapsed once the card hid).
+  // An invisible in-flow <img> shares the section's single grid cell with the
+  // card: width:100% + height:auto gives the image's own natural-ratio height
+  // (capped at 640px so a tall photo can't blow the section up around a small
+  // card), and the section's own background-image still stretches 100% 100%
+  // over the whole box. The spacer is skipped when a fixed aspect ratio is
+  // chosen, since that ratio then sets the height instead.
+  const bgSpacerHtml = (bgImgSrc && !bgAspect)
+    ? `<img src="${bgImgSrc}" alt="" aria-hidden="true" style="grid-area:1/1;display:block;width:100%;height:auto;max-height:640px;visibility:hidden;pointer-events:none;" />`
     : ''
   const sectionBgStyle = bgImgSrc
     ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};${bgAspect}`
@@ -14392,12 +14397,13 @@ export function renderRu1CreateNewPassword(data: Ru1CreateNewPasswordData): stri
     ? `<div style="position:absolute;inset:0;background:${hexToRgba(data.overlayColor || '#000000', overlayOpacity)};pointer-events:none;"></div>`
     : ''
 
-  return `<section data-component-title="Ru1-Create New Password" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;${sectionBgStyle}padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
-  ${autoRatioScript}
+  return `<section data-component-title="Ru1-Create New Password" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;display:grid;${sectionBgStyle}${fontCss(undefined, data.fontFamily)}">
+  ${bgSpacerHtml}
   ${overlayHtml}
-  <div data-ru1cnp-card="true" style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 560}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
+  <div style="grid-area:1/1;position:relative;display:flex;align-items:flex-start;min-width:0;padding:min(${data.paddingY}px,10vw) 1rem;">
+  <div data-cms-auth-card data-ru1cnp-card="true" style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 560}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
     <h2 style="margin:0 0 2rem;text-align:center;font-size:min(${data.titleSize ?? 28}px,8vw);font-weight:${data.titleFontWeight ?? '600'};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
-    <form>
+    <form data-cms-auth="password-create">
       <div style="margin-bottom:1.5rem;">
         <label style="${labelStyle}">${data.emailLabel}</label>
         <input type="email" name="email" placeholder="${data.emailPlaceholder ?? ''}" style="${inputStyle}" />
@@ -14425,12 +14431,14 @@ export function renderRu1CreateNewPassword(data: Ru1CreateNewPasswordData): stri
         <label style="${labelStyle}">${data.codeLabel}</label>
         <input type="text" name="code" placeholder="${data.codePlaceholder ?? ''}" style="${inputStyle}" />
       </div>
+      <div data-cms-turnstile></div>
       <div style="display:flex;gap:1rem;">
         ${noCodeButtonHtml}
         <button type="submit" style="flex:1;background:${data.continueStyle === 'outline' ? 'transparent' : data.continueBgColor};color:${data.continueTextColor};border:1.5px solid ${data.continueBorderColor};border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.continueLabel}</button>
       </div>
     </form>
     ${requirementsHtml}
+  </div>
   </div>
 </section>`
 }
