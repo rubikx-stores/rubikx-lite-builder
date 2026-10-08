@@ -435,16 +435,14 @@ function formatDate(iso: string) {
   })
 }
 
-// Keeps "/" as a segment separator (e.g. "password/reset") so nested CMS keys
-// like the auth pages' slugs survive; every other symbol still collapses to "-".
+// Only used for typed names. Preset page types (e.g. "password/reset") carry
+// their own fixed slug and never go through this, so "/" is never kept here.
 function toSlug(name: string) {
   return name
     .trim()
     .toLowerCase()
-    .split('/')
-    .map((part) => part.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''))
-    .filter(Boolean)
-    .join('/')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
 }
 
 const selectedPreset = computed(() => PAGE_TYPE_OPTIONS.find((o) => o.slug === newPageType.value))
@@ -523,7 +521,8 @@ async function createNewPage() {
 }
 
 function handleModalKeydown(e: KeyboardEvent) {
-  if (e.key === 'Enter') createNewPage()
+  // Enter on the page-type <select> confirms an option; it must not also submit.
+  if (e.key === 'Enter' && !(e.target instanceof HTMLSelectElement)) createNewPage()
   if (e.key === 'Escape') closeNewPageModal()
 }
 </script>
