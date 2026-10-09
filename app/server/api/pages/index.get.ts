@@ -121,7 +121,7 @@ export default defineEventHandler(async (event) => {
   //
   // Triggered on "no home key" rather than "zero records total": saving Home
   // also creates global-header/global-footer records, and those two keys are
-  // permanently protected from deletion (see [key].delete.ts) — so after a
+  // permanently protected from deletion (see [...key].delete.ts) — so after a
   // save+delete cycle the store never truly returns to zero records again.
   // Checking for "home" specifically means the default keeps reappearing
   // after Home is deleted, and only the genuinely-missing keys are
