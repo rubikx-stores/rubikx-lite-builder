@@ -6,6 +6,25 @@ import {
   showFeaturedProductsSvg,
   renderShowFeaturedProducts,
 } from '../themes/themes-data'
+import {
+  ru2ShoppageSvg,
+  ru2ShopHeroDefaults,
+  ru2ShopHeroFields,
+  renderRu2ShopHero,
+  ru2ShopContentDefaults,
+  ru2ShopContentFields,
+  renderRu2ShopContent,
+  ru3ShopSvg,
+  ru3ShopHeaderDefaults,
+  ru3ShopHeaderFields,
+  renderRu3ShopHeader,
+  ru3ShopFiltersDefaults,
+  ru3ShopFiltersFields,
+  renderRu3ShopFilters,
+  ru3ShopProductsDefaults,
+  ru3ShopProductsFields,
+  renderRu3ShopProducts,
+} from '../themes/themes-data'
 // All layout component data (interfaces, defaults, fields, render functions)
 // lives in components.ts — add new components there, then register them below.
 import {
@@ -515,6 +534,20 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       html_code: renderRu7Footer(ru7FooterDefaults),
     },
   ],
+  Shop: [
+    {
+      title: 'Ru1-ShopPage',
+      category: 'Shop',
+      cover_image: ru2ShoppageSvg,
+      html_code: renderRu2ShopHero(ru2ShopHeroDefaults) + renderRu2ShopContent(ru2ShopContentDefaults),
+    },
+    {
+      title: 'Ru2-ShopPage',
+      category: 'Shop',
+      cover_image: ru3ShopSvg,
+      html_code: renderRu3ShopHeader(ru3ShopHeaderDefaults) + renderRu3ShopFilters(ru3ShopFiltersDefaults) + renderRu3ShopProducts(ru3ShopProductsDefaults),
+    },
+  ],
   'Product Showcase': [
     {
       title: 'Ru1-Product Detail',
@@ -820,6 +853,36 @@ export function useLayouts() {
     defaults: ru7FooterDefaults,
     fields: ru7FooterFields,
     render: renderRu7Footer,
+  })
+
+  blockRegistry.register('Ru1 Shop Hero', {
+    defaults: ru2ShopHeroDefaults,
+    fields: ru2ShopHeroFields,
+    render: renderRu2ShopHero,
+  })
+
+  blockRegistry.register('Ru1 Shop Content', {
+    defaults: ru2ShopContentDefaults,
+    fields: ru2ShopContentFields,
+    render: renderRu2ShopContent,
+  })
+
+  blockRegistry.register('Ru2 Shop Header', {
+    defaults: ru3ShopHeaderDefaults,
+    fields: ru3ShopHeaderFields,
+    render: renderRu3ShopHeader,
+  })
+
+  blockRegistry.register('Ru2 Shop Filters', {
+    defaults: ru3ShopFiltersDefaults,
+    fields: ru3ShopFiltersFields,
+    render: renderRu3ShopFilters,
+  })
+
+  blockRegistry.register('Ru2 Shop Products', {
+    defaults: ru3ShopProductsDefaults,
+    fields: ru3ShopProductsFields,
+    render: renderRu3ShopProducts,
   })
 
   blockRegistry.register('Ru1-Product Detail', {
