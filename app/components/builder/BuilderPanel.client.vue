@@ -95,70 +95,115 @@ const filteredLibThemes = computed(() => {
   return data.filter((t) => t.category === selectedThemeCategory.value)
 })
 
+// Inserts exactly one <section> as one page-builder component, respecting
+// header/footer bounds, then wires up its field editor. Re-queries the live
+// DOM fresh on every call, so calling this in sequence for several sections
+// (see handleDropComponent below) naturally places each one right after the
+// previous — the same result as dragging each section in individually.
+async function addSingleComponent(comp: { id: string | number | null; html_code: string; title: string }) {
+  const store = usePageBuilderStateStore() as any
+
+  // Captured before addComponent() so the new instance can be told apart
+  // from any existing sections that already share this same title.
+  const existingIdsForTitle = new Set(
+    Array.from(document.querySelectorAll<HTMLElement>(`section[data-component-title="${CSS.escape(comp.title)}"][data-componentid]`))
+      .map((s) => s.getAttribute('data-componentid'))
+  )
+
+  const allSections = Array.from(document.querySelectorAll('section[data-component-title]'))
+  const headerIndex = allSections.findIndex(s => NAVBAR_TITLES.includes(s.getAttribute('data-component-title') ?? ''))
+  const footerIndex = allSections.findIndex(s => FOOTER_TITLES.includes(s.getAttribute('data-component-title') ?? ''))
+
+  const currentMethod = store.getComponentArrayAddMethod
+  const currentIndex = store.getAddComponentAddIndex ?? 0
+  const minIndex = headerIndex !== -1 ? headerIndex + 1 : 0
+  const maxIndex = footerIndex !== -1 ? footerIndex : allSections.length
+
+  console.log('[ADD] method:', currentMethod, 'headerIndex:', headerIndex, 'footerIndex:', footerIndex, 'currentIndex:', currentIndex, 'minIndex:', minIndex, 'maxIndex:', maxIndex)
+
+  let methodOverridden = false
+
+  if (headerIndex !== -1 || footerIndex !== -1) {
+    if (currentMethod === 'unshift') {
+      store.setComponentArrayAddMethod('insert')
+      store.setAddComponentAddIndex(minIndex)
+      methodOverridden = true
+      await nextTick()
+    } else if (currentMethod === 'push') {
+      store.setComponentArrayAddMethod('insert')
+      store.setAddComponentAddIndex(maxIndex)
+      methodOverridden = true
+      await nextTick()
+    } else {
+      const clampedIndex = Math.min(Math.max(currentIndex, minIndex), maxIndex)
+      if (clampedIndex !== currentIndex) {
+        store.setAddComponentAddIndex(clampedIndex)
+        await nextTick()
+      }
+    }
+  }
+
+  await getPageBuilder().addComponent(comp)
+
+  // Restore original method if we overrode it
+  if (methodOverridden) {
+    store.setComponentArrayAddMethod(currentMethod)
+  }
+
+  // Find the one section for this title that wasn't there before
+  // addComponent() ran — used both to wire up the field editor below and,
+  // for multi-section drops, to tell handleDropComponent where this section
+  // landed so the next one can be pinned right after it.
+  const newId = Array.from(document.querySelectorAll<HTMLElement>(`section[data-component-title="${CSS.escape(comp.title)}"][data-componentid]`))
+    .map((s) => s.getAttribute('data-componentid'))
+    .find((id) => id && !existingIdsForTitle.has(id)) ?? null
+
+  if (newId && comp.title && blockRegistry.hasConfig(comp.title)) {
+    blockRegistry.resetToDefaults(newId)
+    await nextTick()
+    await applyBlockRender(newId)
+  }
+
+  return newId
+}
+
 async function handleDropComponent(comp: { id: string | number | null; html_code: string; title: string }) {
   isLoading.value = true
   try {
-    const store = usePageBuilderStateStore() as any
+    // A registry card's html_code is normally a single <section> — but a
+    // few (e.g. the Shop Page cards) bundle several sibling sections under
+    // one card so the whole mini-page drops in with one click. addComponent()
+    // only handles one section at a time, so split multi-section html_code
+    // and insert each section in order; single-section cards take the exact
+    // same path they always did (loop of length 1).
+    const doc = new DOMParser().parseFromString(comp.html_code, 'text/html')
+    const sections = Array.from(doc.body.querySelectorAll(':scope > section[data-component-title]'))
 
-    // Captured before addComponent() so the new instance can be told apart
-    // from any existing sections that already share this same title.
-    const existingIdsForTitle = new Set(
-      Array.from(document.querySelectorAll<HTMLElement>(`section[data-component-title="${CSS.escape(comp.title)}"][data-componentid]`))
-        .map((s) => s.getAttribute('data-componentid'))
-    )
-
-    const allSections = Array.from(document.querySelectorAll('section[data-component-title]'))
-    const headerIndex = allSections.findIndex(s => NAVBAR_TITLES.includes(s.getAttribute('data-component-title') ?? ''))
-    const footerIndex = allSections.findIndex(s => FOOTER_TITLES.includes(s.getAttribute('data-component-title') ?? ''))
-
-    const currentMethod = store.getComponentArrayAddMethod
-    const currentIndex = store.getAddComponentAddIndex ?? 0
-    const minIndex = headerIndex !== -1 ? headerIndex + 1 : 0
-    const maxIndex = footerIndex !== -1 ? footerIndex : allSections.length
-
-    console.log('[ADD] method:', currentMethod, 'headerIndex:', headerIndex, 'footerIndex:', footerIndex, 'currentIndex:', currentIndex, 'minIndex:', minIndex, 'maxIndex:', maxIndex)
-
-    let methodOverridden = false
-
-    if (headerIndex !== -1 || footerIndex !== -1) {
-      if (currentMethod === 'unshift') {
-        store.setComponentArrayAddMethod('insert')
-        store.setAddComponentAddIndex(minIndex)
-        methodOverridden = true
-        await nextTick()
-      } else if (currentMethod === 'push') {
-        store.setComponentArrayAddMethod('insert')
-        store.setAddComponentAddIndex(maxIndex)
-        methodOverridden = true
-        await nextTick()
-      } else {
-        const clampedIndex = Math.min(Math.max(currentIndex, minIndex), maxIndex)
-        if (clampedIndex !== currentIndex) {
-          store.setAddComponentAddIndex(clampedIndex)
-          await nextTick()
-        }
+    if (sections.length > 1) {
+      // Same trick applyTheme() (useThemes.ts) already relies on for
+      // inserting several ordered sections in one go: force 'unshift'
+      // (prepend) and walk the sections in reverse, so each prepend lands
+      // above the one before it — by the time the loop finishes, the
+      // reversal cancels itself out and sections end up in original order.
+      // (An explicit insert-at-index was tried first and broke: that index
+      // is into addComponent()'s own internal post-sync component array,
+      // not the raw DOM section list computed here, so the computed index
+      // didn't line up with where the previous section actually landed.)
+      const store = usePageBuilderStateStore() as any
+      const originalMethod = store.getComponentArrayAddMethod
+      const originalIndex = store.getAddComponentAddIndex ?? 0
+      store.setComponentArrayAddMethod('unshift')
+      for (const section of [...sections].reverse()) {
+        await addSingleComponent({
+          id: null,
+          html_code: section.outerHTML,
+          title: section.getAttribute('data-component-title') ?? comp.title,
+        })
       }
-    }
-
-    await getPageBuilder().addComponent(comp)
-
-    // Restore original method if we overrode it
-    if (methodOverridden) {
-      store.setComponentArrayAddMethod(currentMethod)
-    }
-
-    if (comp.title && blockRegistry.hasConfig(comp.title)) {
-      // resetToDefaults()/applyBlockRender() key off a componentId, not a
-      // title — find the one section for this title that wasn't there
-      // before addComponent() ran.
-      const newId = Array.from(document.querySelectorAll<HTMLElement>(`section[data-component-title="${CSS.escape(comp.title)}"][data-componentid]`))
-        .map((s) => s.getAttribute('data-componentid'))
-        .find((id) => id && !existingIdsForTitle.has(id))
-      if (newId) {
-        blockRegistry.resetToDefaults(newId)
-        await nextTick()
-        await applyBlockRender(newId)
-      }
+      store.setComponentArrayAddMethod(originalMethod)
+      store.setAddComponentAddIndex(originalIndex)
+    } else {
+      await addSingleComponent(comp)
     }
 
     // Hydrate dynamic components after adding new component

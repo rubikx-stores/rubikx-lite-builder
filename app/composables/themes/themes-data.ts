@@ -1257,13 +1257,7 @@ export const ru1HomepageSections: ThemeSection[] = [
 // Ru1 ShopPage theme
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export const ru2ShoppageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
-  <rect fill="#394152" x="0" y="0" width="280" height="18"/>
-  <rect fill="#718096" x="8" y="6" width="28" height="5"/>
-  <rect fill="#718096" x="185" y="6" width="16" height="5"/>
-  <rect fill="#718096" x="206" y="6" width="16" height="5"/>
-  <rect fill="#718096" x="227" y="6" width="16" height="5"/>
-  <rect fill="#718096" x="250" y="6" width="22" height="5"/>
+export const ru2ShoppageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 18 280 296" width="100%" height="100%">
   <rect fill="#f3f4f6" x="0" y="18" width="280" height="28"/>
   <rect fill="#9ca3af" x="8" y="22" width="60" height="2"/>
   <rect fill="#374151" x="8" y="28" width="52" height="8"/>
@@ -1336,13 +1330,6 @@ export const ru2ShoppageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="
   <rect fill="#e5e7eb" x="132" y="270" width="14" height="10" rx="2"/>
   <rect fill="#e5e7eb" x="150" y="270" width="14" height="10" rx="2"/>
   <rect fill="#e5e7eb" x="168" y="270" width="14" height="10" rx="2"/>
-  <rect fill="#394152" x="0" y="314" width="280" height="26"/>
-  <rect fill="#718096" x="8" y="320" width="55" height="4"/>
-  <rect fill="#718096" x="8" y="328" width="45" height="3"/>
-  <rect fill="#718096" x="100" y="320" width="55" height="4"/>
-  <rect fill="#718096" x="100" y="328" width="40" height="3"/>
-  <rect fill="#718096" x="192" y="320" width="55" height="4"/>
-  <rect fill="#718096" x="192" y="328" width="40" height="3"/>
 </svg>`
 // ─── Ru1 Shop Hero block ─────────────────────────────────────────────────────
 
@@ -1797,7 +1784,7 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
     const sidebarBorder = filterPos === 'left'
       ? 'border-right:1px solid #e5e7eb;padding-right:1.25rem;margin-right:1.5rem'
       : 'border-left:1px solid #e5e7eb;padding-left:1.25rem;margin-left:1.5rem'
-    const sidebar = `<div style="width:220px;flex-shrink:0;${sidebarBorder}">
+    const sidebar = `<div data-sp-sidebar="1" style="width:220px;flex-shrink:0;${sidebarBorder}">
       <div style="display:flex;align-items:center;gap:0.5rem;padding-bottom:0.75rem;border-bottom:1px solid #e5e7eb;margin-bottom:0.25rem">
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1 3h13M3.5 7h8M6 11h3" stroke="#374151" stroke-width="1.5" stroke-linecap="round"/></svg>
         <span style="font-size:0.875rem;font-weight:600;color:#111827">Filters</span>
@@ -1805,14 +1792,18 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
       ${sidebarAccordion}
     </div>`
     const gridArea = `<div style="flex:1;min-width:0">${pageGrids}${paginationHtml}</div>`
+    // Below 768px the fixed 220px sidebar + flex:1 grid row never had room to
+    // breathe (it's a plain flex row with no wrap), squeezing the product
+    // grid down to ~150px on a phone instead of stacking — the sidebar now
+    // drops above/below the grid and takes full width there.
     const flexRow = filterPos === 'left'
-      ? `<div style="display:flex;align-items:flex-start">${sidebar}${gridArea}</div>`
-      : `<div style="display:flex;align-items:flex-start">${gridArea}${sidebar}</div>`
+      ? `<div data-sp-flexrow="1" style="display:flex;align-items:flex-start">${sidebar}${gridArea}</div>`
+      : `<div data-sp-flexrow="1" style="display:flex;align-items:flex-start">${gridArea}${sidebar}</div>`
     innerHtml = `${metaBar}${flexRow}`
   }
 
   return `<section data-component-title="Ru1 Shop Content" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
-<style>${_gridCss(`[data-sg="${gridId}"]`, Number(data.columns) || 4)}</style>
+<style>${_gridCss(`[data-sg="${gridId}"]`, Number(data.columns) || 4)}@media(max-width:768px){[data-sp-flexrow]{flex-direction:column!important}[data-sp-sidebar]{width:100%!important;border:none!important;margin:0 0 1.25rem!important;padding:0 0 1rem!important;border-bottom:1px solid #e5e7eb!important}}</style>
 <div style="${sectionStyle}">
   <div style="max-width:80rem;margin:0 auto">
     ${innerHtml}
@@ -1829,13 +1820,7 @@ export const ru2ShoppageSections: ThemeSection[] = [
 
 // ─── Ru2 Shop Header ──────────────────────────────────────────────────────────
 
-export const ru3ShopSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
-  <rect fill="#394152" x="0" y="0" width="280" height="18"/>
-  <rect fill="#718096" x="8" y="6" width="28" height="5"/>
-  <rect fill="#718096" x="185" y="6" width="16" height="5"/>
-  <rect fill="#718096" x="206" y="6" width="16" height="5"/>
-  <rect fill="#718096" x="227" y="6" width="16" height="5"/>
-  <rect fill="#718096" x="250" y="6" width="22" height="5"/>
+export const ru3ShopSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 18 280 282" width="100%" height="100%">
   <rect fill="#f3f4f6" x="0" y="18" width="280" height="22"/>
   <rect fill="#9ca3af" x="8" y="22" width="50" height="2"/>
   <rect fill="#374151" x="8" y="27" width="60" height="7"/>
@@ -1906,13 +1891,6 @@ export const ru3ShopSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 
   <rect fill="#e5e7eb" x="126" y="252" width="12" height="9" rx="2"/>
   <rect fill="#e5e7eb" x="142" y="252" width="12" height="9" rx="2"/>
   <rect fill="#e5e7eb" x="158" y="252" width="12" height="9" rx="2"/>
-  <rect fill="#394152" x="0" y="300" width="280" height="40"/>
-  <rect fill="#718096" x="8" y="308" width="55" height="4"/>
-  <rect fill="#718096" x="8" y="318" width="45" height="3"/>
-  <rect fill="#718096" x="100" y="308" width="55" height="4"/>
-  <rect fill="#718096" x="100" y="318" width="40" height="3"/>
-  <rect fill="#718096" x="192" y="308" width="55" height="4"/>
-  <rect fill="#718096" x="192" y="318" width="40" height="3"/>
 </svg>`
 
 export interface Ru3ShopHeaderData {
