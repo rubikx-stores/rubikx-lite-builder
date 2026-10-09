@@ -1811,13 +1811,6 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
 </div>
 </section>`
 }
-// ─── Ru1 ShopPage sections ───────────────────────────────────────────────────
-
-export const ru2ShoppageSections: ThemeSection[] = [
-  { id: null, title: 'Ru1 Shop Hero',    html_code: renderRu2ShopHero(ru2ShopHeroDefaults) },
-  { id: null, title: 'Ru1 Shop Content', html_code: renderRu2ShopContent(ru2ShopContentDefaults) },
-]
-
 // ─── Ru2 Shop Header ──────────────────────────────────────────────────────────
 
 export const ru3ShopSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 18 280 282" width="100%" height="100%">
@@ -2187,12 +2180,6 @@ ${animStyle}
 </div>
 </section>`
 }
-
-export const ru3ShopSections: ThemeSection[] = [
-  { id: null, title: 'Ru2 Shop Header',   html_code: renderRu3ShopHeader(ru3ShopHeaderDefaults) },
-  { id: null, title: 'Ru2 Shop Filters',  html_code: renderRu3ShopFilters(ru3ShopFiltersDefaults) },
-  { id: null, title: 'Ru2 Shop Products', html_code: renderRu3ShopProducts(ru3ShopProductsDefaults) },
-]
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Ru2 HomePage — Fieldwork (Dark + Amber)

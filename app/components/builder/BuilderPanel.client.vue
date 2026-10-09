@@ -119,8 +119,6 @@ async function addSingleComponent(comp: { id: string | number | null; html_code:
   const minIndex = headerIndex !== -1 ? headerIndex + 1 : 0
   const maxIndex = footerIndex !== -1 ? footerIndex : allSections.length
 
-  console.log('[ADD] method:', currentMethod, 'headerIndex:', headerIndex, 'footerIndex:', footerIndex, 'currentIndex:', currentIndex, 'minIndex:', minIndex, 'maxIndex:', maxIndex)
-
   let methodOverridden = false
 
   if (headerIndex !== -1 || footerIndex !== -1) {
