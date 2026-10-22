@@ -889,6 +889,9 @@ async function loadAuthState(el: HTMLElement, companyId?: number) {
     }
 
     signInEls.forEach((btn) => {
+      // Remembers each block's own display value (flex/inline-flex/etc.) so the logged-out
+      // catch path below can restore it exactly instead of blanking it to the browser default.
+      if (btn.dataset.origDisplay === undefined) btn.dataset.origDisplay = btn.style.display
       btn.style.display = 'none'
     })
     el.style.display = 'inline-flex'
@@ -962,7 +965,7 @@ async function loadAuthState(el: HTMLElement, companyId?: number) {
     el.appendChild(dropdown)
   } catch {
     signInEls.forEach((btn) => {
-      btn.style.display = ''
+      btn.style.display = btn.dataset.origDisplay ?? ''
     })
     if (isNewLayout) el.style.display = 'none'
     el.querySelector('[data-auth-profile]')?.remove()

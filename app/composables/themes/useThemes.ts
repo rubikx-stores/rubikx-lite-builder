@@ -1,16 +1,16 @@
-import { type ThemeSection, ru1HomepageSections, ru1HomepageSvg } from './themes-data'
+import { type ThemeSection, ru1HomepageSections } from './themes-data'
 import {
   ru1NavbarDefaults, ru1NavbarFields, renderRu1Navbar,
   ru1HeroDefaults, ru1HeroFields, renderRu1Hero,
   ru1ProductsDefaults, ru1ProductsFields, renderRu1Products,
   ru1FooterDefaults, ru1FooterFields, renderRu1Footer,
-  ru2HomePageSvg, ru2HomePageSections,
+  ru2HomePageSections,
   ru2HomeNavbarDefaults, ru2HomeCarouselDefaults, ru2HomeStatsDefaults,
   ru2HomeSplitHeroDefaults, ru2HomeFooterDefaults,
-  ru3HomePageSvg, ru3HomePageSections,
+  ru3HomePageSections,
   ru3HomeNavbarDefaults, ru3HomeSplitHeroDefaults, ru3HomeStatsDefaults,
   ru3HomeEditorialDefaults, ru3HomeFooterDefaults,
-  ru4HomePageSvg, ru4HomePageSections,
+  ru4HomePageSections,
   ru4HomeNavbarDefaults, ru4HomeSplitHeroDefaults, ru4HomeStepsDefaults,
   ru4HomeAboutSplitDefaults, ru4HomeFooterDefaults,
 } from './themes-data'
@@ -32,7 +32,6 @@ interface ThemeMeta {
   name: string
   description: string
   category: string
-  cover_image: string
 }
 
 interface Theme {
@@ -47,7 +46,6 @@ export const themeRegistry: Record<string, Theme> = {
       name: 'Ru1-HomePage',
       description: 'Branded employee store theme',
       category: 'Home',
-      cover_image: ru1HomepageSvg,
     },
     sections: ru1HomepageSections,
   },
@@ -57,7 +55,6 @@ export const themeRegistry: Record<string, Theme> = {
       name: 'Ru2 HomePage',
       description: 'Bold dark theme with amber accents for industrial brands',
       category: 'Home',
-      cover_image: ru2HomePageSvg,
     },
     sections: ru2HomePageSections,
   },
@@ -67,7 +64,6 @@ export const themeRegistry: Record<string, Theme> = {
       name: 'Ru3 HomePage',
       description: 'Clean professional theme with navy and mint',
       category: 'Home',
-      cover_image: ru3HomePageSvg,
     },
     sections: ru3HomePageSections,
   },
@@ -77,7 +73,6 @@ export const themeRegistry: Record<string, Theme> = {
       name: 'Ru4 HomePage',
       description: 'Warm terracotta theme with burnt orange accents',
       category: 'Home',
-      cover_image: ru4HomePageSvg,
     },
     sections: ru4HomePageSections,
   },
