@@ -16,6 +16,7 @@ export default defineNuxtConfig({
       title: 'RubikX Builder',
       htmlAttrs: { lang: 'en' },
       link: [
+        { rel: 'icon', type: 'image/png', href: '/favicon.png' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         { rel: 'stylesheet', href: GOOGLE_FONTS_STYLESHEET_URL },
