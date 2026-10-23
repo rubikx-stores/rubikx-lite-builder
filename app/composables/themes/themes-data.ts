@@ -307,7 +307,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 
   const searchW = data.searchWidth || 420
   const searchEl = data.showSearch
-    ? `<div style="display:flex;align-items:center;background:${data.searchBgColor};border:1px solid ${data.searchBorderColor};border-radius:${data.searchBorderRadius}px;padding:0.5rem 0.875rem;gap:0.5rem;width:${searchW}px;max-width:100%;min-width:0;">
+    ? `<div style="display:flex;align-items:center;background:${data.searchBgColor};border:1px solid ${data.searchBorderColor};border-radius:${data.searchBorderRadius}px;padding:0.5rem 0.875rem;gap:0.5rem;flex:0 1 ${searchW}px;width:auto;max-width:${searchW}px;min-width:min(${searchW}px,32vw);">
         ${icon('magnifyingGlass', { size: 16, stroke: data.searchIconColor, style: 'flex-shrink:0;' })}
         <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:${data.searchTextColor};min-width:0;" />
       </div>`
@@ -373,7 +373,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   // row doesn't fit — a bare flex/grid item defaults to a min size based
   // on its content, which silently blocks shrinking without this.
   const zone = (items: string[], justify: string) =>
-    `<div style="display:flex;align-items:center;gap:0.75rem;justify-content:${justify};min-width:0;">${items.join('')}</div>`
+    `<div style="display:flex;align-items:center;gap:0.75rem;justify-content:${justify};">${items.join('')}</div>`
 
   const lowerRow = isLowerLinks && linksEl
     ? `<div style="margin:0 auto;display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding:0.5rem 0;gap:0.75rem;">${linksEl}</div>`
@@ -446,7 +446,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   return `<section data-component-title="Ru1-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 <nav style="${navStyle}"${dynamicNavHydrationAttrs}>
   ${mobileNav}
-  <div data-nav-desktop="true" style="display:grid;margin:0 auto;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);align-items:center;gap:1rem;height:80px;${topRowBorder}">
+  <div data-nav-desktop="true" style="display:grid;margin:0 auto;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;height:80px;${topRowBorder}">
     ${zone(cols.left,   'flex-start')}
     ${zone(cols.center, 'center')}
     ${zone(cols.right,  'flex-end')}
