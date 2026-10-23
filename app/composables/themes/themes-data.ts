@@ -1,6 +1,8 @@
 ﻿import type { FieldConfig } from '../editor/useBlockRegistry'
 import { fontField, fontCss } from '../editor/fontFields'
 import { icon } from '../useIconSvg'
+import { balanceBadgesDefaults, balanceBadgesFields, renderBalanceBadges } from '../useBalanceBadges'
+import type { BalanceBadgesData } from '../useBalanceBadges'
 import { socialIconHtml } from '../useSocialIcons'
 import {
   renderDynamicCategoriesRow,
@@ -80,7 +82,7 @@ export const ru1HomepageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="
 
 export interface NavLink { label: string; url: string; visible?: boolean; newTab?: boolean }
 
-export interface Ru1NavbarData {
+export interface Ru1NavbarData extends BalanceBadgesData {
   logoUrl: string
   brandName: string
   logoWidth: number
@@ -178,6 +180,7 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   contactUsLabel: 'Contact Us',
   contactUsUrl: '/contactus',
   showCart: true,
+  ...balanceBadgesDefaults,
   cartUrl: '/cart',
   cartIconColor: '#111827',
   buttonsAlign: 'right',
@@ -256,6 +259,7 @@ export const ru1NavbarFields: FieldConfig[] = [
   { key: 'contactUsLabel', label: 'Contact Us Label', type: 'text' },
   { key: 'contactUsUrl', label: 'Contact Us URL', type: 'url' },
   { key: 'showCart', label: 'Show Cart Icon', type: 'toggle' },
+  ...balanceBadgesFields,
   { key: 'cartUrl', label: 'Cart URL', type: 'url' },
   { key: 'cartIconColor', label: 'Cart Icon Colour', type: 'color' },
   { key: 'buttonsAlign', label: 'Buttons Position', type: 'select', options: ['left', 'center', 'right'] },
@@ -312,6 +316,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   const buttonsArr = [
     data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${btnAccent};font-size:0.875rem;text-decoration:none;border:1px solid ${btnBorderAccent};border-radius:${data.buttonBorderRadius}px;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:${data.buttonBgColor};box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;${fontCss(data.buttonFont, data.fontFamily)}">${data.signInLabel}</a>` : '',
     data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${btnAccent};font-size:0.875rem;text-decoration:none;border:1px solid ${btnBorderAccent};border-radius:${data.buttonBorderRadius}px;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:${data.buttonBgColor};box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;${fontCss(data.buttonFont, data.fontFamily)}">${data.contactUsLabel}</a>` : '',
+    renderBalanceBadges(data),
     data.showCart
       ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.cartIconColor}" style="position:relative;display:inline-flex;flex-shrink:0;"><a href="${data.cartUrl}" style="color:${data.cartIconColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
       : '',
@@ -420,6 +425,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
       ${icon('xMark', { size: 24, stroke: data.textColor })}
     </button>
   </div>
+  ${renderBalanceBadges(data, 'compact', 'margin-bottom:1rem;')}
   ${mobileSearchEl}
   <div style="display:flex;flex-direction:column;">
     ${mobileDrawerLinks}
