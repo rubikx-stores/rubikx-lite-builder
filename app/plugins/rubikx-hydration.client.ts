@@ -4,6 +4,7 @@ import type {
 } from '~/composables/categories/buildCategoryTree'
 import { icon } from '~/composables/useIconSvg'
 import { productImageSrc } from '~/composables/useProductImageSrc'
+import { fontCss } from '~/composables/editor/fontFields'
 import { fetchLogoGroupsCached } from '~/composables/logoGroups/fetchLogoGroupsCached'
 import { fetchCategoriesCached } from '~/composables/categories/fetchCategoriesCached'
 
@@ -1049,6 +1050,20 @@ function loadFaqAccordion(el: HTMLElement) {
   })
 }
 
+// Mirrors components.ts's CARD_SHADOW_PRESETS — kept as its own small copy
+// (not imported from components.ts) rather than pulling that ~800KB render-
+// function module into this client plugin's bundle for one lookup table.
+const CARD_SHADOW_PRESETS: Record<string, string> = {
+  'none':       '0 0 #0000',
+  'shadow-2xs': '0 1px rgb(0 0 0 / 0.05)',
+  'shadow-xs':  '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+  'shadow-sm':  '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+  'shadow-md':  '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+  'shadow-lg':  '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+  'shadow-xl':  '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+  'shadow-2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
+}
+
 // Navbar search — client-side. Fetches the product list once (shared across the
 // desktop + mobile inputs), then filters by name on each keystroke and shows a
 // results dropdown; clicking a result opens /product/{id}. No per-keystroke
@@ -1062,6 +1077,67 @@ function _fetchAllProducts(companyId?: number): Promise<any[]> {
     .then((list) => (Array.isArray(list) ? list : []))
     .catch(() => [])
   return _searchProductsPromise
+}
+
+// Ru4-Product-Card's "Use Products From Backend" toggle. Builder-preview
+// only, same split as loadCategories/loadDynamicNav above — replaces the
+// block's static/manually-entered fallback cards (left in the markup so
+// something real shows before this runs) with real products fetched via the
+// same shared, cached _fetchAllProducts() the navbar search uses. Rebuilds
+// the card markup client-side from the section's own data-component-props
+// rather than re-deriving it from CSS, so it stays visually identical to
+// renderRu4ProductCard's own server-rendered cards.
+function loadProductGrid(el: HTMLElement, companyId?: number) {
+  if (el.dataset.hydrated === 'true') return
+  el.dataset.hydrated = 'true'
+
+  const section = el.closest('[data-component-title="Ru4-Product-Card"]') as HTMLElement | null
+  let data: any = {}
+  try {
+    const raw = section?.getAttribute('data-component-props')
+    if (raw) data = JSON.parse(decodeURIComponent(raw))
+  } catch {}
+
+  const idList = String(data.backendProductIds ?? '')
+    .split(',')
+    .map((s) => Number(s.trim()))
+    .filter((n) => Number.isFinite(n) && n > 0)
+  const maxItems = Number(data.backendMaxItems) || 12
+
+  _fetchAllProducts(companyId).then((all) => {
+    const filtered = idList.length ? all.filter((p) => idList.includes(p.id)) : all
+    const products = filtered.slice(0, maxItems)
+    if (!products.length) return // keep the static fallback cards as-is
+
+    const cardPad = data.cardPadding ?? 12
+    const wrapperStyle = `background:${data.cardBg ?? '#ffffff'};border-radius:${data.cardBorderRadius ?? 8}px;box-shadow:${CARD_SHADOW_PRESETS[data.cardShadow as string] ?? CARD_SHADOW_PRESETS.none};margin:${data.cardMargin ?? 0}px;`
+    const nameFontCss = `${fontCss(data.productNameFont, data.fontFamily)}font-weight:700;`
+    const priceFontCss = `${fontCss(data.priceFont, data.fontFamily)}color:#6b7280;`
+
+    el.innerHTML = products.map((p) => {
+      const imgSrc = productImageSrc(p.image)
+      const imageHtml = imgSrc
+        ? `<img src="${imgSrc}" alt="${p.name ?? ''}" style="width:100%;aspect-ratio:1/1;object-fit:contain;display:block;background:${data.imageBgColor || '#ffffff'};" />`
+        : `<div style="width:100%;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;background:${data.imageBgColor || '#f3f4f6'};">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>`
+      const dividerHtml = data.showDivider !== false
+        ? `<div style="border-top:1px solid ${data.dividerColor || '#e5e7eb'};"></div>`
+        : ''
+      const price = p.price != null && p.price !== '' ? `$${Number(p.price).toFixed(2)}` : ''
+
+      return `<a href="/product/${p.id}" data-ru4pc-card="true" style="display:block;text-decoration:none;color:inherit;${wrapperStyle}overflow:hidden;">
+        ${imageHtml}
+        ${dividerHtml}
+        <div style="padding:${cardPad}px;display:flex;flex-direction:column;gap:4px;text-align:center;">
+          <p style="font-size:${data.cardFontSize ?? 14}px;line-height:1.3;margin:0;color:${data.cardTextColor ?? '#111827'};display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all;overflow-wrap:anywhere;${nameFontCss}">${p.name ?? ''}</p>
+          <p style="font-size:${data.cardFontSize ?? 14}px;font-weight:600;margin:0;${priceFontCss}">${price}</p>
+        </div>
+      </a>`
+    }).join('')
+  }).catch((e) => {
+    console.error('[Rubikx] Failed to load backend products:', e)
+  })
 }
 
 function loadSearch(el: HTMLElement, companyId?: number) {
@@ -1135,6 +1211,7 @@ const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> =
     loadAuthState,
     loadSearch,
     loadFaqAccordion,
+    loadProductGrid,
   }
 
 // Tracks the companyId passed to the most recent hydrateComponents() call so

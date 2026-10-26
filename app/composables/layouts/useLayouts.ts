@@ -163,6 +163,9 @@ import {
   showMultipleProductsDefaults,
   showMultipleProductsFields,
   renderShowMultipleProducts,
+  ru4ProductCardDefaults,
+  ru4ProductCardFields,
+  renderRu4ProductCard,
   ru1AnnouncementBarDefaults,
   ru1AnnouncementBarFields,
   renderRu1AnnouncementBar,
@@ -480,6 +483,11 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       title: 'Ru3-Show-Single-Products',
       category: 'Products',
       html_code: renderShowSingleProduct(showSingleProductDefaults),
+    },
+    {
+      title: 'Ru4-Product-Card',
+      category: 'Products',
+      html_code: renderRu4ProductCard(ru4ProductCardDefaults),
     },
   ],
   'Announcement Bar': [
@@ -837,6 +845,12 @@ export function useLayouts() {
     defaults: showSingleProductDefaults,
     fields: showSingleProductFields,
     render: renderShowSingleProduct,
+  })
+
+  blockRegistry.register('Ru4-Product-Card', {
+    defaults: ru4ProductCardDefaults,
+    fields: ru4ProductCardFields,
+    render: renderRu4ProductCard,
   })
 
   blockRegistry.register('Ru1-Announcement Bar', {

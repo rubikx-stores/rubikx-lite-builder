@@ -6542,6 +6542,13 @@ function hexToRgba(hex: string, opacity: number): string {
   return `rgba(${r},${g},${b},${opacity})`
 }
 
+// A double quote inside an admin-typed value (e.g. a title used as an image's
+// alt text) closes the attribute early — everything after it then renders as
+// visible stray text next to the element instead of staying inside the tag.
+function escapeAttr(value: string): string {
+  return String(value ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+}
+
 // The rich text editor modal saves a contenteditable div's innerHTML, which
 // browsers leave holding a stray tag (e.g. "<br>") after the user deletes
 // all visible text — so an emptied field is still a truthy, non-empty
@@ -9769,7 +9776,7 @@ export function renderRu6SplitHero(data: Ru6SplitHeroData): string {
   </div>`
 
   const imgInner = data.imageUrl
-    ? `<img src="${data.imageUrl}" alt="${data.title}" style="width:100%;height:${responsiveImgHeight};object-fit:${data.imageObjectFit};border-radius:${data.cardMode ? '0' : data.imageBorderRadius}px;display:block;" />`
+    ? `<img src="${escapeAttr(data.imageUrl)}" alt="${escapeAttr(data.title)}" style="width:100%;height:${responsiveImgHeight};object-fit:${data.imageObjectFit};border-radius:${data.cardMode ? '0' : data.imageBorderRadius}px;display:block;" />`
     : `<div style="width:100%;height:${responsiveImgHeight};background:#e5e7eb;border-radius:${data.cardMode ? '0' : data.imageBorderRadius}px;display:flex;align-items:center;justify-content:center;"><span style="color:#9ca3af;font-size:14px;">Add an image</span></div>`
 
   const imageCol = data.cardMode
@@ -12428,9 +12435,181 @@ export function renderShowMultipleProducts(data: ShowMultipleProductsData): stri
 </section>`
 }
 
+// ─── Ru4-Product-Card ───────────────────────────────────────────────────────
+// A plain product grid: image, an optional thin divider, then a centered
+// name + price (no hover overlay/arrow like Ru2's grid). First real caller of
+// renderProductCardBody/productCardWrapperStyle, the shared helpers above
+// that the other three "Show * Products" blocks ended up not needing.
+
+export interface Ru4ProductCardData extends ProductCardStyleData {
+  products: Product[]
+  columns: number
+  gap: number
+  bgColor: string
+  paddingY: number
+  paddingX: number
+  contentMaxWidth: number
+  showSectionHeader: boolean
+  sectionTitle: string
+  titleColor: string
+  sectionTitleFont: string
+  fontFamily: string
+  productNameFont: string
+  priceFont: string
+  showDivider: boolean
+  dividerColor: string
+
+  // Live products, fetched client-side from /api/products (see loadProductGrid
+  // in rubikx-hydration.client.ts) instead of the hand-entered list below.
+  // Builder-preview only — this Nuxt app's hydration plugin never runs on the
+  // published Odoo page, so making this live there too needs a matching
+  // script on that side; off by default, falls back to `products` above.
+  useBackendProducts: boolean
+  backendProductIds: string
+  backendMaxItems: number
+}
+
+// Shown both as the block's own defaults and as the renderer's fallback
+// whenever `products` is empty (e.g. nothing picked yet from the product
+// picker) — so the grid always reads as a working sample instead of an
+// empty "No products added" state.
+const ru4ProductCardPlaceholderProducts: Product[] = [
+  { imageUrl: '', name: 'Product 1', price: '$0.00', oldPrice: '', buttonLabel: 'View Product', buttonUrl: '#', colors: '' },
+  { imageUrl: '', name: 'Product 2', price: '$0.00', oldPrice: '', buttonLabel: 'View Product', buttonUrl: '#', colors: '' },
+  { imageUrl: '', name: 'Product 3', price: '$0.00', oldPrice: '', buttonLabel: 'View Product', buttonUrl: '#', colors: '' },
+  { imageUrl: '', name: 'Product 4', price: '$0.00', oldPrice: '', buttonLabel: 'View Product', buttonUrl: '#', colors: '' },
+]
+
+export const ru4ProductCardDefaults: Ru4ProductCardData = {
+  products: ru4ProductCardPlaceholderProducts,
+  columns: 4,
+  gap: 24,
+  bgColor: '#ffffff',
+  paddingY: 32,
+  paddingX: 16,
+  contentMaxWidth: 1440,
+  showSectionHeader: false,
+  sectionTitle: 'Featured Products',
+  titleColor: '#111827',
+  sectionTitleFont: '',
+  fontFamily: '',
+  productNameFont: '',
+  priceFont: '',
+  showDivider: true,
+  dividerColor: '#e5e7eb',
+  useBackendProducts: false,
+  backendProductIds: '',
+  backendMaxItems: 12,
+  ...productCardStyleDefaults,
+  cardLayout: 'centered',
+  cardBorderRadius: 8,
+  cardShadow: 'shadow-sm',
+  cardPadding: 12,
+  showButton: false,
+}
+
+export const ru4ProductCardFields: FieldConfig[] = [
+  { key: '_h_header', label: 'Section Header', type: 'header' },
+  { key: 'showSectionHeader', label: 'Show Section Title', type: 'toggle' },
+  { key: 'sectionTitle', label: 'Section Title', type: 'text', placeholder: 'Featured Products' },
+  { key: 'titleColor', label: 'Title Colour', type: 'color' },
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'bgColor', label: 'Background Colour', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '32' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '16' },
+  { key: 'contentMaxWidth', label: 'Content Max Width', type: 'number', unit: 'px', step: 10, placeholder: '1440' },
+  { key: 'columns', label: 'Columns', type: 'select', options: ['1', '2', '3', '4', '5', '6'] },
+  { key: 'gap', label: 'Grid Gap', type: 'number', unit: 'px', step: 2, placeholder: '24' },
+
+  { key: '_h_divider', label: 'Divider', type: 'header' },
+  { key: 'showDivider', label: 'Show Divider Line', type: 'toggle' },
+  { key: 'dividerColor', label: 'Divider Colour', type: 'color' },
+
+  { key: '_h_font', label: 'Fonts', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+  fontField('sectionTitleFont', 'Section Title Font'),
+  fontField('productNameFont', 'Product Name Font'),
+  fontField('priceFont', 'Price Font'),
+
+  { key: '_h_products', label: 'Products', type: 'header' },
+  { key: 'useBackendProducts', label: 'Use Products From Backend', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'backendProductIds', label: 'Product IDs (blank = all)', type: 'text', placeholder: 'e.g. 12, 45, 103', siteSpecific: true, visibleIf: (d) => d.useBackendProducts === true },
+  { key: 'backendMaxItems', label: 'Max Products Shown', type: 'number', step: 1, placeholder: '12', visibleIf: (d) => d.useBackendProducts === true },
+  {
+    key: 'products', label: 'Products', type: 'list', siteSpecific: true,
+    visibleIf: (d) => d.useBackendProducts !== true,
+    listFields: [
+      { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
+      { key: 'name', label: 'Product Name', type: 'text' },
+      { key: 'price', label: 'Price', type: 'text' },
+      { key: 'oldPrice', label: 'Old Price (optional)', type: 'text' },
+      { key: 'buttonLabel', label: 'Button Text', type: 'text' },
+      { key: 'buttonUrl', label: 'Button URL', type: 'url' },
+      { key: 'colors', label: 'Color Swatches', type: 'text', placeholder: 'blue, black, #ff0000' },
+    ],
+  },
+]
+
+export function renderRu4ProductCard(data: Ru4ProductCardData): string {
+  const cols = Math.min(Math.max(data.columns ?? 4, 1), 6)
+  const gap = data.gap ?? 24
+  const products = data.products?.length ? data.products : ru4ProductCardPlaceholderProducts
+
+  const sectionHeaderHtml = data.showSectionHeader
+    ? `<div style="margin-bottom:1.5rem;">
+      <h2 style="margin:0;font-size:min(1.75rem,7vw);font-weight:600;color:${data.titleColor || '#111827'};${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h2>
+    </div>`
+    : ''
+
+  const wrapperStyle = productCardWrapperStyle(data)
+  const nameFontCss = `${fontCss(data.productNameFont, data.fontFamily)}font-weight:700;`
+  const priceFontCss = `${fontCss(data.priceFont, data.fontFamily)}color:#6b7280;`
+
+  const productsHtml = products.map(product => {
+    const imageSrc = productImageSrc(product.imageUrl)
+    const imageHtml = imageSrc
+      ? `<img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:contain;display:block;background:${data.imageBgColor || '#ffffff'};" />`
+      : `<div style="width:100%;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;background:${data.imageBgColor || '#f3f4f6'};">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>`
+
+    const dividerHtml = data.showDivider !== false
+      ? `<div style="border-top:1px solid ${data.dividerColor || '#e5e7eb'};"></div>`
+      : ''
+
+    return `<a href="${product.buttonUrl || '#'}" data-ru4pc-card="true" style="${wrapperStyle}overflow:hidden;display:block;text-decoration:none;color:inherit;">
+      ${imageHtml}
+      ${dividerHtml}
+      <div style="padding:${data.cardPadding ?? 12}px;">
+        ${renderProductCardBody(product, { ...data, showButton: false }, nameFontCss, priceFontCss)}
+      </div>
+    </a>`
+  }).join('')
+
+  return `<section data-component-title="Ru4-Product-Card" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px 0;${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:1024px){[data-ru4pc-grid]{grid-template-columns:repeat(3,1fr)!important;}}
+  @media(max-width:768px){[data-ru4pc-grid]{grid-template-columns:repeat(2,1fr)!important;}}
+  @media(max-width:480px){[data-ru4pc-grid]{grid-template-columns:1fr!important;}}
+  [data-ru4pc-card]{transition:box-shadow 0.2s ease,transform 0.2s ease;cursor:pointer;}
+  [data-ru4pc-card]:hover{box-shadow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -2px rgba(0,0,0,0.1);transform:translateY(-2px);}
+</style>
+  <div style="max-width:${data.contentMaxWidth ?? 1440}px;margin:0 auto;width:100%;box-sizing:border-box;padding-left:min(${data.paddingX ?? 16}px,6vw);padding-right:min(${data.paddingX ?? 16}px,6vw);">
+    ${sectionHeaderHtml}
+    <div
+      data-ru4pc-grid="true"
+      style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:${gap}px;"${data.useBackendProducts ? `
+      data-rubikx-component="ProductGrid"
+      data-on-mount="loadProductGrid"` : ''}
+    >
+      ${productsHtml}
+    </div>
+  </div>
+</section>`
+}
+
 // ─── Ru1-Announcement Bar ──────────────────────────────────────────────────────────
-// A slim full-width announcement bar with a single editable message. Colours,
-// alignment, font size/weight and padding are editable. Template is dark.
 
 
 export interface Ru1AnnouncementBarData {
