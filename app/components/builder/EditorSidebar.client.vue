@@ -9,7 +9,7 @@ import { productImageSrc } from '~/composables/useProductImageSrc'
 import { getDomain, faviconUrl } from '~/composables/useSocialIcons'
 import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
 import { buildCategoryTree } from '~/composables/categories/buildCategoryTree'
-import type { FlatCategory } from '~/composables/categories/buildCategoryTree'
+import type { FlatCategory, CategoryNode } from '~/composables/categories/buildCategoryTree'
 import { fetchLogoGroupsCached } from '~/composables/logoGroups/fetchLogoGroupsCached'
 import { fontCss } from '~/composables/editor/fontFields'
 
@@ -196,7 +196,7 @@ async function syncCategoriesFromApi() {
 
     // Display-name priority: headlessName (if truthy — it's `false` when
     // unset, not null/undefined, hence `||` not `??`) → displayName → name.
-    const labelFor = (c: FlatCategory) => String(c.headlessName || c.displayName || c.name)
+    const labelFor = (c: CategoryNode) => String(c.headlessName || c.displayName || c.name)
 
     const existingNavLinks = (data.navLinks ?? []) as Array<{ label: string; href: string; showDropdown: boolean; categoryFilter?: string }>
     const existingByLabel = new Map(existingNavLinks.map(l => [l.label, l]))
@@ -246,7 +246,7 @@ async function syncRu7CategoriesFromApi() {
       query: { companyId: selectedCompanyId.value ?? undefined },
     })
     const tree = buildCategoryTree(flat)
-    const labelFor = (c: FlatCategory) => String(c.headlessName || c.displayName || c.name)
+    const labelFor = (c: CategoryNode) => String(c.headlessName || c.displayName || c.name)
 
     const existingCategories = (data.categories ?? []) as Array<{ imageUrl: string; name: string; categoryUrl?: string }>
     const existingByName = new Map(existingCategories.map(c => [c.name, c]))
@@ -287,7 +287,7 @@ async function syncRu10CategoriesFromApi() {
       query: { companyId: selectedCompanyId.value ?? undefined },
     })
     const tree = buildCategoryTree(flat)
-    const labelFor = (c: FlatCategory) => String(c.headlessName || c.displayName || c.name)
+    const labelFor = (c: CategoryNode) => String(c.headlessName || c.displayName || c.name)
 
     const existingCategories = (data.categories ?? []) as Array<{ imageUrl: string; name: string; categoryUrl?: string }>
     const existingByName = new Map(existingCategories.map(c => [c.name, c]))
@@ -1474,15 +1474,15 @@ onUnmounted(() => {
                         </div>
                       </template>
 
-                      <!-- text / url / number / plain textarea: instant update on every keystroke -->
+                      <!-- text / url / plain textarea: instant update on every keystroke.
+                           'number' subfields never reach here — the v-else-if above
+                           (subField.type === 'number') always handles them first. -->
                       <template v-else>
                         <div class="relative">
                           <input type="text" :value="typeof item[subField.key] === 'object' ? '' : (item[subField.key] ?? '')"
                             :placeholder="subField.placeholder ?? ''"
-                            :class="subField.type === 'number' ? 'pr-7' : ''"
                             class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-blue-400"
                             @input="debouncedUpdateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value)" />
-                          <span v-if="subField.type === 'number'" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">{{ subField.unit ?? 'px' }}</span>
                         </div>
                       </template>
                     </div>

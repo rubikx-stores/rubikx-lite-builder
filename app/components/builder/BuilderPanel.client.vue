@@ -2,6 +2,7 @@
 import { nextTick, ref, computed } from 'vue'
 import componentData from '#lib/component'
 import themesData from '#lib/themes'
+import ComponentPreviewFrame from './ComponentPreviewFrame.client.vue'
 import { getPageBuilder, usePageBuilderModal, usePageBuilderStateStore } from '@myissue/vue-website-page-builder'
 import { NAVBAR_TITLES, FOOTER_TITLES } from '~/composables/useGlobalSections'
 import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
@@ -10,6 +11,17 @@ import { FONT_FAMILY_OPTIONS } from '~/composables/editor/fontFields'
 const selectedCompanyId = useState<number | null>('selectedCompanyId')
 
 const { themeRegistry, applyTheme } = useThemes()
+
+// A theme has no single html_code of its own — it's a list of sections
+// (navbar/hero/products/footer/...), each already carrying its own real
+// html_code (see themes-data.ts). Concatenating them in order reproduces
+// exactly what applyTheme() actually adds to the canvas, so the live preview
+// shows the real homepage layout rather than a hand-drawn SVG thumbnail —
+// same ComponentPreviewFrame used for the Components grid, just fed a
+// longer page.
+function themeSectionsHtml(theme: { sections: { html_code: string }[] }): string {
+  return theme.sections.map(s => s.html_code).join('')
+}
 const { layoutComponentRegistry } = useLayouts()
 const { helperComponentBlocks } = useHelperBlocks()
 const { closeAddComponentModal } = usePageBuilderModal()
@@ -69,9 +81,13 @@ const categories = computed(() => {
 
 const filteredComponents = computed(() => {
   const libData = componentData[0]?.components?.data ?? []
-  // Merge custom layout components + library components into one list
-  const customItems = Object.values(layoutComponentRegistry).flat()
-  const all = [...customItems, ...libData]
+  // Merge custom layout components + library components into one list.
+  // Registry items are tagged _livePreview so the card grid renders a real
+  // scaled-down iframe preview for them instead of their static cover_image
+  // SVG — they're guaranteed inline-style-only (no Tailwind), unlike the
+  // library items, so they render correctly with no stylesheet in the iframe.
+  const customItems = Object.values(layoutComponentRegistry).flat().map(c => ({ ...c, _livePreview: true as const }))
+  const all: ((typeof customItems)[number] | ((typeof libData)[number] & { _livePreview?: boolean }))[] = [...customItems, ...libData]
   return selectedCategory.value === 'All'
     ? all
     : all.filter((c) => c.category === selectedCategory.value)
@@ -327,56 +343,60 @@ async function handleApplyTheme(themeId: string) {
             </button>
           </div>
 
-          <div class="min-h-[96rem]">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-4">
 
-              <!-- Registry themes — filtered by selected category -->
-              <template v-if="Object.keys(filteredRegistryThemes).length > 0">
+            <!-- Registry themes — filtered by selected category -->
+            <template v-if="Object.keys(filteredRegistryThemes).length > 0">
+              <div
+                v-for="(theme, id) in filteredRegistryThemes"
+                :key="id"
+                class="flex flex-col border-solid border border-gray-400 overflow-hidden hover:border-myPrimaryLinkColor duration-100 cursor-pointer max-h-[30rem]"
+                @click="handleApplyTheme(String(id))"
+              >
                 <div
-                  v-for="(theme, id) in filteredRegistryThemes"
-                  :key="id"
-                  class="border-solid border border-gray-400 overflow-hidden hover:border-myPrimaryLinkColor duration-100 cursor-pointer max-h-[30rem]"
-                  @click="handleApplyTheme(String(id))"
+                  class="flex-1 overflow-hidden whitespace-pre-line border-0 border-solid border-b border-gray-200 py-2 px-2"
+                >
+                  <!-- Live preview of the real homepage (navbar + hero +
+                       products + footer, concatenated) instead of a
+                       hand-drawn SVG thumbnail — same mechanism as the
+                       Components grid. flex-1 (replacing the old separate
+                       spacer div) grows this box to fill the row's common
+                       height, so the border-b divider lines up across every
+                       card in the row instead of sitting right under each
+                       preview's own (different) content height. -->
+                  <ComponentPreviewFrame :html="themeSectionsHtml(theme)" />
+                </div>
+                <div class="p-3">
+                  <h4 class="text-sm font-normal text-gray-900 lg:text-base">{{ theme.meta.name }}</h4>
+                  <div class="text-xs font-normal text-gray-900 pt-2">{{ theme.meta.description }}</div>
+                </div>
+              </div>
+            </template>
+
+            <!-- Library themes — shown when any match the selected category -->
+            <template v-if="filteredLibThemes.length > 0">
+              <div
+                v-for="theme in filteredLibThemes"
+                :key="theme.title"
+                class="flex flex-col border-solid border border-gray-400 overflow-hidden hover:border-myPrimaryLinkColor duration-100 cursor-pointer max-h-[30rem]"
+                @click="handleDropLibTheme(theme.html_code)"
+              >
+                <div
+                  class="overflow-hidden whitespace-pre-line border-0 border-solid border-b border-gray-200 py-2 px-2"
                 >
                   <div
-                    class="overflow-hidden whitespace-pre-line flex-1 h-auto border-0 border-solid border-b border-gray-200 py-2 px-2"
-                  >
-                    <div
-                      class="w-64 h-96 object-cover cursor-pointer bg-white mx-auto flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-top"
-                      v-html="theme.meta.cover_image"
-                    />
-                  </div>
-                  <div class="p-3">
-                    <h4 class="text-sm font-normal text-gray-900 lg:text-base">{{ theme.meta.name }}</h4>
-                    <div class="text-xs font-normal text-gray-900 pt-2">{{ theme.meta.description }}</div>
-                  </div>
+                    class="w-64 h-96 object-cover cursor-pointer bg-white mx-auto flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-top"
+                    v-html="theme.cover_image"
+                  />
                 </div>
-              </template>
-
-              <!-- Library themes — shown when any match the selected category -->
-              <template v-if="filteredLibThemes.length > 0">
-                <div
-                  v-for="theme in filteredLibThemes"
-                  :key="theme.title"
-                  class="border-solid border border-gray-400 overflow-hidden hover:border-myPrimaryLinkColor duration-100 cursor-pointer max-h-[30rem]"
-                  @click="handleDropLibTheme(theme.html_code)"
-                >
-                  <div
-                    class="overflow-hidden whitespace-pre-line flex-1 h-auto border-0 border-solid border-b border-gray-200 py-2 px-2"
-                  >
-                    <div
-                      class="w-64 h-96 object-cover cursor-pointer bg-white mx-auto flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-top"
-                      v-html="theme.cover_image"
-                    />
-                  </div>
-                  <div class="p-3">
-                    <h4 class="text-sm font-normal text-gray-900 lg:text-base">{{ theme.title }}</h4>
-                    <div class="text-xs font-normal text-gray-900 pt-2">Click to add theme</div>
-                  </div>
+                <div class="flex-1" />
+                <div class="p-3">
+                  <h4 class="text-sm font-normal text-gray-900 lg:text-base">{{ theme.title }}</h4>
+                  <div class="text-xs font-normal text-gray-900 pt-2">Click to add theme</div>
                 </div>
-              </template>
+              </div>
+            </template>
 
-            </div>
           </div>
         </div>
       </template>
@@ -423,26 +443,31 @@ async function handleApplyTheme(themeId: string) {
               {{ cat }}
             </button>
           </div>
-          <div class="min-h-[96rem]">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-4">
+            <div
+              v-for="comp in filteredComponents"
+              :key="comp.title"
+              class="flex flex-col border-solid border border-gray-400 overflow-hidden hover:border-myPrimaryLinkColor duration-100 cursor-pointer max-h-96"
+              @click="handleDropComponent({ id: null, html_code: comp.html_code, title: comp.title })"
+            >
               <div
-                v-for="comp in filteredComponents"
-                :key="comp.title"
-                class="border-solid border border-gray-400 overflow-hidden hover:border-myPrimaryLinkColor duration-100 cursor-pointer max-h-96"
-                @click="handleDropComponent({ id: null, html_code: comp.html_code, title: comp.title })"
+                class="flex-1 overflow-hidden whitespace-pre-line border-0 border-solid border-b border-gray-200 py-2 px-2"
               >
+                <!-- flex-1 grows the preview to the row's shared height, so the border-b divider lines up across every card. -->
+                <ComponentPreviewFrame
+                  v-if="comp._livePreview"
+                  :html="comp.html_code"
+                  :min-height="comp.category === 'Announcement Bar' || comp.category === 'Products' ? 90 : 48"
+                />
                 <div
-                  class="overflow-hidden whitespace-pre-line flex-1 h-auto border-0 border-solid border-b border-gray-200 py-2 px-2"
-                >
-                  <div
-                    class="w-64 h-64 object-cover cursor-pointer bg-white mx-auto flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-top"
-                    v-html="comp.cover_image"
-                  />
-                </div>
-                <div class="p-3">
-                  <h4 class="text-sm font-normal text-gray-900 lg:text-base">{{ comp.title }}</h4>
-                  <div class="text-xs font-normal text-gray-900 pt-2">Click to add component</div>
-                </div>
+                  v-else
+                  class="w-full h-72 cursor-pointer bg-white flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-top"
+                  v-html="comp.cover_image"
+                />
+              </div>
+              <div class="p-3">
+                <h4 class="text-sm font-normal text-gray-900 lg:text-base">{{ comp.title }}</h4>
+                <div class="text-xs font-normal text-gray-900 pt-2">Click to add component</div>
               </div>
             </div>
           </div>

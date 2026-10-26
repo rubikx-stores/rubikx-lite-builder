@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PageBuilder, getPageBuilder } from '@myissue/vue-website-page-builder'
+import { PageBuilder, getPageBuilder, usePageBuilderStateStore } from '@myissue/vue-website-page-builder'
 import type { PageBuilderConfig } from '@myissue/vue-website-page-builder'
 import BuilderPanel from './BuilderPanel.client.vue'
 import EditorSidebar from './EditorSidebar.client.vue'
@@ -66,6 +66,13 @@ const selectedCompanyId = useState<number | null>('selectedCompanyId')
 const showVersionModal = ref(false)
 const selectedVersion = ref(1)
 const saveInFlight = ref(false)
+
+// Shared with editor.vue (the "← Pages" link) so it can warn before
+// navigating away from an edit that was never actually persisted to the
+// backend. Cleared only once confirmSave() below actually succeeds —
+// clicking the library's own Save button just writes to localStorage/undo
+// history, it doesn't count as "saved" for this purpose.
+const hasUnsavedChanges = useState<boolean>('hasUnsavedChanges', () => false)
 
 async function handleSaveClick() {
   if (saveInFlight.value || !props.pageId) return
@@ -183,6 +190,7 @@ async function confirmSave() {
     if (saves.length === 0) {
       console.warn('[CMS] Nothing to save — canvas is empty')
       showVersionModal.value = false
+      hasUnsavedChanges.value = false
       await navigateTo('/')
       return
     }
@@ -198,6 +206,7 @@ async function confirmSave() {
     if (canEditGlobals && footerSections.length > 0) pageHtmlCache.value['global-footer'] = toHtml(footerSections)
 
     showVersionModal.value = false
+    hasUnsavedChanges.value = false
   } catch (error) {
     console.error('[CMS] Save error:', error)
   } finally {
@@ -392,7 +401,21 @@ onMounted(async () => {
   // Capture-phase so we intercept before the builder's own click handler
   document.addEventListener('click', handleProductTileClick, true)
   document.addEventListener('click', blockBuilderAnchors, true)
+
+  // Marks the page dirty on every real edit. historyIndex is the builder's
+  // own undo-stack position (also what drives the toolbar's "n/n" counter) —
+  // it only moves on an actual content change or an undo/redo, both of which
+  // leave the live canvas different from whatever is currently persisted on
+  // the backend. Set up only now (after the save button exists, i.e. the
+  // builder has finished loading this page's saved content) so restoring the
+  // existing page on open doesn't itself flag as unsaved.
+  const pageBuilderStateStore = usePageBuilderStateStore() as any
+  watch(() => pageBuilderStateStore.getHistoryIndex, () => {
+    hasUnsavedChanges.value = true
+  })
 })
+
+defineExpose({ triggerSave: handleSaveClick })
 </script>
 
 <template>

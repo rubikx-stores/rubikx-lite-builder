@@ -46,15 +46,6 @@ export function renderDynamicCategoriesRow(data: {
 }
 
 
-export const megaMenuHeaderSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 32">
-  <rect fill="#394152" x="0" y="0" width="277.5" height="32"/>
-  <rect fill="#718096" x="8"   y="12" width="36" height="8"/>
-  <rect fill="#718096" x="95"  y="13" width="20" height="6"/>
-  <rect fill="#718096" x="122" y="13" width="20" height="6"/>
-  <rect fill="#718096" x="149" y="13" width="20" height="6"/>
-  <rect fill="#718096" x="208" y="12" width="26" height="8"/>
-  <rect fill="#718096" x="240" y="12" width="26" height="8"/>
-</svg>`
 
 export interface MegaMenuProduct { id: number; label: string; href: string; image?: string; price?: number }
 export interface MegaMenuGroup   { label: string; href: string; products: MegaMenuProduct[] }
@@ -463,17 +454,6 @@ ${hasMegaMenu ? '<div class="ru-pd"></div>' : ''}
 ${megaScript}</section>`
 }
 
-export const ru3MegaHeaderSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 32">
-  <rect fill="#111827" x="0" y="0" width="277.5" height="32"/>
-  <rect fill="#718096" x="8"   y="12" width="36" height="8"/>
-  <rect fill="#718096" x="95"  y="13" width="16" height="6"/>
-  <rect fill="#718096" x="118" y="13" width="16" height="6"/>
-  <rect fill="#718096" x="141" y="13" width="16" height="6"/>
-  <rect fill="#718096" x="164" y="13" width="16" height="6"/>
-  <rect fill="#718096" x="187" y="13" width="16" height="6"/>
-  <rect fill="#718096" x="210" y="13" width="16" height="6"/>
-  <rect fill="#718096" x="240" y="12" width="30" height="8"/>
-</svg>`
 
 export interface OverflowLink { label: string; href: string; newTab?: boolean }
 export interface Ru3NavLink { label: string; href: string; showDropdown: boolean; categoryFilter?: string; newTab?: boolean }
@@ -888,18 +868,6 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
 </section>`
 }
 
-export const ru4NavbarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 40">
-  <rect fill="#374151" x="0" y="0" width="277.5" height="40"/>
-  <rect fill="#ffffff" x="8" y="14" width="10" height="10" rx="5"/>
-  <rect fill="#ffffff" x="22" y="15" width="42" height="8" rx="1"/>
-  <rect fill="#9ca3af" x="100" y="16" width="20" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="128" y="16" width="18" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="154" y="16" width="30" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="200" y="17" width="20" height="5" rx="1"/>
-  <rect fill="#9ca3af" x="224" y="17" width="26" height="5" rx="1"/>
-  <circle fill="none" stroke="#ffffff" stroke-width="1.5" cx="258" cy="19.5" r="5"/>
-  <rect fill="#ffffff" x="266" y="15" width="8" height="9" rx="1"/>
-</svg>`
 
 export interface Ru4NavLink { label: string; url: string; visible?: boolean; newTab?: boolean }
 
@@ -1218,21 +1186,6 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
 </section>`
 }
 
-export const ru5DynamicNavbarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 48">
-  <rect fill="#ffffff" x="0" y="0" width="277.5" height="48"/>
-  <circle fill="#394152" cx="14" cy="12" r="6"/>
-  <rect fill="#394152" x="24" y="9" width="50" height="6" rx="1"/>
-  <rect fill="#e5e7eb" x="120" y="8" width="90" height="9" rx="4"/>
-  <rect fill="#394152" x="222" y="7" width="24" height="10" rx="2"/>
-  <rect fill="#1e3a5f" x="250" y="7" width="24" height="10" rx="2"/>
-  <line x1="0" y1="24" x2="277.5" y2="24" stroke="#e5e7eb" stroke-width="1"/>
-  <rect fill="#718096" x="8" y="32" width="24" height="6"/>
-  <rect fill="#9ca3af" x="42" y="32" width="20" height="6"/>
-  <rect fill="#9ca3af" x="70" y="32" width="34" height="6"/>
-  <rect fill="#9ca3af" x="112" y="32" width="26" height="6"/>
-  <rect fill="#9ca3af" x="146" y="32" width="20" height="6"/>
-  <rect fill="#9ca3af" x="174" y="32" width="16" height="6"/>
-</svg>`
 
 // A hand-authored nav link whose dropdown shows one column per selected
 // logo GROUP (Odoo StoreProductTemplate.productVariants[].logoIds[].
@@ -1868,19 +1821,6 @@ ${responsiveStyle}
 // loadSearch/loadAuthState/loadCartCount handlers every other navbar already
 // relies on, for the same reason — this file only renders markup those
 // existing handlers already know how to find.
-export const ru8NavbarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 40">
-  <rect fill="#1f2937" x="0" y="0" width="277.5" height="40"/>
-  <rect fill="#ffffff" x="8" y="8" width="10" height="10" rx="5"/>
-  <rect fill="#ffffff" x="22" y="9" width="42" height="8" rx="1"/>
-  <rect fill="#374151" x="100" y="6" width="120" height="10" rx="2"/>
-  <rect fill="#2563eb" x="220" y="6" width="16" height="10" rx="2"/>
-  <circle fill="none" stroke="#ffffff" stroke-width="1.5" cx="258" cy="11" r="5"/>
-  <rect fill="#9ca3af" x="8" y="26" width="20" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="34" y="26" width="20" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="60" y="26" width="24" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="90" y="26" width="24" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="120" y="26" width="30" height="6" rx="1"/>
-</svg>`
 
 export interface Ru8NavLink {
   label: string
@@ -2360,15 +2300,6 @@ ${responsiveStyle}
 // a two-option dropdown there would be a much bigger, shared-behavior change
 // affecting every other navbar block that already uses it).
 
-export const ru6HamburgerNavbarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 48">
-  <rect fill="#111827" width="277.5" height="48"/>
-  <rect fill="#718096" x="12" y="20" width="20" height="2.5" rx="1"/>
-  <rect fill="#718096" x="12" y="26" width="20" height="2.5" rx="1"/>
-  <circle fill="#718096" cx="130" cy="20" r="7"/>
-  <rect fill="#718096" x="142" y="17" width="70" height="6" rx="1"/>
-  <circle fill="none" stroke="#718096" stroke-width="1.5" cx="225" cy="24" r="6"/>
-  <rect fill="none" stroke="#718096" stroke-width="1.5" x="243" y="16" width="26" height="16" rx="3"/>
-</svg>`
 
 export interface Ru6HamburgerNavbarData {
   fontFamily: string
@@ -2760,16 +2691,6 @@ ${menuLinkHoverStyle}
 // a full-width in-flow row directly under the main bar (not a floating
 // popup) — same icon-swap on the toggle button, different reveal.
 
-export const ru7NavbarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 70">
-  <rect fill="#111827" x="0" y="0" width="277.5" height="16"/>
-  <rect fill="#9ca3af" x="240" y="6" width="26" height="5" rx="1"/>
-  <rect fill="#ffffff" x="0" y="16" width="277.5" height="54"/>
-  <circle fill="#374151" cx="16" cy="43" r="6"/>
-  <rect fill="#374151" x="26" y="39" width="44" height="8" rx="1"/>
-  <rect fill="#9ca3af" x="196" y="40" width="30" height="6" rx="1"/>
-  <circle fill="none" stroke="#9ca3af" stroke-width="1.5" cx="238" cy="43" r="6"/>
-  <rect fill="none" stroke="#9ca3af" stroke-width="1.5" x="254" y="35" width="16" height="14" rx="2"/>
-</svg>`
 
 export interface Ru7NavbarData {
   fontFamily: string
@@ -3138,25 +3059,6 @@ ${searchRow}
 </section>`
 }
 
-export const ru1FormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
-  <rect fill="#394152" x="0" y="10" width="88" height="7"/>
-  <rect fill="#394152" x="0" y="24" width="118" height="3"/>
-  <rect fill="#394152" x="0" y="30" width="112" height="3"/>
-  <rect fill="#394152" x="0" y="36" width="105" height="3"/>
-  <rect fill="#394152" x="0" y="42" width="88" height="3"/>
-  <rect fill="#394152" x="0" y="55" width="5" height="5"/>
-  <rect fill="#394152" x="9" y="56" width="82" height="3"/>
-  <rect fill="#394152" x="0" y="66" width="5" height="5"/>
-  <rect fill="#394152" x="9" y="67" width="62" height="3"/>
-  <rect fill="#394152" x="0" y="77" width="5" height="5"/>
-  <rect fill="#394152" x="9" y="78" width="74" height="3"/>
-  <rect fill="#394152" x="148" y="10" width="55" height="11"/>
-  <rect fill="#394152" x="209" y="10" width="55" height="11"/>
-  <rect fill="#394152" x="148" y="27" width="116" height="10"/>
-  <rect fill="#394152" x="148" y="43" width="116" height="10"/>
-  <rect fill="#394152" x="148" y="59" width="116" height="22"/>
-  <rect fill="#394152" x="204" y="88" width="60" height="10"/>
-</svg>`
 
 // ─── Shared contact-form field shape ───────────────────────────────────────────
 // Used by Ru1-Form, Ru2-Form, and Ru3-Form + Banner. `name` is the technical
@@ -3513,28 +3415,6 @@ ${responsiveStyle}
 
 // ─── Ru2-Form ─────────────────────────────────────────────────────────────────
 
-export const ru2FormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
-  <rect fill="#1f2937" width="277.5" height="105"/>
-  <rect fill="#374151" x="0" y="0" width="110" height="105"/>
-  <rect fill="#9ca3af" x="12" y="14" width="30" height="3" rx="1"/>
-  <rect fill="#d1d5db" x="12" y="22" width="75" height="6" rx="1"/>
-  <rect fill="#6b7280" x="12" y="32" width="85" height="2.5" rx="1"/>
-  <rect fill="#6b7280" x="12" y="37" width="78" height="2.5" rx="1"/>
-  <rect fill="#4b5563" x="12" y="50" width="32" height="32" rx="6"/>
-  <rect fill="#9ca3af" x="18" y="56" width="20" height="2" rx="1"/>
-  <rect fill="#6b7280" x="18" y="61" width="16" height="2" rx="1"/>
-  <rect fill="#4b5563" x="50" y="50" width="32" height="32" rx="6"/>
-  <rect fill="#9ca3af" x="56" y="56" width="20" height="2" rx="1"/>
-  <rect fill="#6b7280" x="56" y="61" width="16" height="2" rx="1"/>
-  <rect fill="#4b5563" x="12" y="88" width="18" height="8" rx="4"/>
-  <rect fill="#4b5563" x="34" y="88" width="18" height="8" rx="4"/>
-  <rect fill="#374151" x="122" y="14" width="70" height="7" rx="2"/>
-  <rect fill="#374151" x="152" y="14" width="70" height="7" rx="2"/>
-  <rect fill="#374151" x="122" y="28" width="143" height="7" rx="2"/>
-  <rect fill="#374151" x="122" y="42" width="143" height="7" rx="2"/>
-  <rect fill="#374151" x="122" y="56" width="143" height="18" rx="2"/>
-  <rect fill="#4b5563" x="196" y="82" width="69" height="10" rx="4"/>
-</svg>`
 
 export interface Ru2FormInfoItem {
   icon: string
@@ -3807,35 +3687,8 @@ ${responsiveStyle}
 // contact form (Name, Phone, Email, Subject, Question) and a submit button
 // whose width (full/auto) and horizontal alignment are configurable.
 
-export const ru3FormBannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 160">
-  <rect fill="#394152" width="277.5" height="160"/>
-  <rect fill="#1c2434" width="277.5" height="34"/>
-  <rect fill="#4a5568" x="12" y="12" width="110" height="11" rx="1"/>
-  <rect fill="#5a6475" x="12" y="46" width="70" height="6" rx="1"/>
-  <rect fill="#2d3648" x="12" y="56" width="253.5" height="14" rx="3"/>
-  <rect fill="#5a6475" x="12" y="76" width="55" height="6" rx="1"/>
-  <rect fill="#2d3648" x="12" y="86" width="253.5" height="14" rx="3"/>
-  <rect fill="#5a6475" x="12" y="106" width="65" height="6" rx="1"/>
-  <rect fill="#2d3648" x="12" y="116" width="253.5" height="14" rx="3"/>
-  <rect fill="#718096" x="12" y="138" width="253.5" height="14" rx="3"/>
-</svg>`
 
-export const ru3BannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 90">
-  <rect fill="#394152" width="277.5" height="90"/>
-  <rect fill="#1c2434" width="277.5" height="34"/>
-  <rect fill="#4a5568" x="12" y="12" width="110" height="11" rx="1"/>
-  <rect fill="#5a6475" x="12" y="46" width="55" height="6" rx="1"/>
-  <rect fill="#718096" x="12" y="60" width="110" height="16" rx="3"/>
-</svg>`
 
-export const ru3ContactFormSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 130">
-  <rect fill="#ffffff" width="277.5" height="130"/>
-  <rect fill="#9ca3af" x="12" y="14" width="55" height="6" rx="1"/>
-  <rect fill="#e5e7eb" x="12" y="24" width="253.5" height="14" rx="3"/>
-  <rect fill="#9ca3af" x="12" y="50" width="65" height="6" rx="1"/>
-  <rect fill="#e5e7eb" x="12" y="60" width="253.5" height="14" rx="3"/>
-  <rect fill="#0a1e5e" x="12" y="96" width="90" height="24" rx="4"/>
-</svg>`
 
 export type Ru3FormBannerFieldItem = ContactFormFieldItem
 
@@ -4375,30 +4228,17 @@ export function renderRu3FormBanner(data: Ru3FormBannerData): string {
 
 // ─── Ru1-Footer ───────────────────────────────────────────────────────────────
 
-export const ru1FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
-  <rect fill="#1f2937" x="0" y="0" width="277.5" height="100"/>
-  <rect fill="#9ca3af" x="10" y="10" width="38" height="5" rx="1"/>
-  <rect fill="#6b7280" x="10" y="20" width="30" height="3" rx="1"/>
-  <rect fill="#6b7280" x="10" y="26" width="36" height="3" rx="1"/>
-  <rect fill="#6b7280" x="10" y="32" width="28" height="3" rx="1"/>
-  <rect fill="#6b7280" x="10" y="38" width="33" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="100" y="10" width="38" height="5" rx="1"/>
-  <rect fill="#6b7280" x="100" y="20" width="55" height="3" rx="1"/>
-  <rect fill="#6b7280" x="100" y="26" width="48" height="3" rx="1"/>
-  <rect fill="#6b7280" x="100" y="32" width="52" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="195" y="10" width="38" height="5" rx="1"/>
-  <rect fill="#6b7280" x="195" y="20" width="42" height="3" rx="1"/>
-  <rect fill="#6b7280" x="195" y="26" width="35" height="3" rx="1"/>
-  <rect fill="#6b7280" x="195" y="32" width="38" height="3" rx="1"/>
-  <rect fill="#374151" x="10" y="70" width="257.5" height="1"/>
-  <rect fill="#4b5563" x="89" y="80" width="100" height="3" rx="1"/>
-</svg>`
 
 export interface Ru1FooterData {
   usefulLinks: { label: string; url: string; newTab?: boolean }[]
   aboutText: string
   contactEmail: string
   contactPhone: string
+  contactUsLabel: string
+  contactUsUrl: string
+  showConnectIcons: boolean
+  connectIconColor: string
+  connectIconStyle: 'outline' | 'filled'
   showSocials: boolean
   socials: { href: string }[]
   copyright: string
@@ -4425,6 +4265,8 @@ export interface Ru1FooterData {
   headingFont: string
   bodyFont: string
   copyrightFont: string
+  headingFontSize: number
+  textFontSize: number
 }
 
 export const ru1FooterDefaults: Ru1FooterData = {
@@ -4437,6 +4279,11 @@ export const ru1FooterDefaults: Ru1FooterData = {
   aboutText: 'This site is for employees to order branded apparel and accessories.',
   contactEmail: 'support@yourdomain.com',
   contactPhone: '+1 000-000-0000',
+  contactUsLabel: 'Contact us',
+  contactUsUrl: '/contactus',
+  showConnectIcons: false,
+  connectIconColor: '',
+  connectIconStyle: 'outline',
   showSocials: true,
   socials: [],
   copyright: '© Your Store. All rights reserved.',
@@ -4463,6 +4310,8 @@ export const ru1FooterDefaults: Ru1FooterData = {
   headingFont: '',
   bodyFont: '',
   copyrightFont: '',
+  headingFontSize: 12,
+  textFontSize: 14,
 }
 
 export const ru1FooterFields: FieldConfig[] = [
@@ -4478,8 +4327,13 @@ export const ru1FooterFields: FieldConfig[] = [
       { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
     ],
   },
+  { key: 'contactUsLabel', label: 'Contact Us Label', type: 'text' },
+  { key: 'contactUsUrl', label: 'Contact Us URL', type: 'url' },
   { key: 'contactEmail', label: 'Contact Email',      type: 'text'   },
   { key: 'contactPhone', label: 'Contact Phone',      type: 'text'   },
+  { key: 'showConnectIcons', label: 'Show Icons', type: 'toggle' },
+  { key: 'connectIconColor', label: 'Icon Color', type: 'color', visibleIf: (d: any) => d.showConnectIcons === true },
+  { key: 'connectIconStyle', label: 'Icon Style', type: 'select', options: ['outline', 'filled'], visibleIf: (d: any) => d.showConnectIcons === true },
   { key: 'copyright',    label: 'Copyright',          type: 'textarea'   },
   { key: 'copyrightAlign', label: 'Align Text', type: 'select', options: ['left', 'center', 'right'] },
   fontField('headingFont', 'Heading Font'),
@@ -4521,7 +4375,19 @@ export const ru1FooterFields: FieldConfig[] = [
   { key: '_h_layout', label: 'Layout', type: 'header' },
   { key: 'paddingY',     label: 'Vertical Padding',   type: 'number', unit: 'px', step: 4, placeholder: '48' },
   { key: 'paddingX',     label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '16' },
+
+  { key: '_h_textsize', label: 'Text Size', type: 'header' },
+  { key: 'headingFontSize', label: 'Heading Text Size', type: 'number', unit: 'px', step: 1, placeholder: '12' },
+  { key: 'textFontSize', label: 'Body Text Size', type: 'number', unit: 'px', step: 1, placeholder: '14' },
 ]
+
+const ru1lFooterIconStyle = 'height:16px;width:16px;flex-shrink:0;'
+const ru1lFooterIconChatOutline = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="${ru1lFooterIconStyle}" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/></svg>`
+const ru1lFooterIconEnvelopeOutline = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="${ru1lFooterIconStyle}" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>`
+const ru1lFooterIconPhoneOutline = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="${ru1lFooterIconStyle}" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 6.75Z"/></svg>`
+const ru1lFooterIconChatFilled = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="${ru1lFooterIconStyle}" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 0 0 6 21.75a6.721 6.721 0 0 0 3.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.73 3.73 0 0 1-.814 1.686.75.75 0 0 0 .44 1.223ZM8.25 10.875a1.125 1.125 0 1 0 0 2.25 1.125 1.125 0 0 0 0-2.25ZM10.875 12a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0Zm4.125-1.125a1.125 1.125 0 1 0 0 2.25 1.125 1.125 0 0 0 0-2.25Z"/></svg>`
+const ru1lFooterIconEnvelopeFilled = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="${ru1lFooterIconStyle}" aria-hidden="true"><path d="M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3 3 0 0 1-3.144 0L1.5 8.67Z"/><path d="M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908Z"/></svg>`
+const ru1lFooterIconPhoneFilled = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="${ru1lFooterIconStyle}" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 4.5a3 3 0 0 1 3-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 0 1-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 0 0 6.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 0 1 1.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 0 1-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5Z"/></svg>`
 
 export function renderRu1Footer(data: Ru1FooterData): string {
   const bg      = data.bgColor      || '#ffffff'
@@ -4532,9 +4398,11 @@ export function renderRu1Footer(data: Ru1FooterData): string {
     ? `border-top:${data.borderWidth ?? 1}px ${data.borderStyle} ${data.borderColor || '#e5e7eb'};`
     : ''
 
-  const hStyle = `font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:${heading};margin-bottom:16px;${fontCss(data.headingFont, data.fontFamily)}`
-  const pStyle = `font-size:14px;color:${text};line-height:1.6;${fontCss(data.bodyFont, data.fontFamily)}`
-  const aStyle = `font-size:14px;color:${link};text-decoration:none;${fontCss(data.bodyFont, data.fontFamily)}`
+  const headingFontSize = data.headingFontSize || 12
+  const textFontSize = data.textFontSize || 14
+  const hStyle = `font-size:${headingFontSize}px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:${heading};margin-bottom:16px;${fontCss(data.headingFont, data.fontFamily)}`
+  const pStyle = `font-size:${textFontSize}px;color:${text};line-height:1.6;${fontCss(data.bodyFont, data.fontFamily)}`
+  const aStyle = `font-size:${textFontSize}px;color:${link};text-decoration:none;${fontCss(data.bodyFont, data.fontFamily)}`
 
   const linksCol = `<div style="max-width:320px;">
         <h3 style="${hStyle}">Useful Links</h3>
@@ -4554,11 +4422,21 @@ export function renderRu1Footer(data: Ru1FooterData): string {
   const socialRow = data.showSocials !== false && socialIcons.length
     ? `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;">${socialIcons.join('')}</div>`
     : ''
+  const connectIconsOn = data.showConnectIcons === true
+  const connectIconColor = data.connectIconColor || link
+  const connectIcons = data.connectIconStyle === 'filled'
+    ? { chat: ru1lFooterIconChatFilled, envelope: ru1lFooterIconEnvelopeFilled, phone: ru1lFooterIconPhoneFilled }
+    : { chat: ru1lFooterIconChatOutline, envelope: ru1lFooterIconEnvelopeOutline, phone: ru1lFooterIconPhoneOutline }
+  const connectRow = (iconSvg: string, href: string, label: string) =>
+    label?.trim()
+      ? `<li style="list-style:none;display:flex;align-items:center;gap:8px;">${connectIconsOn ? `<span style="color:${connectIconColor};display:inline-flex;">${iconSvg}</span>` : ''}<a href="${href}" style="${aStyle}">${label}</a></li>`
+      : ''
   const contactCol = `<div style="max-width:320px;">
         <h3 style="${hStyle}">Connect with Us</h3>
         <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;">
-          <li style="list-style:none;"><a href="mailto:${data.contactEmail}" style="${aStyle}">${data.contactEmail}</a></li>
-          <li style="list-style:none;"><a href="tel:${data.contactPhone}" style="${aStyle}">${data.contactPhone}</a></li>
+          ${connectRow(connectIcons.chat, data.contactUsUrl, data.contactUsLabel)}
+          ${connectRow(connectIcons.envelope, `mailto:${data.contactEmail}`, data.contactEmail)}
+          ${connectRow(connectIcons.phone, `tel:${data.contactPhone}`, data.contactPhone)}
         </ul>
         ${socialRow}
       </div>`
@@ -4608,14 +4486,6 @@ export function renderRu1Footer(data: Ru1FooterData): string {
 
 // ─── Ru2-Footer ───────────────────────────────────────────────────────────────
 
-export const ru2FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 48">
-  <rect fill="#1f2937" x="0" y="0" width="277.5" height="48"/>
-  <rect fill="#9ca3af" x="12" y="16" width="90" height="4" rx="1"/>
-  <rect fill="#6b7280" x="12" y="24" width="65" height="3" rx="1"/>
-  <circle cx="222" cy="24" r="7" fill="#374151"/>
-  <circle cx="238" cy="24" r="7" fill="#374151"/>
-  <circle cx="254" cy="24" r="7" fill="#374151"/>
-</svg>`
 
 export interface Ru2FooterData {
   copyright: string
@@ -4703,17 +4573,6 @@ export function renderRu2Footer(data: Ru2FooterData): string {
 // watermark anchors the bottom. Every piece of copy (brand name included) is
 // a plain configurable field — nothing is hardcoded to any one brand.
 
-export const ru3FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 140">
-  <rect fill="#1f2937" x="0" y="0" width="277.5" height="140"/>
-  <circle cx="20" cy="18" r="7" fill="#9ca3af"/>
-  <rect fill="#9ca3af" x="34" y="14" width="60" height="7" rx="1"/>
-  <rect fill="#6b7280" x="14" y="32" width="90" height="4" rx="1"/>
-  <rect fill="#6b7280" x="14" y="39" width="70" height="4" rx="1"/>
-  <rect fill="#6b7280" x="14" y="54" width="50" height="3" rx="1"/>
-  <rect fill="#6b7280" x="14" y="62" width="35" height="3" rx="1"/>
-  <rect fill="#6b7280" x="14" y="70" width="65" height="3" rx="1"/>
-  <rect fill="#374151" x="14" y="100" width="249.5" height="30" rx="2"/>
-</svg>`
 
 export interface Ru3FooterLink {
   label: string
@@ -4966,15 +4825,6 @@ export function renderRu3Footer(data: Ru3FooterData): string {
 // on the other. No columns/categories — everything lives in one flex row
 // that wraps to a centered stack on narrow screens.
 
-export const ru4FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 48">
-  <rect fill="#1f2937" x="0" y="0" width="277.5" height="48"/>
-  <circle cx="18" cy="24" r="8" fill="#ffffff" fill-opacity="0.9"/>
-  <rect fill="#ffffff" fill-opacity="0.9" x="32" y="20" width="46" height="7" rx="1"/>
-  <rect fill="#ffffff" fill-opacity="0.6" x="120" y="21" width="34" height="5" rx="1"/>
-  <rect fill="#ffffff" fill-opacity="0.6" x="160" y="21" width="30" height="5" rx="1"/>
-  <rect fill="#ffffff" fill-opacity="0.6" x="196" y="21" width="24" height="5" rx="1"/>
-  <rect fill="#ffffff" fill-opacity="0.6" x="238" y="21" width="28" height="5" rx="1"/>
-</svg>`
 
 export interface Ru4FooterLink {
   label: string
@@ -5127,14 +4977,6 @@ export function renderRu4Footer(data: Ru4FooterData): string {
 // (and an optional social icons row) — each row independently alignable
 // left/center/right, matching a minimal single-column footer layout.
 
-export const ru5FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 90">
-  <rect fill="#1f2937" x="0" y="0" width="277.5" height="90"/>
-  <circle cx="138.75" cy="20" r="7" fill="#ffffff" fill-opacity="0.9"/>
-  <rect fill="#ffffff" fill-opacity="0.9" x="106" y="45" width="24" height="5" rx="1"/>
-  <rect fill="#ffffff" fill-opacity="0.9" x="134" y="45" width="18" height="5" rx="1"/>
-  <rect fill="#ffffff" fill-opacity="0.9" x="156" y="45" width="14" height="5" rx="1"/>
-  <rect fill="#6b7280" x="90" y="68" width="97.5" height="4" rx="1"/>
-</svg>`
 
 export interface Ru5FooterLink {
   label: string
@@ -5317,13 +5159,6 @@ export function renderRu5Footer(data: Ru5FooterData): string {
 // Two-band footer: a top row with a logo on the left and a single CTA button
 // on the right, and a darker bottom row holding the copyright line.
 
-export const ru6FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 90">
-  <rect fill="#1b2430" x="0" y="0" width="277.5" height="60"/>
-  <rect fill="#9ca3af" x="14" y="24" width="70" height="12" rx="1"/>
-  <rect fill="#f2c14e" x="220" y="20" width="45" height="20" rx="3"/>
-  <rect fill="#12161d" x="0" y="60" width="277.5" height="30"/>
-  <rect fill="#6b7280" x="14" y="72" width="90" height="4" rx="1"/>
-</svg>`
 
 export interface Ru6FooterData {
   fontFamily: string
@@ -5446,15 +5281,6 @@ export function renderRu6Footer(data: Ru6FooterData): string {
 
 // ─── Ru7-Footer ──────────────────────────────────────────────────────────────
 
-export const ru7FooterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
-  <rect fill="#374151" x="0" y="0" width="277.5" height="100"/>
-  <rect fill="#ffffff" x="14" y="14" width="54" height="30" rx="2"/>
-  <rect fill="#1f2937" x="30" y="24" width="22" height="10" rx="1"/>
-  <rect fill="#9ca3af" x="14" y="52" width="70" height="4" rx="1"/>
-  <rect fill="#9ca3af" x="14" y="60" width="60" height="4" rx="1"/>
-  <rect fill="#4b5563" x="14" y="80" width="249.5" height="1"/>
-  <rect fill="#9ca3af" x="106" y="88" width="65" height="4" rx="1"/>
-</svg>`
 
 export interface Ru7FooterData {
   logoUrl: string
@@ -5571,27 +5397,6 @@ export function renderRu7Footer(data: Ru7FooterData): string {
 
 // ─── Ru1-About ───────────────────────────────────────────────────────────────
 
-export const ru1AboutSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
-  <rect fill="#1f2937" width="277.5" height="105"/>
-  <rect fill="#9ca3af" x="89" y="6" width="100" height="6" rx="1"/>
-  <rect fill="#6b7280" x="55" y="17" width="168" height="3" rx="1"/>
-  <rect fill="#6b7280" x="65" y="22" width="148" height="3" rx="1"/>
-  <rect fill="#4b5563" x="106" y="30" width="66" height="7" rx="3"/>
-  <rect fill="#374151" x="0" y="43" width="277.5" height="22"/>
-  <rect fill="#374151" x="30" y="70" width="218" height="28" rx="3"/>
-  <rect fill="#4b5563" x="43" y="75" width="6" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="38" y="84" width="16" height="3" rx="1"/>
-  <rect fill="#6b7280" x="40" y="89" width="12" height="2" rx="1"/>
-  <rect fill="#4b5563" x="104" y="75" width="6" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="99" y="84" width="16" height="3" rx="1"/>
-  <rect fill="#6b7280" x="101" y="89" width="12" height="2" rx="1"/>
-  <rect fill="#4b5563" x="165" y="75" width="6" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="160" y="84" width="16" height="3" rx="1"/>
-  <rect fill="#6b7280" x="162" y="89" width="12" height="2" rx="1"/>
-  <rect fill="#4b5563" x="226" y="75" width="6" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="221" y="84" width="16" height="3" rx="1"/>
-  <rect fill="#6b7280" x="223" y="89" width="12" height="2" rx="1"/>
-</svg>`
 
 export interface Ru1AboutData {
   sectionBgColor: string
@@ -5774,23 +5579,6 @@ export function renderRu1About(data: Ru1AboutData): string {
 
 // ─── Ru2-About ───────────────────────────────────────────────────────────────
 
-export const ru2AboutSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 105">
-  <rect fill="#1f2937" width="277.5" height="105"/>
-  <rect fill="#374151" x="0" y="0" width="130" height="105"/>
-  <rect fill="#9ca3af" x="10" y="12" width="35" height="3" rx="1"/>
-  <rect fill="#d1d5db" x="10" y="20" width="100" height="8" rx="1"/>
-  <rect fill="#6b7280" x="10" y="33" width="110" height="2.5" rx="1"/>
-  <rect fill="#6b7280" x="10" y="38" width="100" height="2.5" rx="1"/>
-  <rect fill="#6b7280" x="10" y="43" width="90" height="2.5" rx="1"/>
-  <rect fill="#4b5563" x="10" y="56" width="48" height="24" rx="4"/>
-  <rect fill="#4b5563" x="66" y="56" width="48" height="24" rx="4"/>
-  <rect fill="#9ca3af" x="14" y="60" width="20" height="4" rx="1"/>
-  <rect fill="#6b7280" x="14" y="67" width="28" height="2.5" rx="1"/>
-  <rect fill="#9ca3af" x="70" y="60" width="20" height="4" rx="1"/>
-  <rect fill="#6b7280" x="70" y="67" width="28" height="2.5" rx="1"/>
-  <rect fill="#4b5563" x="10" y="88" width="50" height="10" rx="4"/>
-  <rect fill="#4b5563" x="138" y="8" width="130" height="89" rx="6"/>
-</svg>`
 
 export interface Ru2AboutTeamMember {
   imageUrl: string
@@ -6116,18 +5904,6 @@ export function renderRu2About(data: Ru2AboutData): string {
 //    Banner isn't an Inline Card (hidden, or set to Top Hero); shares a
 //    two-column row with the Banner card otherwise.
 
-export const ru3AboutBannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 130">
-  <rect fill="#1f2937" width="277.5" height="130"/>
-  <rect fill="#4b5563" width="277.5" height="34"/>
-  <rect fill="#9ca3af" x="12" y="14" width="90" height="10" rx="1"/>
-  <rect fill="#9ca3af" x="12" y="44" width="10" height="10" rx="2"/>
-  <rect fill="#6b7280" x="26" y="47" width="60" height="4" rx="1"/>
-  <rect fill="#6b7280" x="12" y="66" width="130" height="4" rx="1"/>
-  <rect fill="#6b7280" x="12" y="74" width="120" height="4" rx="1"/>
-  <rect fill="#6b7280" x="12" y="82" width="100" height="4" rx="1"/>
-  <rect fill="#6b7280" x="12" y="94" width="60" height="10" rx="4"/>
-  <rect fill="#374151" stroke="#4b5563" x="160" y="54" width="105" height="64" rx="6"/>
-</svg>`
 
 export interface Ru3AboutBannerData {
   fontFamily: string
@@ -6362,22 +6138,6 @@ export function renderRu3AboutBanner(data: Ru3AboutBannerData): string {
 // rich-text description), and a contact highlight strip, finishing with a
 // closing line. Every section is independently toggleable.
 
-export const ru4AboutSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 150">
-  <rect fill="#1f2937" width="277.5" height="150"/>
-  <rect fill="#9ca3af" x="12" y="12" width="90" height="12" rx="1"/>
-  <rect fill="#6b7280" x="12" y="34" width="253.5" height="5" rx="1"/>
-  <rect fill="#6b7280" x="12" y="43" width="230" height="5" rx="1"/>
-  <rect fill="#6b7280" x="12" y="55" width="200" height="5" rx="1"/>
-  <rect fill="#4b5563" x="12" y="68" width="253.5" height="1.5"/>
-  <rect fill="#374151" stroke="#4b5563" x="12" y="80" width="122" height="58" rx="6"/>
-  <rect fill="#374151" stroke="#4b5563" x="143.5" y="80" width="122" height="58" rx="6"/>
-  <rect fill="#6b7280" x="22" y="90" width="18" height="18" rx="5"/>
-  <rect fill="#6b7280" x="153.5" y="90" width="18" height="18" rx="5"/>
-  <rect fill="#9ca3af" x="22" y="115" width="70" height="6" rx="1"/>
-  <rect fill="#9ca3af" x="153.5" y="115" width="70" height="6" rx="1"/>
-  <rect fill="#6b7280" x="22" y="126" width="95" height="4" rx="1"/>
-  <rect fill="#6b7280" x="153.5" y="126" width="95" height="4" rx="1"/>
-</svg>`
 
 export interface Ru4AboutCardItem {
   icon: string
@@ -6594,24 +6354,6 @@ export function renderRu4About(data: Ru4AboutData): string {
 
 // ─── Ru1-FAQ ─────────────────────────────────────────────────────────────────
 
-export const ru1FaqSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 120">
-  <rect fill="#394152" x="0" y="0" width="277.5" height="120"/>
-  <rect fill="#718096" x="10" y="8" width="90" height="9" rx="1"/>
-  <rect fill="#5a6475" x="10" y="20" width="140" height="4" rx="1"/>
-  <rect fill="#5a6475" x="10" y="32" width="257.5" height="1"/>
-  <rect fill="#718096" x="10" y="38" width="80" height="6" rx="1"/>
-  <rect fill="#a0aec0" x="253" y="36" width="10" height="10" rx="1"/>
-  <rect fill="#5a6475" x="10" y="52" width="257.5" height="1"/>
-  <rect fill="#718096" x="10" y="58" width="130" height="6" rx="1"/>
-  <rect fill="#a0aec0" x="253" y="56" width="10" height="10" rx="1"/>
-  <rect fill="#5a6475" x="10" y="72" width="257.5" height="1"/>
-  <rect fill="#718096" x="10" y="78" width="180" height="6" rx="1"/>
-  <rect fill="#a0aec0" x="253" y="76" width="10" height="10" rx="1"/>
-  <rect fill="#5a6475" x="10" y="92" width="257.5" height="1"/>
-  <rect fill="#718096" x="10" y="98" width="220" height="6" rx="1"/>
-  <rect fill="#a0aec0" x="253" y="96" width="10" height="10" rx="1"/>
-  <rect fill="#5a6475" x="10" y="112" width="257.5" height="1"/>
-</svg>`
 
 export interface Ru1FaqData {
   sectionBgColor: string
@@ -6708,12 +6450,6 @@ export const ru1FaqFields: FieldConfig[] = [
 
 // ─── Ru1-Banner ──────────────────────────────────────────────────────────────
 
-export const bannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#1f2937" x="0" y="0" width="277.5" height="80"/>
-  <rect fill="#9ca3af" x="80" y="18" width="118" height="8" rx="1"/>
-  <rect fill="#6b7280" x="96" y="31" width="86" height="4" rx="1"/>
-  <rect fill="#4b5563" x="110" y="44" width="58" height="13" rx="3"/>
-</svg>`
 
 export interface BannerData {
   title: string
@@ -6806,6 +6542,13 @@ function hexToRgba(hex: string, opacity: number): string {
   return `rgba(${r},${g},${b},${opacity})`
 }
 
+// A double quote inside an admin-typed value (e.g. a title used as an image's
+// alt text) closes the attribute early — everything after it then renders as
+// visible stray text next to the element instead of staying inside the tag.
+function escapeAttr(value: string): string {
+  return String(value ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+}
+
 // The rich text editor modal saves a contenteditable div's innerHTML, which
 // browsers leave holding a stray tag (e.g. "<br>") after the user deletes
 // all visible text — so an emptied field is still a truthy, non-empty
@@ -6885,17 +6628,6 @@ export function renderBanner(data: BannerData): string {
 
 // ─── Ru8-Featured-Brands ──────────────────────────────────────────────────────
 
-export const ru8FeaturedBrandsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
-  <rect fill="#1f2937" x="0" y="0" width="277.5" height="100"/>
-  <rect fill="#9ca3af" x="89" y="14" width="100" height="8" rx="1"/>
-  <rect fill="#6b7280" x="99" y="27" width="80" height="4" rx="1"/>
-  <rect fill="#4b5563" x="119" y="38" width="40" height="10" rx="3"/>
-  <rect fill="#6b7280" x="20" y="66" width="40" height="10" rx="1"/>
-  <rect fill="#6b7280" x="72" y="66" width="40" height="10" rx="1"/>
-  <rect fill="#6b7280" x="124" y="66" width="40" height="10" rx="1"/>
-  <rect fill="#6b7280" x="176" y="66" width="40" height="10" rx="1"/>
-  <rect fill="#6b7280" x="228" y="66" width="30" height="10" rx="1"/>
-</svg>`
 
 export interface Ru8BrandItem {
   imageUrl: string
@@ -7013,13 +6745,6 @@ export function renderRu8FeaturedBrands(data: Ru8FeaturedBrandsData): string {
 
 // ─── Ru9-Multi-Banner-Grid ─────────────────────────────────────────────────────
 
-export const ru9MultiBannerGridSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
-  <rect fill="#1f2937" x="0" y="0" width="277.5" height="100"/>
-  <rect fill="#4b5563" x="6" y="6" width="86" height="88"/>
-  <rect fill="#6b7280" x="98" y="6" width="173" height="40"/>
-  <rect fill="#6b7280" x="98" y="52" width="83" height="42"/>
-  <rect fill="#6b7280" x="187" y="52" width="84" height="42"/>
-</svg>`
 
 export interface Ru9BannerItem {
   imageUrl: string
@@ -7256,16 +6981,6 @@ export function renderRu9MultiBannerGrid(data: Ru9MultiBannerGridData): string {
 
 // ─── Ru10-Shop-By-Category ─────────────────────────────────────────────────────
 
-export const ru10ShopByCategorySvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#1f2937" width="277.5" height="80"/>
-  <rect fill="#9ca3af" x="10" y="10" width="90" height="9" rx="1"/>
-  <rect fill="#4b5563" x="216" y="8" width="52" height="16" rx="8"/>
-  <rect fill="#374151" x="10" y="32" width="42" height="42" rx="6"/>
-  <rect fill="#374151" x="60" y="32" width="42" height="42" rx="6"/>
-  <rect fill="#374151" x="110" y="32" width="42" height="42" rx="6"/>
-  <rect fill="#374151" x="160" y="32" width="42" height="42" rx="6"/>
-  <rect fill="#374151" x="210" y="32" width="42" height="42" rx="6"/>
-</svg>`
 
 export interface Ru10CategoryItem {
   imageUrl: string
@@ -7617,21 +7332,6 @@ export function renderRu1Faq(data: Ru1FaqData): string {
 // (where the library intercepts clicks for block selection) the loadFaqAccordion
 // hydration handler drives the toggle manually so it works there too.
 
-export const ru2FaqBannerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 120">
-  <rect fill="#394152" x="0" y="0" width="277.5" height="120"/>
-  <rect fill="#1c2434" x="0" y="0" width="277.5" height="34"/>
-  <rect fill="#4a5568" x="12" y="12" width="120" height="11" rx="1"/>
-  <rect fill="#5a6475" x="12" y="44" width="60" height="5" rx="1"/>
-  <rect fill="#5a6475" x="12" y="58" width="257.5" height="1"/>
-  <rect fill="#718096" x="12" y="64" width="90" height="6" rx="1"/>
-  <rect fill="#a0aec0" x="255" y="63" width="9" height="9" rx="1"/>
-  <rect fill="#5a6475" x="12" y="80" width="257.5" height="1"/>
-  <rect fill="#718096" x="12" y="86" width="120" height="6" rx="1"/>
-  <rect fill="#a0aec0" x="255" y="85" width="9" height="9" rx="1"/>
-  <rect fill="#5a6475" x="12" y="102" width="257.5" height="1"/>
-  <rect fill="#718096" x="12" y="108" width="80" height="6" rx="1"/>
-  <rect fill="#a0aec0" x="255" y="107" width="9" height="9" rx="1"/>
-</svg>`
 
 export interface Ru2FaqBannerData {
   fontFamily: string
@@ -7835,21 +7535,6 @@ export function renderRu2FaqBanner(data: Ru2FaqBannerData): string {
 // the top (showBanner, on by default) is part of this same block/section
 // rather than a separate one.
 
-export const ru3FaqSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 140">
-  <rect fill="#394152" x="0" y="0" width="277.5" height="140"/>
-  <rect fill="#718096" x="10" y="10" width="120" height="10" rx="1"/>
-  <rect fill="#5a6475" x="10" y="24" width="200" height="5" rx="1"/>
-  <rect fill="#a0aec0" x="10" y="42" width="90" height="6" rx="1"/>
-  <rect fill="#5a6475" x="10" y="51" width="257.5" height="2" rx="1"/>
-  <rect fill="#718096" x="10" y="60" width="70" height="5" rx="1"/>
-  <rect fill="#5a6475" x="10" y="67" width="220" height="4" rx="1"/>
-  <rect fill="#718096" x="10" y="78" width="80" height="5" rx="1"/>
-  <rect fill="#5a6475" x="10" y="85" width="200" height="4" rx="1"/>
-  <rect fill="#a0aec0" x="10" y="98" width="90" height="6" rx="1"/>
-  <rect fill="#5a6475" x="10" y="107" width="257.5" height="2" rx="1"/>
-  <rect fill="#718096" x="10" y="116" width="70" height="5" rx="1"/>
-  <rect fill="#5a6475" x="10" y="123" width="220" height="4" rx="1"/>
-</svg>`
 
 export interface Ru3FaqQAItem {
   question: string
@@ -8085,21 +7770,6 @@ export function renderRu3Faq(data: Ru3FaqData): string {
 
 // ─── Ru2-Split-Banner-Collage ────────────────────────────────────────────────
 
-export const ru2SplitBannerCollageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 100">
-  <rect fill="#1f2937" width="277.5" height="100"/>
-  <rect fill="#9ca3af" x="10" y="14" width="50" height="2.5" rx="1"/>
-  <rect fill="#f3f4f6" x="10" y="21" width="95" height="11" rx="1"/>
-  <rect fill="#6b7280" x="10" y="38" width="80" height="2.5" rx="1"/>
-  <rect fill="#6b7280" x="10" y="43" width="65" height="2.5" rx="1"/>
-  <rect fill="#16a34a" x="10" y="54" width="40" height="10" rx="3"/>
-  <rect fill="#374151" x="137" y="3"  width="41" height="42" rx="2"/>
-  <rect fill="#4b5563" x="181" y="3"  width="41" height="14" rx="2"/>
-  <rect fill="#374151" x="225" y="3"  width="50" height="42" rx="2"/>
-  <rect fill="#4b5563" x="181" y="20" width="41" height="40" rx="2"/>
-  <rect fill="#374151" x="137" y="48" width="41" height="49" rx="2"/>
-  <rect fill="#4a5568" x="225" y="48" width="50" height="49" rx="2"/>
-  <rect fill="#4a5568" x="181" y="63" width="41" height="34" rx="2"/>
-</svg>`
 
 export interface Ru2CollageImage {
   src: string
@@ -8246,25 +7916,6 @@ export const ru2SplitBannerCollageFields: FieldConfig[] = [
 
 // ─── Ru1-Stats ───────────────────────────────────────────────────────────────
 
-export const ru1StatsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 60">
-  <rect fill="#1f2937" width="277.5" height="60"/>
-  <rect fill="#374151" x="8"   y="10" width="55" height="40" rx="4"/>
-  <rect fill="#374151" x="73"  y="10" width="55" height="40" rx="4"/>
-  <rect fill="#374151" x="138" y="10" width="55" height="40" rx="4"/>
-  <rect fill="#374151" x="203" y="10" width="55" height="40" rx="4"/>
-  <rect fill="#6b7280" x="20"  y="18" width="16" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="20"  y="25" width="28" height="6" rx="1"/>
-  <rect fill="#6b7280" x="20"  y="35" width="22" height="3" rx="1"/>
-  <rect fill="#6b7280" x="85"  y="18" width="16" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="85"  y="25" width="28" height="6" rx="1"/>
-  <rect fill="#6b7280" x="85"  y="35" width="22" height="3" rx="1"/>
-  <rect fill="#6b7280" x="150" y="18" width="16" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="150" y="25" width="28" height="6" rx="1"/>
-  <rect fill="#6b7280" x="150" y="35" width="22" height="3" rx="1"/>
-  <rect fill="#6b7280" x="215" y="18" width="16" height="3" rx="1"/>
-  <rect fill="#9ca3af" x="215" y="25" width="28" height="6" rx="1"/>
-  <rect fill="#6b7280" x="215" y="35" width="22" height="3" rx="1"/>
-</svg>`
 
 export interface Ru1StatItem {
   iconUrl: string
@@ -8577,22 +8228,6 @@ export function renderRu2SplitBannerCollage(data: Ru2SplitBannerCollageData): st
 
 // ─── Ru2-Stats ───────────────────────────────────────────────────────────────
 
-export const ru2StatsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 70">
-  <rect fill="#1f2937" width="277.5" height="70"/>
-  <rect fill="#374151" x="8" y="8" width="261.5" height="54" rx="6"/>
-  <rect fill="#9ca3af" x="18" y="18" width="55" height="7" rx="1"/>
-  <rect fill="#6b7280" x="18" y="28" width="80" height="3" rx="1"/>
-  <rect fill="#4b5563" x="190" y="16" width="35" height="8" rx="4"/>
-  <rect fill="#6b7280" x="230" y="16" width="35" height="8" rx="12"/>
-  <rect fill="#9ca3af" x="18" y="44" width="20" height="5" rx="1"/>
-  <rect fill="#9ca3af" x="85" y="44" width="20" height="5" rx="1"/>
-  <rect fill="#9ca3af" x="152" y="44" width="20" height="5" rx="1"/>
-  <rect fill="#9ca3af" x="219" y="44" width="20" height="5" rx="1"/>
-  <rect fill="#6b7280" x="18" y="52" width="40" height="3" rx="1"/>
-  <rect fill="#6b7280" x="85" y="52" width="40" height="3" rx="1"/>
-  <rect fill="#6b7280" x="152" y="52" width="40" height="3" rx="1"/>
-  <rect fill="#6b7280" x="219" y="52" width="40" height="3" rx="1"/>
-</svg>`
 
 export interface Ru2StatItem {
   value: string
@@ -8833,27 +8468,6 @@ export function renderRu2Stats(data: Ru2StatsData): string {
 
 // ─── Ru3-Stats ───────────────────────────────────────────────────────────────
 
-export const ru3StatsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 60">
-  <rect fill="#1f2937" width="277.5" height="60"/>
-  <rect fill="#374151" x="8" y="8" width="261.5" height="44" rx="6"/>
-  <circle fill="#4b5563" cx="38" cy="30" r="10"/>
-  <rect fill="#9ca3af" x="35" y="26" width="6" height="8" rx="1"/>
-  <rect fill="#9ca3af" x="54" y="24" width="30" height="4" rx="1"/>
-  <rect fill="#6b7280" x="54" y="31" width="40" height="3" rx="1"/>
-  <rect fill="#6b7280" x="54" y="37" width="35" height="3" rx="1"/>
-  <rect fill="#4b5563" x="108" y="28" width="6" height="6" rx="1" transform="rotate(45 111 31)"/>
-  <circle fill="#4b5563" cx="131" cy="30" r="10"/>
-  <rect fill="#9ca3af" x="128" y="26" width="6" height="8" rx="1"/>
-  <rect fill="#9ca3af" x="147" y="24" width="30" height="4" rx="1"/>
-  <rect fill="#6b7280" x="147" y="31" width="40" height="3" rx="1"/>
-  <rect fill="#6b7280" x="147" y="37" width="35" height="3" rx="1"/>
-  <rect fill="#4b5563" x="201" y="28" width="6" height="6" rx="1" transform="rotate(45 204 31)"/>
-  <circle fill="#4b5563" cx="224" cy="30" r="10"/>
-  <rect fill="#9ca3af" x="221" y="26" width="6" height="8" rx="1"/>
-  <rect fill="#9ca3af" x="240" y="24" width="22" height="4" rx="1"/>
-  <rect fill="#6b7280" x="240" y="31" width="28" height="3" rx="1"/>
-  <rect fill="#6b7280" x="240" y="37" width="24" height="3" rx="1"/>
-</svg>`
 
 export interface Ru3StepItem {
   badgeType: string
@@ -9058,23 +8672,6 @@ export function renderRu3Stats(data: Ru3StatsData): string {
 
 // ─── Ru4-Stats ───────────────────────────────────────────────────────────────
 
-export const ru4StatsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#1f2937" width="277.5" height="80"/>
-  <rect fill="#9ca3af" x="60" y="8" width="157" height="8" rx="1"/>
-  <rect fill="#6b7280" x="80" y="20" width="117" height="4" rx="1"/>
-  <rect fill="#4b5563" x="8" y="36" width="20" height="18" rx="1"/>
-  <rect fill="#6b7280" x="8" y="57" width="55" height="3" rx="1"/>
-  <rect fill="#6b7280" x="8" y="63" width="50" height="3" rx="1"/>
-  <rect fill="#6b7280" x="8" y="69" width="45" height="3" rx="1"/>
-  <rect fill="#374151" x="100" y="36" width="35" height="10" rx="1"/>
-  <rect fill="#6b7280" x="100" y="50" width="28" height="3" rx="1"/>
-  <rect fill="#374151" x="160" y="36" width="35" height="10" rx="1"/>
-  <rect fill="#6b7280" x="160" y="50" width="28" height="3" rx="1"/>
-  <rect fill="#374151" x="100" y="60" width="35" height="10" rx="1"/>
-  <rect fill="#6b7280" x="100" y="73" width="28" height="3" rx="1"/>
-  <rect fill="#374151" x="160" y="60" width="35" height="10" rx="1"/>
-  <rect fill="#6b7280" x="160" y="73" width="28" height="3" rx="1"/>
-</svg>`
 
 export interface Ru4StatItem {
   value: string
@@ -9259,21 +8856,6 @@ export function renderRu4Stats(data: Ru4StatsData): string {
 
 // ─── Ru5-Stats ───────────────────────────────────────────────────────────────
 
-export const ru5StatsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#1f2937" width="277.5" height="80"/>
-  <rect fill="#374151" x="8" y="10" width="120" height="60" rx="8"/>
-  <circle fill="#4b5563" cx="30" cy="34" r="12"/>
-  <rect fill="#9ca3af" x="48" y="24" width="72" height="6" rx="1"/>
-  <rect fill="#6b7280" x="48" y="34" width="64" height="4" rx="1"/>
-  <rect fill="#6b7280" x="48" y="42" width="56" height="4" rx="1"/>
-  <rect fill="#6b7280" x="20" y="54" width="98" height="4" rx="1"/>
-  <rect fill="#374151" x="149.5" y="10" width="120" height="60" rx="8"/>
-  <rect fill="#4b5563" x="161.5" y="20" width="46" height="5" rx="1"/>
-  <rect fill="#9ca3af" x="161.5" y="30" width="80" height="8" rx="1"/>
-  <rect fill="#6b7280" x="161.5" y="46" width="66" height="4" rx="1"/>
-  <rect fill="#6b7280" x="161.5" y="58" width="70" height="3" rx="1"/>
-  <rect fill="#4b5563" x="161.5" y="63" width="70" height="2" rx="1"/>
-</svg>`
 
 export interface Ru5StatsLink {
   label: string
@@ -9501,21 +9083,6 @@ export function renderRu5Stats(data: Ru5StatsData): string {
 
 // ─── Ru5-Image-Carousel ──────────────────────────────────────────────────────
 
-export const ru5ImageCarouselSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#1f2937" width="277.5" height="80"/>
-  <rect fill="#374151" x="0" y="0" width="277.5" height="80"/>
-  <rect fill="#4b5563" x="20" y="28" width="80" height="8" rx="1"/>
-  <rect fill="#6b7280" x="20" y="40" width="55" height="4" rx="1"/>
-  <rect fill="#6b7280" x="20" y="47" width="45" height="4" rx="1"/>
-  <rect fill="#9ca3af" x="20" y="58" width="28" height="8" rx="3"/>
-  <circle fill="#ffffff" cx="126" cy="74" r="3"/>
-  <circle fill="#6b7280" cx="136" cy="74" r="2"/>
-  <circle fill="#6b7280" cx="144" cy="74" r="2"/>
-  <rect fill="rgba(255,255,255,0.2)" x="4" y="34" width="12" height="12" rx="6"/>
-  <rect fill="rgba(255,255,255,0.2)" x="261" y="34" width="12" height="12" rx="6"/>
-  <text x="8" y="44" font-size="8" fill="white">‹</text>
-  <text x="264" y="44" font-size="8" fill="white">›</text>
-</svg>`
 
 export interface Ru5CarouselSlide {
   bgImage: string
@@ -9746,18 +9313,6 @@ export function renderRu5ImageCarousel(data: Ru5ImageCarouselData): string {
 
 // ─── Ru3-Text + Image Hero ───────────────────────────────────────────────────
 
-export const ru3TextImageHeroSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#1f2937" width="277.5" height="80"/>
-  <rect fill="#374151" x="148" y="8" width="118" height="64" rx="4"/>
-  <rect fill="#4b5563" x="163" y="22" width="88" height="36" rx="2"/>
-  <circle fill="#6b7280" cx="184" cy="36" r="5"/>
-  <rect fill="#6b7280" x="12" y="10" width="38" height="3" rx="1.5"/>
-  <rect fill="#9ca3af" x="12" y="17" width="112" height="8" rx="1.5"/>
-  <rect fill="#9ca3af" x="12" y="29" width="90" height="8" rx="1.5"/>
-  <rect fill="#6b7280" x="12" y="42" width="108" height="3" rx="1"/>
-  <rect fill="#6b7280" x="12" y="48" width="92" height="3" rx="1"/>
-  <rect fill="#4b5563" x="12" y="58" width="52" height="14" rx="5"/>
-</svg>`
 
 export interface Ru3TextImageHeroData {
   bgColor: string
@@ -9995,17 +9550,6 @@ export function renderRu3TextImageHero(data: Ru3TextImageHeroData): string {
 
 // ─── Ru6-Split-Hero ──────────────────────────────────────────────────────────
 
-export const ru6SplitHeroSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#1f2937" width="277.5" height="80"/>
-  <rect fill="#9ca3af" x="12" y="18" width="70" height="8" rx="1"/>
-  <rect fill="#9ca3af" x="12" y="30" width="55" height="6" rx="1"/>
-  <rect fill="#6b7280" x="12" y="42" width="80" height="3" rx="1"/>
-  <rect fill="#6b7280" x="12" y="48" width="72" height="3" rx="1"/>
-  <rect fill="#6b7280" x="12" y="54" width="65" height="3" rx="1"/>
-  <rect fill="#4b5563" x="12" y="63" width="32" height="9" rx="4"/>
-  <rect fill="#374151" x="140" y="8" width="125" height="64" rx="6"/>
-  <rect fill="#4b5563" x="152" y="20" width="100" height="40" rx="4"/>
-</svg>`
 
 export interface Ru6SplitHeroData {
   bgColor: string
@@ -10232,7 +9776,7 @@ export function renderRu6SplitHero(data: Ru6SplitHeroData): string {
   </div>`
 
   const imgInner = data.imageUrl
-    ? `<img src="${data.imageUrl}" alt="${data.title}" style="width:100%;height:${responsiveImgHeight};object-fit:${data.imageObjectFit};border-radius:${data.cardMode ? '0' : data.imageBorderRadius}px;display:block;" />`
+    ? `<img src="${escapeAttr(data.imageUrl)}" alt="${escapeAttr(data.title)}" style="width:100%;height:${responsiveImgHeight};object-fit:${data.imageObjectFit};border-radius:${data.cardMode ? '0' : data.imageBorderRadius}px;display:block;" />`
     : `<div style="width:100%;height:${responsiveImgHeight};background:#e5e7eb;border-radius:${data.cardMode ? '0' : data.imageBorderRadius}px;display:flex;align-items:center;justify-content:center;"><span style="color:#9ca3af;font-size:14px;">Add an image</span></div>`
 
   const imageCol = data.cardMode
@@ -10265,17 +9809,6 @@ export function renderRu6SplitHero(data: Ru6SplitHeroData): string {
 // as Ru1-Products' products list) — no live backend fetch. A card's link is
 // auto-built from its name as /shop?category=<slug>.
 
-export const ru7HeroCategoryCollectionSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#1f2937" width="277.5" height="80"/>
-  <rect fill="#9ca3af" x="98" y="12" width="82" height="8" rx="1"/>
-  <rect fill="#4b5563" x="118" y="26" width="42" height="8" rx="4"/>
-  <rect fill="#374151" x="10" y="46" width="82" height="26" rx="3"/>
-  <rect fill="#374151" x="98" y="46" width="82" height="26" rx="3"/>
-  <rect fill="#374151" x="186" y="46" width="82" height="26" rx="3"/>
-  <rect fill="#6b7280" x="14" y="60" width="40" height="4" rx="1"/>
-  <rect fill="#6b7280" x="102" y="60" width="40" height="4" rx="1"/>
-  <rect fill="#6b7280" x="190" y="60" width="40" height="4" rx="1"/>
-</svg>`
 
 export interface Ru7CategoryItem {
   imageUrl: string
@@ -10594,16 +10127,6 @@ export function renderRu7HeroCategoryCollection(data: Ru7HeroCategoryCollectionD
 
 // ─── Ru4-Overlay Panel ───────────────────────────────────────────────────────
 
-export const ru4OverlayPanelSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#1f2937" width="277.5" height="80"/>
-  <polygon fill="#374151" points="8,8 152,8 152,54 132,72 8,72"/>
-  <rect fill="#9ca3af" x="16" y="16" width="90" height="6" rx="1.5"/>
-  <rect fill="#9ca3af" x="16" y="26" width="72" height="6" rx="1.5"/>
-  <rect fill="#6b7280" x="16" y="38" width="112" height="3" rx="1"/>
-  <rect fill="#6b7280" x="16" y="44" width="100" height="3" rx="1"/>
-  <rect fill="#6b7280" x="16" y="50" width="108" height="3" rx="1"/>
-  <rect fill="#4b5563" x="16" y="59" width="52" height="11" rx="3"/>
-</svg>`
 
 export interface Ru4OverlayPanelData {
   bgImage: string
@@ -10911,57 +10434,6 @@ export function renderRu4OverlayPanel(data: Ru4OverlayPanelData): string {
 
 // ─── Ru1-Product Detail ──────────────────────────────────────────────────────
 
-export const ru1ProductDetailSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
-  <!-- Left: thumbnail strip (4 thumbs) -->
-  <rect fill="#394152" x="8" y="8"  width="22" height="22" rx="1"/>
-  <rect fill="#718096" x="8" y="34" width="22" height="22" rx="1"/>
-  <rect fill="#718096" x="8" y="60" width="22" height="22" rx="1"/>
-  <rect fill="#718096" x="8" y="86" width="22" height="22" rx="1"/>
-  <!-- Left: main product image -->
-  <rect fill="#394152" x="36" y="8" width="106" height="160" rx="2"/>
-  <polygon fill="#718096" points="56 152 86 116 116 152 56 152"/>
-  <polygon fill="#718096" points="98 152 118 130 138 152 98 152"/>
-  <circle fill="#718096" cx="118" cy="125" r="6"/>
-  <!-- Right: product name -->
-  <rect fill="#394152" x="154" y="8"  width="118" height="9"  rx="2"/>
-  <rect fill="#394152" x="154" y="21" width="82"  height="7"  rx="2"/>
-  <!-- Right: color label -->
-  <rect fill="#718096" x="154" y="36" width="26" height="4" rx="1"/>
-  <!-- Color swatches -->
-  <circle fill="#394152" cx="164" cy="50" r="7"/>
-  <rect fill="#718096" x="174" y="44" width="42" height="14" rx="7"/>
-  <circle fill="#394152" cx="226" cy="50" r="7" opacity="0.5"/>
-  <rect fill="#718096" x="236" y="44" width="36" height="14" rx="7"/>
-  <!-- Right: size label -->
-  <rect fill="#718096" x="154" y="66" width="18" height="4" rx="1"/>
-  <!-- Size boxes row 1 -->
-  <rect fill="#394152" x="154" y="74" width="20" height="14" rx="1"/>
-  <rect fill="#394152" x="178" y="74" width="20" height="14" rx="1"/>
-  <rect fill="#394152" x="202" y="74" width="20" height="14" rx="1"/>
-  <rect fill="#394152" x="226" y="74" width="20" height="14" rx="1"/>
-  <rect fill="#394152" x="250" y="74" width="20" height="14" rx="1"/>
-  <!-- Size boxes row 2 -->
-  <rect fill="#394152" x="154" y="92" width="20" height="14" rx="1"/>
-  <rect fill="#394152" x="178" y="92" width="20" height="14" rx="1"/>
-  <!-- Right: unit price row -->
-  <rect fill="#718096" x="154" y="114" width="70" height="6" rx="1"/>
-  <rect fill="#394152" x="232" y="112" width="24" height="10" rx="5"/>
-  <!-- Right: total -->
-  <rect fill="#394152" x="154" y="126" width="58" height="9" rx="2"/>
-  <!-- Right: add to cart button -->
-  <rect fill="#394152" x="154" y="140" width="118" height="20" rx="2"/>
-  <!-- Right: qty/price table -->
-  <rect fill="#718096" x="154" y="168" width="118" height="10" rx="1"/>
-  <rect fill="#718096" x="154" y="182" width="118" height="10" rx="1"/>
-  <!-- Right: description title -->
-  <rect fill="#394152" x="154" y="200" width="54" height="7" rx="1"/>
-  <!-- Description lines -->
-  <rect fill="#718096" x="154" y="214" width="118" height="4" rx="1"/>
-  <rect fill="#718096" x="154" y="222" width="94"  height="4" rx="1"/>
-  <rect fill="#718096" x="154" y="230" width="108" height="4" rx="1"/>
-  <rect fill="#718096" x="154" y="238" width="80"  height="4" rx="1"/>
-  <rect fill="#718096" x="154" y="246" width="100" height="4" rx="1"/>
-</svg>`
 
 export interface Ru1ProductDetailData {
   productIds: string
@@ -11254,64 +10726,6 @@ export const ru1ProductDetailFields: FieldConfig[] = [
 
 // ─── Ru2-Product Detail ───────────────────────────────────────────────────────
 
-export const ru2ProductDetailSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
-  <!-- Left: main product image -->
-  <rect fill="#394152" x="8" y="8" width="126" height="126" rx="3"/>
-  <polygon fill="#718096" points="28 128 68 84 108 128 28 128"/>
-  <polygon fill="#718096" points="88 128 110 102 130 128 88 128"/>
-  <circle fill="#718096" cx="112" cy="98" r="8"/>
-  <!-- Left: 4 thumbnails in a row -->
-  <rect fill="#394152" x="8"  y="142" width="26" height="26" rx="2"/>
-  <rect fill="#718096" x="38" y="142" width="26" height="26" rx="2"/>
-  <rect fill="#718096" x="68" y="142" width="26" height="26" rx="2"/>
-  <rect fill="#718096" x="98" y="142" width="26" height="26" rx="2"/>
-  <!-- Right: product name -->
-  <rect fill="#394152" x="150" y="8"  width="122" height="12" rx="2"/>
-  <rect fill="#394152" x="150" y="24" width="80"  height="9"  rx="2"/>
-  <!-- Right: price -->
-  <rect fill="#718096" x="150" y="42" width="52"  height="12" rx="2"/>
-  <!-- Right: desc lines -->
-  <rect fill="#718096" x="150" y="62" width="122" height="4" rx="1"/>
-  <rect fill="#718096" x="150" y="70" width="98"  height="4" rx="1"/>
-  <rect fill="#718096" x="150" y="78" width="114" height="4" rx="1"/>
-  <!-- Right: Color label + circles -->
-  <rect fill="#718096" x="150" y="92" width="28" height="4" rx="1"/>
-  <circle fill="#394152" cx="160" cy="110" r="8"/>
-  <circle fill="#718096" cx="180" cy="110" r="8"/>
-  <circle fill="#718096" cx="200" cy="110" r="8"/>
-  <!-- Right: Add to bag button -->
-  <rect fill="#394152" x="150" y="126" width="116" height="18" rx="4"/>
-  <!-- Right: divider -->
-  <rect fill="#718096" x="150" y="152" width="122" height="1"/>
-  <!-- Right: accordion rows -->
-  <rect fill="#394152" x="150" y="160" width="72" height="5" rx="1"/>
-  <rect fill="#394152" x="258" y="159" width="14" height="7" rx="2"/>
-  <rect fill="#718096" x="150" y="176" width="62" height="4" rx="1"/>
-  <rect fill="#394152" x="260" y="175" width="12" height="6" rx="2"/>
-  <rect fill="#718096" x="150" y="190" width="68" height="4" rx="1"/>
-  <rect fill="#394152" x="260" y="189" width="12" height="6" rx="2"/>
-  <!-- Bottom divider -->
-  <rect fill="#718096" x="8" y="182" width="130" height="1"/>
-  <!-- Bottom: related title -->
-  <rect fill="#394152" x="8" y="188" width="90" height="6" rx="1"/>
-  <!-- 4 related cards -->
-  <rect fill="#394152" x="8"   y="202" width="56" height="56" rx="3"/>
-  <rect fill="#718096" x="8"   y="262" width="38" height="4"  rx="1"/>
-  <rect fill="#718096" x="8"   y="270" width="28" height="4"  rx="1"/>
-  <rect fill="#394152" x="8"   y="278" width="56" height="10" rx="2"/>
-  <rect fill="#394152" x="70"  y="202" width="56" height="56" rx="3"/>
-  <rect fill="#718096" x="70"  y="262" width="38" height="4"  rx="1"/>
-  <rect fill="#718096" x="70"  y="270" width="28" height="4"  rx="1"/>
-  <rect fill="#394152" x="70"  y="278" width="56" height="10" rx="2"/>
-  <rect fill="#394152" x="132" y="202" width="56" height="56" rx="3"/>
-  <rect fill="#718096" x="132" y="262" width="38" height="4"  rx="1"/>
-  <rect fill="#718096" x="132" y="270" width="28" height="4"  rx="1"/>
-  <rect fill="#394152" x="132" y="278" width="56" height="10" rx="2"/>
-  <rect fill="#394152" x="194" y="202" width="56" height="56" rx="3"/>
-  <rect fill="#718096" x="194" y="262" width="38" height="4"  rx="1"/>
-  <rect fill="#718096" x="194" y="270" width="28" height="4"  rx="1"/>
-  <rect fill="#394152" x="194" y="278" width="56" height="10" rx="2"/>
-</svg>`
 
 export interface Ru2ProductDetailDetail {
   name: string
@@ -11914,73 +11328,6 @@ export function renderRu1ProductDetail(data: Ru1ProductDetailData): string {
 
 // ─── Ru3-Product Detail ───────────────────────────────────────────────────────
 
-export const ru3ProductDetailSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
-  <!-- Left: large main image spanning 2 cols -->
-  <rect fill="#394152" x="8" y="8" width="126" height="100" rx="3"/>
-  <polygon fill="#718096" points="28 102 58 74 88 102 28 102"/>
-  <polygon fill="#718096" points="78 102 96 84 114 102 78 102"/>
-  <circle fill="#718096" cx="96" cy="76" r="7"/>
-  <!-- Left: 2 small images below main -->
-  <rect fill="#718096" x="8" y="116" width="60" height="50" rx="2"/>
-  <rect fill="#718096" x="74" y="116" width="60" height="50" rx="2"/>
-  <!-- Right: product name + price -->
-  <rect fill="#394152" x="150" y="8"  width="90" height="10" rx="2"/>
-  <rect fill="#394152" x="244" y="8"  width="28" height="10" rx="2"/>
-  <!-- Right: stars row -->
-  <rect fill="#394152" x="150" y="26" width="7" height="7" rx="1"/>
-  <rect fill="#394152" x="160" y="26" width="7" height="7" rx="1"/>
-  <rect fill="#394152" x="170" y="26" width="7" height="7" rx="1"/>
-  <rect fill="#394152" x="180" y="26" width="7" height="7" rx="1"/>
-  <rect fill="#718096" x="190" y="26" width="7" height="7" rx="1"/>
-  <rect fill="#718096" x="200" y="28" width="42" height="4" rx="1"/>
-  <!-- Right: color label + swatches -->
-  <rect fill="#718096" x="150" y="42" width="22" height="4" rx="1"/>
-  <circle fill="#394152" cx="160" cy="56" r="8"/>
-  <circle fill="#718096" cx="180" cy="56" r="8"/>
-  <!-- Right: size label + grid -->
-  <rect fill="#718096" x="150" y="72" width="18" height="4" rx="1"/>
-  <rect fill="#394152" x="150" y="80" width="18" height="12" rx="2"/>
-  <rect fill="#394152" x="172" y="80" width="18" height="12" rx="2"/>
-  <rect fill="#394152" x="194" y="80" width="18" height="12" rx="2"/>
-  <rect fill="#394152" x="216" y="80" width="18" height="12" rx="2"/>
-  <rect fill="#394152" x="238" y="80" width="18" height="12" rx="2"/>
-  <!-- Right: add to cart button -->
-  <rect fill="#394152" x="150" y="100" width="120" height="16" rx="3"/>
-  <!-- Right: description title + lines -->
-  <rect fill="#394152" x="150" y="124" width="52" height="5" rx="1"/>
-  <rect fill="#718096" x="150" y="134" width="120" height="3" rx="1"/>
-  <rect fill="#718096" x="150" y="141" width="95"  height="3" rx="1"/>
-  <!-- Right: fabric & care -->
-  <rect fill="#394152" x="150" y="156" width="52" height="5" rx="1"/>
-  <rect fill="#718096" x="154" y="166" width="85" height="3" rx="1"/>
-  <rect fill="#718096" x="154" y="173" width="70" height="3" rx="1"/>
-  <rect fill="#718096" x="154" y="180" width="78" height="3" rx="1"/>
-  <!-- Right: policy cards -->
-  <rect fill="#718096" x="150" y="192" width="55" height="32" rx="3"/>
-  <rect fill="#394152" x="152" y="209" width="51" height="4" rx="1"/>
-  <rect fill="#718096" x="215" y="192" width="55" height="32" rx="3"/>
-  <rect fill="#394152" x="217" y="209" width="51" height="4" rx="1"/>
-  <!-- Bottom: reviews section title -->
-  <rect fill="#394152" x="8" y="182" width="80" height="6" rx="1"/>
-  <rect fill="#718096" x="8" y="196" width="130" height="1"/>
-  <rect fill="#394152" x="8" y="204" width="55" height="4" rx="1"/>
-  <rect fill="#718096" x="8" y="212" width="130" height="3" rx="1"/>
-  <rect fill="#718096" x="8" y="219" width="110" height="3" rx="1"/>
-  <!-- Bottom: related products title + 4 cards -->
-  <rect fill="#394152" x="8" y="236" width="100" height="6" rx="1"/>
-  <rect fill="#394152" x="8"   y="250" width="56" height="48" rx="3"/>
-  <rect fill="#394152" x="72"  y="250" width="56" height="48" rx="3"/>
-  <rect fill="#394152" x="136" y="250" width="56" height="48" rx="3"/>
-  <rect fill="#394152" x="200" y="250" width="56" height="48" rx="3"/>
-  <rect fill="#718096" x="8"   y="304" width="38" height="4" rx="1"/>
-  <rect fill="#718096" x="72"  y="304" width="38" height="4" rx="1"/>
-  <rect fill="#718096" x="136" y="304" width="38" height="4" rx="1"/>
-  <rect fill="#718096" x="200" y="304" width="38" height="4" rx="1"/>
-  <rect fill="#718096" x="8"   y="312" width="28" height="4" rx="1"/>
-  <rect fill="#718096" x="72"  y="312" width="28" height="4" rx="1"/>
-  <rect fill="#718096" x="136" y="312" width="28" height="4" rx="1"/>
-  <rect fill="#718096" x="200" y="312" width="28" height="4" rx="1"/>
-</svg>`
 
 export interface Ru3ProductDetailReview {
   author: string
@@ -12655,15 +12002,6 @@ function productCardWrapperStyle(data: ProductCardStyleData): string {
 
 // ─── Ru3-Show-Single-Products ──────────────────────────────────────────────────
 
-export const showSingleProductSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="90.319 268.3 186.364 224.763">
-  <rect class="bg" width="122.364" height="122.364" style="fill: rgb(56, 65, 82); stroke-width: 1;" x="122.319" y="300.3"/>
-  <polygon class="fg" points="140.928 379.728 171.337 343.237 201.747 379.728" style="fill: rgb(113, 128, 150); stroke-width: 1;"/>
-  <polygon class="fg" points="195.665 379.728 210.87 361.483 226.052 379.728" style="fill: rgb(113, 128, 150); stroke-width: 1;"/>
-  <circle class="fg" cx="210.87" cy="348.297" r="5.061" style="fill: rgb(113, 128, 150); stroke-width: 1;"/>
-  <rect class="bg" y="436.28" width="122.364" height="6.65" style="fill: rgb(56, 65, 82); stroke-width: 1;" x="122.319"/>
-  <rect class="bg" y="445.335" width="122.364" height="6.65" style="fill: rgb(56, 65, 82); stroke-width: 1;" x="122.319"/>
-  <rect class="bg" y="454.413" width="122.364" height="6.65" style="fill: rgb(56, 65, 82); stroke-width: 1;" x="122.319"/>
-</svg>`
 
 export interface ShowSingleProductData extends ProductCardStyleData {
   products: Product[]
@@ -12796,35 +12134,6 @@ export function renderShowSingleProduct(data: ShowSingleProductData): string {
 
 // ─── Ru2-Show-Multiple-Products ────────────────────────────────────────────────
 
-export const showMultipleProductsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 177.28 70.84">
-  <defs>
-    <style>
-      .bg { fill: #384152; }
-      .fg { fill: #718096; }
-    </style>
-  </defs>
-  <rect class="bg" width="53.92" height="53.92"/>
-  <rect class="bg" x="62.15" width="53.92" height="53.92"/>
-  <rect class="bg" x="123.37" width="53.92" height="53.92"/>
-  <polygon class="fg" points="8.2 35 21.6 18.92 35 35"/>
-  <polygon class="fg" points="32.32 35 39.02 26.96 45.71 35"/>
-  <circle class="fg" cx="39.02" cy="21.15" r="2.23"/>
-  <polygon class="fg" points="70.36 35 83.75 18.92 97.15 35"/>
-  <polygon class="fg" points="94.47 35 101.17 26.96 107.87 35"/>
-  <circle class="fg" cx="101.17" cy="21.15" r="2.23"/>
-  <polygon class="fg" points="131.57 35 144.96 18.92 158.36 35"/>
-  <polygon class="fg" points="155.68 35 162.38 26.96 169.08 35"/>
-  <circle class="fg" cx="162.38" cy="21.15" r="2.23"/>
-  <rect class="bg" y="59.92" width="53.92" height="2.93"/>
-  <rect class="bg" y="63.91" width="53.92" height="2.93"/>
-  <rect class="bg" y="67.91" width="53.92" height="2.93"/>
-  <rect class="bg" x="62.15" y="59.92" width="53.92" height="2.93"/>
-  <rect class="bg" x="62.15" y="63.91" width="53.92" height="2.93"/>
-  <rect class="bg" x="62.15" y="67.91" width="53.92" height="2.93"/>
-  <rect class="bg" x="123.37" y="59.92" width="53.92" height="2.93"/>
-  <rect class="bg" x="123.37" y="63.91" width="53.92" height="2.93"/>
-  <rect class="bg" x="123.37" y="67.91" width="53.92" height="2.93"/>
-</svg>`
 
 export interface ShowMultipleProductsData extends ProductCardStyleData {
   products: Product[]
@@ -13126,15 +12435,182 @@ export function renderShowMultipleProducts(data: ShowMultipleProductsData): stri
 </section>`
 }
 
-// ─── Ru1-Announcement Bar ──────────────────────────────────────────────────────────
-// A slim full-width announcement bar with a single editable message. Colours,
-// alignment, font size/weight and padding are editable. Template is dark.
+// ─── Ru4-Product-Card ───────────────────────────────────────────────────────
+// A plain product grid: image, an optional thin divider, then a centered
+// name + price (no hover overlay/arrow like Ru2's grid). First real caller of
+// renderProductCardBody/productCardWrapperStyle, the shared helpers above
+// that the other three "Show * Products" blocks ended up not needing.
 
-export const ru1AnnouncementBarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 40">
-  <rect fill="#1f2430" width="277.5" height="40"/>
-  <rect fill="#aab2c5" x="84" y="17" width="46" height="6" rx="1"/>
-  <rect fill="#6b7488" x="136" y="17" width="72" height="6" rx="1"/>
-</svg>`
+export interface Ru4ProductCardData extends ProductCardStyleData {
+  products: Product[]
+  columns: number
+  gap: number
+  bgColor: string
+  paddingY: number
+  paddingX: number
+  contentMaxWidth: number
+  showSectionHeader: boolean
+  sectionTitle: string
+  titleColor: string
+  sectionTitleFont: string
+  fontFamily: string
+  productNameFont: string
+  priceFont: string
+  showDivider: boolean
+  dividerColor: string
+
+  // Live products, fetched client-side from /api/products (see loadProductGrid
+  // in rubikx-hydration.client.ts) instead of the hand-entered list below.
+  // Builder-preview only — this Nuxt app's hydration plugin never runs on the
+  // published Odoo page, so making this live there too needs a matching
+  // script on that side; off by default, falls back to `products` above.
+  useBackendProducts: boolean
+  backendProductIds: string
+  backendMaxItems: number
+}
+
+// Shown both as the block's own defaults and as the renderer's fallback
+// whenever `products` is empty (e.g. nothing picked yet from the product
+// picker) — so the grid always reads as a working sample instead of an
+// empty "No products added" state.
+const ru4ProductCardPlaceholderProducts: Product[] = [
+  { imageUrl: '', name: 'Product 1', price: '$0.00', oldPrice: '', buttonLabel: 'View Product', buttonUrl: '#', colors: '' },
+  { imageUrl: '', name: 'Product 2', price: '$0.00', oldPrice: '', buttonLabel: 'View Product', buttonUrl: '#', colors: '' },
+  { imageUrl: '', name: 'Product 3', price: '$0.00', oldPrice: '', buttonLabel: 'View Product', buttonUrl: '#', colors: '' },
+  { imageUrl: '', name: 'Product 4', price: '$0.00', oldPrice: '', buttonLabel: 'View Product', buttonUrl: '#', colors: '' },
+]
+
+export const ru4ProductCardDefaults: Ru4ProductCardData = {
+  products: ru4ProductCardPlaceholderProducts,
+  columns: 4,
+  gap: 24,
+  bgColor: '#ffffff',
+  paddingY: 32,
+  paddingX: 16,
+  contentMaxWidth: 1440,
+  showSectionHeader: false,
+  sectionTitle: 'Featured Products',
+  titleColor: '#111827',
+  sectionTitleFont: '',
+  fontFamily: '',
+  productNameFont: '',
+  priceFont: '',
+  showDivider: true,
+  dividerColor: '#e5e7eb',
+  useBackendProducts: false,
+  backendProductIds: '',
+  backendMaxItems: 12,
+  ...productCardStyleDefaults,
+  cardLayout: 'centered',
+  cardBorderRadius: 8,
+  cardShadow: 'shadow-sm',
+  cardPadding: 12,
+  showButton: false,
+}
+
+export const ru4ProductCardFields: FieldConfig[] = [
+  { key: '_h_header', label: 'Section Header', type: 'header' },
+  { key: 'showSectionHeader', label: 'Show Section Title', type: 'toggle' },
+  { key: 'sectionTitle', label: 'Section Title', type: 'text', placeholder: 'Featured Products' },
+  { key: 'titleColor', label: 'Title Colour', type: 'color' },
+
+  { key: '_h_layout', label: 'Layout', type: 'header' },
+  { key: 'bgColor', label: 'Background Colour', type: 'color' },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '32' },
+  { key: 'paddingX', label: 'Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '16' },
+  { key: 'contentMaxWidth', label: 'Content Max Width', type: 'number', unit: 'px', step: 10, placeholder: '1440' },
+  { key: 'columns', label: 'Columns', type: 'select', options: ['1', '2', '3', '4', '5', '6'] },
+  { key: 'gap', label: 'Grid Gap', type: 'number', unit: 'px', step: 2, placeholder: '24' },
+
+  { key: '_h_divider', label: 'Divider', type: 'header' },
+  { key: 'showDivider', label: 'Show Divider Line', type: 'toggle' },
+  { key: 'dividerColor', label: 'Divider Colour', type: 'color' },
+
+  { key: '_h_font', label: 'Fonts', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+  fontField('sectionTitleFont', 'Section Title Font'),
+  fontField('productNameFont', 'Product Name Font'),
+  fontField('priceFont', 'Price Font'),
+
+  { key: '_h_products', label: 'Products', type: 'header' },
+  { key: 'useBackendProducts', label: 'Use Products From Backend', type: 'toggle', siteSpecific: true, cloneValue: false },
+  { key: 'backendProductIds', label: 'Product IDs (blank = all)', type: 'text', placeholder: 'e.g. 12, 45, 103', siteSpecific: true, visibleIf: (d) => d.useBackendProducts === true },
+  { key: 'backendMaxItems', label: 'Max Products Shown', type: 'number', step: 1, placeholder: '12', visibleIf: (d) => d.useBackendProducts === true },
+  {
+    key: 'products', label: 'Products', type: 'list', siteSpecific: true,
+    visibleIf: (d) => d.useBackendProducts !== true,
+    listFields: [
+      { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
+      { key: 'name', label: 'Product Name', type: 'text' },
+      { key: 'price', label: 'Price', type: 'text' },
+      { key: 'oldPrice', label: 'Old Price (optional)', type: 'text' },
+      { key: 'buttonLabel', label: 'Button Text', type: 'text' },
+      { key: 'buttonUrl', label: 'Button URL', type: 'url' },
+      { key: 'colors', label: 'Color Swatches', type: 'text', placeholder: 'blue, black, #ff0000' },
+    ],
+  },
+]
+
+export function renderRu4ProductCard(data: Ru4ProductCardData): string {
+  const cols = Math.min(Math.max(data.columns ?? 4, 1), 6)
+  const gap = data.gap ?? 24
+  const products = data.products?.length ? data.products : ru4ProductCardPlaceholderProducts
+
+  const sectionHeaderHtml = data.showSectionHeader
+    ? `<div style="margin-bottom:1.5rem;">
+      <h2 style="margin:0;font-size:min(1.75rem,7vw);font-weight:600;color:${data.titleColor || '#111827'};${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h2>
+    </div>`
+    : ''
+
+  const wrapperStyle = productCardWrapperStyle(data)
+  const nameFontCss = `${fontCss(data.productNameFont, data.fontFamily)}font-weight:700;`
+  const priceFontCss = `${fontCss(data.priceFont, data.fontFamily)}color:#6b7280;`
+
+  const productsHtml = products.map(product => {
+    const imageSrc = productImageSrc(product.imageUrl)
+    const imageHtml = imageSrc
+      ? `<img src="${imageSrc}" alt="${product.name}" style="width:100%;aspect-ratio:1/1;object-fit:contain;display:block;background:${data.imageBgColor || '#ffffff'};" />`
+      : `<div style="width:100%;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;background:${data.imageBgColor || '#f3f4f6'};">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>`
+
+    const dividerHtml = data.showDivider !== false
+      ? `<div style="border-top:1px solid ${data.dividerColor || '#e5e7eb'};"></div>`
+      : ''
+
+    return `<a href="${product.buttonUrl || '#'}" data-ru4pc-card="true" style="${wrapperStyle}overflow:hidden;display:block;text-decoration:none;color:inherit;">
+      ${imageHtml}
+      ${dividerHtml}
+      <div style="padding:${data.cardPadding ?? 12}px;">
+        ${renderProductCardBody(product, { ...data, showButton: false }, nameFontCss, priceFontCss)}
+      </div>
+    </a>`
+  }).join('')
+
+  return `<section data-component-title="Ru4-Product-Card" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px 0;${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:1024px){[data-ru4pc-grid]{grid-template-columns:repeat(3,1fr)!important;}}
+  @media(max-width:768px){[data-ru4pc-grid]{grid-template-columns:repeat(2,1fr)!important;}}
+  @media(max-width:480px){[data-ru4pc-grid]{grid-template-columns:1fr!important;}}
+  [data-ru4pc-card]{transition:box-shadow 0.2s ease,transform 0.2s ease;cursor:pointer;}
+  [data-ru4pc-card]:hover{box-shadow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -2px rgba(0,0,0,0.1);transform:translateY(-2px);}
+</style>
+  <div style="max-width:${data.contentMaxWidth ?? 1440}px;margin:0 auto;width:100%;box-sizing:border-box;padding-left:min(${data.paddingX ?? 16}px,6vw);padding-right:min(${data.paddingX ?? 16}px,6vw);">
+    ${sectionHeaderHtml}
+    <div
+      data-ru4pc-grid="true"
+      style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:${gap}px;"${data.useBackendProducts ? `
+      data-rubikx-component="ProductGrid"
+      data-on-mount="loadProductGrid"` : ''}
+    >
+      ${productsHtml}
+    </div>
+  </div>
+</section>`
+}
+
+// ─── Ru1-Announcement Bar ──────────────────────────────────────────────────────────
+
 
 export interface Ru1AnnouncementBarData {
   fontFamily: string
@@ -13200,15 +12676,6 @@ export function renderRu1AnnouncementBar(data: Ru1AnnouncementBarData): string {
 // as an infinite scroll with no seam or reset jump. Template is dark,
 // matching Ru1-Announcement Bar.
 
-export const ru2ScrollingTickerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 40">
-  <rect fill="#1f2430" width="277.5" height="40"/>
-  <rect fill="#aab2c5" x="14"  y="17" width="46" height="6" rx="1"/>
-  <rect fill="#6b7488" x="70"  y="17" width="7" height="7" rx="1"/>
-  <rect fill="#aab2c5" x="87"  y="17" width="46" height="6" rx="1"/>
-  <rect fill="#6b7488" x="143" y="17" width="7" height="7" rx="1"/>
-  <rect fill="#aab2c5" x="160" y="17" width="46" height="6" rx="1"/>
-  <rect fill="#6b7488" x="216" y="17" width="7" height="7" rx="1"/>
-</svg>`
 
 // Solid shapes (fill="currentColor") for the separator dropdown — kept local
 // to this block rather than in useIconSvg.ts, whose icon() helper is built
@@ -13344,15 +12811,6 @@ export function renderRu2ScrollingTicker(data: Ru2ScrollingTickerData): string {
 // markup — like every other block here, wiring the form up to a real
 // authentication endpoint is a separate concern outside this renderer.
 
-export const ru1SignInSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#1f2937" width="277.5" height="80"/>
-  <rect fill="#374151" x="88.75" y="8" width="100" height="64" rx="6"/>
-  <rect fill="#9ca3af" x="118.75" y="18" width="40" height="7" rx="1"/>
-  <rect fill="#6b7280" x="98.75" y="34" width="30" height="4" rx="1"/>
-  <rect fill="#4b5563" x="98.75" y="40" width="80" height="9" rx="2"/>
-  <rect fill="#6b7280" x="98.75" y="53" width="40" height="4" rx="1"/>
-  <rect fill="#4b5563" x="98.75" y="59" width="80" height="9" rx="2"/>
-</svg>`
 
 // Eye / eye-slash toggle icons for the password field — kept local to this
 // block (same convention as RU2_TICKER_ICONS above) since nothing else in
@@ -13410,6 +12868,29 @@ export interface Ru1SignInData {
   registerLinkHref: string
   registerTextColor: string
   registerLinkColor: string
+
+  // Optional "Select a department" panel — off by default (today's single
+  // centered card). Turning it on reveals the fields below it and switches
+  // the card to a two-column layout: panel on the left, card on the right.
+  showDepartmentPanel: boolean
+  departmentPanelBgColor: string
+  departmentPanelBgOpacity: number
+  departmentPanelPaddingY: number
+  departmentPanelPaddingX: number
+  departmentPanelTitle: string
+  departmentPanelTitleColor: string
+  departmentPanelSubtitle: string
+  departmentPanelSubtitleColor: string
+  departments: { label: string; href: string; bgColor: string; textColor: string }[]
+  // Shared across every department button — not per-button.
+  departmentButtonsOpacity: number
+  infoBoxBgColor: string
+  infoBoxBgOpacity: number
+  infoIconStyle: 'outline' | 'filled'
+  infoIconColor: string
+  infoTitle: string
+  infoTitleColor: string
+  infoText: string
 }
 
 export const ru1SignInDefaults: Ru1SignInData = {
@@ -13462,6 +12943,31 @@ export const ru1SignInDefaults: Ru1SignInData = {
   registerLinkHref: '/signup',
   registerTextColor: '#374151',
   registerLinkColor: '#0a1e5e',
+
+  showDepartmentPanel: false,
+  departmentPanelBgColor: '#0a1e3f',
+  departmentPanelBgOpacity: 100,
+  departmentPanelPaddingY: 48,
+  departmentPanelPaddingX: 40,
+  departmentPanelTitle: 'Select a department',
+  departmentPanelTitleColor: '#ffffff',
+  departmentPanelSubtitle: 'Choose your store to continue',
+  departmentPanelSubtitleColor: '#cbd5e1',
+  departments: [
+    { label: 'Bender', href: '#', bgColor: '#1d4ed8', textColor: '#ffffff' },
+    { label: 'Plimpton', href: '#', bgColor: '#065f46', textColor: '#ffffff' },
+    { label: 'Pex Universe', href: '#', bgColor: '#78350f', textColor: '#ffffff' },
+    { label: 'RJ Murray', href: '#', bgColor: '#7f1d4e', textColor: '#ffffff' },
+    { label: 'Coastal', href: '#', bgColor: '#3730a3', textColor: '#ffffff' },
+  ],
+  departmentButtonsOpacity: 100,
+  infoBoxBgColor: '#ffffff',
+  infoBoxBgOpacity: 8,
+  infoIconStyle: 'outline',
+  infoIconColor: '#60a5fa',
+  infoTitle: 'Login Information',
+  infoTitleColor: '#ffffff',
+  infoText: 'If you are logging for the first time, please use the reset password button to set your password. Otherwise, please use your username and password to log into the store.',
 }
 
 export const ru1SignInFields: FieldConfig[] = [
@@ -13521,7 +13027,38 @@ export const ru1SignInFields: FieldConfig[] = [
   { key: 'registerLinkHref', label: 'Link URL', type: 'url', placeholder: '/register' },
   { key: 'registerTextColor', label: 'Text Colour', type: 'color' },
   { key: 'registerLinkColor', label: 'Link Colour', type: 'color' },
+
+  { key: '_h_departmentpanel', label: 'Department Panel', type: 'header' },
+  { key: 'showDepartmentPanel', label: 'Show Department Panel', type: 'toggle' },
+  { key: 'departmentPanelBgColor', label: 'Panel Background Colour', type: 'color', visibleIf: (d) => d.showDepartmentPanel === true },
+  { key: 'departmentPanelBgOpacity', label: 'Panel Background Opacity (%)', type: 'number', unit: '%', step: 5, placeholder: '100', visibleIf: (d) => d.showDepartmentPanel === true },
+  { key: 'departmentPanelPaddingY', label: 'Panel Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '48', visibleIf: (d) => d.showDepartmentPanel === true },
+  { key: 'departmentPanelPaddingX', label: 'Panel Horizontal Padding', type: 'number', unit: 'px', step: 4, placeholder: '40', visibleIf: (d) => d.showDepartmentPanel === true },
+  { key: 'departmentPanelTitle', label: 'Panel Title', type: 'text', placeholder: 'Select a department', visibleIf: (d) => d.showDepartmentPanel === true },
+  { key: 'departmentPanelTitleColor', label: 'Panel Title Colour', type: 'color', visibleIf: (d) => d.showDepartmentPanel === true },
+  { key: 'departmentPanelSubtitle', label: 'Panel Subtitle', type: 'text', placeholder: 'Choose your store to continue', visibleIf: (d) => d.showDepartmentPanel === true },
+  { key: 'departmentPanelSubtitleColor', label: 'Panel Subtitle Colour', type: 'color', visibleIf: (d) => d.showDepartmentPanel === true },
+  {
+    key: 'departments', label: 'Departments', type: 'list', visibleIf: (d) => d.showDepartmentPanel === true,
+    listFields: [
+      { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Bender' },
+      { key: 'href', label: 'URL', type: 'url', placeholder: 'e.g. /bender' },
+      { key: 'bgColor', label: 'Background Colour', type: 'color' },
+      { key: 'textColor', label: 'Text Colour', type: 'color' },
+    ],
+  },
+  { key: 'departmentButtonsOpacity', label: 'Buttons Opacity (%)', type: 'number', unit: '%', step: 5, placeholder: '100', visibleIf: (d) => d.showDepartmentPanel === true },
+  { key: 'infoBoxBgColor', label: 'Info Box Background Colour', type: 'color', visibleIf: (d) => d.showDepartmentPanel === true },
+  { key: 'infoBoxBgOpacity', label: 'Info Box Background Opacity (%)', type: 'number', unit: '%', step: 5, placeholder: '8', visibleIf: (d) => d.showDepartmentPanel === true },
+  { key: 'infoIconStyle', label: 'Info Icon Style', type: 'select', options: ['outline', 'filled'], visibleIf: (d) => d.showDepartmentPanel === true },
+  { key: 'infoIconColor', label: 'Info Icon Colour', type: 'color', visibleIf: (d) => d.showDepartmentPanel === true },
+  { key: 'infoTitle', label: 'Info Title', type: 'text', placeholder: 'Login Information', visibleIf: (d) => d.showDepartmentPanel === true },
+  { key: 'infoTitleColor', label: 'Info Title Colour', type: 'color', visibleIf: (d) => d.showDepartmentPanel === true },
+  { key: 'infoText', label: 'Info Text', type: 'textarea', visibleIf: (d) => d.showDepartmentPanel === true },
 ]
+
+// Solid variant for the department panel's info icon — icon()/useIconSvg.ts only holds outline paths.
+const ru1SignInInfoIconFilled = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z"/></svg>`
 
 export function renderRu1SignIn(data: Ru1SignInData): string {
   const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:${data.inputRadius ?? 8}px;background:${data.inputBgColor};padding:0.625rem 0.875rem;font-size:0.9375rem;color:${data.inputTextColor};border:1px solid ${data.inputBorderColor};outline:none;`
@@ -13578,11 +13115,7 @@ export function renderRu1SignIn(data: Ru1SignInData): string {
     ? `<div style="position:absolute;inset:0;background:${hexToRgba(data.overlayColor || '#000000', overlayOpacity)};pointer-events:none;"></div>`
     : ''
 
-  return `<section data-component-title="Ru1-Sign In" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;display:grid;${sectionBgStyle}${fontCss(undefined, data.fontFamily)}">
-  ${bgSpacerHtml}
-  ${overlayHtml}
-  <div style="grid-area:1/1;position:relative;display:flex;align-items:flex-start;min-width:0;padding:min(${data.paddingY}px,10vw) 1rem;">
-  <div data-cms-auth-card style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 880}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
+  const cardHtml = `<div data-cms-auth-card style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 880}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
     <h2 style="margin:0 0 2rem;text-align:center;font-size:min(${data.titleSize ?? 28}px,8vw);font-weight:${data.titleFontWeight ?? '600'};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
     <form data-cms-auth="login">
       <div style="margin-bottom:1.5rem;">
@@ -13604,7 +13137,64 @@ export function renderRu1SignIn(data: Ru1SignInData): string {
       <button type="submit" style="width:100%;background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.submitLabel}</button>
     </form>
     ${registerHtml}
+  </div>`
+
+  if (!data.showDepartmentPanel) {
+    return `<section data-component-title="Ru1-Sign In" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;display:grid;${sectionBgStyle}${fontCss(undefined, data.fontFamily)}">
+  ${bgSpacerHtml}
+  ${overlayHtml}
+  <div style="grid-area:1/1;position:relative;display:flex;align-items:flex-start;min-width:0;padding:min(${data.paddingY}px,10vw) 1rem;">
+  ${cardHtml}
   </div>
+</section>`
+  }
+
+  // "Select a department" panel — left column beside the sign-in card.
+  const deptPanelBgOpacity = Math.min(100, Math.max(0, data.departmentPanelBgOpacity ?? 100)) / 100
+  const deptPanelBgStyle = `background-color:${hexToRgba(data.departmentPanelBgColor || '#0a1e3f', deptPanelBgOpacity)};`
+
+  const infoBoxBgOpacity = Math.min(100, Math.max(0, data.infoBoxBgOpacity ?? 8)) / 100
+  const infoBoxBgStyle = `background:${hexToRgba(data.infoBoxBgColor || '#ffffff', infoBoxBgOpacity)};`
+
+  // Opacity is shared across every button (one control for all of them, not
+  // per-button) per how this field was asked for.
+  const deptButtonsOpacity = Math.min(100, Math.max(0, data.departmentButtonsOpacity ?? 100)) / 100
+  const deptButtonsHtml = (data.departments ?? []).map(btn => `
+      <a href="${btn.href || '#'}" class="ru1-dept-btn" style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;padding:1rem 1.25rem;border-radius:10px;background:${btn.bgColor};color:${btn.textColor || '#ffffff'};text-decoration:none;font-weight:700;font-size:1rem;opacity:${deptButtonsOpacity};box-sizing:border-box;min-width:0;">
+        <span style="min-width:0;overflow-wrap:anywhere;">${btn.label}</span>
+        <span style="flex:none;display:inline-flex;transform:rotate(-90deg);">${icon('chevronDown', { size: 18 })}</span>
+      </a>`).join('')
+
+  const deptPanelHtml = `<div data-ru1-dept-panel style="flex:1 1 380px;min-width:0;box-sizing:border-box;border-radius:${data.cardBorderRadius ?? 16}px;overflow:hidden;position:relative;${deptPanelBgStyle}padding:min(${data.departmentPanelPaddingY ?? 48}px,8vw) min(${data.departmentPanelPaddingX ?? 40}px,7vw);display:flex;flex-direction:column;gap:1.75rem;">
+    <style>
+      .ru1-dept-btn{transition:transform 0.15s ease;}
+      .ru1-dept-btn:hover{transform:scale(0.97);}
+      @media (max-width: 480px) {
+        [data-ru1-dept-panel] [data-ru1-dept-grid] { grid-template-columns: 1fr; }
+        [data-ru1-dept-panel] .ru1-dept-btn { padding: 0.875rem 1rem; font-size: 0.9375rem; }
+      }
+    </style>
+    <div>
+      <h2 style="margin:0 0 0.5rem;font-size:min(2rem,7vw);font-weight:700;color:${data.departmentPanelTitleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.departmentPanelTitle}</h2>
+      <p style="margin:0;font-size:1rem;color:${data.departmentPanelSubtitleColor};">${data.departmentPanelSubtitle}</p>
+    </div>
+    <div data-ru1-dept-grid style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">${deptButtonsHtml}
+    </div>
+    <div style="display:flex;gap:0.75rem;align-items:flex-start;${infoBoxBgStyle}border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:1rem;">
+      <span style="flex:none;display:inline-flex;color:${data.infoIconColor || '#60a5fa'};">${data.infoIconStyle === 'filled' ? ru1SignInInfoIconFilled : icon('informationCircle', { size: 20 })}</span>
+      <div style="min-width:0;">
+        <div style="font-weight:700;margin-bottom:0.25rem;color:${data.infoTitleColor};">${data.infoTitle}</div>
+        <div style="font-size:0.875rem;line-height:1.6;color:rgba(255,255,255,0.75);">${data.infoText}</div>
+      </div>
+    </div>
+  </div>`
+
+  return `<section data-component-title="Ru1-Sign In" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;display:grid;${sectionBgStyle}${fontCss(undefined, data.fontFamily)}">
+  ${bgSpacerHtml}
+  ${overlayHtml}
+  <div style="grid-area:1/1;position:relative;display:flex;flex-wrap:wrap;align-items:stretch;gap:2rem;min-width:0;padding:min(${data.paddingY}px,10vw) 1rem;">
+  ${deptPanelHtml}
+  <div style="flex:1 1 380px;min-width:0;display:flex;align-items:center;">${cardHtml}</div>
   </div>
 </section>`
 }
@@ -13619,16 +13209,6 @@ export function renderRu1SignIn(data: Ru1SignInData): string {
 // markup — wiring the form up to a real account-creation endpoint is a
 // separate concern outside this renderer.
 
-export const ru1SignUpSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#1f2937" width="277.5" height="80"/>
-  <rect fill="#374151" x="78.75" y="4" width="120" height="72" rx="6"/>
-  <rect fill="#9ca3af" x="118.75" y="12" width="40" height="7" rx="1"/>
-  <rect fill="#6b7280" x="88.75" y="26" width="30" height="4" rx="1"/>
-  <rect fill="#4b5563" x="88.75" y="32" width="100" height="8" rx="2"/>
-  <rect fill="#6b7280" x="88.75" y="45" width="30" height="4" rx="1"/>
-  <rect fill="#4b5563" x="88.75" y="51" width="100" height="8" rx="2"/>
-  <rect fill="#6b7280" x="88.75" y="63" width="100" height="9" rx="2"/>
-</svg>`
 
 export interface Ru1SignUpData {
   fontFamily: string
@@ -13869,16 +13449,6 @@ export function renderRu1SignUp(data: Ru1SignUpData): string {
 // Purely presentational markup — wiring the form up to a real password-reset
 // endpoint is a separate concern outside this renderer.
 
-export const ru1ForgotPasswordSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#1f2937" width="277.5" height="80"/>
-  <rect fill="#374151" x="68.75" y="4" width="140" height="72" rx="6"/>
-  <rect fill="#9ca3af" x="98.75" y="12" width="80" height="7" rx="1"/>
-  <rect fill="#6b7280" x="78.75" y="26" width="120" height="4" rx="1"/>
-  <rect fill="#6b7280" x="78.75" y="33" width="100" height="4" rx="1"/>
-  <rect fill="#4b5563" x="78.75" y="45" width="120" height="9" rx="2"/>
-  <rect fill="#4b5563" x="78.75" y="60" width="56" height="9" rx="2"/>
-  <rect fill="#6b7280" x="142.75" y="60" width="56" height="9" rx="2"/>
-</svg>`
 
 export interface Ru1ForgotPasswordData {
   fontFamily: string
@@ -14127,20 +13697,6 @@ export function renderRu1ForgotPassword(data: Ru1ForgotPasswordData): string {
 // shows at all, plus a font weight + colour each for the title and the list,
 // are exposed in the sidebar.
 
-export const ru1CreateNewPasswordSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 80">
-  <rect fill="#1f2937" width="277.5" height="80"/>
-  <rect fill="#374151" x="58.75" y="2" width="160" height="76" rx="6"/>
-  <rect fill="#9ca3af" x="98.75" y="9" width="80" height="7" rx="1"/>
-  <rect fill="#6b7280" x="68.75" y="21" width="30" height="4" rx="1"/>
-  <rect fill="#4b5563" x="68.75" y="27" width="140" height="8" rx="2"/>
-  <rect fill="#6b7280" x="68.75" y="41" width="30" height="4" rx="1"/>
-  <rect fill="#4b5563" x="68.75" y="47" width="140" height="8" rx="2"/>
-  <rect fill="#4b5563" x="68.75" y="61" width="66" height="8" rx="2"/>
-  <rect fill="#6b7280" x="142.75" y="61" width="66" height="8" rx="2"/>
-  <circle fill="#22c55e" cx="72" cy="76" r="1.6"/>
-  <circle fill="#6b7280" cx="79" cy="76" r="1.6"/>
-  <circle fill="#6b7280" cx="86" cy="76" r="1.6"/>
-</svg>`
 
 export interface Ru1CreateNewPasswordData {
   fontFamily: string
