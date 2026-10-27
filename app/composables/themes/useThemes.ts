@@ -1,21 +1,16 @@
-import { type ThemeSection, ru1HomepageSections, ru1HomepageSvg, ru2ShoppageSections, ru2ShoppageSvg, ru3ShopSections, ru3ShopSvg } from './themes-data'
+import { type ThemeSection, ru1HomepageSections } from './themes-data'
 import {
   ru1NavbarDefaults, ru1NavbarFields, renderRu1Navbar,
   ru1HeroDefaults, ru1HeroFields, renderRu1Hero,
   ru1ProductsDefaults, ru1ProductsFields, renderRu1Products,
   ru1FooterDefaults, ru1FooterFields, renderRu1Footer,
-  ru2ShopHeroDefaults, ru2ShopHeroFields, renderRu2ShopHero,
-  ru2ShopContentDefaults, ru2ShopContentFields, renderRu2ShopContent,
-  ru3ShopHeaderDefaults, ru3ShopHeaderFields, renderRu3ShopHeader,
-  ru3ShopFiltersDefaults, ru3ShopFiltersFields, renderRu3ShopFilters,
-  ru3ShopProductsDefaults, ru3ShopProductsFields, renderRu3ShopProducts,
-  ru2HomePageSvg, ru2HomePageSections,
+  ru2HomePageSections,
   ru2HomeNavbarDefaults, ru2HomeCarouselDefaults, ru2HomeStatsDefaults,
   ru2HomeSplitHeroDefaults, ru2HomeFooterDefaults,
-  ru3HomePageSvg, ru3HomePageSections,
+  ru3HomePageSections,
   ru3HomeNavbarDefaults, ru3HomeSplitHeroDefaults, ru3HomeStatsDefaults,
   ru3HomeEditorialDefaults, ru3HomeFooterDefaults,
-  ru4HomePageSvg, ru4HomePageSections,
+  ru4HomePageSections,
   ru4HomeNavbarDefaults, ru4HomeSplitHeroDefaults, ru4HomeStepsDefaults,
   ru4HomeAboutSplitDefaults, ru4HomeFooterDefaults,
 } from './themes-data'
@@ -37,7 +32,6 @@ interface ThemeMeta {
   name: string
   description: string
   category: string
-  cover_image: string
 }
 
 interface Theme {
@@ -52,29 +46,8 @@ export const themeRegistry: Record<string, Theme> = {
       name: 'Ru1-HomePage',
       description: 'Branded employee store theme',
       category: 'Home',
-      cover_image: ru1HomepageSvg,
     },
     sections: ru1HomepageSections,
-  },
-  'Ru1-ShopPage': {
-    meta: {
-      id: 'Ru1-ShopPage',
-      name: 'Ru1-ShopPage',
-      description: 'Shop page with sidebar filters and product grid',
-      category: 'Shop',
-      cover_image: ru2ShoppageSvg,
-    },
-    sections: ru2ShoppageSections,
-  },
-  'Ru2-ShopPage': {
-    meta: {
-      id: 'Ru2-ShopPage',
-      name: 'Ru2-ShopPage',
-      description: 'A complete shop page with filters, sorting and product grid',
-      category: 'Shop',
-      cover_image: ru3ShopSvg,
-    },
-    sections: ru3ShopSections,
   },
   'Ru2-HomePage': {
     meta: {
@@ -82,7 +55,6 @@ export const themeRegistry: Record<string, Theme> = {
       name: 'Ru2 HomePage',
       description: 'Bold dark theme with amber accents for industrial brands',
       category: 'Home',
-      cover_image: ru2HomePageSvg,
     },
     sections: ru2HomePageSections,
   },
@@ -92,7 +64,6 @@ export const themeRegistry: Record<string, Theme> = {
       name: 'Ru3 HomePage',
       description: 'Clean professional theme with navy and mint',
       category: 'Home',
-      cover_image: ru3HomePageSvg,
     },
     sections: ru3HomePageSections,
   },
@@ -102,7 +73,6 @@ export const themeRegistry: Record<string, Theme> = {
       name: 'Ru4 HomePage',
       description: 'Warm terracotta theme with burnt orange accents',
       category: 'Home',
-      cover_image: ru4HomePageSvg,
     },
     sections: ru4HomePageSections,
   },
@@ -115,13 +85,6 @@ export function useThemes() {
   blockRegistry.register('Ru1 Homepage Hero', { defaults: ru1HeroDefaults, fields: ru1HeroFields, render: renderRu1Hero })
   blockRegistry.register('Ru1 Homepage Featured Products', { defaults: ru1ProductsDefaults, fields: ru1ProductsFields, render: renderRu1Products })
   blockRegistry.register('Ru1 Homepage Footer', { defaults: ru1FooterDefaults, fields: ru1FooterFields, render: renderRu1Footer })
-
-  blockRegistry.register('Ru1 Shop Hero', { defaults: ru2ShopHeroDefaults, fields: ru2ShopHeroFields, render: renderRu2ShopHero })
-  blockRegistry.register('Ru1 Shop Content', { defaults: ru2ShopContentDefaults, fields: ru2ShopContentFields, render: renderRu2ShopContent })
-
-  blockRegistry.register('Ru2 Shop Header', { defaults: ru3ShopHeaderDefaults, fields: ru3ShopHeaderFields, render: renderRu3ShopHeader })
-  blockRegistry.register('Ru2 Shop Filters', { defaults: ru3ShopFiltersDefaults, fields: ru3ShopFiltersFields, render: renderRu3ShopFilters })
-  blockRegistry.register('Ru2 Shop Products', { defaults: ru3ShopProductsDefaults, fields: ru3ShopProductsFields, render: renderRu3ShopProducts })
 
   blockRegistry.register('Ru2-Home-Navbar',    { defaults: ru2HomeNavbarDefaults,    fields: megaMenuHeaderFields,    render: renderMegaMenuHeader })
   blockRegistry.register('Ru2-Home-Carousel',  { defaults: ru2HomeCarouselDefaults,  fields: ru5ImageCarouselFields,  render: renderRu5ImageCarousel })

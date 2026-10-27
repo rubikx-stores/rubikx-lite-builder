@@ -86,6 +86,12 @@ function _loadStorage(): Record<string, Record<string, any>> {
 
 function _saveStorage() {
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') return
+  // Every field edit (text, color, toggle, list item, ...) in the sidebar
+  // funnels through here — this is the one choke point that reliably marks
+  // the page dirty for the "← Pages" unsaved-changes prompt
+  // (app/pages/editor.vue), independent of the page builder library's own
+  // undo-history, which several of these edits never touch at all.
+  useState<boolean>('hasUnsavedChanges', () => false).value = true
   try {
     const out: Record<string, any> = {}
     _states.forEach((state, id) => {

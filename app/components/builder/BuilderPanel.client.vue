@@ -2,6 +2,7 @@
 import { nextTick, ref, computed } from 'vue'
 import componentData from '#lib/component'
 import themesData from '#lib/themes'
+import ComponentPreviewFrame from './ComponentPreviewFrame.client.vue'
 import { getPageBuilder, usePageBuilderModal, usePageBuilderStateStore } from '@myissue/vue-website-page-builder'
 import { NAVBAR_TITLES, FOOTER_TITLES } from '~/composables/useGlobalSections'
 import { hydrateComponents } from '~/plugins/rubikx-hydration.client'
@@ -10,6 +11,17 @@ import { FONT_FAMILY_OPTIONS } from '~/composables/editor/fontFields'
 const selectedCompanyId = useState<number | null>('selectedCompanyId')
 
 const { themeRegistry, applyTheme } = useThemes()
+
+// A theme has no single html_code of its own — it's a list of sections
+// (navbar/hero/products/footer/...), each already carrying its own real
+// html_code (see themes-data.ts). Concatenating them in order reproduces
+// exactly what applyTheme() actually adds to the canvas, so the live preview
+// shows the real homepage layout rather than a hand-drawn SVG thumbnail —
+// same ComponentPreviewFrame used for the Components grid, just fed a
+// longer page.
+function themeSectionsHtml(theme: { sections: { html_code: string }[] }): string {
+  return theme.sections.map(s => s.html_code).join('')
+}
 const { layoutComponentRegistry } = useLayouts()
 const { helperComponentBlocks } = useHelperBlocks()
 const { closeAddComponentModal } = usePageBuilderModal()
@@ -69,9 +81,13 @@ const categories = computed(() => {
 
 const filteredComponents = computed(() => {
   const libData = componentData[0]?.components?.data ?? []
-  // Merge custom layout components + library components into one list
-  const customItems = Object.values(layoutComponentRegistry).flat()
-  const all = [...customItems, ...libData]
+  // Merge custom layout components + library components into one list.
+  // Registry items are tagged _livePreview so the card grid renders a real
+  // scaled-down iframe preview for them instead of their static cover_image
+  // SVG — they're guaranteed inline-style-only (no Tailwind), unlike the
+  // library items, so they render correctly with no stylesheet in the iframe.
+  const customItems = Object.values(layoutComponentRegistry).flat().map(c => ({ ...c, _livePreview: true as const }))
+  const all: ((typeof customItems)[number] | ((typeof libData)[number] & { _livePreview?: boolean }))[] = [...customItems, ...libData]
   return selectedCategory.value === 'All'
     ? all
     : all.filter((c) => c.category === selectedCategory.value)
@@ -95,70 +111,113 @@ const filteredLibThemes = computed(() => {
   return data.filter((t) => t.category === selectedThemeCategory.value)
 })
 
+// Inserts exactly one <section> as one page-builder component, respecting
+// header/footer bounds, then wires up its field editor. Re-queries the live
+// DOM fresh on every call, so calling this in sequence for several sections
+// (see handleDropComponent below) naturally places each one right after the
+// previous — the same result as dragging each section in individually.
+async function addSingleComponent(comp: { id: string | number | null; html_code: string; title: string }) {
+  const store = usePageBuilderStateStore() as any
+
+  // Captured before addComponent() so the new instance can be told apart
+  // from any existing sections that already share this same title.
+  const existingIdsForTitle = new Set(
+    Array.from(document.querySelectorAll<HTMLElement>(`section[data-component-title="${CSS.escape(comp.title)}"][data-componentid]`))
+      .map((s) => s.getAttribute('data-componentid'))
+  )
+
+  const allSections = Array.from(document.querySelectorAll('section[data-component-title]'))
+  const headerIndex = allSections.findIndex(s => NAVBAR_TITLES.includes(s.getAttribute('data-component-title') ?? ''))
+  const footerIndex = allSections.findIndex(s => FOOTER_TITLES.includes(s.getAttribute('data-component-title') ?? ''))
+
+  const currentMethod = store.getComponentArrayAddMethod
+  const currentIndex = store.getAddComponentAddIndex ?? 0
+  const minIndex = headerIndex !== -1 ? headerIndex + 1 : 0
+  const maxIndex = footerIndex !== -1 ? footerIndex : allSections.length
+
+  let methodOverridden = false
+
+  if (headerIndex !== -1 || footerIndex !== -1) {
+    if (currentMethod === 'unshift') {
+      store.setComponentArrayAddMethod('insert')
+      store.setAddComponentAddIndex(minIndex)
+      methodOverridden = true
+      await nextTick()
+    } else if (currentMethod === 'push') {
+      store.setComponentArrayAddMethod('insert')
+      store.setAddComponentAddIndex(maxIndex)
+      methodOverridden = true
+      await nextTick()
+    } else {
+      const clampedIndex = Math.min(Math.max(currentIndex, minIndex), maxIndex)
+      if (clampedIndex !== currentIndex) {
+        store.setAddComponentAddIndex(clampedIndex)
+        await nextTick()
+      }
+    }
+  }
+
+  await getPageBuilder().addComponent(comp)
+
+  // Restore original method if we overrode it
+  if (methodOverridden) {
+    store.setComponentArrayAddMethod(currentMethod)
+  }
+
+  // Find the one section for this title that wasn't there before
+  // addComponent() ran — used both to wire up the field editor below and,
+  // for multi-section drops, to tell handleDropComponent where this section
+  // landed so the next one can be pinned right after it.
+  const newId = Array.from(document.querySelectorAll<HTMLElement>(`section[data-component-title="${CSS.escape(comp.title)}"][data-componentid]`))
+    .map((s) => s.getAttribute('data-componentid'))
+    .find((id) => id && !existingIdsForTitle.has(id)) ?? null
+
+  if (newId && comp.title && blockRegistry.hasConfig(comp.title)) {
+    blockRegistry.resetToDefaults(newId)
+    await nextTick()
+    await applyBlockRender(newId)
+  }
+
+  return newId
+}
+
 async function handleDropComponent(comp: { id: string | number | null; html_code: string; title: string }) {
   isLoading.value = true
   try {
-    const store = usePageBuilderStateStore() as any
+    // A registry card's html_code is normally a single <section> — but a
+    // few (e.g. the Shop Page cards) bundle several sibling sections under
+    // one card so the whole mini-page drops in with one click. addComponent()
+    // only handles one section at a time, so split multi-section html_code
+    // and insert each section in order; single-section cards take the exact
+    // same path they always did (loop of length 1).
+    const doc = new DOMParser().parseFromString(comp.html_code, 'text/html')
+    const sections = Array.from(doc.body.querySelectorAll(':scope > section[data-component-title]'))
 
-    // Captured before addComponent() so the new instance can be told apart
-    // from any existing sections that already share this same title.
-    const existingIdsForTitle = new Set(
-      Array.from(document.querySelectorAll<HTMLElement>(`section[data-component-title="${CSS.escape(comp.title)}"][data-componentid]`))
-        .map((s) => s.getAttribute('data-componentid'))
-    )
-
-    const allSections = Array.from(document.querySelectorAll('section[data-component-title]'))
-    const headerIndex = allSections.findIndex(s => NAVBAR_TITLES.includes(s.getAttribute('data-component-title') ?? ''))
-    const footerIndex = allSections.findIndex(s => FOOTER_TITLES.includes(s.getAttribute('data-component-title') ?? ''))
-
-    const currentMethod = store.getComponentArrayAddMethod
-    const currentIndex = store.getAddComponentAddIndex ?? 0
-    const minIndex = headerIndex !== -1 ? headerIndex + 1 : 0
-    const maxIndex = footerIndex !== -1 ? footerIndex : allSections.length
-
-    console.log('[ADD] method:', currentMethod, 'headerIndex:', headerIndex, 'footerIndex:', footerIndex, 'currentIndex:', currentIndex, 'minIndex:', minIndex, 'maxIndex:', maxIndex)
-
-    let methodOverridden = false
-
-    if (headerIndex !== -1 || footerIndex !== -1) {
-      if (currentMethod === 'unshift') {
-        store.setComponentArrayAddMethod('insert')
-        store.setAddComponentAddIndex(minIndex)
-        methodOverridden = true
-        await nextTick()
-      } else if (currentMethod === 'push') {
-        store.setComponentArrayAddMethod('insert')
-        store.setAddComponentAddIndex(maxIndex)
-        methodOverridden = true
-        await nextTick()
-      } else {
-        const clampedIndex = Math.min(Math.max(currentIndex, minIndex), maxIndex)
-        if (clampedIndex !== currentIndex) {
-          store.setAddComponentAddIndex(clampedIndex)
-          await nextTick()
-        }
+    if (sections.length > 1) {
+      // Same trick applyTheme() (useThemes.ts) already relies on for
+      // inserting several ordered sections in one go: force 'unshift'
+      // (prepend) and walk the sections in reverse, so each prepend lands
+      // above the one before it — by the time the loop finishes, the
+      // reversal cancels itself out and sections end up in original order.
+      // (An explicit insert-at-index was tried first and broke: that index
+      // is into addComponent()'s own internal post-sync component array,
+      // not the raw DOM section list computed here, so the computed index
+      // didn't line up with where the previous section actually landed.)
+      const store = usePageBuilderStateStore() as any
+      const originalMethod = store.getComponentArrayAddMethod
+      const originalIndex = store.getAddComponentAddIndex ?? 0
+      store.setComponentArrayAddMethod('unshift')
+      for (const section of [...sections].reverse()) {
+        await addSingleComponent({
+          id: null,
+          html_code: section.outerHTML,
+          title: section.getAttribute('data-component-title') ?? comp.title,
+        })
       }
-    }
-
-    await getPageBuilder().addComponent(comp)
-
-    // Restore original method if we overrode it
-    if (methodOverridden) {
-      store.setComponentArrayAddMethod(currentMethod)
-    }
-
-    if (comp.title && blockRegistry.hasConfig(comp.title)) {
-      // resetToDefaults()/applyBlockRender() key off a componentId, not a
-      // title — find the one section for this title that wasn't there
-      // before addComponent() ran.
-      const newId = Array.from(document.querySelectorAll<HTMLElement>(`section[data-component-title="${CSS.escape(comp.title)}"][data-componentid]`))
-        .map((s) => s.getAttribute('data-componentid'))
-        .find((id) => id && !existingIdsForTitle.has(id))
-      if (newId) {
-        blockRegistry.resetToDefaults(newId)
-        await nextTick()
-        await applyBlockRender(newId)
-      }
+      store.setComponentArrayAddMethod(originalMethod)
+      store.setAddComponentAddIndex(originalIndex)
+    } else {
+      await addSingleComponent(comp)
     }
 
     // Hydrate dynamic components after adding new component
@@ -284,56 +343,60 @@ async function handleApplyTheme(themeId: string) {
             </button>
           </div>
 
-          <div class="min-h-[96rem]">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-4">
 
-              <!-- Registry themes — filtered by selected category -->
-              <template v-if="Object.keys(filteredRegistryThemes).length > 0">
+            <!-- Registry themes — filtered by selected category -->
+            <template v-if="Object.keys(filteredRegistryThemes).length > 0">
+              <div
+                v-for="(theme, id) in filteredRegistryThemes"
+                :key="id"
+                class="flex flex-col border-solid border border-gray-400 overflow-hidden hover:border-myPrimaryLinkColor duration-100 cursor-pointer max-h-[30rem]"
+                @click="handleApplyTheme(String(id))"
+              >
                 <div
-                  v-for="(theme, id) in filteredRegistryThemes"
-                  :key="id"
-                  class="border-solid border border-gray-400 overflow-hidden hover:border-myPrimaryLinkColor duration-100 cursor-pointer max-h-[30rem]"
-                  @click="handleApplyTheme(String(id))"
+                  class="flex-1 overflow-hidden whitespace-pre-line border-0 border-solid border-b border-gray-200 py-2 px-2"
+                >
+                  <!-- Live preview of the real homepage (navbar + hero +
+                       products + footer, concatenated) instead of a
+                       hand-drawn SVG thumbnail — same mechanism as the
+                       Components grid. flex-1 (replacing the old separate
+                       spacer div) grows this box to fill the row's common
+                       height, so the border-b divider lines up across every
+                       card in the row instead of sitting right under each
+                       preview's own (different) content height. -->
+                  <ComponentPreviewFrame :html="themeSectionsHtml(theme)" />
+                </div>
+                <div class="p-3">
+                  <h4 class="text-sm font-normal text-gray-900 lg:text-base">{{ theme.meta.name }}</h4>
+                  <div class="text-xs font-normal text-gray-900 pt-2">{{ theme.meta.description }}</div>
+                </div>
+              </div>
+            </template>
+
+            <!-- Library themes — shown when any match the selected category -->
+            <template v-if="filteredLibThemes.length > 0">
+              <div
+                v-for="theme in filteredLibThemes"
+                :key="theme.title"
+                class="flex flex-col border-solid border border-gray-400 overflow-hidden hover:border-myPrimaryLinkColor duration-100 cursor-pointer max-h-[30rem]"
+                @click="handleDropLibTheme(theme.html_code)"
+              >
+                <div
+                  class="overflow-hidden whitespace-pre-line border-0 border-solid border-b border-gray-200 py-2 px-2"
                 >
                   <div
-                    class="overflow-hidden whitespace-pre-line flex-1 h-auto border-0 border-solid border-b border-gray-200 py-2 px-2"
-                  >
-                    <div
-                      class="w-64 h-96 object-cover cursor-pointer bg-white mx-auto flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-top"
-                      v-html="theme.meta.cover_image"
-                    />
-                  </div>
-                  <div class="p-3">
-                    <h4 class="text-sm font-normal text-gray-900 lg:text-base">{{ theme.meta.name }}</h4>
-                    <div class="text-xs font-normal text-gray-900 pt-2">{{ theme.meta.description }}</div>
-                  </div>
+                    class="w-64 h-96 object-cover cursor-pointer bg-white mx-auto flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-top"
+                    v-html="theme.cover_image"
+                  />
                 </div>
-              </template>
-
-              <!-- Library themes — shown when any match the selected category -->
-              <template v-if="filteredLibThemes.length > 0">
-                <div
-                  v-for="theme in filteredLibThemes"
-                  :key="theme.title"
-                  class="border-solid border border-gray-400 overflow-hidden hover:border-myPrimaryLinkColor duration-100 cursor-pointer max-h-[30rem]"
-                  @click="handleDropLibTheme(theme.html_code)"
-                >
-                  <div
-                    class="overflow-hidden whitespace-pre-line flex-1 h-auto border-0 border-solid border-b border-gray-200 py-2 px-2"
-                  >
-                    <div
-                      class="w-64 h-96 object-cover cursor-pointer bg-white mx-auto flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-top"
-                      v-html="theme.cover_image"
-                    />
-                  </div>
-                  <div class="p-3">
-                    <h4 class="text-sm font-normal text-gray-900 lg:text-base">{{ theme.title }}</h4>
-                    <div class="text-xs font-normal text-gray-900 pt-2">Click to add theme</div>
-                  </div>
+                <div class="flex-1" />
+                <div class="p-3">
+                  <h4 class="text-sm font-normal text-gray-900 lg:text-base">{{ theme.title }}</h4>
+                  <div class="text-xs font-normal text-gray-900 pt-2">Click to add theme</div>
                 </div>
-              </template>
+              </div>
+            </template>
 
-            </div>
           </div>
         </div>
       </template>
@@ -380,26 +443,31 @@ async function handleApplyTheme(themeId: string) {
               {{ cat }}
             </button>
           </div>
-          <div class="min-h-[96rem]">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-4">
+            <div
+              v-for="comp in filteredComponents"
+              :key="comp.title"
+              class="flex flex-col border-solid border border-gray-400 overflow-hidden hover:border-myPrimaryLinkColor duration-100 cursor-pointer max-h-96"
+              @click="handleDropComponent({ id: null, html_code: comp.html_code, title: comp.title })"
+            >
               <div
-                v-for="comp in filteredComponents"
-                :key="comp.title"
-                class="border-solid border border-gray-400 overflow-hidden hover:border-myPrimaryLinkColor duration-100 cursor-pointer max-h-96"
-                @click="handleDropComponent({ id: null, html_code: comp.html_code, title: comp.title })"
+                class="flex-1 overflow-hidden whitespace-pre-line border-0 border-solid border-b border-gray-200 py-2 px-2"
               >
+                <!-- flex-1 grows the preview to the row's shared height, so the border-b divider lines up across every card. -->
+                <ComponentPreviewFrame
+                  v-if="comp._livePreview"
+                  :html="comp.html_code"
+                  :min-height="comp.category === 'Announcement Bar' || comp.category === 'Products' ? 90 : 48"
+                />
                 <div
-                  class="overflow-hidden whitespace-pre-line flex-1 h-auto border-0 border-solid border-b border-gray-200 py-2 px-2"
-                >
-                  <div
-                    class="w-64 h-64 object-cover cursor-pointer bg-white mx-auto flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-top"
-                    v-html="comp.cover_image"
-                  />
-                </div>
-                <div class="p-3">
-                  <h4 class="text-sm font-normal text-gray-900 lg:text-base">{{ comp.title }}</h4>
-                  <div class="text-xs font-normal text-gray-900 pt-2">Click to add component</div>
-                </div>
+                  v-else
+                  class="w-full h-72 cursor-pointer bg-white flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-top"
+                  v-html="comp.cover_image"
+                />
+              </div>
+              <div class="p-3">
+                <h4 class="text-sm font-normal text-gray-900 lg:text-base">{{ comp.title }}</h4>
+                <div class="text-xs font-normal text-gray-900 pt-2">Click to add component</div>
               </div>
             </div>
           </div>

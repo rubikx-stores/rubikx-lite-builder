@@ -53,9 +53,9 @@ const newPageError = ref('')
 const NEW_PAGE_TYPE = '__new__'
 const newPageType = ref('')
 const PAGE_TYPE_OPTIONS = [
-  { group: 'Pages', slug: 'about-us', name: 'About Us' },
+  { group: 'Pages', slug: 'aboutus', name: 'About' },
   { group: 'Pages', slug: 'faqs', name: 'FAQs' },
-  { group: 'Pages', slug: 'contact', name: 'Contact Us' },
+  { group: 'Pages', slug: 'contactus', name: 'Contact' },
   { group: 'Pages', slug: 'privacy-policy', name: 'Privacy Policy' },
   { group: 'Pages', slug: 'terms-and-conditions', name: 'Terms & Conditions' },
   { group: 'Pages', slug: 'returns', name: 'Returns' },
@@ -341,7 +341,14 @@ async function deletePage() {
   deleteError.value = ''
   deleting.value[page.id] = true
   try {
-    await $fetch(`/api/pages/${page.id}`, {
+    // Nitro's typed $fetch infers the allowed `method` by pattern-matching the
+    // request string's literal type against its route table; a catch-all
+    // route (`[...key].delete.ts`) combined with a dynamic `page.id` segment
+    // doesn't resolve to a literal match, so it falls back to the wrong
+    // method union. Pinning R to plain `string` opts out of that inference
+    // (the runtime route match is unaffected — Nitro resolves it at request
+    // time regardless of what TS inferred here).
+    await $fetch<{ deleted: number; ids: number[] }, string>(`/api/pages/${page.id}`, {
       method: 'DELETE',
       query: {
         companyId: selectedWebsiteId.value,

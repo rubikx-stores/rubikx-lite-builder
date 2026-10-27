@@ -16,17 +16,6 @@ import {
   ru6SplitHeroDefaults, ru6SplitHeroFields, renderRu6SplitHero,
 } from '../layouts/components'
 
-export const ru1NavbarSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 277.5 40">
-  <rect fill="#1f2937" x="0" y="0" width="277.5" height="40"/>
-  <rect fill="#9ca3af" x="8" y="7" width="36" height="7" rx="1"/>
-  <rect fill="#374151" x="100" y="6" width="77" height="9" rx="4"/>
-  <rect fill="#4b5563" x="200" y="7" width="22" height="7" rx="2"/>
-  <rect fill="#4b5563" x="228" y="7" width="22" height="7" rx="2"/>
-  <rect fill="#6b7280" x="8" y="24" width="25" height="4" rx="1"/>
-  <rect fill="#6b7280" x="42" y="24" width="22" height="4" rx="1"/>
-  <rect fill="#6b7280" x="72" y="24" width="28" height="4" rx="1"/>
-  <rect fill="#6b7280" x="108" y="24" width="32" height="4" rx="1"/>
-</svg>`
 
 export interface ThemeSection {
   id: null
@@ -36,47 +25,6 @@ export interface ThemeSection {
 
 const placeholderSvg = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150"><rect fill="#394152" width="200" height="150"/><polygon fill="#718096" points="65 90 90 60 115 90"/><polygon fill="#718096" points="110 90 122.5 75 135 90"/><circle fill="#718096" cx="122.5" cy="64" r="4"/></svg>')}`
 
-export const ru1HomepageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
-  <rect fill="#394152" x="0" y="0" width="280" height="18"/>
-  <rect fill="#718096" x="8" y="6" width="30" height="5"/>
-  <rect fill="#718096" x="180" y="6" width="18" height="5"/>
-  <rect fill="#718096" x="203" y="6" width="18" height="5"/>
-  <rect fill="#718096" x="226" y="6" width="18" height="5"/>
-  <rect fill="#718096" x="250" y="6" width="22" height="5"/>
-  <rect fill="#394152" x="0" y="26" width="280" height="75"/>
-  <polygon fill="#718096" points="80 85 115 50 150 85 80 85"/>
-  <polygon fill="#718096" points="145 85 163 65 181 85 145 85"/>
-  <circle fill="#718096" cx="163" cy="56" r="6"/>
-  <rect fill="#394152" x="0" y="112" width="90" height="7"/>
-  <rect fill="#394152" x="0" y="128" width="62" height="56"/>
-  <rect fill="#394152" x="73" y="128" width="62" height="56"/>
-  <rect fill="#394152" x="146" y="128" width="62" height="56"/>
-  <rect fill="#394152" x="219" y="128" width="61" height="56"/>
-  <polygon fill="#718096" points="8 174 22 155 36 174 8 174"/>
-  <polygon fill="#718096" points="81 174 95 155 109 174 81 174"/>
-  <polygon fill="#718096" points="154 174 168 155 182 174 154 174"/>
-  <polygon fill="#718096" points="227 174 241 155 255 174 227 174"/>
-  <rect fill="#394152" x="0" y="192" width="55" height="4"/>
-  <rect fill="#394152" x="73" y="192" width="55" height="4"/>
-  <rect fill="#394152" x="146" y="192" width="55" height="4"/>
-  <rect fill="#394152" x="219" y="192" width="55" height="4"/>
-  <rect fill="#394152" x="0" y="202" width="30" height="3"/>
-  <rect fill="#394152" x="73" y="202" width="30" height="3"/>
-  <rect fill="#394152" x="146" y="202" width="30" height="3"/>
-  <rect fill="#394152" x="219" y="202" width="30" height="3"/>
-  <rect fill="#394152" x="0" y="224" width="280" height="78"/>
-  <rect fill="#718096" x="8" y="234" width="55" height="4"/>
-  <rect fill="#718096" x="8" y="244" width="45" height="3"/>
-  <rect fill="#718096" x="8" y="252" width="50" height="3"/>
-  <rect fill="#718096" x="8" y="260" width="40" height="3"/>
-  <rect fill="#718096" x="100" y="234" width="55" height="4"/>
-  <rect fill="#718096" x="100" y="244" width="45" height="3"/>
-  <rect fill="#718096" x="100" y="252" width="50" height="3"/>
-  <rect fill="#718096" x="192" y="234" width="55" height="4"/>
-  <rect fill="#718096" x="192" y="244" width="50" height="3"/>
-  <rect fill="#718096" x="192" y="252" width="45" height="3"/>
-  <rect fill="#718096" x="90" y="285" width="100" height="3"/>
-</svg>`
 
 // ─── Navbar block editor data ───────────────────────────────────────────────
 
@@ -404,6 +352,8 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     [data-nav-desktop] { display: none !important; }
     [data-nav-desktop-lower] { display: none !important; }
   }
+  [data-nav-mobile] img, [data-mobile-drawer] img { width: ${Math.round(data.logoWidth * 0.75)}px !important; }
+  [data-nav-mobile] [data-field-key="brandName"], [data-mobile-drawer] [data-field-key="brandName"] { font-size: ${Math.round(data.brandFontSize * 0.85)}px !important; }
   ${dynamicCategoriesRowCss}
 </style>
 <!-- Mobile header -->
@@ -580,13 +530,21 @@ export function renderRu1Hero(data: Ru1HeroData): string {
     </div>`
     : ''
 
-  const inner = `<div style="position:relative;width:100%;height:0;padding-bottom:${boxHeight};overflow:hidden;">
+  const mobileRatioPercent = Math.min(ratioPercent * 1.5, 150)
+  const mobileBoxHeight = data.extraHeight ? `calc(${mobileRatioPercent}% + ${data.extraHeight}cm)` : `${mobileRatioPercent}%`
+
+  const inner = `<div data-hero-box="true" style="position:relative;width:100%;height:0;padding-bottom:${boxHeight};overflow:hidden;">
     <img src="${data.imageUrl}" alt="${data.altText}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block;" />
     ${overlayDiv}
     ${textLayer}
   </div>`
 
   return `<section data-component-title="Ru1 Homepage Hero" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
+<style>
+  @media (max-width: 640px) {
+    [data-hero-box] { padding-bottom: ${mobileBoxHeight} !important; }
+  }
+</style>
 <div style="${sectionStyle}">
   ${data.linkUrl ? `<a href="${data.linkUrl}" style="display:block">${inner}</a>` : inner}
 </div>
@@ -835,6 +793,9 @@ export function renderRu1Products(data: Ru1ProductsData, title = 'Ru1 Homepage F
     styleRules.push(`[data-fp-card]{transition:transform ${dur}ms ease,box-shadow ${dur}ms ease}`)
     styleRules.push(`[data-fp-card]:hover{${_hoverCSS(data.hoverEffect, data.hoverAmount)}}`)
   }
+  // Shrinks the title + "Browse all" link on phones — browseAllSize is a fixed
+  // px value otherwise, so it never scales down on its own like the title does.
+  styleRules.push(`@media(max-width:480px){[data-fp-head="${gridId}"] [data-fp-title]{font-size:1.125rem}[data-fp-head="${gridId}"] [data-fp-browse]{font-size:0.75rem}}`)
   const animStyle = `<style>${styleRules.join('')}</style>`
 
   const sectionBg = data.bgColor ? `background:${data.bgColor}` : ''
@@ -913,15 +874,15 @@ export function renderRu1Products(data: Ru1ProductsData, title = 'Ru1 Homepage F
     ? `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><path d="M3 8h9M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`
     : ''
   const browseAllHtml = data.showBrowseAll !== false && data.browseAllLabel
-    ? `<a href="${data.browseAllUrl || '#'}" style="display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;white-space:nowrap;color:${data.browseAllColor};font-weight:${data.browseAllWeight};font-size:${data.browseAllSize}px;${fontCss(data.browseAllFont, data.fontFamily)}">${data.browseAllLabel}${browseArrow}</a>`
+    ? `<a data-fp-browse href="${data.browseAllUrl || '#'}" style="display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;white-space:nowrap;color:${data.browseAllColor};font-weight:${data.browseAllWeight};font-size:${data.browseAllSize}px;${fontCss(data.browseAllFont, data.fontFamily)}">${data.browseAllLabel}${browseArrow}</a>`
     : ''
 
   return `<section data-component-title="${title}" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 ${animStyle}
 <div style="${innerStyle}">
   <div style="max-width:90rem;margin:0 auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:2rem">
-      <h1 data-field-key="sectionTitle" style="margin:0;font-size:min(2rem,8vw);font-weight:600;text-align:${data.titleAlign};color:${data.titleColor};${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h1>
+    <div data-fp-head="${gridId}" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:2rem">
+      <h1 data-field-key="sectionTitle" data-fp-title style="margin:0;font-size:min(2rem,8vw);font-weight:600;text-align:${data.titleAlign};color:${data.titleColor};${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h1>
       ${browseAllHtml}
     </div>
     <div id="${gridId}">
@@ -953,31 +914,6 @@ export function renderShowFeaturedProducts(data: Ru1ProductsData): string {
   return renderRu1Products(data, 'Ru1-Show-Featured-Products')
 }
 
-export const showFeaturedProductsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 233 90">
-  <defs><style>.bg{fill:#384152}.fg{fill:#718096}</style></defs>
-  <rect class="bg" width="70" height="8"/>
-  <rect class="fg" x="196" y="1.5" width="37" height="5"/>
-  <rect class="bg" y="18" width="53" height="53"/>
-  <rect class="bg" x="60" y="18" width="53" height="53"/>
-  <rect class="bg" x="120" y="18" width="53" height="53"/>
-  <rect class="bg" x="180" y="18" width="53" height="53"/>
-  <polygon class="fg" points="8 62 20 47 32 62"/>
-  <polygon class="fg" points="68 62 80 47 92 62"/>
-  <polygon class="fg" points="128 62 140 47 152 62"/>
-  <polygon class="fg" points="188 62 200 47 212 62"/>
-  <circle class="fg" cx="40" cy="30" r="4"/>
-  <circle class="fg" cx="100" cy="30" r="4"/>
-  <circle class="fg" cx="160" cy="30" r="4"/>
-  <circle class="fg" cx="220" cy="30" r="4"/>
-  <rect class="bg" y="77" width="40" height="3"/>
-  <rect class="bg" x="60" y="77" width="40" height="3"/>
-  <rect class="bg" x="120" y="77" width="40" height="3"/>
-  <rect class="bg" x="180" y="77" width="40" height="3"/>
-  <rect class="bg" y="84" width="53" height="3"/>
-  <rect class="bg" x="60" y="84" width="53" height="3"/>
-  <rect class="bg" x="120" y="84" width="53" height="3"/>
-  <rect class="bg" x="180" y="84" width="53" height="3"/>
-</svg>`
 
 // ─── Footer block editor data ────────────────────────────────────────────────
 
@@ -1263,93 +1199,6 @@ export const ru1HomepageSections: ThemeSection[] = [
 // Ru1 ShopPage theme
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export const ru2ShoppageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
-  <rect fill="#394152" x="0" y="0" width="280" height="18"/>
-  <rect fill="#718096" x="8" y="6" width="28" height="5"/>
-  <rect fill="#718096" x="185" y="6" width="16" height="5"/>
-  <rect fill="#718096" x="206" y="6" width="16" height="5"/>
-  <rect fill="#718096" x="227" y="6" width="16" height="5"/>
-  <rect fill="#718096" x="250" y="6" width="22" height="5"/>
-  <rect fill="#f3f4f6" x="0" y="18" width="280" height="28"/>
-  <rect fill="#9ca3af" x="8" y="22" width="60" height="2"/>
-  <rect fill="#374151" x="8" y="28" width="52" height="8"/>
-  <rect fill="#e5e7eb" x="0" y="46" width="280" height="1"/>
-  <rect fill="#ffffff" x="0" y="47" width="280" height="19"/>
-  <rect fill="#374151" x="4" y="53" width="18" height="3"/>
-  <rect fill="#9ca3af" x="26" y="53" width="28" height="3"/>
-  <rect fill="#e5e7eb" x="120" y="51" width="28" height="12" rx="2"/>
-  <rect fill="#e5e7eb" x="152" y="51" width="22" height="12" rx="2"/>
-  <rect fill="#e5e7eb" x="178" y="51" width="20" height="12" rx="2"/>
-  <rect fill="#e5e7eb" x="202" y="51" width="26" height="12" rx="2"/>
-  <rect fill="#e5e7eb" x="232" y="51" width="20" height="12" rx="2"/>
-  <rect fill="#e5e7eb" x="0" y="66" width="280" height="1"/>
-  <rect fill="#394152" x="4" y="69" width="65" height="46"/>
-  <polygon fill="#718096" points="10 108 30 84 50 108"/>
-  <polygon fill="#718096" points="46 108 56 96 66 108"/>
-  <rect fill="#374151" x="4" y="118" width="55" height="3"/>
-  <rect fill="#9ca3af" x="4" y="125" width="32" height="2"/>
-  <rect fill="#394152" x="73" y="69" width="65" height="46"/>
-  <polygon fill="#718096" points="79 108 99 84 119 108"/>
-  <polygon fill="#718096" points="115 108 125 96 135 108"/>
-  <rect fill="#374151" x="73" y="118" width="55" height="3"/>
-  <rect fill="#9ca3af" x="73" y="125" width="32" height="2"/>
-  <rect fill="#394152" x="142" y="69" width="65" height="46"/>
-  <polygon fill="#718096" points="148 108 168 84 188 108"/>
-  <polygon fill="#718096" points="184 108 194 96 204 108"/>
-  <rect fill="#374151" x="142" y="118" width="55" height="3"/>
-  <rect fill="#9ca3af" x="142" y="125" width="32" height="2"/>
-  <rect fill="#394152" x="211" y="69" width="65" height="46"/>
-  <polygon fill="#718096" points="217 108 237 84 257 108"/>
-  <polygon fill="#718096" points="253 108 263 96 273 108"/>
-  <rect fill="#374151" x="211" y="118" width="55" height="3"/>
-  <rect fill="#9ca3af" x="211" y="125" width="32" height="2"/>
-  <rect fill="#394152" x="4" y="133" width="65" height="46"/>
-  <polygon fill="#718096" points="10 172 30 148 50 172"/>
-  <polygon fill="#718096" points="46 172 56 160 66 172"/>
-  <rect fill="#374151" x="4" y="182" width="55" height="3"/>
-  <rect fill="#9ca3af" x="4" y="189" width="32" height="2"/>
-  <rect fill="#394152" x="73" y="133" width="65" height="46"/>
-  <polygon fill="#718096" points="79 172 99 148 119 172"/>
-  <rect fill="#374151" x="73" y="182" width="55" height="3"/>
-  <rect fill="#9ca3af" x="73" y="189" width="32" height="2"/>
-  <rect fill="#394152" x="142" y="133" width="65" height="46"/>
-  <polygon fill="#718096" points="148 172 168 148 188 172"/>
-  <rect fill="#374151" x="142" y="182" width="55" height="3"/>
-  <rect fill="#9ca3af" x="142" y="189" width="32" height="2"/>
-  <rect fill="#394152" x="211" y="133" width="65" height="46"/>
-  <polygon fill="#718096" points="217 172 237 148 257 172"/>
-  <rect fill="#374151" x="211" y="182" width="55" height="3"/>
-  <rect fill="#9ca3af" x="211" y="189" width="32" height="2"/>
-  <rect fill="#394152" x="4" y="197" width="65" height="46"/>
-  <polygon fill="#718096" points="10 236 30 212 50 236"/>
-  <polygon fill="#718096" points="46 236 56 224 66 236"/>
-  <rect fill="#374151" x="4" y="246" width="55" height="3"/>
-  <rect fill="#9ca3af" x="4" y="253" width="32" height="2"/>
-  <rect fill="#394152" x="73" y="197" width="65" height="46"/>
-  <polygon fill="#718096" points="79 236 99 212 119 236"/>
-  <rect fill="#374151" x="73" y="246" width="55" height="3"/>
-  <rect fill="#9ca3af" x="73" y="253" width="32" height="2"/>
-  <rect fill="#394152" x="142" y="197" width="65" height="46"/>
-  <polygon fill="#718096" points="148 236 168 212 188 236"/>
-  <rect fill="#374151" x="142" y="246" width="55" height="3"/>
-  <rect fill="#9ca3af" x="142" y="253" width="32" height="2"/>
-  <rect fill="#394152" x="211" y="197" width="65" height="46"/>
-  <polygon fill="#718096" points="217 236 237 212 257 236"/>
-  <rect fill="#374151" x="211" y="246" width="55" height="3"/>
-  <rect fill="#9ca3af" x="211" y="253" width="32" height="2"/>
-  <rect fill="#e5e7eb" x="96" y="270" width="14" height="10" rx="2"/>
-  <rect fill="#374151" x="114" y="270" width="14" height="10" rx="2"/>
-  <rect fill="#e5e7eb" x="132" y="270" width="14" height="10" rx="2"/>
-  <rect fill="#e5e7eb" x="150" y="270" width="14" height="10" rx="2"/>
-  <rect fill="#e5e7eb" x="168" y="270" width="14" height="10" rx="2"/>
-  <rect fill="#394152" x="0" y="314" width="280" height="26"/>
-  <rect fill="#718096" x="8" y="320" width="55" height="4"/>
-  <rect fill="#718096" x="8" y="328" width="45" height="3"/>
-  <rect fill="#718096" x="100" y="320" width="55" height="4"/>
-  <rect fill="#718096" x="100" y="328" width="40" height="3"/>
-  <rect fill="#718096" x="192" y="320" width="55" height="4"/>
-  <rect fill="#718096" x="192" y="328" width="40" height="3"/>
-</svg>`
 // ─── Ru1 Shop Hero block ─────────────────────────────────────────────────────
 
 export interface Ru2ShopHeroData {
@@ -1803,7 +1652,7 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
     const sidebarBorder = filterPos === 'left'
       ? 'border-right:1px solid #e5e7eb;padding-right:1.25rem;margin-right:1.5rem'
       : 'border-left:1px solid #e5e7eb;padding-left:1.25rem;margin-left:1.5rem'
-    const sidebar = `<div style="width:220px;flex-shrink:0;${sidebarBorder}">
+    const sidebar = `<div data-sp-sidebar="1" style="width:220px;flex-shrink:0;${sidebarBorder}">
       <div style="display:flex;align-items:center;gap:0.5rem;padding-bottom:0.75rem;border-bottom:1px solid #e5e7eb;margin-bottom:0.25rem">
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1 3h13M3.5 7h8M6 11h3" stroke="#374151" stroke-width="1.5" stroke-linecap="round"/></svg>
         <span style="font-size:0.875rem;font-weight:600;color:#111827">Filters</span>
@@ -1811,14 +1660,18 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
       ${sidebarAccordion}
     </div>`
     const gridArea = `<div style="flex:1;min-width:0">${pageGrids}${paginationHtml}</div>`
+    // Below 768px the fixed 220px sidebar + flex:1 grid row never had room to
+    // breathe (it's a plain flex row with no wrap), squeezing the product
+    // grid down to ~150px on a phone instead of stacking — the sidebar now
+    // drops above/below the grid and takes full width there.
     const flexRow = filterPos === 'left'
-      ? `<div style="display:flex;align-items:flex-start">${sidebar}${gridArea}</div>`
-      : `<div style="display:flex;align-items:flex-start">${gridArea}${sidebar}</div>`
+      ? `<div data-sp-flexrow="1" style="display:flex;align-items:flex-start">${sidebar}${gridArea}</div>`
+      : `<div data-sp-flexrow="1" style="display:flex;align-items:flex-start">${gridArea}${sidebar}</div>`
     innerHtml = `${metaBar}${flexRow}`
   }
 
   return `<section data-component-title="Ru1 Shop Content" data-component-props="${encodeURIComponent(JSON.stringify(data))}">
-<style>${_gridCss(`[data-sg="${gridId}"]`, Number(data.columns) || 4)}</style>
+<style>${_gridCss(`[data-sg="${gridId}"]`, Number(data.columns) || 4)}@media(max-width:768px){[data-sp-flexrow]{flex-direction:column!important}[data-sp-sidebar]{width:100%!important;border:none!important;margin:0 0 1.25rem!important;padding:0 0 1rem!important;border-bottom:1px solid #e5e7eb!important}}</style>
 <div style="${sectionStyle}">
   <div style="max-width:80rem;margin:0 auto">
     ${innerHtml}
@@ -1826,100 +1679,8 @@ export function renderRu2ShopContent(data: Ru2ShopContentData): string {
 </div>
 </section>`
 }
-// ─── Ru1 ShopPage sections ───────────────────────────────────────────────────
-
-export const ru2ShoppageSections: ThemeSection[] = [
-  { id: null, title: 'Ru1 Shop Hero',    html_code: renderRu2ShopHero(ru2ShopHeroDefaults) },
-  { id: null, title: 'Ru1 Shop Content', html_code: renderRu2ShopContent(ru2ShopContentDefaults) },
-]
-
 // ─── Ru2 Shop Header ──────────────────────────────────────────────────────────
 
-export const ru3ShopSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
-  <rect fill="#394152" x="0" y="0" width="280" height="18"/>
-  <rect fill="#718096" x="8" y="6" width="28" height="5"/>
-  <rect fill="#718096" x="185" y="6" width="16" height="5"/>
-  <rect fill="#718096" x="206" y="6" width="16" height="5"/>
-  <rect fill="#718096" x="227" y="6" width="16" height="5"/>
-  <rect fill="#718096" x="250" y="6" width="22" height="5"/>
-  <rect fill="#f3f4f6" x="0" y="18" width="280" height="22"/>
-  <rect fill="#9ca3af" x="8" y="22" width="50" height="2"/>
-  <rect fill="#374151" x="8" y="27" width="60" height="7"/>
-  <rect fill="#e5e7eb" x="0" y="40" width="280" height="1"/>
-  <rect fill="#ffffff" x="0" y="41" width="280" height="16"/>
-  <rect fill="#374151" x="4" y="47" width="18" height="3"/>
-  <rect fill="#9ca3af" x="26" y="47" width="24" height="3"/>
-  <rect fill="#e5e7eb" x="110" y="43" width="24" height="10" rx="2"/>
-  <rect fill="#e5e7eb" x="138" y="43" width="20" height="10" rx="2"/>
-  <rect fill="#e5e7eb" x="162" y="43" width="24" height="10" rx="2"/>
-  <rect fill="#e5e7eb" x="190" y="43" width="22" height="10" rx="2"/>
-  <rect fill="#e5e7eb" x="216" y="43" width="18" height="10" rx="2"/>
-  <rect fill="#e5e7eb" x="0" y="57" width="280" height="1"/>
-  <rect fill="#394152" x="4" y="60" width="63" height="42"/>
-  <polygon fill="#718096" points="10 98 28 76 46 98"/>
-  <polygon fill="#718096" points="43 98 53 86 63 98"/>
-  <rect fill="#374151" x="4" y="106" width="53" height="3"/>
-  <rect fill="#9ca3af" x="4" y="113" width="30" height="2"/>
-  <rect fill="#394152" x="72" y="60" width="63" height="42"/>
-  <polygon fill="#718096" points="78 98 96 76 114 98"/>
-  <polygon fill="#718096" points="111 98 121 86 131 98"/>
-  <rect fill="#374151" x="72" y="106" width="53" height="3"/>
-  <rect fill="#9ca3af" x="72" y="113" width="30" height="2"/>
-  <rect fill="#394152" x="140" y="60" width="63" height="42"/>
-  <polygon fill="#718096" points="146 98 164 76 182 98"/>
-  <polygon fill="#718096" points="179 98 189 86 199 98"/>
-  <rect fill="#374151" x="140" y="106" width="53" height="3"/>
-  <rect fill="#9ca3af" x="140" y="113" width="30" height="2"/>
-  <rect fill="#394152" x="209" y="60" width="63" height="42"/>
-  <polygon fill="#718096" points="215 98 233 76 251 98"/>
-  <polygon fill="#718096" points="248 98 258 86 268 98"/>
-  <rect fill="#374151" x="209" y="106" width="53" height="3"/>
-  <rect fill="#9ca3af" x="209" y="113" width="30" height="2"/>
-  <rect fill="#394152" x="4" y="122" width="63" height="42"/>
-  <polygon fill="#718096" points="10 160 28 138 46 160"/>
-  <rect fill="#374151" x="4" y="168" width="53" height="3"/>
-  <rect fill="#9ca3af" x="4" y="175" width="30" height="2"/>
-  <rect fill="#394152" x="72" y="122" width="63" height="42"/>
-  <polygon fill="#718096" points="78 160 96 138 114 160"/>
-  <rect fill="#374151" x="72" y="168" width="53" height="3"/>
-  <rect fill="#9ca3af" x="72" y="175" width="30" height="2"/>
-  <rect fill="#394152" x="140" y="122" width="63" height="42"/>
-  <polygon fill="#718096" points="146 160 164 138 182 160"/>
-  <rect fill="#374151" x="140" y="168" width="53" height="3"/>
-  <rect fill="#9ca3af" x="140" y="175" width="30" height="2"/>
-  <rect fill="#394152" x="209" y="122" width="63" height="42"/>
-  <polygon fill="#718096" points="215 160 233 138 251 160"/>
-  <rect fill="#374151" x="209" y="168" width="53" height="3"/>
-  <rect fill="#9ca3af" x="209" y="175" width="30" height="2"/>
-  <rect fill="#394152" x="4" y="184" width="63" height="42"/>
-  <polygon fill="#718096" points="10 222 28 200 46 222"/>
-  <rect fill="#374151" x="4" y="230" width="53" height="3"/>
-  <rect fill="#9ca3af" x="4" y="237" width="30" height="2"/>
-  <rect fill="#394152" x="72" y="184" width="63" height="42"/>
-  <polygon fill="#718096" points="78 222 96 200 114 222"/>
-  <rect fill="#374151" x="72" y="230" width="53" height="3"/>
-  <rect fill="#9ca3af" x="72" y="237" width="30" height="2"/>
-  <rect fill="#394152" x="140" y="184" width="63" height="42"/>
-  <polygon fill="#718096" points="146 222 164 200 182 222"/>
-  <rect fill="#374151" x="140" y="230" width="53" height="3"/>
-  <rect fill="#9ca3af" x="140" y="237" width="30" height="2"/>
-  <rect fill="#394152" x="209" y="184" width="63" height="42"/>
-  <polygon fill="#718096" points="215 222 233 200 251 222"/>
-  <rect fill="#374151" x="209" y="230" width="53" height="3"/>
-  <rect fill="#9ca3af" x="209" y="237" width="30" height="2"/>
-  <rect fill="#e5e7eb" x="94" y="252" width="12" height="9" rx="2"/>
-  <rect fill="#374151" x="110" y="252" width="12" height="9" rx="2"/>
-  <rect fill="#e5e7eb" x="126" y="252" width="12" height="9" rx="2"/>
-  <rect fill="#e5e7eb" x="142" y="252" width="12" height="9" rx="2"/>
-  <rect fill="#e5e7eb" x="158" y="252" width="12" height="9" rx="2"/>
-  <rect fill="#394152" x="0" y="300" width="280" height="40"/>
-  <rect fill="#718096" x="8" y="308" width="55" height="4"/>
-  <rect fill="#718096" x="8" y="318" width="45" height="3"/>
-  <rect fill="#718096" x="100" y="308" width="55" height="4"/>
-  <rect fill="#718096" x="100" y="318" width="40" height="3"/>
-  <rect fill="#718096" x="192" y="308" width="55" height="4"/>
-  <rect fill="#718096" x="192" y="318" width="40" height="3"/>
-</svg>`
 
 export interface Ru3ShopHeaderData {
   pageTitle: string
@@ -2216,63 +1977,10 @@ ${animStyle}
 </section>`
 }
 
-export const ru3ShopSections: ThemeSection[] = [
-  { id: null, title: 'Ru2 Shop Header',   html_code: renderRu3ShopHeader(ru3ShopHeaderDefaults) },
-  { id: null, title: 'Ru2 Shop Filters',  html_code: renderRu3ShopFilters(ru3ShopFiltersDefaults) },
-  { id: null, title: 'Ru2 Shop Products', html_code: renderRu3ShopProducts(ru3ShopProductsDefaults) },
-]
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // Ru2 HomePage — Fieldwork (Dark + Amber)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export const ru2HomePageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
-  <rect fill="#394152" x="0" y="0" width="280" height="18"/>
-  <rect fill="#718096" x="8" y="6" width="30" height="5"/>
-  <rect fill="#718096" x="180" y="6" width="18" height="5"/>
-  <rect fill="#718096" x="203" y="6" width="18" height="5"/>
-  <rect fill="#718096" x="226" y="6" width="18" height="5"/>
-  <rect fill="#718096" x="250" y="6" width="22" height="5"/>
-  <rect fill="#394152" x="0" y="26" width="130" height="75"/>
-  <rect fill="#718096" x="8" y="34" width="55" height="4"/>
-  <rect fill="#718096" x="8" y="42" width="90" height="7"/>
-  <rect fill="#718096" x="8" y="53" width="75" height="4"/>
-  <rect fill="#718096" x="8" y="61" width="60" height="4"/>
-  <rect fill="#718096" x="8" y="76" width="38" height="9"/>
-  <rect fill="#394152" x="138" y="26" width="142" height="75"/>
-  <polygon fill="#718096" points="150 96 190 52 230 96 150 96"/>
-  <polygon fill="#718096" points="220 96 248 66 276 96 220 96"/>
-  <circle fill="#718096" cx="248" cy="58" r="7"/>
-  <rect fill="#394152" x="0" y="113" width="90" height="7"/>
-  <rect fill="#394152" x="0" y="128" width="62" height="56"/>
-  <rect fill="#394152" x="73" y="128" width="62" height="56"/>
-  <rect fill="#394152" x="146" y="128" width="62" height="56"/>
-  <rect fill="#394152" x="219" y="128" width="61" height="56"/>
-  <polygon fill="#718096" points="8 174 22 155 36 174 8 174"/>
-  <polygon fill="#718096" points="81 174 95 155 109 174 81 174"/>
-  <polygon fill="#718096" points="154 174 168 155 182 174 154 174"/>
-  <polygon fill="#718096" points="227 174 241 155 255 174 227 174"/>
-  <rect fill="#394152" x="0" y="192" width="55" height="4"/>
-  <rect fill="#394152" x="73" y="192" width="55" height="4"/>
-  <rect fill="#394152" x="146" y="192" width="55" height="4"/>
-  <rect fill="#394152" x="219" y="192" width="55" height="4"/>
-  <rect fill="#394152" x="0" y="202" width="30" height="3"/>
-  <rect fill="#394152" x="73" y="202" width="30" height="3"/>
-  <rect fill="#394152" x="146" y="202" width="30" height="3"/>
-  <rect fill="#394152" x="219" y="202" width="30" height="3"/>
-  <rect fill="#394152" x="0" y="224" width="280" height="78"/>
-  <rect fill="#718096" x="8" y="234" width="55" height="4"/>
-  <rect fill="#718096" x="8" y="244" width="45" height="3"/>
-  <rect fill="#718096" x="8" y="252" width="50" height="3"/>
-  <rect fill="#718096" x="8" y="260" width="40" height="3"/>
-  <rect fill="#718096" x="100" y="234" width="55" height="4"/>
-  <rect fill="#718096" x="100" y="244" width="45" height="3"/>
-  <rect fill="#718096" x="100" y="252" width="50" height="3"/>
-  <rect fill="#718096" x="192" y="234" width="55" height="4"/>
-  <rect fill="#718096" x="192" y="244" width="50" height="3"/>
-  <rect fill="#718096" x="192" y="252" width="45" height="3"/>
-  <rect fill="#718096" x="90" y="285" width="100" height="3"/>
-</svg>`
 
 // ── Ru2 HomePage unique component defaults ────────────────────────────────────
 
@@ -2359,51 +2067,6 @@ export const ru2HomePageSections: ThemeSection[] = [
 // Ru3 HomePage — Slate & Mint (Corporate Clean)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export const ru3HomePageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
-  <rect fill="#394152" x="0" y="0" width="280" height="18"/>
-  <rect fill="#718096" x="8" y="6" width="30" height="5"/>
-  <rect fill="#718096" x="180" y="6" width="18" height="5"/>
-  <rect fill="#718096" x="203" y="6" width="18" height="5"/>
-  <rect fill="#718096" x="226" y="6" width="18" height="5"/>
-  <rect fill="#718096" x="250" y="6" width="22" height="5"/>
-  <rect fill="#394152" x="0" y="26" width="280" height="55"/>
-  <polygon fill="#718096" points="50 77 100 40 150 77 50 77"/>
-  <polygon fill="#718096" points="140 77 168 52 196 77 140 77"/>
-  <polygon fill="#718096" points="188 77 230 44 272 77 188 77"/>
-  <circle fill="#718096" cx="230" cy="36" r="6"/>
-  <rect fill="#394152" x="0" y="93" width="55" height="6"/>
-  <rect fill="#394152" x="0" y="108" width="86" height="42"/>
-  <polygon fill="#718096" points="8 144 30 124 52 144 8 144"/>
-  <rect fill="#718096" x="8" y="153" width="55" height="3"/>
-  <rect fill="#394152" x="97" y="108" width="86" height="42"/>
-  <polygon fill="#718096" points="105 144 127 124 149 144 105 144"/>
-  <rect fill="#718096" x="105" y="153" width="55" height="3"/>
-  <rect fill="#394152" x="194" y="108" width="86" height="42"/>
-  <polygon fill="#718096" points="202 144 224 124 246 144 202 144"/>
-  <rect fill="#718096" x="202" y="153" width="55" height="3"/>
-  <rect fill="#394152" x="0" y="168" width="55" height="5"/>
-  <rect fill="#394152" x="0" y="181" width="62" height="45"/>
-  <polygon fill="#718096" points="5 220 19 204 33 220 5 220"/>
-  <rect fill="#394152" x="73" y="181" width="62" height="45"/>
-  <polygon fill="#718096" points="78 220 92 204 106 220 78 220"/>
-  <rect fill="#394152" x="146" y="181" width="62" height="45"/>
-  <polygon fill="#718096" points="151 220 165 204 179 220 151 220"/>
-  <rect fill="#394152" x="219" y="181" width="61" height="45"/>
-  <polygon fill="#718096" points="224 220 238 204 252 220 224 220"/>
-  <rect fill="#394152" x="0" y="233" width="45" height="3"/>
-  <rect fill="#394152" x="73" y="233" width="45" height="3"/>
-  <rect fill="#394152" x="146" y="233" width="45" height="3"/>
-  <rect fill="#394152" x="219" y="233" width="45" height="3"/>
-  <rect fill="#394152" x="0" y="252" width="280" height="50"/>
-  <rect fill="#718096" x="8" y="262" width="55" height="4"/>
-  <rect fill="#718096" x="8" y="270" width="45" height="3"/>
-  <rect fill="#718096" x="8" y="278" width="50" height="3"/>
-  <rect fill="#718096" x="100" y="262" width="55" height="4"/>
-  <rect fill="#718096" x="100" y="270" width="45" height="3"/>
-  <rect fill="#718096" x="192" y="262" width="55" height="4"/>
-  <rect fill="#718096" x="192" y="270" width="50" height="3"/>
-  <rect fill="#718096" x="90" y="294" width="100" height="3"/>
-</svg>`
 
 // ── Ru3 HomePage unique component defaults ────────────────────────────────────
 
@@ -2523,51 +2186,6 @@ export const ru3HomePageSections: ThemeSection[] = [
 // Ru4 HomePage — Outpost (Warm Terracotta)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export const ru4HomePageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340" width="100%" height="100%">
-  <rect fill="#394152" x="0" y="0" width="280" height="18"/>
-  <rect fill="#718096" x="8" y="6" width="30" height="5"/>
-  <rect fill="#718096" x="180" y="6" width="18" height="5"/>
-  <rect fill="#718096" x="203" y="6" width="18" height="5"/>
-  <rect fill="#718096" x="226" y="6" width="18" height="5"/>
-  <rect fill="#718096" x="250" y="6" width="22" height="5"/>
-  <rect fill="#394152" x="0" y="26" width="280" height="80"/>
-  <polygon fill="#718096" points="60 100 120 52 180 100 60 100"/>
-  <polygon fill="#718096" points="170 100 208 68 246 100 170 100"/>
-  <circle fill="#718096" cx="208" cy="60" r="8"/>
-  <rect fill="#718096" x="85" y="58" width="110" height="7"/>
-  <rect fill="#718096" x="100" y="70" width="80" height="4"/>
-  <rect fill="#394152" x="0" y="118" width="86" height="30"/>
-  <rect fill="#718096" x="8" y="125" width="50" height="4"/>
-  <rect fill="#718096" x="8" y="133" width="38" height="3"/>
-  <rect fill="#394152" x="97" y="118" width="86" height="30"/>
-  <rect fill="#718096" x="105" y="125" width="50" height="4"/>
-  <rect fill="#718096" x="105" y="133" width="38" height="3"/>
-  <rect fill="#394152" x="194" y="118" width="86" height="30"/>
-  <rect fill="#718096" x="202" y="125" width="50" height="4"/>
-  <rect fill="#718096" x="202" y="133" width="38" height="3"/>
-  <rect fill="#394152" x="0" y="160" width="80" height="6"/>
-  <rect fill="#394152" x="0" y="174" width="62" height="50"/>
-  <polygon fill="#718096" points="5 218 19 200 33 218 5 218"/>
-  <rect fill="#394152" x="73" y="174" width="62" height="50"/>
-  <polygon fill="#718096" points="78 218 92 200 106 218 78 218"/>
-  <rect fill="#394152" x="146" y="174" width="62" height="50"/>
-  <polygon fill="#718096" points="151 218 165 200 179 218 151 218"/>
-  <rect fill="#394152" x="219" y="174" width="61" height="50"/>
-  <polygon fill="#718096" points="224 218 238 200 252 218 224 218"/>
-  <rect fill="#394152" x="0" y="232" width="45" height="3"/>
-  <rect fill="#394152" x="73" y="232" width="45" height="3"/>
-  <rect fill="#394152" x="146" y="232" width="45" height="3"/>
-  <rect fill="#394152" x="219" y="232" width="45" height="3"/>
-  <rect fill="#394152" x="0" y="252" width="280" height="50"/>
-  <rect fill="#718096" x="8" y="262" width="55" height="4"/>
-  <rect fill="#718096" x="8" y="270" width="45" height="3"/>
-  <rect fill="#718096" x="8" y="278" width="50" height="3"/>
-  <rect fill="#718096" x="100" y="262" width="55" height="4"/>
-  <rect fill="#718096" x="100" y="270" width="45" height="3"/>
-  <rect fill="#718096" x="192" y="262" width="55" height="4"/>
-  <rect fill="#718096" x="192" y="270" width="50" height="3"/>
-  <rect fill="#718096" x="90" y="294" width="100" height="3"/>
-</svg>`
 
 export const ru4HomeNavbarDefaults = {
   ...megaMenuHeaderDefaults,

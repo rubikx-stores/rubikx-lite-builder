@@ -9,7 +9,7 @@ const props = defineProps({
   blockData: { type: Object, default: null },
 })
 
-const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1-Show-Featured-Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products', 'Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail', 'Ru3-Show-Single-Products', 'Ru2-Show-Multiple-Products']
+const THEME_REGISTRY_BLOCKS = ['Ru1 Homepage Featured Products', 'Ru1-Show-Featured-Products', 'Ru1 Shop Content', 'Ru2 Shop Products', 'Ru3 Shop Products', 'Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail', 'Ru3-Show-Single-Products', 'Ru2-Show-Multiple-Products', 'Ru4-Product-Card']
 // Blocks that store selected IDs as a comma-separated productIds field (not a products array)
 const PRODUCT_IDS_BLOCKS = ['Ru1-Product Detail', 'Ru2-Product Detail', 'Ru3-Product Detail']
 // Blocks that support pagination — allow many products across multiple pages
@@ -1216,21 +1216,6 @@ watch(perPage, (newPerPage) => {
             />
           </div>
 
-          <!-- Card subtitle -->
-          <div class="mt-2">
-            <div class="flex items-center justify-between mb-1">
-              <label class="text-xs text-gray-500">Card Subtitle</label>
-              <label class="flex items-center gap-1 cursor-pointer">
-                <input type="checkbox" v-model="cardSubtitleEnabled" class="cursor-pointer" />
-                <span class="text-xs text-gray-400">Show</span>
-              </label>
-            </div>
-            <input v-model="cardSubtitle" v-if="cardSubtitleEnabled" type="text" maxlength="50"
-              placeholder="e.g. Available in 3 colors"
-              class="w-full border border-gray-300 text-xs px-2 py-1.5 rounded outline-none focus:border-gray-500 bg-white" />
-            <p v-if="cardSubtitleEnabled" class="text-right text-xs text-gray-400 mt-0.5">{{ cardSubtitle.length }}/50</p>
-          </div>
-
           <!-- Color pickers -->
           <div class="flex gap-2">
             <div class="flex-1">
@@ -1479,21 +1464,6 @@ watch(perPage, (newPerPage) => {
         <div class="mb-2">
           <label class="block text-xs text-gray-500 mb-1">Button text</label>
           <input v-model="relBtnTextRef" type="text" class="w-full border border-gray-300 text-xs px-2 py-1.5 rounded outline-none focus:border-gray-500 bg-white" />
-        </div>
-
-        <!-- Card Subtitle -->
-        <div class="mb-3">
-          <div class="flex items-center justify-between mb-1">
-            <label class="text-xs text-gray-500">Card Subtitle</label>
-            <label class="flex items-center gap-1 cursor-pointer">
-              <input type="checkbox" v-model="relCardSubtitleEnabledRef" class="cursor-pointer" />
-              <span class="text-xs text-gray-400">Show</span>
-            </label>
-          </div>
-          <input v-if="relCardSubtitleEnabledRef" v-model="relCardSubtitleRef" type="text" maxlength="50"
-            placeholder="e.g. Available in 3 colors"
-            class="w-full border border-gray-300 text-xs px-2 py-1.5 rounded outline-none focus:border-gray-500 bg-white" />
-          <p v-if="relCardSubtitleEnabledRef" class="text-right text-xs text-gray-400 mt-0.5">{{ relCardSubtitleRef.length }}/50</p>
         </div>
 
         <!-- Button colors + radius -->
