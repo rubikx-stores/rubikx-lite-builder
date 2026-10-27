@@ -3010,9 +3010,14 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
       </div>`
     : ''
 
-  const balanceEl = renderBalanceBadges(data)
+  // Header copy is desktop-only (hidden ≤640px in responsiveStyle); on mobile
+  // the balance lives inside the hamburger drawer instead.
+  const balanceEl = renderBalanceBadges(data, 'default', '').replace(
+    'data-rubikx-component="BalanceBadges"',
+    'data-rubikx-component="BalanceBadges" data-ru7-header-balance',
+  )
   const cartEl = data.showCart
-    ? `<span data-ru7-cart data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.linkColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
+    ? `<span data-ru7-cartdata-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.linkColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
         <a href="${data.cartUrl}" style="color:${data.linkColor};display:inline-flex;">${icon('shoppingCart', { size: 22, stroke: data.linkColor })}</a>
       </span>`
     : ''
@@ -3047,6 +3052,7 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
     [data-ru7-main] [data-ru7-logo] img,
     [data-ru7-main] [data-ru7-logo] span { max-width: 40vw; }
     [data-ru7-not-home] [data-ru7-cart] { display: none !important; }
+    [data-ru7-header-balance] { display: none !important; }
     [data-ru7-cart] { order: -1; }
     [data-ru7-menu-toggle] { order: 1; }
     [data-ru7-search-cart-divider] { display: none !important; }
