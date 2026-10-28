@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     if (!result?.token) {
       throw createError({ statusCode: 400, message: result?.result?.error || _error })
     }
-    const payload = JSON.parse(Buffer.from(result.token.split('.')[1], 'base64').toString('utf-8'))
+    const payload = decodeJwt(result.token)
     const expiresAtMs = payload.exp * 1000
     const maxAgeSeconds = Math.floor((expiresAtMs - Date.now()) / 1000)
     if (maxAgeSeconds <= 0) {
@@ -41,6 +41,14 @@ export default defineEventHandler(async (event) => {
       sameSite: 'strict',
       path: '/',
       maxAge: maxAgeSeconds,
+    })
+    // When this login started. /api/auth/refresh uses it to cap total session length.
+    setCookie(event, 'rb_session_start', String(Date.now()), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 60 * 60 * 24,
     })
     return {
       statusCode: 200,

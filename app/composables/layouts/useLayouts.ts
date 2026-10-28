@@ -97,6 +97,9 @@ import {
   ru6SplitHeroDefaults,
   ru6SplitHeroFields,
   renderRu6SplitHero,
+  ru11CurvedSplitHeroDefaults,
+  ru11CurvedSplitHeroFields,
+  renderRu11CurvedSplitHero,
   ru7HeroCategoryCollectionDefaults,
   ru7HeroCategoryCollectionFields,
   renderRu7HeroCategoryCollection,
@@ -124,6 +127,9 @@ import {
   ru5StatsDefaults,
   ru5StatsFields,
   renderRu5Stats,
+  ru6StatsDefaults,
+  ru6StatsFields,
+  renderRu6Stats,
   ru3TextImageHeroDefaults,
   ru3TextImageHeroFields,
   renderRu3TextImageHero,
@@ -308,6 +314,11 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Banner',
       html_code: renderRu10ShopByCategory(ru10ShopByCategoryDefaults),
     },
+    {
+      title: 'Ru11-Curved-Split-Hero',
+      category: 'Banner',
+      html_code: renderRu11CurvedSplitHero(ru11CurvedSplitHeroDefaults),
+    },
   ],
   Contact: [
     {
@@ -400,6 +411,11 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       title: 'Ru5-Stats',
       category: 'Stats',
       html_code: renderRu5Stats(ru5StatsDefaults),
+    },
+    {
+      title: 'Ru6-Stats',
+      category: 'Stats',
+      html_code: renderRu6Stats(ru6StatsDefaults),
     },
   ],
   Footer: [
@@ -685,6 +701,12 @@ export function useLayouts() {
     render: renderRu6SplitHero,
   })
 
+  blockRegistry.register('Ru11-Curved-Split-Hero', {
+    defaults: ru11CurvedSplitHeroDefaults,
+    fields: ru11CurvedSplitHeroFields,
+    render: renderRu11CurvedSplitHero,
+  })
+
   blockRegistry.register('Ru7-Hero-Category-Collection', {
     defaults: ru7HeroCategoryCollectionDefaults,
     fields: ru7HeroCategoryCollectionFields,
@@ -827,6 +849,12 @@ export function useLayouts() {
     defaults: ru5StatsDefaults,
     fields: ru5StatsFields,
     render: renderRu5Stats,
+  })
+
+  blockRegistry.register('Ru6-Stats', {
+    defaults: ru6StatsDefaults,
+    fields: ru6StatsFields,
+    render: renderRu6Stats,
   })
 
   blockRegistry.register('Ru1-Show-Featured-Products', {

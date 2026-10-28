@@ -1,6 +1,8 @@
 ﻿import type { FieldConfig } from '../editor/useBlockRegistry'
 import { fontField, fontCss } from '../editor/fontFields'
 import { icon } from '../useIconSvg'
+import { balanceBadgesDefaults, balanceBadgesFields, renderBalanceBadges } from '../useBalanceBadges'
+import type { BalanceBadgesData } from '../useBalanceBadges'
 import { socialIconHtml } from '../useSocialIcons'
 import {
   renderDynamicCategoriesRow,
@@ -28,7 +30,7 @@ const placeholderSvg = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="htt
 
 export interface NavLink { label: string; url: string; visible?: boolean; newTab?: boolean }
 
-export interface Ru1NavbarData {
+export interface Ru1NavbarData extends BalanceBadgesData {
   logoUrl: string
   brandName: string
   logoWidth: number
@@ -126,6 +128,7 @@ export const ru1NavbarDefaults: Ru1NavbarData = {
   contactUsLabel: 'Contact Us',
   contactUsUrl: '/contactus',
   showCart: true,
+  ...balanceBadgesDefaults,
   cartUrl: '/cart',
   cartIconColor: '#111827',
   buttonsAlign: 'right',
@@ -204,6 +207,7 @@ export const ru1NavbarFields: FieldConfig[] = [
   { key: 'contactUsLabel', label: 'Contact Us Label', type: 'text' },
   { key: 'contactUsUrl', label: 'Contact Us URL', type: 'url' },
   { key: 'showCart', label: 'Show Cart Icon', type: 'toggle' },
+  ...balanceBadgesFields,
   { key: 'cartUrl', label: 'Cart URL', type: 'url' },
   { key: 'cartIconColor', label: 'Cart Icon Colour', type: 'color' },
   { key: 'buttonsAlign', label: 'Buttons Position', type: 'select', options: ['left', 'center', 'right'] },
@@ -251,7 +255,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 
   const searchW = data.searchWidth || 420
   const searchEl = data.showSearch
-    ? `<div style="display:flex;align-items:center;background:${data.searchBgColor};border:1px solid ${data.searchBorderColor};border-radius:${data.searchBorderRadius}px;padding:0.5rem 0.875rem;gap:0.5rem;width:${searchW}px;max-width:100%;min-width:0;">
+    ? `<div style="display:flex;align-items:center;background:${data.searchBgColor};border:1px solid ${data.searchBorderColor};border-radius:${data.searchBorderRadius}px;padding:0.5rem 0.875rem;gap:0.5rem;flex:0 1 ${searchW}px;width:auto;max-width:${searchW}px;min-width:min(${searchW}px,32vw);">
         ${icon('magnifyingGlass', { size: 16, stroke: data.searchIconColor, style: 'flex-shrink:0;' })}
         <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="border:none;outline:none;background:transparent;font-size:0.875rem;width:100%;color:${data.searchTextColor};min-width:0;" />
       </div>`
@@ -260,6 +264,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   const buttonsArr = [
     data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${btnAccent};font-size:0.875rem;text-decoration:none;border:1px solid ${btnBorderAccent};border-radius:${data.buttonBorderRadius}px;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:${data.buttonBgColor};box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;${fontCss(data.buttonFont, data.fontFamily)}">${data.signInLabel}</a>` : '',
     data.showContactUs ? `<a href="${data.contactUsUrl}" style="color:${btnAccent};font-size:0.875rem;text-decoration:none;border:1px solid ${btnBorderAccent};border-radius:${data.buttonBorderRadius}px;padding:0.375rem 1rem;display:inline-flex;align-items:center;background:${data.buttonBgColor};box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);cursor:pointer;white-space:nowrap;flex-shrink:0;${fontCss(data.buttonFont, data.fontFamily)}">${data.contactUsLabel}</a>` : '',
+    renderBalanceBadges(data),
     data.showCart
       ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.cartIconColor}" style="position:relative;display:inline-flex;flex-shrink:0;"><a href="${data.cartUrl}" style="color:${data.cartIconColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
       : '',
@@ -316,7 +321,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   // row doesn't fit — a bare flex/grid item defaults to a min size based
   // on its content, which silently blocks shrinking without this.
   const zone = (items: string[], justify: string) =>
-    `<div style="display:flex;align-items:center;gap:0.75rem;justify-content:${justify};min-width:0;">${items.join('')}</div>`
+    `<div style="display:flex;align-items:center;gap:0.75rem;justify-content:${justify};">${items.join('')}</div>`
 
   const lowerRow = isLowerLinks && linksEl
     ? `<div style="margin:0 auto;display:flex;align-items:center;justify-content:${lowerJustifyMap[data.navLinksAlign]};padding:0.5rem 0;gap:0.75rem;">${linksEl}</div>`
@@ -370,6 +375,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
       ${icon('xMark', { size: 24, stroke: data.textColor })}
     </button>
   </div>
+  ${renderBalanceBadges(data, 'compact', 'margin-bottom:1rem;')}
   ${mobileSearchEl}
   <div style="display:flex;flex-direction:column;">
     ${mobileDrawerLinks}
@@ -390,7 +396,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   return `<section data-component-title="Ru1-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 <nav style="${navStyle}"${dynamicNavHydrationAttrs}>
   ${mobileNav}
-  <div data-nav-desktop="true" style="display:grid;margin:0 auto;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);align-items:center;gap:1rem;height:80px;${topRowBorder}">
+  <div data-nav-desktop="true" style="display:grid;margin:0 auto;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;height:80px;${topRowBorder}">
     ${zone(cols.left,   'flex-start')}
     ${zone(cols.center, 'center')}
     ${zone(cols.right,  'flex-end')}
@@ -409,7 +415,10 @@ export interface Ru1HeroData {
   aspectRatio: string
   extraHeight: number
   headline: string
+  headlineFontWeight: string
   subheadline: string
+  subheadlineFontWeight: string
+  subheadlineColor: string
   textColor: string
   textAlign: string
   overlayColor: string
@@ -418,6 +427,7 @@ export interface Ru1HeroData {
   ctaUrl: string
   ctaBgColor: string
   ctaTextColor: string
+  ctaOffsetY: number
   bgColor: string
   paddingY: number
   paddingX: number
@@ -435,7 +445,10 @@ export const ru1HeroDefaults: Ru1HeroData = {
   aspectRatio: '3.49/1',
   extraHeight: 0,
   headline: '',
+  headlineFontWeight: '700',
   subheadline: '',
+  subheadlineFontWeight: '400',
+  subheadlineColor: '#000000',
   textColor: '#000000',
   textAlign: 'center',
   overlayColor: '#000000',
@@ -444,6 +457,7 @@ export const ru1HeroDefaults: Ru1HeroData = {
   ctaUrl: '',
   ctaBgColor: '#2563eb',
   ctaTextColor: '#ffffff',
+  ctaOffsetY: 0,
   bgColor: '#394152',
   paddingY: 0,
   paddingX: 0,
@@ -471,10 +485,13 @@ export const ru1HeroFields: FieldConfig[] = [
 
   { key: '_h_text', label: 'Text', type: 'header' },
   { key: 'headline', label: 'Headline', type: 'text' },
+  { key: 'headlineFontWeight', label: 'Headline Weight', type: 'select', options: ['400', '500', '600', '700'] },
   fontField('headlineFont', 'Headline Font'),
+  { key: 'textColor', label: 'Headline Color', type: 'color' },
   { key: 'subheadline', label: 'Subheadline', type: 'text' },
+  { key: 'subheadlineFontWeight', label: 'Subheadline Weight', type: 'select', options: ['400', '500', '600', '700'] },
   fontField('subheadlineFont', 'Subheadline Font'),
-  { key: 'textColor', label: 'Text Color', type: 'color' },
+  { key: 'subheadlineColor', label: 'Subheadline Color', type: 'color' },
   { key: 'textAlign', label: 'Text Alignment', type: 'select', options: ['left', 'center', 'right'] },
 
   { key: '_h_cta', label: 'CTA Button', type: 'header' },
@@ -482,6 +499,7 @@ export const ru1HeroFields: FieldConfig[] = [
   { key: 'ctaUrl', label: 'Button URL', type: 'url' },
   { key: 'ctaBgColor', label: 'Button Background', type: 'color' },
   { key: 'ctaTextColor', label: 'Button Text Color', type: 'color' },
+  { key: 'ctaOffsetY', label: 'Button Vertical Position', type: 'number', unit: 'px', step: 4, placeholder: '0' },
   fontField('ctaFont', 'Button Font'),
 
   { key: '_h_layout', label: 'Layout', type: 'header' },
@@ -512,14 +530,14 @@ export function renderRu1Hero(data: Ru1HeroData): string {
   const overlayDiv = `<div style="position:absolute;inset:0;background:${data.overlayColor};opacity:${(data.overlayOpacity / 100).toFixed(2)};pointer-events:none"></div>`
 
   const ctaBtn = data.ctaText
-    ? `<a href="${data.ctaUrl}" style="display:inline-block;background:${data.ctaBgColor};color:${data.ctaTextColor};padding:0.625rem 1.5rem;border-radius:0.375rem;text-decoration:none;font-weight:600;margin-top:1rem;${fontCss(data.ctaFont, data.fontFamily)}">${data.ctaText}</a>`
+    ? `<a href="${data.ctaUrl}" style="display:inline-block;position:relative;top:${data.ctaOffsetY ?? 0}px;background:${data.ctaBgColor};color:${data.ctaTextColor};padding:0.625rem 1.5rem;border-radius:0.375rem;text-decoration:none;font-weight:600;margin-top:1rem;${fontCss(data.ctaFont, data.fontFamily)}">${data.ctaText}</a>`
     : ''
 
   const hasText = data.headline || data.subheadline || data.ctaText
   const textLayer = hasText
     ? `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:${alignItems};justify-content:center;padding:2rem;text-align:${data.textAlign};color:${data.textColor}">
-      ${data.headline ? `<h2 data-field-key="headline" style="font-size:2.25rem;font-weight:700;margin:0;line-height:1.2;${fontCss(data.headlineFont, data.fontFamily)}">${data.headline}</h2>` : ''}
-      ${data.subheadline ? `<p data-field-key="subheadline" style="font-size:1.125rem;margin:0.5rem 0 0;${fontCss(data.subheadlineFont, data.fontFamily)}">${data.subheadline}</p>` : ''}
+      ${data.headline ? `<h2 data-field-key="headline" style="font-size:2.25rem;font-weight:${data.headlineFontWeight || '700'};margin:0;line-height:1.2;${fontCss(data.headlineFont, data.fontFamily)}">${data.headline}</h2>` : ''}
+      ${data.subheadline ? `<p data-field-key="subheadline" style="font-size:1.125rem;font-weight:${data.subheadlineFontWeight || '400'};color:${data.subheadlineColor || data.textColor};margin:0.5rem 0 0;${fontCss(data.subheadlineFont, data.fontFamily)}">${data.subheadline}</p>` : ''}
       ${ctaBtn}
     </div>`
     : ''
@@ -663,7 +681,7 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   addToCartRadius: 6,
   showViewProduct: true,
   viewProductLabel: 'View Product',
-  viewProductBg: '#2563eb',
+  viewProductBg: '#144799',
   viewProductTextColor: '#ffffff',
   viewProductRadius: 24,
   showArrowBtn: false,
