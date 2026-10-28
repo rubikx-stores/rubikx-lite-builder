@@ -8,9 +8,10 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf-8'))
+    const payload = decodeJwt(token)
+    const expiresIn = Math.floor(payload.exp - Date.now() / 1000)
 
-    if (payload.exp * 1000 < Date.now()) {
+    if (expiresIn <= 0) {
       throw createError({ statusCode: 401, message: 'Token expired' })
     }
 
@@ -19,6 +20,9 @@ export default defineEventHandler(async (event) => {
         name: payload.name || payload.email?.split('@')[0] || 'User',
         email: payload.email || payload.sub || '',
       },
+      // Seconds left. The cookie is httpOnly so the browser can't read `exp`
+      // itself, and sending a duration (not a timestamp) avoids clock skew.
+      expiresIn,
     }
   } catch (error: any) {
     if (error.statusCode) throw error

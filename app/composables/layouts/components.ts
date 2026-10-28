@@ -3,6 +3,8 @@ import { productImageSrc } from '../useProductImageSrc'
 import { socialIconHtml } from '../useSocialIcons'
 import { icon } from '../useIconSvg'
 import { fontField, fontCss } from '../editor/fontFields'
+import { balanceBadgesDefaults, balanceBadgesFields, renderBalanceBadges } from '../useBalanceBadges'
+import type { BalanceBadgesData } from '../useBalanceBadges'
 import type { Product } from '../themes/themes-data'
 
 // Shared by every navbar/header block's "auto-generated categories row" —
@@ -59,7 +61,7 @@ export interface CtaButton {
   borderColor: string
 }
 
-export interface MegaMenuHeaderData {
+export interface MegaMenuHeaderData extends BalanceBadgesData {
   logoUrl: string
   logoText: string
   logoWidth: number
@@ -142,6 +144,7 @@ export const megaMenuHeaderDefaults: MegaMenuHeaderData = {
   ],
   buttonsAlign: 'right',
   showCart: true,
+  ...balanceBadgesDefaults,
   cartUrl: '/cart',
   showSignIn: false,
   signInUrl: '/login',
@@ -230,6 +233,7 @@ export const megaMenuHeaderFields: FieldConfig[] = [
   { key: 'buttonsAlign',    label: 'Buttons Position',      type: 'select',
     options: ['left', 'center', 'right']                                    },
   { key: 'showCart',    label: 'Show Cart Icon',  type: 'toggle' },
+  ...balanceBadgesFields,
   { key: 'cartUrl',     label: 'Cart URL',        type: 'url'    },
   { key: 'buttonBorderRadius', label: 'Button Radius (px)', type: 'number',
     placeholder: '6 — corner roundness for all CTA buttons'                },
@@ -331,6 +335,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
   const signInEl = data.showSignIn
     ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="${signInBtnStyle}">${data.signInLabel}</a><span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" data-text-color="${data.textColor}" style="position:relative;display:none;align-items:center;"></span>`
     : ''
+  const balanceEl = renderBalanceBadges(data)
   const cartEl = data.showCart
     ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
     : ''
@@ -341,8 +346,8 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
         return `<a href="${btn.href}" style="${base}background:${bg};color:${btn.textColor};border:1.5px solid ${btn.borderColor};">${btn.label}</a>`
       }).join('')
     : ''
-  const buttonsEl = (signInEl || cartEl || ctaEl)
-    ? `<div style="display:flex;align-items:center;gap:1rem;">${signInEl}${ctaEl}${cartEl}</div>`
+  const buttonsEl = (signInEl || cartEl || ctaEl || balanceEl)
+    ? `<div style="display:flex;align-items:center;gap:1rem;">${signInEl}${ctaEl}${balanceEl}${cartEl}</div>`
     : ''
 
   const lowerJustifyMap: Record<string, string> = {
@@ -412,6 +417,7 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
       ${icon('xMark', { size: 24, stroke: data.textColor })}
     </button>
   </div>
+  ${renderBalanceBadges(data, 'compact', 'margin-bottom:1rem;')}
   ${mobileSearchEl}
   <div style="display:flex;flex-direction:column;">
     ${mobileDrawerLinks}
@@ -458,7 +464,7 @@ ${megaScript}</section>`
 export interface OverflowLink { label: string; href: string; newTab?: boolean }
 export interface Ru3NavLink { label: string; href: string; showDropdown: boolean; categoryFilter?: string; newTab?: boolean }
 
-export interface Ru3MegaHeaderData {
+export interface Ru3MegaHeaderData extends BalanceBadgesData {
   logoUrl: string
   logoText: string
   logoWidth: number
@@ -531,6 +537,7 @@ export const ru3MegaHeaderDefaults: Ru3MegaHeaderData = {
   searchBarWidth: 1280,
   cartUrl: '/cart',
   showCart: true,
+  ...balanceBadgesDefaults,
   accountUrl: '/login',
   showAccount: true,
   accountGuestLabel: 'Guest',
@@ -600,6 +607,7 @@ export const ru3MegaHeaderFields: FieldConfig[] = [
     placeholder: '1280'                                                    },
   { key: 'cartUrl',      label: 'Cart URL',           type: 'url'    },
   { key: 'showCart',     label: 'Show Cart Icon',     type: 'toggle' },
+  ...balanceBadgesFields,
   { key: 'accountUrl',   label: 'Login URL',          type: 'url'    },
   { key: 'showAccount',  label: 'Show Account Icon',  type: 'toggle' },
   { key: 'accountGuestLabel',    label: 'Account Dropdown: Guest Label',    type: 'text', placeholder: 'Guest'    },
@@ -733,6 +741,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
     ? `<button type="button" class="ru3-search-toggle" onclick="(function(btn){var sec=btn.closest('section');var bar=sec.querySelector('[data-ru3-search-bar]');var open=bar.style.display==='block';bar.style.display=open?'none':'block';if(!open){var inp=bar.querySelector('input');if(inp)setTimeout(function(){inp.focus()},0);}})(this)" style="${iconLabelStyle}">${icon('magnifyingGlass', { size: 20 })}<span>Search</span></button>`
     : ''
 
+  const balanceEl = renderBalanceBadges(data)
   const cartEl = data.showCart
     ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" style="position:relative;display:inline-flex;">
     <a href="${data.cartUrl}" style="${iconLabelStyle}">${icon('shoppingCart', { size: 20 })}<span>My Cart</span></a>
@@ -831,6 +840,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
       ${icon('xMark', { size: 24, stroke: data.textColor })}
     </button>
   </div>
+  ${renderBalanceBadges(data, 'compact', 'margin-bottom:1rem;')}
   ${mobileSearchEl}
   <div style="display:flex;flex-direction:column;">
     ${mobileDrawerLinks}
@@ -854,7 +864,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
   <div data-nav-desktop="true" style="width:100%;display:flex;align-items:center;gap:3rem;">
     <div style="display:flex;align-items:center;flex-shrink:0;">${logoEl}</div>
     <nav data-rubikx-component="MainNavRow" data-on-mount="loadNavOverflow" style="display:flex;align-items:center;justify-content:flex-start;gap:2rem;flex:1;min-width:0;">${linksHtml}${overflowHtml}${dynamicPlaceholder}${dynamicCategoriesRowEl}</nav>
-    <div style="display:flex;align-items:center;justify-content:flex-end;gap:2.5rem;flex-shrink:0;">${searchEl}${cartEl}${accountEl}</div>
+    <div style="display:flex;align-items:center;justify-content:flex-end;gap:2.5rem;flex-shrink:0;">${searchEl}${balanceEl}${cartEl}${accountEl}</div>
   </div>
   <div data-ru3-search-bar style="display:none;border-top:1px solid ${data.bottomBorderColor};">
     <div style="max-width:${data.searchBarWidth}px;margin:0 auto;width:100%;padding:0.75rem ${data.paddingX}px;">
@@ -871,7 +881,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
 
 export interface Ru4NavLink { label: string; url: string; visible?: boolean; newTab?: boolean }
 
-export interface Ru4NavbarData {
+export interface Ru4NavbarData extends BalanceBadgesData {
   logoUrl: string
   logoText: string
   logoWidth: number
@@ -961,6 +971,7 @@ export const ru4NavbarDefaults: Ru4NavbarData = {
   searchColor: '#111827',
 
   showCart: true,
+  ...balanceBadgesDefaults,
   cartUrl: '/cart',
   cartColor: '#111827',
 
@@ -1024,6 +1035,7 @@ export const ru4NavbarFields: FieldConfig[] = [
 
   { key: '_h_cart', label: 'Cart', type: 'header' },
   { key: 'showCart', label: 'Show Cart Icon', type: 'toggle' },
+  ...balanceBadgesFields,
   { key: 'cartUrl', label: 'Cart URL', type: 'url' },
   { key: 'cartColor', label: 'Cart Icon Colour', type: 'color' },
 
@@ -1101,11 +1113,12 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
       </button>`
     : ''
 
+  const balanceEl = renderBalanceBadges(data)
   const cartEl = data.showCart
     ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.cartColor}" style="position:relative;display:inline-flex;flex-shrink:0;"><a href="${data.cartUrl}" style="color:${data.cartColor};display:inline-flex;">${icon('shoppingCart', { size: 20 })}</a></span>`
     : ''
 
-  const rightClusterEl = `<div style="display:flex;align-items:center;justify-content:flex-end;gap:1.5rem;flex-shrink:0;">${authLinksEl}${authStateEl}${searchToggleEl}${cartEl}</div>`
+  const rightClusterEl = `<div style="display:flex;align-items:center;justify-content:flex-end;gap:1.5rem;flex-shrink:0;">${authLinksEl}${authStateEl}${searchToggleEl}${balanceEl}${cartEl}</div>`
 
   const mobileDrawerLinks = visibleNavLinks.map(l =>
     `<a href="${l.url}" style="display:block;padding:0.75rem 0;font-size:1.125rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.15);"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`
@@ -1148,6 +1161,7 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
       ${icon('xMark', { size: 24, stroke: data.textColor })}
     </button>
   </div>
+  ${renderBalanceBadges(data, 'compact', 'margin-bottom:1rem;')}
   ${mobileSearchEl}
   <div style="display:flex;flex-direction:column;">
     ${mobileDrawerLinks}
@@ -1830,7 +1844,7 @@ export interface Ru8NavLink {
   newTab?: boolean
 }
 
-export interface Ru8NavbarData {
+export interface Ru8NavbarData extends BalanceBadgesData {
   logoUrl: string
   logoText: string
   logoWidth: number
@@ -1948,6 +1962,7 @@ export const ru8NavbarDefaults: Ru8NavbarData = {
   buttonFont: '',
 
   showCart: true,
+  ...balanceBadgesDefaults,
   cartUrl: '/cart',
   cartIconColor: '#ffffff',
   cartPosition: 'inline',
@@ -2033,6 +2048,7 @@ export const ru8NavbarFields: FieldConfig[] = [
 
   { key: '_h_cart', label: 'Cart', type: 'header' },
   { key: 'showCart', label: 'Show Cart Icon', type: 'toggle' },
+  ...balanceBadgesFields,
   { key: 'cartUrl', label: 'Cart URL', type: 'url' },
   { key: 'cartIconColor', label: 'Cart Icon Colour', type: 'color' },
   { key: 'cartPosition', label: 'Cart Position', type: 'select', options: ['inline', 'below'],
@@ -2085,13 +2101,14 @@ export function renderRu8Navbar(data: Ru8NavbarData): string {
   const authStateEl = `<span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" data-text-color="${data.textColor}" style="position:relative;display:none;align-items:center;"></span>`
   const signInEl = signInLinkEl + authStateEl
 
+  const balanceEl = renderBalanceBadges(data)
   const cartEl = data.showCart
     ? `<span data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.cartIconColor}" style="position:relative;display:inline-flex;"><a href="${data.cartUrl}" style="color:${data.cartIconColor};display:inline-flex;">${icon('shoppingCart')}</a></span>`
     : ''
   const cartInline = data.cartPosition !== 'below' ? cartEl : ''
   const cartBelow = data.cartPosition === 'below' ? cartEl : ''
 
-  const topBarButtonsEl = `<div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">${signInEl}${renderCtaButtons()}${cartInline}</div>`
+  const topBarButtonsEl = `<div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">${signInEl}${renderCtaButtons()}${balanceEl}${cartInline}</div>`
 
   // Any navLinks entry with showDropdown gets its own narrow categories
   // dropdown scoped via data-category-filter — same CategoryNav/
@@ -2214,6 +2231,7 @@ export function renderRu8Navbar(data: Ru8NavbarData): string {
         ${icon('xMark', { size: 24, stroke: data.textColor })}
       </button>
     </div>
+    ${renderBalanceBadges(data, 'compact', 'margin-bottom:1rem;')}
     <div style="margin-bottom:1.25rem;">${mobileSearchEl}</div>
     <div style="display:flex;flex-direction:column;">${mobileNavLinksEl}</div>
     ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="display:block;padding:0.75rem 0;font-size:1.0625rem;font-weight:500;color:${data.textColor};text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.08);cursor:pointer;">Categories</a>` : ''}
@@ -2301,7 +2319,7 @@ ${responsiveStyle}
 // affecting every other navbar block that already uses it).
 
 
-export interface Ru6HamburgerNavbarData {
+export interface Ru6HamburgerNavbarData extends BalanceBadgesData {
   fontFamily: string
 
   logoUrl: string
@@ -2370,6 +2388,7 @@ export const ru6HamburgerNavbarDefaults: Ru6HamburgerNavbarData = {
   searchPlaceholder: 'Search',
 
   showCart: true,
+  ...balanceBadgesDefaults,
   cartUrl: '/cart',
   cartLabel: 'Cart',
 
@@ -2421,6 +2440,7 @@ export const ru6HamburgerNavbarFields: FieldConfig[] = [
 
   { key: '_h_cart', label: 'Cart', type: 'header' },
   { key: 'showCart', label: 'Show Cart', type: 'toggle' },
+  ...balanceBadgesFields,
   { key: 'cartUrl', label: 'Cart URL', type: 'url', placeholder: '/cart' },
   { key: 'cartLabel', label: 'Cart Label', type: 'text', placeholder: 'Cart' },
 
@@ -2536,8 +2556,10 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
   const profileLinksHtml = (data.profileLinks ?? [])
     .map(l => `<a href="${l.url}" style="display:block;padding:0.65rem 0;${homeLinkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`)
     .join('')
-  const mobileMenuExtras = (data.showCart || data.showProfile)
+  const balanceMobileEl = renderBalanceBadges(data, 'compact')
+  const mobileMenuExtras = (data.showCart || data.showProfile || balanceMobileEl)
     ? `<div data-ru6-menu-mobile-extra style="display:none;margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid #e5e7eb;">
+        ${balanceMobileEl ? `<div style="padding:0.65rem 0;">${balanceMobileEl}</div>` : ''}
         ${data.showCart ? `<a href="${data.cartUrl}" style="display:block;padding:0.65rem 0;${homeLinkStyle}">${data.cartLabel}</a>` : ''}
         ${data.showProfile ? profileLinksHtml : ''}
       </div>`
@@ -2599,6 +2621,7 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
   // just the wording on small screens (icons/dropdowns stay fully
   // functional, tap targets don't shrink) instead of squeezing three
   // labeled controls into a cramped third of a phone-width screen.
+  const balanceEl = renderBalanceBadges(data)
   const cartEl = data.showCart
     ? `<span data-ru6-cart data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.textColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
         <a href="${data.cartUrl}" style="color:${data.textColor};display:inline-flex;align-items:center;gap:0.375rem;text-decoration:none;font-size:0.9rem;font-weight:500;white-space:nowrap;${fontCss(undefined, data.fontFamily)}">${ru6IconCartFilled(24)}<span data-ru6-label>${data.cartLabel}</span></a>
@@ -2649,7 +2672,8 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
     [data-ru6-navbar] { padding-left: min(${data.paddingX}px, 5vw); padding-right: min(${data.paddingX}px, 5vw); }
     [data-ru6-navbar] [data-ru6-right] { gap: 0.6rem; }
     [data-ru6-navbar] [data-ru6-cart],
-    [data-ru6-navbar] [data-ru6-profile] { display: none !important; }
+    [data-ru6-navbar] [data-ru6-profile],
+    [data-ru6-navbar] [data-ru6-right] [data-rubikx-component="BalanceBadges"] { display: none !important; }
     [data-ru6-navbar] [data-ru6-menu-mobile-extra] { display: block !important; }
     [data-ru6-navbar] [data-ru6-logo] img,
     [data-ru6-navbar] [data-ru6-logo] span { max-width: 38vw; }
@@ -2672,6 +2696,7 @@ ${menuLinkHoverStyle}
   </div>
   <div data-ru6-right style="display:flex;align-items:center;justify-content:flex-end;gap:1.25rem;min-width:0;">
     ${searchToggleEl}
+    ${balanceEl}
     ${cartEl}
     ${profileEl}
   </div>
@@ -2692,7 +2717,7 @@ ${menuLinkHoverStyle}
 // popup) — same icon-swap on the toggle button, different reveal.
 
 
-export interface Ru7NavbarData {
+export interface Ru7NavbarData extends BalanceBadgesData {
   fontFamily: string
   logoFont: string
   linkFont: string
@@ -2769,6 +2794,7 @@ export const ru7NavbarDefaults: Ru7NavbarData = {
   searchPlaceholder: 'Search',
 
   showCart: true,
+  ...balanceBadgesDefaults,
   cartUrl: '/cart',
 
   showTopBar: true,
@@ -2836,6 +2862,7 @@ export const ru7NavbarFields: FieldConfig[] = [
 
   { key: '_h_cart', label: 'Cart', type: 'header' },
   { key: 'showCart', label: 'Show Cart', type: 'toggle' },
+  ...balanceBadgesFields,
   { key: 'cartUrl', label: 'Cart URL', type: 'url', placeholder: '/cart' },
 
   { key: '_h_style', label: 'Style', type: 'header' },
@@ -2951,6 +2978,7 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
             ${icon('xMark', { size: 24, stroke: data.linkColor })}
           </button>
         </div>
+        ${renderBalanceBadges(data, 'compact', 'margin-bottom:1rem;')}
         ${mobileSearchEl}
         ${mobileNavLinksHtml}
         ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="${mobileLinkStyle}cursor:pointer;">Categories ▾</a>` : ''}
@@ -2982,8 +3010,14 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
       </div>`
     : ''
 
+  // Header copy is desktop-only (hidden ≤640px in responsiveStyle); on mobile
+  // the balance lives inside the hamburger drawer instead.
+  const balanceEl = renderBalanceBadges(data, 'default', '').replace(
+    'data-rubikx-component="BalanceBadges"',
+    'data-rubikx-component="BalanceBadges" data-ru7-header-balance',
+  )
   const cartEl = data.showCart
-    ? `<span data-ru7-cart data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.linkColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
+    ? `<span data-ru7-cartdata-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.linkColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
         <a href="${data.cartUrl}" style="color:${data.linkColor};display:inline-flex;">${icon('shoppingCart', { size: 22, stroke: data.linkColor })}</a>
       </span>`
     : ''
@@ -3018,6 +3052,7 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
     [data-ru7-main] [data-ru7-logo] img,
     [data-ru7-main] [data-ru7-logo] span { max-width: 40vw; }
     [data-ru7-not-home] [data-ru7-cart] { display: none !important; }
+    [data-ru7-header-balance] { display: none !important; }
     [data-ru7-cart] { order: -1; }
     [data-ru7-menu-toggle] { order: 1; }
     [data-ru7-search-cart-divider] { display: none !important; }
@@ -3052,6 +3087,7 @@ ${topBarEl}
     ${hamburgerEl}
     ${searchToggleEl}
     ${searchCartDividerEl}
+    ${balanceEl}
     ${cartEl}
   </div>
 </nav>
