@@ -119,7 +119,14 @@ watch(() => props.modelValue, async (open) => {
   customFontSizePx.value = baseSizeMatch ? Math.round(parseFloat(baseSizeMatch[1])) : 16
   fontWeightKey.value = '700'
   letterSpacingKey.value = 'normal'
-  textAlignKey.value = 'left'
+  // Seed Align from whichever is more specific: an explicit per-field
+  // override already baked into this content's own block wrapper (set by a
+  // previous visit to this same modal), falling back to the block-wide Text
+  // Align sidebar value threaded through via previewStyle — so reopening the
+  // modal reflects what's actually showing on the page instead of always
+  // resetting to "Left" (see ensureBlockWrapper/applyTextAlign below).
+  const styleAlignMatch = /text-align:\s*(left|center|right)/.exec(props.previewStyle || '')
+  textAlignKey.value = (readWrapperTextAlign(props.initialHtml || '') ?? styleAlignMatch?.[1] ?? 'left') as 'left' | 'center' | 'right'
   await nextTick()
   if (editorEl.value) editorEl.value.innerHTML = props.initialHtml || ''
   // Supplements the @mouseup/@keyup handlers on the editable itself: a drag
@@ -168,6 +175,13 @@ function captureSelection() {
   const sel = window.getSelection()
   if (sel && sel.rangeCount > 0 && editorEl.value?.contains(sel.anchorNode)) {
     setSavedRange(sel.getRangeAt(0).cloneRange())
+    // A genuinely new selection means any live-apply (Color/Size) from the
+    // PREVIOUS selection is done — without this, the next +/- click or color
+    // pick on a freshly selected word/sentence kept right on restyling the
+    // old span instead of wrapping the new selection, since applyFontSizePx/
+    // applyTextColor check their live mark before looking at savedRange.
+    liveColorMark.value = null
+    liveSizeMark.value = null
   }
 }
 
@@ -399,10 +413,46 @@ function applyFontSize(key: string) {
 // where those small presets don't reach anywhere near the sizes actually
 // used. Same clearSelector as the preset version so the two share one mark
 // and never stack conflicting sizes on the same run.
+//
+// Live-applies on every +/-/typed change (same pattern as applyTextColor/
+// liveColorMark below) instead of waiting for an explicit "Apply" click —
+// the first call wraps the selection and keeps a reference to that wrapper;
+// every call after that just restyles the SAME element directly, so the
+// editable preview visibly grows/shrinks as the number changes.
+// finalizeFontSizePx (bound to blur/change) drops that reference so the next
+// time this control is used — on a different selection — it starts fresh.
+const liveSizeMark = shallowRef<HTMLElement | null>(null)
+
 function applyFontSizePx(px: number) {
   selectionError.value = ''
   if (!px || px <= 0) return
-  wrapSelection('span', { 'data-faq-mark': 'size', style: `font-size:${px}px;` }, 'span[data-faq-mark="size"]')
+  if (liveSizeMark.value) {
+    liveSizeMark.value.setAttribute('style', `font-size:${px}px;`)
+    return
+  }
+  const range = savedRange.value
+  if (!range || range.collapsed) {
+    selectionError.value = 'Select some text first.'
+    return
+  }
+  const wrapper = document.createElement('span')
+  wrapper.setAttribute('data-faq-mark', 'size')
+  wrapper.setAttribute('style', `font-size:${px}px;`)
+  try {
+    const extracted = range.extractContents()
+    stripMarksFromFragment(extracted, 'span[data-faq-mark="size"]')
+    wrapper.appendChild(extracted)
+    range.insertNode(wrapper)
+  } catch {
+    selectionError.value = "Couldn't apply that to the current selection — try selecting a smaller or simpler range."
+    return
+  }
+  liveSizeMark.value = wrapper
+  setSavedRange(null)
+}
+
+function finalizeFontSizePx() {
+  liveSizeMark.value = null
 }
 
 function applyFontWeight(weight: string) {
@@ -421,17 +471,17 @@ function toggleUppercase() {
   wrapSelection('span', { 'data-faq-mark': 'uppercase', style: 'text-transform:uppercase;' }, 'span[data-faq-mark="uppercase"]')
 }
 
-// Line-height and text-align only visually change anything when they span a
-// whole block — wrapping just the selected words in a <span> has no
-// meaningful effect, since a browser's line-box/alignment is governed by the
-// block as a whole. So both always apply to the entire answer regardless of
-// what's selected, sharing one root-level wrapper element so the values
-// survive into the saved HTML. That wrapper is a <span style="display:block">
-// rather than a <div> — the saved HTML gets embedded into all sorts of
-// contexts (many inside a <p> tag), and a <div> isn't valid inside a <p> —
-// the browser would silently close the <p> early and break its own styling.
-// A <span> is valid there regardless of its display value, and
-// display:block makes it behave identically to a div for these purposes.
+// Line-height only visually changes anything when it spans a whole block —
+// wrapping just the selected words in a <span> has no meaningful effect,
+// since a browser's line-box height is governed by the block as a whole. So
+// it always applies to the entire answer regardless of what's selected,
+// via a root-level wrapper element so the value survives into the saved
+// HTML. That wrapper is a <span style="display:block"> rather than a <div>
+// — the saved HTML gets embedded into all sorts of contexts (many inside a
+// <p> tag), and a <div> isn't valid inside a <p> — the browser would
+// silently close the <p> early and break its own styling. A <span> is valid
+// there regardless of its display value, and display:block makes it behave
+// identically to a div for these purposes.
 function ensureBlockWrapper(): HTMLElement | null {
   const el = editorEl.value
   if (!el) return null
@@ -453,11 +503,36 @@ function applyLineHeight(key: string) {
   wrapper.style.lineHeight = LINE_HEIGHTS[key] ?? LINE_HEIGHTS.normal
 }
 
+// Unlike line-height, text-align CAN apply at word/sentence level: wrapping
+// just the selected text in its own <span style="display:block"> turns that
+// run into a mini block of its own (pushed onto its own line, same as a
+// <div> would), which text-align then visually aligns within the full
+// width available — same trick ensureBlockWrapper uses for the whole
+// field, just scoped to the current selection. Falls back to the
+// whole-field wrapper when nothing is selected, so clicking Align with no
+// selection still does something sensible.
 function applyTextAlign(align: 'left' | 'center' | 'right') {
   selectionError.value = ''
+  if (hasSelection.value) {
+    wrapSelection('span', { 'data-faq-mark': 'align', style: `display:block;text-align:${align};` }, 'span[data-faq-mark="align"]')
+    return
+  }
   const wrapper = ensureBlockWrapper()
   if (!wrapper) return
   wrapper.style.textAlign = align
+}
+
+// Reverse of applyTextAlign's wrapper write — reads back whatever align this
+// field's saved HTML already carries, so reopening the modal can seed
+// textAlignKey from it instead of always defaulting to 'left'.
+function readWrapperTextAlign(html: string): 'left' | 'center' | 'right' | null {
+  if (!html) return null
+  const div = document.createElement('div')
+  div.innerHTML = html
+  const wrapper = div.firstElementChild as HTMLElement | null
+  if (div.children.length !== 1 || wrapper?.getAttribute('data-faq-mark') !== 'block') return null
+  const value = wrapper.style.textAlign
+  return value === 'left' || value === 'center' || value === 'right' ? value : null
 }
 
 function rgbToHex(color: string, fallback: string): string {
@@ -781,7 +856,7 @@ function save() {
               type="button"
               class="flex h-5 w-5 items-center justify-center rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100"
               @mousedown.prevent
-              @click="customFontSizePx = Math.max(8, customFontSizePx - 1)"
+              @click="customFontSizePx = Math.max(8, customFontSizePx - 1); applyFontSizePx(customFontSizePx)"
             >−</button>
             <input
               v-model.number="customFontSizePx"
@@ -789,30 +864,17 @@ function save() {
               min="8"
               max="200"
               class="w-12 rounded border border-gray-300 bg-white px-1 py-0.5 text-center text-xs focus:outline-none focus:border-blue-400"
-              @change="applyFontSizePx(customFontSizePx)"
+              @input="applyFontSizePx(customFontSizePx)"
+              @change="finalizeFontSizePx"
               @keydown.enter.prevent="applyFontSizePx(customFontSizePx)"
             />
             <button
               type="button"
               class="flex h-5 w-5 items-center justify-center rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100"
               @mousedown.prevent
-              @click="customFontSizePx = Math.min(200, customFontSizePx + 1)"
+              @click="customFontSizePx = Math.min(200, customFontSizePx + 1); applyFontSizePx(customFontSizePx)"
             >+</button>
             px
-            <!-- Explicit trigger: a native <select>/number input only fires
-                 change when its value actually differs from what's already
-                 showing, so re-picking/re-entering the same px value (or
-                 nudging ± back to a value you'd already applied) silently
-                 did nothing. This always re-applies the current number,
-                 regardless of whether it changed. -->
-            <button
-              type="button"
-              class="rounded border border-gray-300 bg-white px-1.5 py-0.5 text-[11px] font-medium text-gray-700 hover:bg-gray-100"
-              @mousedown.prevent
-              @click="applyFontSizePx(customFontSizePx)"
-            >
-              Apply
-            </button>
           </div>
 
           <label class="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
