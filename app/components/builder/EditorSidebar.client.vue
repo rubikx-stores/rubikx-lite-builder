@@ -581,6 +581,11 @@ const faqAnswerModalPreviewStyle = computed(() => {
   // the naming guess, which already resolves correctly on its own.
   const config = selectedBlockTitle.value ? _blockRegistry.getConfig(selectedBlockTitle.value) : null
   const explicitColorField = config?.fields.find((f) => f.type === 'color' && f.pairedContentKeys?.includes(key))
+  // Same lookup as explicitColorField, for the block's Text Align select
+  // (e.g. Ru6-Stats' `textAlign` pairs with ['heading', 'description']) —
+  // lets the modal's own Align control seed from whatever the sidebar
+  // already has set, instead of always reopening on "Left".
+  const explicitAlignField = config?.fields.find((f) => f.type === 'select' && f.options?.includes('center') && f.pairedContentKeys?.includes(key))
 
   const parts: string[] = []
   const fontSize = Number(data[`${key}FontSize`] ?? data[`${key}Size`])
@@ -593,6 +598,8 @@ const faqAnswerModalPreviewStyle = computed(() => {
   if (lineHeight) parts.push(`line-height:${lineHeight}`)
   const fontFamily = fontCss(data[`${key}Font`], data.fontFamily).replace(/;$/, '')
   if (fontFamily) parts.push(fontFamily)
+  const align = explicitAlignField ? data[explicitAlignField.key] : data[`${key}Align`]
+  if (align) parts.push(`text-align:${align}`)
   return parts.length ? parts.join(';') + ';' : ''
 })
 

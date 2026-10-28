@@ -409,7 +409,10 @@ export interface Ru1HeroData {
   aspectRatio: string
   extraHeight: number
   headline: string
+  headlineFontWeight: string
   subheadline: string
+  subheadlineFontWeight: string
+  subheadlineColor: string
   textColor: string
   textAlign: string
   overlayColor: string
@@ -418,6 +421,7 @@ export interface Ru1HeroData {
   ctaUrl: string
   ctaBgColor: string
   ctaTextColor: string
+  ctaOffsetY: number
   bgColor: string
   paddingY: number
   paddingX: number
@@ -435,7 +439,10 @@ export const ru1HeroDefaults: Ru1HeroData = {
   aspectRatio: '3.49/1',
   extraHeight: 0,
   headline: '',
+  headlineFontWeight: '700',
   subheadline: '',
+  subheadlineFontWeight: '400',
+  subheadlineColor: '#000000',
   textColor: '#000000',
   textAlign: 'center',
   overlayColor: '#000000',
@@ -444,6 +451,7 @@ export const ru1HeroDefaults: Ru1HeroData = {
   ctaUrl: '',
   ctaBgColor: '#2563eb',
   ctaTextColor: '#ffffff',
+  ctaOffsetY: 0,
   bgColor: '#394152',
   paddingY: 0,
   paddingX: 0,
@@ -471,10 +479,13 @@ export const ru1HeroFields: FieldConfig[] = [
 
   { key: '_h_text', label: 'Text', type: 'header' },
   { key: 'headline', label: 'Headline', type: 'text' },
+  { key: 'headlineFontWeight', label: 'Headline Weight', type: 'select', options: ['400', '500', '600', '700'] },
   fontField('headlineFont', 'Headline Font'),
+  { key: 'textColor', label: 'Headline Color', type: 'color' },
   { key: 'subheadline', label: 'Subheadline', type: 'text' },
+  { key: 'subheadlineFontWeight', label: 'Subheadline Weight', type: 'select', options: ['400', '500', '600', '700'] },
   fontField('subheadlineFont', 'Subheadline Font'),
-  { key: 'textColor', label: 'Text Color', type: 'color' },
+  { key: 'subheadlineColor', label: 'Subheadline Color', type: 'color' },
   { key: 'textAlign', label: 'Text Alignment', type: 'select', options: ['left', 'center', 'right'] },
 
   { key: '_h_cta', label: 'CTA Button', type: 'header' },
@@ -482,6 +493,7 @@ export const ru1HeroFields: FieldConfig[] = [
   { key: 'ctaUrl', label: 'Button URL', type: 'url' },
   { key: 'ctaBgColor', label: 'Button Background', type: 'color' },
   { key: 'ctaTextColor', label: 'Button Text Color', type: 'color' },
+  { key: 'ctaOffsetY', label: 'Button Vertical Position', type: 'number', unit: 'px', step: 4, placeholder: '0' },
   fontField('ctaFont', 'Button Font'),
 
   { key: '_h_layout', label: 'Layout', type: 'header' },
@@ -512,14 +524,14 @@ export function renderRu1Hero(data: Ru1HeroData): string {
   const overlayDiv = `<div style="position:absolute;inset:0;background:${data.overlayColor};opacity:${(data.overlayOpacity / 100).toFixed(2)};pointer-events:none"></div>`
 
   const ctaBtn = data.ctaText
-    ? `<a href="${data.ctaUrl}" style="display:inline-block;background:${data.ctaBgColor};color:${data.ctaTextColor};padding:0.625rem 1.5rem;border-radius:0.375rem;text-decoration:none;font-weight:600;margin-top:1rem;${fontCss(data.ctaFont, data.fontFamily)}">${data.ctaText}</a>`
+    ? `<a href="${data.ctaUrl}" style="display:inline-block;position:relative;top:${data.ctaOffsetY ?? 0}px;background:${data.ctaBgColor};color:${data.ctaTextColor};padding:0.625rem 1.5rem;border-radius:0.375rem;text-decoration:none;font-weight:600;margin-top:1rem;${fontCss(data.ctaFont, data.fontFamily)}">${data.ctaText}</a>`
     : ''
 
   const hasText = data.headline || data.subheadline || data.ctaText
   const textLayer = hasText
     ? `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:${alignItems};justify-content:center;padding:2rem;text-align:${data.textAlign};color:${data.textColor}">
-      ${data.headline ? `<h2 data-field-key="headline" style="font-size:2.25rem;font-weight:700;margin:0;line-height:1.2;${fontCss(data.headlineFont, data.fontFamily)}">${data.headline}</h2>` : ''}
-      ${data.subheadline ? `<p data-field-key="subheadline" style="font-size:1.125rem;margin:0.5rem 0 0;${fontCss(data.subheadlineFont, data.fontFamily)}">${data.subheadline}</p>` : ''}
+      ${data.headline ? `<h2 data-field-key="headline" style="font-size:2.25rem;font-weight:${data.headlineFontWeight || '700'};margin:0;line-height:1.2;${fontCss(data.headlineFont, data.fontFamily)}">${data.headline}</h2>` : ''}
+      ${data.subheadline ? `<p data-field-key="subheadline" style="font-size:1.125rem;font-weight:${data.subheadlineFontWeight || '400'};color:${data.subheadlineColor || data.textColor};margin:0.5rem 0 0;${fontCss(data.subheadlineFont, data.fontFamily)}">${data.subheadline}</p>` : ''}
       ${ctaBtn}
     </div>`
     : ''
@@ -663,7 +675,7 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   addToCartRadius: 6,
   showViewProduct: true,
   viewProductLabel: 'View Product',
-  viewProductBg: '#2563eb',
+  viewProductBg: '#144799',
   viewProductTextColor: '#ffffff',
   viewProductRadius: 24,
   showArrowBtn: false,
