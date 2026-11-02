@@ -713,6 +713,8 @@ function handleModalKeydown(e: KeyboardEvent) {
       </button>
     </div>
 
+    <WhatsNewCard />
+
     <!-- Preview modal -->
     <Teleport to="body">
       <div

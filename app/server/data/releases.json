@@ -1,0 +1,23 @@
+[
+  {
+    "id": "2026-10-ru4-product-card",
+    "date": "2026-10-28",
+    "title": "Product Card block with live product sync",
+    "summary": "The new Ru4 Product Card block pulls product details straight from your backend, so cards stay up to date.",
+    "type": "new"
+  },
+  {
+    "id": "2026-10-ru7-navbar-balance",
+    "date": "2026-10-29",
+    "title": "Balance badges in the mobile menu",
+    "summary": "The Ru7 navbar now shows balance badges only inside the mobile drawer, keeping the header clean.",
+    "type": "improved"
+  },
+  {
+    "id": "2026-10-ru1-navbar-grid",
+    "date": "2026-10-20",
+    "title": "Ru1 navbar columns fit their content",
+    "summary": "Navbar grid columns now size to their content instead of stretching evenly.",
+    "type": "fix"
+  }
+]
