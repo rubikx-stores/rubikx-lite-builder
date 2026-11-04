@@ -3143,19 +3143,6 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
       </div>`
     : ''
 
-  // Header copy is desktop-only (hidden ≤640px in responsiveStyle); on mobile
-  // the balance lives inside the hamburger drawer instead.
-  const balanceEl = renderBalanceBadges(data, 'default', '').replace(
-    'data-rubikx-component="BalanceBadges"',
-    'data-rubikx-component="BalanceBadges" data-ru7-header-balance',
-  )
-  const cartEl = data.showCart
-    ? `<span data-ru7-cartdata-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.linkColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
-        <a href="${data.cartUrl}" style="color:${data.linkColor};display:inline-flex;">${icon('shoppingCart', { size: 22, stroke: data.linkColor })}</a>
-      </span>`
-      })()
-    : ''
-
   // Thin divider between the search and cart icons — only shown when both
   // are actually present, otherwise it'd be a lone floating line.
   const searchCartDividerEl = (data.showSearch && data.showCart)
