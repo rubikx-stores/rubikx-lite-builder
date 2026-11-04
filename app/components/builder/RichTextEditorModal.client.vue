@@ -116,7 +116,8 @@ watch(() => props.modelValue, async (open) => {
   // so it starts near "what this text actually is" instead of a generic 16 —
   // e.g. opening a 48px hero title shows 48 there, ready to nudge.
   const baseSizeMatch = /font-size:\s*([\d.]+)px/.exec(props.previewStyle || '')
-  customFontSizePx.value = baseSizeMatch ? Math.round(parseFloat(baseSizeMatch[1])) : 16
+  const contentSizePx = readUniformFontSizePx(props.initialHtml || '')
+  customFontSizePx.value = contentSizePx ?? (baseSizeMatch ? Math.round(parseFloat(baseSizeMatch[1])) : 16)
   fontWeightKey.value = '700'
   letterSpacingKey.value = 'normal'
   // Seed Align from whichever is more specific: an explicit per-field
@@ -182,7 +183,50 @@ function captureSelection() {
     // applyTextColor check their live mark before looking at savedRange.
     liveColorMark.value = null
     liveSizeMark.value = null
+    // Auto-read the font size of the selected text so the px input always
+    // reflects what's actually selected — the user sees the real size of
+    // whatever they highlighted instead of a stale/default number.
+    readSelectionFontSize(sel.getRangeAt(0))
   }
+}
+
+// Reads the computed (or inline) font-size of the node at the selection's
+// start, converts it to a rounded integer px value, and updates
+// customFontSizePx so the ±/input shows the real size of the highlighted
+// text. Falls back to the editable's own computed size if no explicit size
+// is set on the node itself, so the field never shows a stale number.
+function readSelectionFontSize(range: Range) {
+  const node = range.startContainer
+  // Walk up to the nearest element; a text node has no style of its own.
+  const el = (node.nodeType === Node.TEXT_NODE ? node.parentElement : node as HTMLElement) as HTMLElement | null
+  if (!el || !editorEl.value?.contains(el)) return
+  const computed = window.getComputedStyle(el).fontSize
+  // getComputedStyle always returns a px value, e.g. "32px".
+  const px = parseFloat(computed)
+  if (!isNaN(px) && px > 0) customFontSizePx.value = Math.round(px)
+}
+
+// A manual drag-select that's meant to cover the WHOLE field can easily miss
+// the true start/end by a character — easy to do since an existing mark's
+// boundary is invisible. That near-miss splits whatever mark sits at the
+// missed edge, leaving a tiny sliver still carrying its old style outside the
+// new selection, which then makes the saved content ambiguous (two
+// differently-styled runs instead of one uniform one) — see
+// readUniformFontSizePx below. Selecting via this button instead of a manual
+// drag always spans from the true first to the true last character, so any
+// pre-existing mark is always either wholly inside or wholly outside the
+// selection — never split — guaranteeing a clean, uniform result.
+function selectAllText() {
+  const editor = editorEl.value
+  if (!editor) return
+  const range = document.createRange()
+  range.selectNodeContents(editor)
+  const sel = window.getSelection()
+  sel?.removeAllRanges()
+  sel?.addRange(range)
+  setSavedRange(range.cloneRange())
+  liveColorMark.value = null
+  liveSizeMark.value = null
 }
 
 // Contenteditable's default Enter behavior inserts a new <div> (or <p>) per
@@ -298,7 +342,16 @@ function wrapSelection(tag: string, attrs: Record<string, string>, clearSelector
     selectionError.value = "Couldn't apply that to the current selection — try selecting a smaller or simpler range."
     return false
   }
-  setSavedRange(null)
+  // Re-select the wrapper so the highlight stays visible after styling —
+  // extractContents() above physically moved nodes out of the DOM which
+  // collapsed the browser's own selection, and the old setSavedRange(null)
+  // cleared the overlay too. Selecting the new wrapper restores both.
+  const newRange = document.createRange()
+  newRange.selectNodeContents(wrapper)
+  const sel = window.getSelection()
+  sel?.removeAllRanges()
+  sel?.addRange(newRange)
+  setSavedRange(newRange.cloneRange())
   return true
 }
 
@@ -353,7 +406,14 @@ function applyTextColor() {
     return
   }
   liveColorMark.value = wrapper
-  setSavedRange(null)
+  // Re-select the wrapper so the color highlight stays visible after applying —
+  // extractContents() collapsed the browser selection, restore it on the wrapper.
+  const newRange = document.createRange()
+  newRange.selectNodeContents(wrapper)
+  const sel = window.getSelection()
+  sel?.removeAllRanges()
+  sel?.addRange(newRange)
+  setSavedRange(newRange.cloneRange())
 }
 
 function finalizeTextColor() {
@@ -448,7 +508,14 @@ function applyFontSizePx(px: number) {
     return
   }
   liveSizeMark.value = wrapper
-  setSavedRange(null)
+  // Re-select the wrapper so the size highlight stays visible after applying —
+  // extractContents() collapsed the browser selection, restore it on the wrapper.
+  const newRange = document.createRange()
+  newRange.selectNodeContents(wrapper)
+  const sel = window.getSelection()
+  sel?.removeAllRanges()
+  sel?.addRange(newRange)
+  setSavedRange(newRange.cloneRange())
 }
 
 function finalizeFontSizePx() {
@@ -524,15 +591,47 @@ function applyTextAlign(align: 'left' | 'center' | 'right') {
 
 // Reverse of applyTextAlign's wrapper write — reads back whatever align this
 // field's saved HTML already carries, so reopening the modal can seed
-// textAlignKey from it instead of always defaulting to 'left'.
+// textAlignKey from it instead of always defaulting to 'left'. Checks the
+// whole-field 'block' wrapper first; if that's absent, falls back to the
+// first selection-scoped 'align' mark anywhere in the content (the OTHER
+// branch applyTextAlign can take when a leftover selection from a prior
+// Bold/Color/Size/etc. click was still active) — otherwise a field whose
+// align was only ever applied that way would always show "Left" here no
+// matter what's actually saved.
 function readWrapperTextAlign(html: string): 'left' | 'center' | 'right' | null {
   if (!html) return null
   const div = document.createElement('div')
   div.innerHTML = html
   const wrapper = div.firstElementChild as HTMLElement | null
-  if (div.children.length !== 1 || wrapper?.getAttribute('data-faq-mark') !== 'block') return null
-  const value = wrapper.style.textAlign
-  return value === 'left' || value === 'center' || value === 'right' ? value : null
+  const isValid = (v: string): v is 'left' | 'center' | 'right' => v === 'left' || v === 'center' || v === 'right'
+  if (div.children.length === 1 && wrapper?.getAttribute('data-faq-mark') === 'block') {
+    const value = wrapper.style.textAlign
+    if (isValid(value)) return value
+  }
+  const alignMark = div.querySelector('span[data-faq-mark="align"]') as HTMLElement | null
+  const value = alignMark?.style.textAlign ?? ''
+  return isValid(value) ? value : null
+}
+
+// Reverse of applyFontSizePx's wrapper write, for the common case of a
+// single size mark spanning the whole field (e.g. the admin selected all
+// before applying) — reads it back so reopening the modal shows what's
+// actually in the saved content instead of falling back to the field's
+// base size (or 16, if it has none). Mirrors _readUniformFontSize in
+// useEditorSidebar.ts, duplicated here since this modal has no registry
+// access of its own.
+function readUniformFontSizePx(html: string): number | null {
+  if (!html) return null
+  const div = document.createElement('div')
+  div.innerHTML = html
+  const wrapper = div.firstElementChild as HTMLElement | null
+  const root = (div.children.length === 1 && wrapper?.getAttribute('data-faq-mark') === 'block') ? wrapper : div
+  const sizeSpans = root.querySelectorAll('span[data-faq-mark="size"]')
+  if (sizeSpans.length !== 1) return null
+  const span = sizeSpans[0] as HTMLElement
+  if ((span.textContent ?? '').trim() !== (root.textContent ?? '').trim()) return null
+  const match = /font-size:\s*([\d.]+)px/.exec(span.getAttribute('style') || '')
+  return match ? Math.round(parseFloat(match[1])) : null
 }
 
 function rgbToHex(color: string, fallback: string): string {
@@ -774,6 +873,21 @@ function save() {
 
         <!-- Text style row -->
         <div class="mb-2 flex flex-wrap items-center gap-2 shrink-0">
+          <!-- A manual drag-select meant to cover the whole field can miss
+               the true edge by a character (an existing mark's boundary is
+               invisible), which silently leaves a sliver of the old style
+               behind — see selectAllText. This guarantees a clean, uniform
+               selection with one click. -->
+          <button
+            type="button"
+            class="flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100"
+            @mousedown.prevent
+            @click="selectAllText"
+          >
+            <span class="material-symbols-outlined text-base">select_all</span>
+            Select All
+          </button>
+
           <button
             type="button"
             class="flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium hover:bg-gray-100"

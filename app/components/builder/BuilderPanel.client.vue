@@ -220,6 +220,13 @@ async function handleDropComponent(comp: { id: string | number | null; html_code
       await addSingleComponent(comp)
     }
 
+    // Adding any component (layout, helper, theme block, library component)
+    // bypasses the block registry's _saveStorage and doesn't always push a
+    // new historyIndex entry fast enough for the watcher in
+    // PageBuilderWrapper to catch it before the modal closes. Mark dirty
+    // here unconditionally so the "← Pages" guard always catches this.
+    useState<boolean>('hasUnsavedChanges', () => false).value = true
+
     // Hydrate dynamic components after adding new component
     await nextTick()
     hydrateComponents(selectedCompanyId.value ?? undefined)
@@ -235,6 +242,7 @@ async function handleDropLibTheme(html_code: string) {
   isLoading.value = true
   const { getPageBuilder: getPB } = await import('@myissue/vue-website-page-builder')
   await (getPB() as any).addTheme(html_code)
+  useState<boolean>('hasUnsavedChanges', () => false).value = true
   closeAddComponentModal()
   isLoading.value = false
 }
@@ -256,6 +264,7 @@ async function handleApplyTheme(themeId: string) {
       }
     }
   }
+  useState<boolean>('hasUnsavedChanges', () => false).value = true
   closeAddComponentModal()
   isLoading.value = false
 }

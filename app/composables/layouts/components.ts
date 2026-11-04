@@ -51,7 +51,7 @@ export function renderDynamicCategoriesRow(data: {
 
 export interface MegaMenuProduct { id: number; label: string; href: string; image?: string; price?: number }
 export interface MegaMenuGroup   { label: string; href: string; products: MegaMenuProduct[] }
-export interface NavLink         { label: string; href: string; megaMenu?: MegaMenuGroup[]; newTab?: boolean }
+export interface NavLink         { label: string; href: string; megaMenu?: MegaMenuGroup[]; newTab?: boolean; position?: 'Before Categories' | 'After Categories' }
 export interface CtaButton {
   label: string
   href: string
@@ -192,6 +192,8 @@ export const megaMenuHeaderFields: FieldConfig[] = [
       { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Shop'          },
       { key: 'href',  label: 'URL',   type: 'url',  placeholder: 'e.g. /shop or https://…' },
       { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
+      { key: 'position', label: 'Position', type: 'select', options: ['Before Categories', 'After Categories'],
+        default: 'Before Categories', placeholder: 'Where this link appears relative to categories' },
     ],
   },
   { key: 'navLinksAlign',      label: 'Links Position',                  type: 'select',
@@ -287,20 +289,24 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
     }).join('')
   }
 
-  const staticLinks = data.navLinks.length
-    ? data.navLinks.map(l => {
-        if (l.megaMenu && l.megaMenu.length > 0) {
-          const groups = l.megaMenu.map(g => ({ label: g.label, href: g.href, ids: g.products.map(p => p.id) }))
-          const json = JSON.stringify(groups).replace(/'/g, '&quot;')
-          const staticContent = renderStaticDrop(l.megaMenu)
-          return `<div class='ru-mega-item' data-mega-json='${json}' style='position:relative;display:inline-block;'>` +
-            `<a href='${l.href}' style='${linkStyle}cursor:pointer;'${l.newTab ? ` target='_blank' rel='noopener noreferrer'` : ''}>${l.label} ▾</a>` +
-            `<div class='ru-mega-drop' style='display:none;position:absolute;top:100%;left:0;min-width:260px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100;overflow:hidden;'>${staticContent}</div>` +
-            `</div>`
-        }
-        return `<a href='${l.href}' style='${linkStyle}'${l.newTab ? ` target='_blank' rel='noopener noreferrer'` : ''}>${l.label}</a>`
-      }).join('')
-    : ''
+  const renderStaticLink = (l: NavLink): string => {
+    if (l.megaMenu && l.megaMenu.length > 0) {
+      const groups = l.megaMenu.map(g => ({ label: g.label, href: g.href, ids: g.products.map(p => p.id) }))
+      const json = JSON.stringify(groups).replace(/'/g, '&quot;')
+      const staticContent = renderStaticDrop(l.megaMenu)
+      return `<div class='ru-mega-item' data-mega-json='${json}' style='position:relative;display:inline-block;'>` +
+        `<a href='${l.href}' style='${linkStyle}cursor:pointer;'${l.newTab ? ` target='_blank' rel='noopener noreferrer'` : ''}>${l.label} ▾</a>` +
+        `<div class='ru-mega-drop' style='display:none;position:absolute;top:100%;left:0;min-width:260px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100;overflow:hidden;'>${staticContent}</div>` +
+        `</div>`
+    }
+    return `<a href='${l.href}' style='${linkStyle}'${l.newTab ? ` target='_blank' rel='noopener noreferrer'` : ''}>${l.label}</a>`
+  }
+  // Links marked 'After Categories' render after both category mechanisms below;
+  // everything else (undefined/'Before Categories') keeps the original pre-categories spot.
+  const beforeNavLinks = data.navLinks.filter(l => l.position !== 'After Categories')
+  const afterNavLinks  = data.navLinks.filter(l => l.position === 'After Categories')
+  const staticLinks = beforeNavLinks.map(renderStaticLink).join('')
+  const staticLinksAfter = afterNavLinks.map(renderStaticLink).join('')
 
   const dynamicPlaceholder = (data.dynamicCategoriesFloating || data.dynamicCategoriesInline)
     ? `<div
@@ -327,8 +333,8 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
   const dynamicCategoriesRow = renderDynamicCategoriesRow(data, '1.5rem', '#000000')
   const { desktopEl: dynamicCategoriesRowEl, mobileEl: dynamicCategoriesMobileEl } = dynamicCategoriesRow
 
-  const linksEl = (staticLinks || dynamicPlaceholder || dynamicCategoriesRowEl)
-    ? `<nav style='display:flex;align-items:center;gap:1.5rem;'>${staticLinks}${dynamicPlaceholder}${dynamicCategoriesRowEl}</nav>`
+  const linksEl = (staticLinks || staticLinksAfter || dynamicPlaceholder || dynamicCategoriesRowEl)
+    ? `<nav style='display:flex;align-items:center;gap:1.5rem;'>${staticLinks}${dynamicPlaceholder}${dynamicCategoriesRowEl}${staticLinksAfter}</nav>`
     : ''
 
   const signInBtnStyle = `display:inline-flex;align-items:center;padding:0.4375rem 1rem;border-radius:${data.buttonBorderRadius}px;text-decoration:none;font-size:0.875rem;font-weight:500;white-space:nowrap;border:1.5px solid ${data.textColor};color:${data.textColor};background:transparent;${fontCss(data.buttonFont, data.fontFamily)}`
@@ -462,7 +468,7 @@ ${megaScript}</section>`
 
 
 export interface OverflowLink { label: string; href: string; newTab?: boolean }
-export interface Ru3NavLink { label: string; href: string; showDropdown: boolean; categoryFilter?: string; newTab?: boolean }
+export interface Ru3NavLink { label: string; href: string; showDropdown: boolean; categoryFilter?: string; newTab?: boolean; position?: 'Before Categories' | 'After Categories' }
 
 export interface Ru3MegaHeaderData extends BalanceBadgesData {
   logoUrl: string
@@ -578,6 +584,8 @@ export const ru3MegaHeaderFields: FieldConfig[] = [
       { key: 'categoryFilter', label: 'Category Name (from backend)', type: 'text', siteSpecific: true, cloneValue: '',
         placeholder: 'e.g. Apparel — only that category\'s children show; blank shows all' },
       { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
+      { key: 'position', label: 'Position', type: 'select', options: ['Before Categories', 'After Categories'],
+        default: 'Before Categories', placeholder: 'Where this link appears relative to the standalone categories dropdown/row' },
     ],
   },
   { key: 'syncCategoriesFromApi', label: 'Sync Categories from API', type: 'button' },
@@ -687,7 +695,13 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
     return `<div data-nav-item${pinned}><a href='${l.href}' style='${linkStyle}'${l.newTab ? ` target='_blank' rel='noopener noreferrer'` : ''}>${l.label}</a></div>`
   }
 
-  const navLinksHtml = data.navLinks.map(renderStaticNavItem).join('')
+  // Links marked 'After Categories' render after the standalone dropdown/row below;
+  // everything else (undefined/'Before Categories') keeps its original spot, alongside
+  // the overflow links/button which aren't split (no position control of their own).
+  const beforeNavLinks = data.navLinks.filter(l => l.position !== 'After Categories')
+  const afterNavLinks  = data.navLinks.filter(l => l.position === 'After Categories')
+  const navLinksHtml = beforeNavLinks.map(renderStaticNavItem).join('')
+  const navLinksHtmlAfter = afterNavLinks.map(renderStaticNavItem).join('')
 
   const overflowLinksHtml = data.overflowLinks
     .map(l => renderStaticNavItem({ ...l, showDropdown: false }))
@@ -863,7 +877,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
   ${mobileNav}
   <div data-nav-desktop="true" style="width:100%;display:flex;align-items:center;gap:3rem;">
     <div style="display:flex;align-items:center;flex-shrink:0;">${logoEl}</div>
-    <nav data-rubikx-component="MainNavRow" data-on-mount="loadNavOverflow" style="display:flex;align-items:center;justify-content:flex-start;gap:2rem;flex:1;min-width:0;">${linksHtml}${overflowHtml}${dynamicPlaceholder}${dynamicCategoriesRowEl}</nav>
+    <nav data-rubikx-component="MainNavRow" data-on-mount="loadNavOverflow" style="display:flex;align-items:center;justify-content:flex-start;gap:2rem;flex:1;min-width:0;">${linksHtml}${overflowHtml}${dynamicPlaceholder}${dynamicCategoriesRowEl}${navLinksHtmlAfter}</nav>
     <div style="display:flex;align-items:center;justify-content:flex-end;gap:2.5rem;flex-shrink:0;">${searchEl}${balanceEl}${cartEl}${accountEl}</div>
   </div>
   <div data-ru3-search-bar style="display:none;border-top:1px solid ${data.bottomBorderColor};">
@@ -879,7 +893,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
 }
 
 
-export interface Ru4NavLink { label: string; url: string; visible?: boolean; newTab?: boolean }
+export interface Ru4NavLink { label: string; url: string; visible?: boolean; newTab?: boolean; position?: 'Before Categories' | 'After Categories' }
 
 export interface Ru4NavbarData extends BalanceBadgesData {
   logoUrl: string
@@ -1005,6 +1019,8 @@ export const ru4NavbarFields: FieldConfig[] = [
       { key: 'url', label: 'URL', type: 'url' },
       { key: 'visible', label: 'Visible', type: 'toggle' },
       { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
+      { key: 'position', label: 'Position', type: 'select', options: ['Before Categories', 'After Categories'],
+        default: 'Before Categories', placeholder: 'Where this link appears relative to categories' },
     ],
   },
   { key: 'navLinksAlign', label: 'Links Position', type: 'select', options: ['left', 'center', 'right'] },
@@ -1068,9 +1084,18 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
   const linkStyle = `color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}`
 
   const visibleNavLinks = data.navLinks.filter(l => l.visible !== false)
-  const staticLinksHtml = visibleNavLinks
-    .map(l => `<a href="${l.url}" style="${linkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`)
-    .join('')
+  // Links with position 'After Categories' sit after the categories block;
+  // everything else (no position set, or 'Before Categories') sits before it.
+  // This preserves backward-compatibility: existing saved links that have no
+  // position field default to 'Before Categories' automatically.
+  const beforeLinks = visibleNavLinks.filter(l => l.position !== 'After Categories')
+  const afterLinks  = visibleNavLinks.filter(l => l.position === 'After Categories')
+
+  const makeLinksHtml = (links: Ru4NavLink[]) =>
+    links.map(l => `<a href="${l.url}" style="${linkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`).join('')
+
+  const staticLinksHtml = makeLinksHtml(beforeLinks)
+  const staticLinksAfterHtml = makeLinksHtml(afterLinks)
   const dynamicCategoriesHtml = data.dynamicCategories
     ? `<div
         data-rubikx-component='CategoryNav'
@@ -1093,7 +1118,7 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
   const dynamicCategoriesRow = renderDynamicCategoriesRow(data, '1.75rem', '#000000')
   const { desktopEl: dynamicCategoriesRowEl, mobileEl: dynamicCategoriesMobileEl } = dynamicCategoriesRow
   const navLinksJustifyMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
-  const linksEl = `<nav style="display:flex;align-items:center;justify-content:${navLinksJustifyMap[data.navLinksAlign] ?? 'flex-start'};gap:1.75rem;">${staticLinksHtml}${dynamicCategoriesHtml}${dynamicCategoriesRowEl}</nav>`
+  const linksEl = `<nav style="display:flex;align-items:center;justify-content:${navLinksJustifyMap[data.navLinksAlign] ?? 'flex-start'};gap:1.75rem;">${staticLinksHtml}${dynamicCategoriesHtml}${dynamicCategoriesRowEl}${staticLinksAfterHtml}</nav>`
 
   const authLinksArr = [
     data.showSignIn ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${data.authLinksColor};font-size:0.875rem;font-weight:500;text-decoration:none;white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}">${data.signInLabel}</a>` : '',
@@ -1221,6 +1246,7 @@ export interface Ru5LogoNavLink {
   href: string        // fallback target when not logo-filtering (plain-link mode)
   logoGroups: string[]   // [] = not logo-enabled yet
   newTab?: boolean
+  position?: 'Before Categories' | 'After Categories'
 }
 
 export interface Ru5DynamicNavbarData {
@@ -1373,6 +1399,8 @@ export const ru5DynamicNavbarFields: FieldConfig[] = [
       { key: 'label', label: 'Label', type: 'text', placeholder: 'e.g. Shop by Brand' },
       { key: 'href',  label: 'Fallback URL', type: 'url', placeholder: 'used if no logos selected or logo filtering is off' },
       { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
+      { key: 'position', label: 'Position', type: 'select', options: ['Before Categories', 'After Categories'],
+        default: 'Before Categories', placeholder: 'Where this link appears relative to the categories dropdown/row' },
     ],
   },
   { key: 'logoFilterByCategory', label: 'Show Logo/Brand Nav Link Dropdowns', type: 'toggle', siteSpecific: true, cloneValue: false,
@@ -1653,8 +1681,15 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
       </div>
     </div>`
   }
-  const desktopLogoLinksEl = logoNavLinks.map((l, i) => renderLogoNavLinkShell(l, i, false)).join('')
-  const mobileLogoLinksEl = logoNavLinks.map((l, i) => renderLogoNavLinkShell(l, i, true)).join('')
+  // Links marked 'After Categories' render after both the standalone dropdown
+  // and the auto-generated row below; everything else (undefined/'Before
+  // Categories') keeps its original spot, right after Home.
+  const beforeLogoNavLinks = logoNavLinks.filter(l => l.position !== 'After Categories')
+  const afterLogoNavLinks  = logoNavLinks.filter(l => l.position === 'After Categories')
+  const desktopLogoLinksEl = beforeLogoNavLinks.map((l, i) => renderLogoNavLinkShell(l, i, false)).join('')
+  const desktopLogoLinksAfterEl = afterLogoNavLinks.map((l, i) => renderLogoNavLinkShell(l, beforeLogoNavLinks.length + i, false)).join('')
+  const mobileLogoLinksEl = beforeLogoNavLinks.map((l, i) => renderLogoNavLinkShell(l, i, true)).join('')
+  const mobileLogoLinksAfterEl = afterLogoNavLinks.map((l, i) => renderLogoNavLinkShell(l, beforeLogoNavLinks.length + i, true)).join('')
 
   // Placeholder shown until loadDynamicNav replaces it with one nav item per
   // top-level category — keeps the palette preview / freshly-dropped block
@@ -1699,6 +1734,7 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
       ${desktopLogoLinksEl}
       ${dynamicCategoriesDropdown}
       ${desktopItemsEl}
+      ${desktopLogoLinksAfterEl}
     </div>
     ${cartEl}
   </div>`
@@ -1732,6 +1768,7 @@ export function renderRu5DynamicNavbar(data: Ru5DynamicNavbarData): string {
     ${mobileLogoLinksEl}
     ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="display:block;padding:0.75rem 0;font-size:1rem;font-weight:600;color:${data.textColor};text-decoration:none;cursor:pointer;">Categories</a>` : ''}
     ${mobileItemsEl}
+    ${mobileLogoLinksAfterEl}
     <div style="padding:0.75rem 0;">${cartEl}</div>
     <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:0.75rem;">${renderTopBarButtons()}</div>
   </div>`
@@ -1842,6 +1879,7 @@ export interface Ru8NavLink {
   showDropdown: boolean
   categoryFilter?: string
   newTab?: boolean
+  position?: 'Before Categories' | 'After Categories'
 }
 
 export interface Ru8NavbarData extends BalanceBadgesData {
@@ -1998,6 +2036,8 @@ export const ru8NavbarFields: FieldConfig[] = [
       { key: 'categoryFilter', label: 'Category Name (from backend)', type: 'text', siteSpecific: true, cloneValue: '',
         placeholder: 'e.g. Apparel — only that category\'s children show; blank shows all' },
       { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
+      { key: 'position', label: 'Position', type: 'select', options: ['Before Categories', 'After Categories'],
+        default: 'Before Categories', placeholder: 'Where this link appears relative to the standalone categories dropdown/row' },
     ],
   },
   { key: 'showDynamicCategories', label: 'Show Dynamic Categories', type: 'toggle', siteSpecific: true, cloneValue: false,
@@ -2137,7 +2177,13 @@ export function renderRu8Navbar(data: Ru8NavbarData): string {
     }
     return `<a href='${l.href}' style='${linkStyle}'${target}>${l.label}</a>`
   }
-  const navLinksEl = visibleNavLinks.map(renderDesktopNavItem).join('')
+  // Links marked 'After Categories' render after the standalone dropdown and
+  // auto-generated row below; everything else (undefined/'Before Categories')
+  // keeps its original spot.
+  const beforeNavLinks = visibleNavLinks.filter(l => l.position !== 'After Categories')
+  const afterNavLinks  = visibleNavLinks.filter(l => l.position === 'After Categories')
+  const navLinksEl = beforeNavLinks.map(renderDesktopNavItem).join('')
+  const navLinksAfterEl = afterNavLinks.map(renderDesktopNavItem).join('')
 
   // Standalone "Categories" trigger — unscoped, shows the whole tree, same
   // mechanism Ru1-Navbar/Ru4-Navbar use. Independent of the per-link
@@ -2210,7 +2256,7 @@ export function renderRu8Navbar(data: Ru8NavbarData): string {
   </div>`
 
   const navRow = `<div data-ru8-desktop-nav style="max-width:90rem;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:${cartBelow ? 'space-between' : 'flex-start'};gap:1.75rem;padding:0.625rem ${data.paddingX}px;border-top:1px solid rgba(255,255,255,0.08);">
-    <div style="display:flex;align-items:center;gap:1.75rem;">${navLinksEl}${dynamicCategoriesDropdown}${dynamicCategoriesDesktopEl}</div>
+    <div style="display:flex;align-items:center;gap:1.75rem;">${navLinksEl}${dynamicCategoriesDropdown}${dynamicCategoriesDesktopEl}${navLinksAfterEl}</div>
     ${cartBelow}
   </div>`
 
@@ -2520,9 +2566,9 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
     ? `data-rubikx-component="DynamicCategoryNav" data-on-mount="loadDynamicNav" data-max-categories="${data.maxCategories}" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}"`
     : ''
   const homeLinkStyle = `color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;${fontCss(data.linkFont, data.fontFamily)}`
-  const menuLinksHtml = (data.menuLinks ?? [])
-    .map(l => `<a href="${l.url}" style="display:block;padding:0.65rem 0;${homeLinkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`)
-    .join('')
+  const renderMenuLink = (l: { label: string; url: string; newTab?: boolean }) =>
+    `<a href="${l.url}" style="display:block;padding:0.65rem 0;${homeLinkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`
+  const menuLinksHtml = (data.menuLinks ?? []).map(renderMenuLink).join('')
 
   // Standalone "Categories" row — unscoped, shows the whole tree, same
   // mechanism Ru1-Navbar/Ru4-Navbar use. The menu panel is always a white
@@ -2727,10 +2773,12 @@ export interface Ru7NavbarData extends BalanceBadgesData {
   logoAlt: string
   brandName: string
   logoWidth: number
+  logoAlign: string
   brandFontSize: number
   brandFontWeight: string
 
-  navLinks: { label: string; url: string; newTab?: boolean }[]
+  navAlign: string
+  navLinks: { label: string; url: string; newTab?: boolean; position?: 'Before Categories' | 'After Categories' }[]
   // Standalone "Categories" trigger + auto-generated categories row — two
   // independent ways to show categories, same mechanisms every other
   // navbar in this file uses (both can be on at once).
@@ -2747,11 +2795,16 @@ export interface Ru7NavbarData extends BalanceBadgesData {
 
   showSearch: boolean
   searchPlaceholder: string
+  searchIconColor: string
 
   showCart: boolean
   cartUrl: string
+  cartIconColor: string
+  balancePosition: string
 
   showTopBar: boolean
+  showAnnouncement: boolean
+  announcementText: string
   showSignIn: boolean
   signInLabel: string
   signInUrl: string
@@ -2777,9 +2830,11 @@ export const ru7NavbarDefaults: Ru7NavbarData = {
   logoAlt: 'Your Logo',
   brandName: 'Your Logo',
   logoWidth: 140,
+  logoAlign: 'left',
   brandFontSize: 22,
   brandFontWeight: '700',
 
+  navAlign: 'right',
   navLinks: [{ label: 'Shop', url: '/shop' }],
   dynamicCategoriesFloating: false,
   dynamicCategoriesInline: false,
@@ -2792,12 +2847,17 @@ export const ru7NavbarDefaults: Ru7NavbarData = {
 
   showSearch: true,
   searchPlaceholder: 'Search',
+  searchIconColor: '#111827',
 
   showCart: true,
   ...balanceBadgesDefaults,
   cartUrl: '/cart',
+  cartIconColor: '#111827',
+  balancePosition: 'Main Bar',
 
   showTopBar: true,
+  showAnnouncement: false,
+  announcementText: 'Free shipping on orders over $50',
   showSignIn: true,
   signInLabel: 'Sign In',
   signInUrl: '/login',
@@ -2822,12 +2882,15 @@ export const ru7NavbarFields: FieldConfig[] = [
   { key: 'logoAlt', label: 'Logo Alt Text', type: 'text', placeholder: 'Your Logo' },
   { key: 'brandName', label: 'Brand Name (shown if no logo image)', type: 'text', placeholder: 'Your Logo' },
   { key: 'logoWidth', label: 'Logo Width (px)', type: 'number', unit: 'px', step: 4, placeholder: '140' },
+  { key: 'logoAlign', label: 'Logo Position', type: 'select', options: ['left', 'center', 'right'] },
   { key: 'brandFontSize', label: 'Brand Font Size (px)', type: 'number', unit: 'px', step: 1, placeholder: '22' },
   { key: 'brandFontWeight', label: 'Brand Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
   fontField('logoFont', 'Logo Font'),
 
   { key: '_h_topbar', label: 'Top Bar', type: 'header' },
   { key: 'showTopBar', label: 'Show Top Bar', type: 'toggle' },
+  { key: 'showAnnouncement', label: 'Show Announcement Text', type: 'toggle' },
+  { key: 'announcementText', label: 'Announcement Text', type: 'textarea', placeholder: 'Free shipping on orders over $50', visibleIf: (d: any) => d.showAnnouncement === true },
   { key: 'showSignIn', label: 'Show Sign In', type: 'toggle' },
   { key: 'signInLabel', label: 'Sign In Label', type: 'text', placeholder: 'Sign In' },
   { key: 'signInUrl', label: 'Sign In URL', type: 'url', placeholder: '/login' },
@@ -2843,8 +2906,11 @@ export const ru7NavbarFields: FieldConfig[] = [
       { key: 'label', label: 'Label', type: 'text' },
       { key: 'url', label: 'URL', type: 'url' },
       { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
+      { key: 'position', label: 'Position', type: 'select', options: ['Before Categories', 'After Categories'],
+        default: 'Before Categories', placeholder: 'Where this link appears relative to categories' },
     ],
   },
+  { key: 'navAlign', label: 'Links/Categories Position', type: 'select', options: ['left', 'center', 'right'] },
   { key: 'dynamicCategoriesFloating', label: 'Dynamic Categories (Floating)', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'dynamicCategoriesInline', label: 'Dynamic Categories (Inline)', type: 'toggle', siteSpecific: true, cloneValue: false },
   { key: 'showDynamicCategories', label: 'Show Categories Row (one item per category)', type: 'toggle', siteSpecific: true, cloneValue: false },
@@ -2859,11 +2925,17 @@ export const ru7NavbarFields: FieldConfig[] = [
   { key: '_h_search', label: 'Search', type: 'header' },
   { key: 'showSearch', label: 'Show Search', type: 'toggle' },
   { key: 'searchPlaceholder', label: 'Search Placeholder', type: 'text', placeholder: 'Search' },
+  { key: 'searchIconColor', label: 'Search Icon Colour', type: 'color' },
 
   { key: '_h_cart', label: 'Cart', type: 'header' },
   { key: 'showCart', label: 'Show Cart', type: 'toggle' },
   ...balanceBadgesFields,
+  { key: 'balancePosition', label: 'Balance Badges Position', type: 'select',
+    options: ['Main Bar', 'Top Bar'],
+    placeholder: 'Main Bar = beside the cart icon; Top Bar = beside Sign In',
+    visibleIf: (d: any) => d.balanceBadges !== 'off' },
   { key: 'cartUrl', label: 'Cart URL', type: 'url', placeholder: '/cart' },
+  { key: 'cartIconColor', label: 'Cart Icon Colour', type: 'color' },
 
   { key: '_h_style', label: 'Style', type: 'header' },
   { key: 'mainBarBgColor', label: 'Main Bar Background', type: 'color' },
@@ -2879,9 +2951,14 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   const logoEl = `<a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;min-width:0;flex-shrink:0;">${logoInner}</a>`
 
   const linkStyle = `color:${data.linkColor};font-size:${data.linkFontSize}px;font-weight:${data.linkFontWeight};text-decoration:none;${fontCss(data.linkFont, data.fontFamily)}`
-  const navLinksHtml = (data.navLinks ?? [])
-    .map(l => `<a href="${l.url}" style="${linkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`)
-    .join('')
+  const renderNavLink = (l: { label: string; url: string; newTab?: boolean }) =>
+    `<a href="${l.url}" style="${linkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a>`
+  // Links marked 'After Categories' render after both category mechanisms below;
+  // everything else (undefined/'Before Categories') keeps its original pre-categories spot.
+  const beforeNavLinks = (data.navLinks ?? []).filter(l => l.position !== 'After Categories')
+  const afterNavLinks  = (data.navLinks ?? []).filter(l => l.position === 'After Categories')
+  const navLinksHtml = beforeNavLinks.map(renderNavLink).join('')
+  const navLinksAfterHtml = afterNavLinks.map(renderNavLink).join('')
   // Standalone "Categories" trigger — unscoped, shows the whole tree, same
   // mechanism Ru1-Navbar/Ru4-Navbar use.
   const dynamicPlaceholder = (data.dynamicCategoriesFloating || data.dynamicCategoriesInline)
@@ -2910,8 +2987,8 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   const dynamicCategoriesRow = renderDynamicCategoriesRow({ ...data, paddingX: data.mainBarPaddingX }, '1.75rem', '#111827')
   const { desktopEl: dynamicCategoriesRowEl, mobileEl: dynamicCategoriesMobileEl } = dynamicCategoriesRow
 
-  const desktopLinksEl = (navLinksHtml || dynamicPlaceholder || dynamicCategoriesRowEl)
-    ? `<nav data-ru7-desktop-links style="display:flex;align-items:center;gap:1.75rem;">${navLinksHtml}${dynamicPlaceholder}${dynamicCategoriesRowEl}</nav>`
+  const desktopLinksEl = (navLinksHtml || navLinksAfterHtml || dynamicPlaceholder || dynamicCategoriesRowEl)
+    ? `<nav data-ru7-desktop-links style="display:flex;align-items:center;gap:1.75rem;">${navLinksHtml}${dynamicPlaceholder}${dynamicCategoriesRowEl}${navLinksAfterHtml}</nav>`
     : ''
 
   // Sign In: static link + hidden AuthState shell, same coexistence pattern
@@ -2922,8 +2999,43 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
     ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="color:${data.topBarTextColor};font-size:0.8125rem;font-weight:600;text-decoration:none;white-space:nowrap;${fontCss(data.buttonFont, data.fontFamily)}">${data.signInLabel}</a>
        <span data-rubikx-component="AuthState" data-on-mount="loadAuthState" data-sign-in-url="${data.signInUrl}" data-profile-url="/me/personal" data-text-color="${data.topBarTextColor}" style="position:relative;display:none;align-items:center;flex-shrink:0;"></span>`
     : ''
+  const announcementEl = (data.showAnnouncement && data.announcementText)
+    ? `<div data-ru7-announcement style="color:${data.topBarTextColor};font-size:0.8125rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;${fontCss(data.buttonFont, data.fontFamily)}">${data.announcementText}</div>`
+    : ''
+  // Balance badges (gift card / budget) can live beside Sign In in the Top
+  // Bar instead of their usual spot next to the cart icon — built once here,
+  // then gated into whichever container `balancePosition` points at. The
+  // Top Bar is slimmer than the Main Bar, so it gets the 'compact' size
+  // (smaller icon + pill) the same way the mobile drawer copy below does.
+  // Mobile has no separate top bar, so the drawer's own compact copy below
+  // stays unconditional regardless of this setting.
+  const balanceEl = renderBalanceBadges(data, data.balancePosition === 'Top Bar' ? 'compact' : 'default', '').replace(
+    'data-rubikx-component="BalanceBadges"',
+    'data-rubikx-component="BalanceBadges" data-ru7-header-balance',
+  )
+  const balanceInTopBar = data.balancePosition === 'Top Bar' ? balanceEl : ''
+  const balanceInMainBar = data.balancePosition === 'Top Bar' ? '' : balanceEl
+  // Thin divider between the balance badges and Sign In — same idea as
+  // searchCartDividerEl below, but colored off topBarTextColor (with opacity)
+  // so it stays visible on both dark and light Top Bar backgrounds.
+  const topBarBalanceDividerEl = (balanceInTopBar && signInEl)
+    ? `<span data-ru7-topbar-divider style="width:1px;height:16px;background:${data.topBarTextColor};opacity:0.3;display:inline-block;flex-shrink:0;"></span>`
+    : ''
+  // Three equal-thirds zones (same `flex:1;min-width:0` trick the main bar's
+  // zone() helper uses) so the center zone's midpoint is the true center of
+  // the whole bar — not just the leftover space before the right cluster,
+  // which shifts left as the cluster (balance badges + divider + sign in)
+  // gets wider. The left zone is an empty mirror of the right zone's share;
+  // its own content (none) doesn't matter, only that it reserves the same
+  // 1/3 width so the center zone's text-align (set by the rich text editor)
+  // lands exactly where it visually should — e.g. dead center, above a
+  // center-aligned logo in the main bar below.
   const topBarEl = data.showTopBar !== false
-    ? `<div data-ru7-topbar style="background:${data.topBarBgColor};padding:${data.topBarPaddingY}px min(${data.topBarPaddingX}px,6vw);display:flex;align-items:center;justify-content:flex-end;gap:1rem;">${signInEl}</div>`
+    ? `<div data-ru7-topbar style="background:${data.topBarBgColor};padding:${data.topBarPaddingY}px min(${data.topBarPaddingX}px,6vw);display:flex;align-items:center;gap:1rem;">
+        <div style="flex:1;min-width:0;"></div>
+        <div style="flex:1;min-width:0;overflow:hidden;">${announcementEl}</div>
+        <div style="display:flex;align-items:center;gap:1rem;flex:1;min-width:0;justify-content:flex-end;">${balanceInTopBar}${topBarBalanceDividerEl}${signInEl}</div>
+      </div>`
     : ''
 
   // Hamburger opens a full-height, left-anchored slide-in drawer — same
@@ -2962,11 +3074,11 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   const mobileSignInEl = data.showSignIn
     ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="${mobileBtnStyle}text-align:center;border-radius:10px;">${data.signInLabel}</a>`
     : ''
-  const mobileDividerEl = (navLinksHtml || data.showSearch) && data.showSignIn
+  const mobileDividerEl = ((data.navLinks ?? []).length || data.showSearch) && data.showSignIn
     ? `<div style="height:1px;background:#e5e7eb;margin:0.25rem 0 0.75rem;"></div>`
     : ''
 
-  const showMobileMenu = !!(navLinksHtml || data.showSearch || data.showSignIn || dynamicPlaceholder || data.showDynamicCategories)
+  const showMobileMenu = !!((data.navLinks ?? []).length || data.showSearch || data.showSignIn || dynamicPlaceholder || data.showDynamicCategories)
   const hamburgerEl = showMobileMenu
     ? `<button type="button" data-ru7-menu-toggle onclick="${hamburgerToggleScript}" style="display:none;background:none;border:none;cursor:pointer;padding:0;align-items:center;flex-shrink:0;">
         <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.linkColor}" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -2997,8 +3109,8 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   const searchToggleScript = `event.stopImmediatePropagation();(function(btn){var sec=btn.closest('section');var row=sec.querySelector('[data-ru7-search-row]');var s=btn.querySelector('[data-icon-search]');var x=btn.querySelector('[data-icon-search-x]');var open=row.style.display==='block';row.style.display=open?'none':'block';if(s)s.style.display=open?'inline-flex':'none';if(x)x.style.display=open?'none':'inline-flex';if(!open){var inp=row.querySelector('input');if(inp)setTimeout(function(){inp.focus()},50);}})(this);`
   const searchToggleEl = data.showSearch
     ? `<button type="button" data-ru7-search-toggle onclick="${searchToggleScript}" style="background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;flex-shrink:0;">
-        <span data-icon-search style="display:inline-flex;">${icon('magnifyingGlass', { size: 22, stroke: data.linkColor })}</span>
-        <span data-icon-search-x style="display:none;">${icon('xMark', { size: 22, stroke: data.linkColor })}</span>
+        <span data-icon-search style="display:inline-flex;">${icon('magnifyingGlass', { size: 22, stroke: data.searchIconColor || data.linkColor })}</span>
+        <span data-icon-search-x style="display:none;">${icon('xMark', { size: 22, stroke: data.searchIconColor || data.linkColor })}</span>
       </button>`
     : ''
   const searchRow = data.showSearch
@@ -3010,16 +3122,13 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
       </div>`
     : ''
 
-  // Header copy is desktop-only (hidden ≤640px in responsiveStyle); on mobile
-  // the balance lives inside the hamburger drawer instead.
-  const balanceEl = renderBalanceBadges(data, 'default', '').replace(
-    'data-rubikx-component="BalanceBadges"',
-    'data-rubikx-component="BalanceBadges" data-ru7-header-balance',
-  )
   const cartEl = data.showCart
-    ? `<span data-ru7-cartdata-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.linkColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
-        <a href="${data.cartUrl}" style="color:${data.linkColor};display:inline-flex;">${icon('shoppingCart', { size: 22, stroke: data.linkColor })}</a>
+    ? (() => {
+        const cartColor = data.cartIconColor || data.linkColor
+        return `<span data-ru7-cartdata-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${cartColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
+        <a href="${data.cartUrl}" style="color:${cartColor};display:inline-flex;">${icon('shoppingCart', { size: 22, stroke: cartColor })}</a>
       </span>`
+      })()
     : ''
 
   // Thin divider between the search and cart icons — only shown when both
@@ -3074,22 +3183,33 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
 
   const { hydrationAttrs: dynamicNavHydrationAttrs } = dynamicCategoriesRow
 
+  // Logo / nav-links (+ categories) each independently placed into a left /
+  // center / right zone, same `put`-into-`cols` pattern as Ru1-Navbar's
+  // logoAlign+navLinksAlign. Action icons (hamburger, search, balance, cart)
+  // always stay grouped in the right zone regardless of alignment choices,
+  // so mobile's `order:-1`/`order:1` tricks on [data-ru7-cart]/
+  // [data-ru7-menu-toggle] keep working (they reorder siblings within this
+  // same flex group).
+  const logoZoneEl = `<div data-ru7-logo style="display:flex;align-items:center;min-width:0;">${logoEl}</div>`
+  const actionsEl = `<div data-ru7-actions style="display:flex;align-items:center;gap:1.75rem;min-width:0;">${hamburgerEl}${searchToggleEl}${searchCartDividerEl}${balanceInMainBar}${cartEl}</div>`
+
+  const cols: Record<'left' | 'center' | 'right', string[]> = { left: [], center: [], right: [] }
+  const put = (zoneKey: string, el: string) => { if (el && zoneKey in cols) cols[zoneKey as 'left' | 'center' | 'right'].push(el) }
+  put(data.logoAlign || 'left', logoZoneEl)
+  put(data.navAlign || 'right', desktopLinksEl)
+  cols.right.push(actionsEl)
+
+  const zone = (items: string[], justify: string) =>
+    `<div style="display:flex;align-items:center;gap:1.75rem;justify-content:${justify};min-width:0;flex:1;">${items.join('')}</div>`
+
   return `<section data-component-title="Ru7-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
 ${responsiveStyle}
 ${homePageScript}
 ${topBarEl}
-<nav data-ru7-main${dynamicNavHydrationAttrs} style="position:relative;background:${data.mainBarBgColor};padding:${data.mainBarPaddingY}px min(${data.mainBarPaddingX}px,6vw);display:flex;align-items:center;justify-content:space-between;gap:1rem;">
-  <div data-ru7-logo style="display:flex;align-items:center;min-width:0;">
-    ${logoEl}
-  </div>
-  <div style="display:flex;align-items:center;gap:1.75rem;min-width:0;">
-    ${desktopLinksEl}
-    ${hamburgerEl}
-    ${searchToggleEl}
-    ${searchCartDividerEl}
-    ${balanceEl}
-    ${cartEl}
-  </div>
+<nav data-ru7-main${dynamicNavHydrationAttrs} style="position:relative;background:${data.mainBarBgColor};padding:${data.mainBarPaddingY}px min(${data.mainBarPaddingX}px,6vw);display:flex;align-items:center;gap:1rem;">
+  ${zone(cols.left, 'flex-start')}
+  ${zone(cols.center, 'center')}
+  ${zone(cols.right, 'flex-end')}
 </nav>
 ${searchRow}
 </section>`
@@ -4877,11 +4997,14 @@ export interface Ru4FooterData {
   logoHeight: number
 
   links: Ru4FooterLink[]
+  linksAlign: 'left' | 'center' | 'right'
+  linksFontWeight: string
 
   rightText: string
   rightTextUrl: string
+  rightTextAlign: 'left' | 'center' | 'right'
 
-  rowAlign: 'space-between' | 'center' | 'flex-start' | 'flex-end'
+  logoAlign: 'left' | 'center' | 'right'
   itemsAlign: 'top' | 'center' | 'bottom'
   minHeight: number
   paddingY: number
@@ -4912,8 +5035,11 @@ export const ru4FooterDefaults: Ru4FooterData = {
 
   rightText: '© 2026 Your Company, Inc.',
   rightTextUrl: '',
+  rightTextAlign: 'right',
 
-  rowAlign: 'space-between',
+  logoAlign: 'left',
+  linksAlign: 'center',
+  linksFontWeight: '500',
   itemsAlign: 'center',
   minHeight: 64,
   paddingY: 16,
@@ -4937,6 +5063,7 @@ export const ru4FooterFields: FieldConfig[] = [
   { key: 'logoHref',  label: 'Logo Link',  type: 'url', placeholder: '/' },
   { key: 'logoWidth',  label: 'Logo Width',  type: 'number', unit: 'px', step: 2, placeholder: '32' },
   { key: 'logoHeight', label: 'Logo Height', type: 'number', unit: 'px', step: 2, placeholder: '32' },
+  { key: 'logoAlign',  label: 'Logo Position', type: 'select', options: ['left', 'center', 'right'] },
   fontField('textFont', 'Logo & Right Text Font'),
 
   { key: '_h_links', label: 'Links', type: 'header' },
@@ -4947,11 +5074,14 @@ export const ru4FooterFields: FieldConfig[] = [
       { key: 'url',   label: 'URL',   type: 'url'  },
     ],
   },
+  { key: 'linksAlign', label: 'Links Position', type: 'select', options: ['left', 'center', 'right'] },
+  { key: 'linksFontWeight', label: 'Links Font Weight', type: 'select', options: ['300', '400', '500', '600', '700', '800'] },
   fontField('linkFont', 'Link Font'),
 
   { key: '_h_right', label: 'Right Side Text', type: 'header' },
   { key: 'rightText',    label: 'Text', type: 'text', placeholder: '© 2026 Your Company, Inc.' },
   { key: 'rightTextUrl', label: 'Link (optional)', type: 'url', placeholder: 'https://…' },
+  { key: 'rightTextAlign', label: 'Right Text Position', type: 'select', options: ['left', 'center', 'right'] },
 
   { key: '_h_style', label: 'Style', type: 'header' },
   { key: 'bgColor',   label: 'Background Color', type: 'color' },
@@ -4959,7 +5089,6 @@ export const ru4FooterFields: FieldConfig[] = [
   { key: 'linkColor', label: 'Link Color',        type: 'color' },
 
   { key: '_h_layout', label: 'Layout', type: 'header' },
-  { key: 'rowAlign',   label: 'Row Alignment',    type: 'select', options: ['space-between', 'center', 'flex-start', 'flex-end'] },
   { key: 'itemsAlign', label: 'Vertical Alignment', type: 'select', options: ['top', 'center', 'bottom'] },
   { key: 'minHeight', label: 'Minimum Height',    type: 'number', unit: 'px', step: 4, placeholder: '64' },
   { key: 'paddingY',  label: 'Vertical Padding',   type: 'number', unit: 'px', step: 4, placeholder: '16' },
@@ -4969,6 +5098,7 @@ export const ru4FooterFields: FieldConfig[] = [
 export function renderRu4Footer(data: Ru4FooterData): string {
   const itemsAlignMap: Record<string, string> = { top: 'flex-start', center: 'center', bottom: 'flex-end' }
   const verticalAlign = itemsAlignMap[data.itemsAlign] ?? 'center'
+  const justifyMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
 
   const logoInner = data.logoUrl
     ? `<img src="${productImageSrc(data.logoUrl)}" alt="${data.logoText ?? ''}" style="width:${data.logoWidth}px;height:${data.logoHeight}px;object-fit:contain;flex-shrink:0;" />`
@@ -4980,10 +5110,10 @@ export function renderRu4Footer(data: Ru4FooterData): string {
     : `<div style="display:inline-flex;align-items:center;gap:10px;flex-shrink:0;">${logoInner}</div>`
 
   const linksHtml = (data.links ?? []).map((l) =>
-    `<a href="${l.url}" class="ru4-footer-link" style="color:${data.linkColor};text-decoration:none;font-size:0.9rem;font-weight:500;white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}">${l.label}</a>`
+    `<a href="${l.url}" class="ru4-footer-link" style="color:${data.linkColor};text-decoration:none;font-size:0.9rem;font-weight:${data.linksFontWeight || '500'};white-space:nowrap;${fontCss(data.linkFont, data.fontFamily)}">${l.label}</a>`
   ).join('')
   const linksWrap = linksHtml
-    ? `<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:24px;">${linksHtml}</div>`
+    ? `<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:${justifyMap[data.linksAlign] ?? 'center'};gap:24px;">${linksHtml}</div>`
     : ''
 
   const rightInner = `<span style="color:${data.textColor};font-size:0.85rem;opacity:0.9;white-space:nowrap;${fontCss(data.textFont, data.fontFamily)}">${data.rightText}</span>`
@@ -4993,16 +5123,34 @@ export function renderRu4Footer(data: Ru4FooterData): string {
         : `<div style="flex-shrink:0;">${rightInner}</div>`)
     : ''
 
+  // Each item (logo/links/right text) picks its own column — left/center/right —
+  // independently, instead of relying on a single row-level justify-content.
+  const cols: Record<string, string[]> = { left: [], center: [], right: [] }
+  const put = (zone: string, el: string) => { if (el && zone in cols) cols[zone].push(el) }
+  put(data.logoAlign, logoHtml)
+  put(data.linksAlign, linksWrap)
+  put(data.rightTextAlign, rightHtml)
+
+  // Left/right zones shrink to fit their content (so two items sharing a zone,
+  // e.g. links + right text both set to "right", sit inline in that order
+  // instead of each being squeezed into an equal-width column and wrapping).
+  // The center zone absorbs the remaining space and centers within it.
+  const zone = (items: string[], justify: string, grow: string) =>
+    `<div data-ru4-zone="true" style="display:flex;flex-wrap:nowrap;align-items:${verticalAlign};justify-content:${justify};gap:16px;flex:${grow};min-width:0;">${items.join('')}</div>`
+
   return `<section data-component-title="Ru4-Footer" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${fontCss(undefined, data.fontFamily)}">
 <style>
   .ru4-footer-link:hover{text-decoration:underline;}
-  @media(max-width:768px){[data-ru4-footer-row]{flex-direction:column;align-items:center!important;text-align:center;gap:16px!important;}}
+  @media(max-width:768px){
+    [data-ru4-footer-row]{flex-direction:column;gap:16px!important;}
+    [data-ru4-footer-row] [data-ru4-zone]{flex:1 1 auto!important;flex-wrap:wrap!important;justify-content:center!important;text-align:center;width:100%;}
+  }
 </style>
 <footer style="box-sizing:border-box;background:${data.bgColor};min-height:${data.minHeight}px;padding:${data.paddingY}px ${data.paddingX}px;display:flex;align-items:center;">
-  <div data-ru4-footer-row="true" style="width:100%;display:flex;flex-wrap:wrap;align-items:${verticalAlign};justify-content:${data.rowAlign};gap:24px;">
-    ${logoHtml}
-    ${linksWrap}
-    ${rightHtml}
+  <div data-ru4-footer-row="true" style="width:100%;display:flex;flex-wrap:wrap;align-items:${verticalAlign};gap:24px;">
+    ${zone(cols.left, 'flex-start', '0 0 auto')}
+    ${zone(cols.center, 'center', '1 1 auto')}
+    ${zone(cols.right, 'flex-end', '0 0 auto')}
   </div>
 </footer>
 </section>`
@@ -7068,6 +7216,12 @@ export interface Ru10ShopByCategoryData {
   categoryColor: string
   categoryFont: string
 
+  cardAnimation: boolean
+  hoverEffect: string
+  hoverAmount: number
+  animationDuration: number
+
+  displayLimit: string
   categories: Ru10CategoryItem[]
 }
 
@@ -7108,6 +7262,12 @@ export const ru10ShopByCategoryDefaults: Ru10ShopByCategoryData = {
   categoryColor: '#111827',
   categoryFont: '',
 
+  cardAnimation: false,
+  hoverEffect: 'Lift Up',
+  hoverAmount: 6,
+  animationDuration: 300,
+
+  displayLimit: 'All',
   categories: [],
 }
 
@@ -7154,8 +7314,15 @@ export const ru10ShopByCategoryFields: FieldConfig[] = [
   { key: 'categoryColor', label: 'Category Name Colour', type: 'color' },
   fontField('categoryFont', 'Category Name Font'),
 
+  { key: '_h_animation', label: 'Hover Animation', type: 'header' },
+  { key: 'cardAnimation', label: 'Enable Hover Animation', type: 'toggle' },
+  { key: 'hoverEffect', label: 'Animation Type', type: 'select', options: ['Lift Up', 'Drop Down', 'Slide Left', 'Slide Right', 'Pop Out', 'Zoom In', 'Glow', 'Tilt Left', 'Tilt Right'], visibleIf: (d) => d.cardAnimation === true },
+  { key: 'hoverAmount', label: 'Animation Amount', type: 'number', unit: 'px', step: 1, placeholder: '6', visibleIf: (d) => d.cardAnimation === true },
+  { key: 'animationDuration', label: 'Animation Duration', type: 'number', unit: 'ms', step: 50, placeholder: '300', visibleIf: (d) => d.cardAnimation === true },
+
   { key: '_h_categories', label: 'Categories', type: 'header' },
   { key: 'syncRu10CategoriesFromApi', label: 'Sync Categories from API', type: 'button' },
+  { key: 'displayLimit', label: 'Number of Categories to Show', type: 'select', options: ['All', ...Array.from({ length: 10 }, (_, i) => String(i + 1))] },
   {
     key: 'categories', label: 'Categories', type: 'list', siteSpecific: true,
     listFields: [
@@ -7222,7 +7389,13 @@ export function renderRu10ShopByCategory(data: Ru10ShopByCategoryData): string {
   // hidden just because a company has more categories than one row holds);
   // the grid's flex-wrap below carries the extras onto additional rows at
   // the same fixed per-card size instead of truncating or stretching.
-  const rawCategories = Array.isArray(data.categories) ? data.categories : []
+  // "Number of Categories to Show" caps how many of the synced categories
+  // actually render — independent of maxCategories (which is just the
+  // per-row count). 'All' (the default) keeps every synced category, same
+  // as before this field existed.
+  const allRawCategories = Array.isArray(data.categories) ? data.categories : []
+  const displayLimit = data.displayLimit && data.displayLimit !== 'All' ? Number(data.displayLimit) : null
+  const rawCategories = displayLimit && displayLimit > 0 ? allRawCategories.slice(0, displayLimit) : allRawCategories
   const categories = rawCategories.length > 0
     ? rawCategories
     : Array.from({ length: 5 }, () => ({ imageUrl: '', name: 'Category', categoryUrl: '#' }))
@@ -7318,6 +7491,33 @@ export function renderRu10ShopByCategory(data: Ru10ShopByCategoryData): string {
           `@media(max-width:480px){[data-ru10-grid]{gap:${gapAt(2)}px!important;}[data-ru10-grid] [data-ru10-card]{flex-basis:${basisAt(2)}!important;max-width:${basisAt(2)}!important;}}`,
         ]),
   ]
+
+  // Hover animation — same effect set / formula as Ru7-Hero-Category-Collection.
+  // When cardAnimation is on, the card itself transitions and the image-zoom
+  // rule above is suppressed (the card-level effect takes over).
+  const _ru10HoverCSS = (effect: string, amount: number): string => {
+    switch (effect) {
+      case 'Lift Up':     return `transform:translateY(-${amount}px)`
+      case 'Drop Down':   return `transform:translateY(${amount}px)`
+      case 'Slide Left':  return `transform:translateX(-${amount}px)`
+      case 'Slide Right': return `transform:translateX(${amount}px)`
+      case 'Pop Out':     return `transform:scale(${1 + amount / 100})`
+      case 'Zoom In':     return `transform:scale(${1 + amount / 100});box-shadow:0 25px 50px rgba(0,0,0,0.15)`
+      case 'Glow':        return `box-shadow:0 0 ${amount}px rgba(99,102,241,0.7)`
+      case 'Tilt Left':   return `transform:rotate(-${amount}deg)`
+      case 'Tilt Right':  return `transform:rotate(${amount}deg)`
+      default:            return `transform:translateY(-${amount}px)`
+    }
+  }
+
+  if (data.cardAnimation) {
+    const dur = data.animationDuration ?? 300
+    // Replace the default image-zoom with the card-level transition so both
+    // don't fight each other — card moves, image stays still inside it.
+    styleRules[0] = `[data-ru10-card]:hover img{transform:none;}`
+    styleRules.push(`[data-ru10-card]{transition:transform ${dur}ms ease,box-shadow ${dur}ms ease}`)
+    styleRules.push(`[data-ru10-card]:hover{${_ru10HoverCSS(data.hoverEffect ?? 'Lift Up', data.hoverAmount ?? 6)}}`)
+  }
 
   // Responsive on every axis: horizontal/vertical padding both scale down
   // via vw-clamping (not just a fixed px value) so the section never keeps
