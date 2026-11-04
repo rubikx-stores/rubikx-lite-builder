@@ -183,10 +183,6 @@ function captureSelection() {
     // applyTextColor check their live mark before looking at savedRange.
     liveColorMark.value = null
     liveSizeMark.value = null
-    // Auto-read the font size of the selected text so the px input always
-    // reflects what's actually selected — the user sees the real size of
-    // whatever they highlighted instead of a stale/default number.
-    readSelectionFontSize(sel.getRangeAt(0))
   }
 }
 
@@ -508,14 +504,7 @@ function applyFontSizePx(px: number) {
     return
   }
   liveSizeMark.value = wrapper
-  // Re-select the wrapper so the size highlight stays visible after applying —
-  // extractContents() collapsed the browser selection, restore it on the wrapper.
-  const newRange = document.createRange()
-  newRange.selectNodeContents(wrapper)
-  const sel = window.getSelection()
-  sel?.removeAllRanges()
-  sel?.addRange(newRange)
-  setSavedRange(newRange.cloneRange())
+  setSavedRange(null)
 }
 
 function finalizeFontSizePx() {
@@ -591,47 +580,15 @@ function applyTextAlign(align: 'left' | 'center' | 'right') {
 
 // Reverse of applyTextAlign's wrapper write — reads back whatever align this
 // field's saved HTML already carries, so reopening the modal can seed
-// textAlignKey from it instead of always defaulting to 'left'. Checks the
-// whole-field 'block' wrapper first; if that's absent, falls back to the
-// first selection-scoped 'align' mark anywhere in the content (the OTHER
-// branch applyTextAlign can take when a leftover selection from a prior
-// Bold/Color/Size/etc. click was still active) — otherwise a field whose
-// align was only ever applied that way would always show "Left" here no
-// matter what's actually saved.
+// textAlignKey from it instead of always defaulting to 'left'.
 function readWrapperTextAlign(html: string): 'left' | 'center' | 'right' | null {
   if (!html) return null
   const div = document.createElement('div')
   div.innerHTML = html
   const wrapper = div.firstElementChild as HTMLElement | null
-  const isValid = (v: string): v is 'left' | 'center' | 'right' => v === 'left' || v === 'center' || v === 'right'
-  if (div.children.length === 1 && wrapper?.getAttribute('data-faq-mark') === 'block') {
-    const value = wrapper.style.textAlign
-    if (isValid(value)) return value
-  }
-  const alignMark = div.querySelector('span[data-faq-mark="align"]') as HTMLElement | null
-  const value = alignMark?.style.textAlign ?? ''
-  return isValid(value) ? value : null
-}
-
-// Reverse of applyFontSizePx's wrapper write, for the common case of a
-// single size mark spanning the whole field (e.g. the admin selected all
-// before applying) — reads it back so reopening the modal shows what's
-// actually in the saved content instead of falling back to the field's
-// base size (or 16, if it has none). Mirrors _readUniformFontSize in
-// useEditorSidebar.ts, duplicated here since this modal has no registry
-// access of its own.
-function readUniformFontSizePx(html: string): number | null {
-  if (!html) return null
-  const div = document.createElement('div')
-  div.innerHTML = html
-  const wrapper = div.firstElementChild as HTMLElement | null
-  const root = (div.children.length === 1 && wrapper?.getAttribute('data-faq-mark') === 'block') ? wrapper : div
-  const sizeSpans = root.querySelectorAll('span[data-faq-mark="size"]')
-  if (sizeSpans.length !== 1) return null
-  const span = sizeSpans[0] as HTMLElement
-  if ((span.textContent ?? '').trim() !== (root.textContent ?? '').trim()) return null
-  const match = /font-size:\s*([\d.]+)px/.exec(span.getAttribute('style') || '')
-  return match ? Math.round(parseFloat(match[1])) : null
+  if (div.children.length !== 1 || wrapper?.getAttribute('data-faq-mark') !== 'block') return null
+  const value = wrapper.style.textAlign
+  return value === 'left' || value === 'center' || value === 'right' ? value : null
 }
 
 function rgbToHex(color: string, fallback: string): string {

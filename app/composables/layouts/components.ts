@@ -877,7 +877,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
   ${mobileNav}
   <div data-nav-desktop="true" style="width:100%;display:flex;align-items:center;gap:3rem;">
     <div style="display:flex;align-items:center;flex-shrink:0;">${logoEl}</div>
-    <nav data-rubikx-component="MainNavRow" data-on-mount="loadNavOverflow" style="display:flex;align-items:center;justify-content:flex-start;gap:2rem;flex:1;min-width:0;">${linksHtml}${overflowHtml}${dynamicPlaceholder}${dynamicCategoriesRowEl}${navLinksHtmlAfter}</nav>
+    <nav data-rubikx-component="MainNavRow" data-on-mount="loadNavOverflow" style="display:flex;align-items:center;justify-content:flex-start;gap:2rem;flex:1;min-width:0;">${linksHtml}${overflowHtml}${dynamicPlaceholder}${dynamicCategoriesRowEl}</nav>
     <div style="display:flex;align-items:center;justify-content:flex-end;gap:2.5rem;flex-shrink:0;">${searchEl}${balanceEl}${cartEl}${accountEl}</div>
   </div>
   <div data-ru3-search-bar style="display:none;border-top:1px solid ${data.bottomBorderColor};">
@@ -2930,10 +2930,6 @@ export const ru7NavbarFields: FieldConfig[] = [
   { key: '_h_cart', label: 'Cart', type: 'header' },
   { key: 'showCart', label: 'Show Cart', type: 'toggle' },
   ...balanceBadgesFields,
-  { key: 'balancePosition', label: 'Balance Badges Position', type: 'select',
-    options: ['Main Bar', 'Top Bar'],
-    placeholder: 'Main Bar = beside the cart icon; Top Bar = beside Sign In',
-    visibleIf: (d: any) => d.balanceBadges !== 'off' },
   { key: 'cartUrl', label: 'Cart URL', type: 'url', placeholder: '/cart' },
   { key: 'cartIconColor', label: 'Cart Icon Colour', type: 'color' },
 
@@ -3122,11 +3118,15 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
       </div>`
     : ''
 
+  // Header copy is desktop-only (hidden ≤640px in responsiveStyle); on mobile
+  // the balance lives inside the hamburger drawer instead.
+  const balanceEl = renderBalanceBadges(data, 'default', '').replace(
+    'data-rubikx-component="BalanceBadges"',
+    'data-rubikx-component="BalanceBadges" data-ru7-header-balance',
+  )
   const cartEl = data.showCart
-    ? (() => {
-        const cartColor = data.cartIconColor || data.linkColor
-        return `<span data-ru7-cartdata-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${cartColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
-        <a href="${data.cartUrl}" style="color:${cartColor};display:inline-flex;">${icon('shoppingCart', { size: 22, stroke: cartColor })}</a>
+    ? `<span data-ru7-cartdata-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.linkColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
+        <a href="${data.cartUrl}" style="color:${data.linkColor};display:inline-flex;">${icon('shoppingCart', { size: 22, stroke: data.linkColor })}</a>
       </span>`
       })()
     : ''
@@ -3206,10 +3206,18 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
 ${responsiveStyle}
 ${homePageScript}
 ${topBarEl}
-<nav data-ru7-main${dynamicNavHydrationAttrs} style="position:relative;background:${data.mainBarBgColor};padding:${data.mainBarPaddingY}px min(${data.mainBarPaddingX}px,6vw);display:flex;align-items:center;gap:1rem;">
-  ${zone(cols.left, 'flex-start')}
-  ${zone(cols.center, 'center')}
-  ${zone(cols.right, 'flex-end')}
+<nav data-ru7-main${dynamicNavHydrationAttrs} style="position:relative;background:${data.mainBarBgColor};padding:${data.mainBarPaddingY}px min(${data.mainBarPaddingX}px,6vw);display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+  <div data-ru7-logo style="display:flex;align-items:center;min-width:0;">
+    ${logoEl}
+  </div>
+  <div style="display:flex;align-items:center;gap:1.75rem;min-width:0;">
+    ${desktopLinksEl}
+    ${hamburgerEl}
+    ${searchToggleEl}
+    ${searchCartDividerEl}
+    ${balanceEl}
+    ${cartEl}
+  </div>
 </nav>
 ${searchRow}
 </section>`
