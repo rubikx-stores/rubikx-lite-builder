@@ -28,7 +28,7 @@ const placeholderSvg = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="htt
 
 // ─── Navbar block editor data ───────────────────────────────────────────────
 
-export interface NavLink { label: string; url: string; visible?: boolean; newTab?: boolean }
+export interface NavLink { label: string; url: string; visible?: boolean; newTab?: boolean; position?: 'Before Categories' | 'After Categories' }
 
 export interface Ru1NavbarData extends BalanceBadgesData {
   logoUrl: string
@@ -176,6 +176,8 @@ export const ru1NavbarFields: FieldConfig[] = [
       { key: 'url', label: 'URL', type: 'url' },
       { key: 'visible', label: 'Visible', type: 'toggle' },
       { key: 'newTab', label: 'Open in New Tab', type: 'toggle', default: false },
+      { key: 'position', label: 'Position', type: 'select', options: ['Before Categories', 'After Categories'],
+        default: 'Before Categories', placeholder: 'Where this link appears relative to categories' },
     ],
   },
   { key: 'navLinksAlign', label: 'Links Position', type: 'select', options: ['left', 'center', 'right', 'lower-left', 'lower-center', 'lower-right'] },
@@ -275,7 +277,17 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
     : ''
 
   const visibleNavLinks = data.navLinks.filter(l => l.visible !== false)
-  const staticLinks = visibleNavLinks.map(l => `<div style="position:relative;"><a href="${l.url}" style="${linkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a></div>`).join('')
+  // Links with position 'After Categories' sit after the categories block;
+  // everything else (undefined, 'Before Categories') sits before — preserving
+  // backward-compatibility for existing saved links with no position field.
+  const beforeLinks = visibleNavLinks.filter(l => l.position !== 'After Categories')
+  const afterLinks  = visibleNavLinks.filter(l => l.position === 'After Categories')
+
+  const makeStaticLinks = (links: NavLink[]) =>
+    links.map(l => `<div style="position:relative;"><a href="${l.url}" style="${linkStyle}"${l.newTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${l.label}</a></div>`).join('')
+
+  const staticLinks      = makeStaticLinks(beforeLinks)
+  const staticLinksAfter = makeStaticLinks(afterLinks)
   const dynamicPlaceholder = (data.dynamicCategoriesFloating || data.dynamicCategoriesInline)
     ? `<div
         data-rubikx-component='CategoryNav'
@@ -298,8 +310,8 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   // uses). Can be on at the same time as the "Categories" dropdown above.
   const dynamicCategoriesRow = renderDynamicCategoriesRow(data, '0.75rem', '#111827')
   const { desktopEl: dynamicCategoriesRowEl, mobileEl: dynamicCategoriesMobileEl } = dynamicCategoriesRow
-  const linksEl = (staticLinks || dynamicPlaceholder || dynamicCategoriesRowEl)
-    ? `<nav style="display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem;">${staticLinks}${dynamicPlaceholder}${dynamicCategoriesRowEl}</nav>`
+  const linksEl = (staticLinks || staticLinksAfter || dynamicPlaceholder || dynamicCategoriesRowEl)
+    ? `<nav style="display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem;">${staticLinks}${dynamicPlaceholder}${dynamicCategoriesRowEl}${staticLinksAfter}</nav>`
     : ''
 
   const lowerJustifyMap: Record<string, string> = {
@@ -579,6 +591,7 @@ export interface Ru1ProductsData {
   sectionTitle: string
   titleAlign: string
   titleColor: string
+  titleWeight: string
   showBrowseAll: boolean
   browseAllLabel: string
   browseAllUrl: string
@@ -651,6 +664,7 @@ export const ru1ProductsDefaults: Ru1ProductsData = {
   sectionTitle: 'Featured Products',
   titleAlign: 'left',
   titleColor: '#111827',
+  titleWeight: '600',
   showBrowseAll: true,
   browseAllLabel: 'Browse all',
   browseAllUrl: '/shop',
@@ -704,6 +718,7 @@ export const ru1ProductsFields: FieldConfig[] = [
   { key: 'sectionTitle', label: 'Section Title', type: 'text' },
   { key: 'titleAlign', label: 'Title Alignment', type: 'select', options: ['left', 'center', 'right'] },
   { key: 'titleColor', label: 'Title Color', type: 'color' },
+  { key: 'titleWeight', label: 'Title Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
   fontField('sectionTitleFont', 'Section Title Font'),
 
   { key: '_h_browseall', label: 'Browse All Link', type: 'header' },
@@ -894,7 +909,7 @@ ${animStyle}
 <div style="${innerStyle}">
   <div style="max-width:90rem;margin:0 auto">
     <div data-fp-head="${gridId}" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:2rem">
-      <h1 data-field-key="sectionTitle" data-fp-title style="margin:0;font-size:min(2rem,8vw);font-weight:600;text-align:${data.titleAlign};color:${data.titleColor};${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h1>
+      <h1 data-field-key="sectionTitle" data-fp-title style="flex:1;min-width:0;margin:0;font-size:min(2rem,8vw);font-weight:${data.titleWeight || '600'};text-align:${data.titleAlign};color:${data.titleColor};${fontCss(data.sectionTitleFont, data.fontFamily)}">${data.sectionTitle}</h1>
       ${browseAllHtml}
     </div>
     <div id="${gridId}">
