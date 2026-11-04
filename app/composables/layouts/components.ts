@@ -3032,9 +3032,9 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   // center-aligned logo in the main bar below.
   const topBarEl = data.showTopBar !== false
     ? `<div data-ru7-topbar style="background:${data.topBarBgColor};padding:${data.topBarPaddingY}px min(${data.topBarPaddingX}px,6vw);display:flex;align-items:center;gap:1rem;">
-        <div style="flex:1;min-width:0;"></div>
-        <div style="flex:1;min-width:0;overflow:hidden;">${announcementEl}</div>
-        <div style="display:flex;align-items:center;gap:1rem;flex:1;min-width:0;justify-content:flex-end;">${balanceInTopBar}${topBarBalanceDividerEl}${signInEl}</div>
+        <div data-ru7-topbar-left style="flex:1;min-width:0;"></div>
+        <div data-ru7-topbar-center style="flex:1;min-width:0;overflow:hidden;">${announcementEl}</div>
+        <div data-ru7-topbar-right style="display:flex;align-items:center;gap:1rem;flex:1;min-width:0;justify-content:flex-end;">${balanceInTopBar}${topBarBalanceDividerEl}${signInEl}</div>
       </div>`
     : ''
 
@@ -3058,6 +3058,26 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   // duplicated on screen.
   const mobileBtnStyle = `display:block;width:100%;box-sizing:border-box;text-align:left;background:transparent;border:1px solid #e5e7eb;border-radius:8px;padding:0.65rem 1rem;margin-bottom:0.5rem;${linkStyle}`
   const mobileLinkStyle = `display:block;padding:0.6rem 0.25rem;${linkStyle}`
+
+  const cartEl = data.showCart
+    ? (() => {
+        const cartColor = data.cartIconColor || data.linkColor
+        return `<span data-ru7-cart data-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${cartColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
+        <a href="${data.cartUrl}" style="color:${cartColor};display:inline-flex;">${icon('shoppingCart', { size: 22, stroke: cartColor })}</a>
+      </span>`
+      })()
+    : ''
+
+  // Centering the logo makes the main bar's left/right zones true equal
+  // thirds (see cols/zone below) — too narrow on mobile to also fit the
+  // cart icon beside the hamburger, so in that case the inline cart icon is
+  // hidden there (see responsiveStyle) and this button takes its place in
+  // the drawer instead. Left/right-aligned logos keep the cart icon inline.
+  const isCenterLogo = (data.logoAlign || 'left') === 'center'
+  const mobileCartEl = (isCenterLogo && data.showCart)
+    ? `<a href="${data.cartUrl}" style="${mobileBtnStyle}display:flex;align-items:center;justify-content:center;gap:0.5rem;">${icon('shoppingCart', { size: 18, stroke: data.cartIconColor || data.linkColor })}Cart</a>`
+    : ''
+
   const mobileSearchEl = data.showSearch
     ? `<div style="display:flex;align-items:center;gap:0.5rem;background:transparent;border:1px solid #e5e7eb;border-radius:8px;padding:0.65rem 1rem;margin-bottom:0.5rem;">
         ${icon('magnifyingGlass', { size: 18, stroke: '#9ca3af' })}
@@ -3074,11 +3094,11 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   const mobileSignInEl = data.showSignIn
     ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="${mobileBtnStyle}text-align:center;border-radius:10px;">${data.signInLabel}</a>`
     : ''
-  const mobileDividerEl = ((data.navLinks ?? []).length || data.showSearch) && data.showSignIn
+  const mobileDividerEl = ((data.navLinks ?? []).length || data.showSearch) && (data.showSignIn || mobileCartEl)
     ? `<div style="height:1px;background:#e5e7eb;margin:0.25rem 0 0.75rem;"></div>`
     : ''
 
-  const showMobileMenu = !!((data.navLinks ?? []).length || data.showSearch || data.showSignIn || dynamicPlaceholder || data.showDynamicCategories)
+  const showMobileMenu = !!((data.navLinks ?? []).length || data.showSearch || data.showSignIn || dynamicPlaceholder || data.showDynamicCategories || mobileCartEl)
   const hamburgerEl = showMobileMenu
     ? `<button type="button" data-ru7-menu-toggle onclick="${hamburgerToggleScript}" style="display:none;background:none;border:none;cursor:pointer;padding:0;align-items:center;flex-shrink:0;">
         <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.linkColor}" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -3096,6 +3116,7 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
         ${(data.dynamicCategoriesFloating || data.dynamicCategoriesInline) ? `<a style="${mobileLinkStyle}cursor:pointer;">Categories ▾</a>` : ''}
         ${dynamicCategoriesMobileEl}
         ${mobileDividerEl}
+        ${mobileCartEl}
         ${mobileSignInEl}
       </div>
       <div data-ru7-mobile-overlay onclick="${hamburgerCloseScript}" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;"></div>`
@@ -3122,15 +3143,6 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
       </div>`
     : ''
 
-  const cartEl = data.showCart
-    ? (() => {
-        const cartColor = data.cartIconColor || data.linkColor
-        return `<span data-ru7-cartdata-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${cartColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
-        <a href="${data.cartUrl}" style="color:${cartColor};display:inline-flex;">${icon('shoppingCart', { size: 22, stroke: cartColor })}</a>
-      </span>`
-      })()
-    : ''
-
   // Thin divider between the search and cart icons — only shown when both
   // are actually present, otherwise it'd be a lone floating line.
   const searchCartDividerEl = (data.showSearch && data.showCart)
@@ -3146,7 +3158,11 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   // own max-width is capped so a generously configured logo can't crowd out
   // the hamburger/icons on a phone screen. The cart icon is scoped to
   // data-ru7-not-home (set by homePageScript below) so it only shows on
-  // mobile when the visitor is actually on the home page.
+  // mobile when the visitor is actually on the home page. With a centered
+  // logo, the main bar's left/right zones become true equal thirds (see
+  // cols/zone below) — too narrow for both the cart icon and the hamburger
+  // on a phone, so the inline cart icon is hidden here instead and
+  // mobileCartEl (above) stands in for it inside the drawer.
   const { css: dynamicCategoriesRowCss } = dynamicCategoriesRow
 
   const responsiveStyle = (showMobileMenu || dynamicCategoriesRowCss)
@@ -3162,9 +3178,23 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
     [data-ru7-main] [data-ru7-logo] span { max-width: 40vw; }
     [data-ru7-not-home] [data-ru7-cart] { display: none !important; }
     [data-ru7-header-balance] { display: none !important; }
-    [data-ru7-cart] { order: -1; }
+    ${isCenterLogo
+      ? '[data-ru7-main] [data-ru7-cart] { display: none !important; }'
+      : '[data-ru7-main] [data-ru7-cart] { order: -1; }'}
     [data-ru7-menu-toggle] { order: 1; }
     [data-ru7-search-cart-divider] { display: none !important; }
+    /* Top Bar: the empty left mirror zone (kept for true desktop centering)
+       just wastes space on mobile, where the right zone's content is mostly
+       hidden anyway (Sign In text / balance badges above) — collapse it and
+       let the announcement take the freed-up room instead of the fixed 1/3
+       it's confined to on desktop, and let it wrap instead of truncating so
+       the full text is always visible. The right zone keeps only its real
+       content's width (not a forced equal third), so Sign In's icon/link
+       isn't squeezed or clipped alongside it. */
+    [data-ru7-topbar-left] { display: none !important; }
+    [data-ru7-topbar-center] { flex: 1 1 auto !important; }
+    [data-ru7-topbar-right] { flex: 0 0 auto !important; }
+    [data-ru7-announcement] { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; }
   }
   /* The drawer's open/closed state lives purely in an inline style the
      hamburger's onclick sets — nothing else ever resets it. Without this,
