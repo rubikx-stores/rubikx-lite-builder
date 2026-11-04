@@ -3032,9 +3032,9 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   // center-aligned logo in the main bar below.
   const topBarEl = data.showTopBar !== false
     ? `<div data-ru7-topbar style="background:${data.topBarBgColor};padding:${data.topBarPaddingY}px min(${data.topBarPaddingX}px,6vw);display:flex;align-items:center;gap:1rem;">
-        <div data-ru7-topbar-left style="flex:1;min-width:0;"></div>
-        <div data-ru7-topbar-center style="flex:1;min-width:0;overflow:hidden;">${announcementEl}</div>
-        <div data-ru7-topbar-right style="display:flex;align-items:center;gap:1rem;flex:1;min-width:0;justify-content:flex-end;">${balanceInTopBar}${topBarBalanceDividerEl}${signInEl}</div>
+        <div style="flex:1;min-width:0;"></div>
+        <div style="flex:1;min-width:0;overflow:hidden;">${announcementEl}</div>
+        <div style="display:flex;align-items:center;gap:1rem;flex:1;min-width:0;justify-content:flex-end;">${balanceInTopBar}${topBarBalanceDividerEl}${signInEl}</div>
       </div>`
     : ''
 
@@ -3094,11 +3094,11 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   const mobileSignInEl = data.showSignIn
     ? `<a href="${data.signInUrl}" data-auth-signin-btn="true" style="${mobileBtnStyle}text-align:center;border-radius:10px;">${data.signInLabel}</a>`
     : ''
-  const mobileDividerEl = ((data.navLinks ?? []).length || data.showSearch) && (data.showSignIn || mobileCartEl)
+  const mobileDividerEl = ((data.navLinks ?? []).length || data.showSearch) && data.showSignIn
     ? `<div style="height:1px;background:#e5e7eb;margin:0.25rem 0 0.75rem;"></div>`
     : ''
 
-  const showMobileMenu = !!((data.navLinks ?? []).length || data.showSearch || data.showSignIn || dynamicPlaceholder || data.showDynamicCategories || mobileCartEl)
+  const showMobileMenu = !!((data.navLinks ?? []).length || data.showSearch || data.showSignIn || dynamicPlaceholder || data.showDynamicCategories)
   const hamburgerEl = showMobileMenu
     ? `<button type="button" data-ru7-menu-toggle onclick="${hamburgerToggleScript}" style="display:none;background:none;border:none;cursor:pointer;padding:0;align-items:center;flex-shrink:0;">
         <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="${data.linkColor}" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -3141,6 +3141,19 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
           <input type="text" placeholder="${data.searchPlaceholder}" data-rubikx-component="SearchBar" data-on-mount="loadSearch" style="border:none;outline:none;background:transparent;font-size:0.9rem;width:100%;color:#111827;" />
         </div>
       </div>`
+    : ''
+
+  // Header copy is desktop-only (hidden ≤640px in responsiveStyle); on mobile
+  // the balance lives inside the hamburger drawer instead.
+  const balanceEl = renderBalanceBadges(data, 'default', '').replace(
+    'data-rubikx-component="BalanceBadges"',
+    'data-rubikx-component="BalanceBadges" data-ru7-header-balance',
+  )
+  const cartEl = data.showCart
+    ? `<span data-ru7-cartdata-rubikx-component="CartBadge" data-on-mount="loadCartCount" data-cart-url="${data.cartUrl}" data-text-color="${data.linkColor}" style="position:relative;display:inline-flex;flex-shrink:0;">
+        <a href="${data.cartUrl}" style="color:${data.linkColor};display:inline-flex;">${icon('shoppingCart', { size: 22, stroke: data.linkColor })}</a>
+      </span>`
+      })()
     : ''
 
   // Thin divider between the search and cart icons — only shown when both
