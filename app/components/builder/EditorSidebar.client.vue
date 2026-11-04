@@ -1306,7 +1306,7 @@ onUnmounted(() => {
                 <label class="text-xs text-gray-500">{{ field.label }}</label>
                 <button type="button"
                   class="text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-1.5 py-0.5 bg-blue-50 cursor-pointer"
-                  @click="addBlockListItem(field.key, Object.fromEntries((field.listFields ?? []).map(f => [f.key, ''])))">+ Add</button>
+                  @click="addBlockListItem(field.key, Object.fromEntries((field.listFields ?? []).map(f => [f.key, f.default ?? ''])))">+ Add</button>
               </div>
               <div v-for="(item, idx) in (blockData[field.key] as Record<string,any>[])" :key="idx"
                 class="rounded-xl border border-gray-300 bg-white p-3 mb-2 shadow-sm">
@@ -1383,7 +1383,7 @@ onUnmounted(() => {
                       <!-- select sub-field: dropdown, instant on selection -->
                       <template v-else-if="subField.type === 'select'">
                         <select class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs bg-white focus:outline-none focus:border-blue-400"
-                          :value="item[subField.key]"
+                          :value="item[subField.key] || subField.default || subField.options?.[0]"
                           @change="updateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLSelectElement).value)">
                           <option v-for="opt in subField.options" :key="opt" :value="opt">{{ subField.optionLabels?.[opt] ?? opt }}</option>
                         </select>
