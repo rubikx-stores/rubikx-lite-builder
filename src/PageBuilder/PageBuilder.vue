@@ -42,6 +42,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showAdvancedStyleEditors: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const { translate, loadTranslations } = useTranslations()
@@ -1117,7 +1121,10 @@ onMounted(async () => {
               : 'bpx-w-0 mr-0',
           ]"
         >
-          <RightSidebarEditor @closeEditor="pageBuilderStateStore.setMenuRight(false)">
+          <RightSidebarEditor
+            :show-advanced-style-editors="showAdvancedStyleEditors"
+            @closeEditor="pageBuilderStateStore.setMenuRight(false)"
+          >
           </RightSidebarEditor>
         </aside>
         <div

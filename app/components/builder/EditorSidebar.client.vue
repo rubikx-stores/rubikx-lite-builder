@@ -15,6 +15,40 @@ import { fontCss } from '~/composables/editor/fontFields'
 
 const selectedCompanyId = useState<number | null>('selectedCompanyId')
 
+// ── Accordion section collapse state ──────────────────────────────────────────
+// Tracks which section headers are collapsed. All sections start collapsed.
+// When the block changes, collapse all sections of the new block by default.
+const collapsedSections = ref<Set<string>>(new Set())
+function collapseAllSections() {
+  if (!blockConfig.value) return
+  const labels = blockConfig.value.fields
+    .filter(f => f.type === 'header')
+    .map(f => f.label)
+  collapsedSections.value = new Set(labels)
+}
+function toggleSection(label: string) {
+  const s = new Set(collapsedSections.value)
+  s.has(label) ? s.delete(label) : s.add(label)
+  collapsedSections.value = s
+}
+// Tracks which header label the current field sits under, so we can hide
+// fields whose section is collapsed. We walk blockConfig.fields linearly and
+// keep the last-seen header label as the "current section" for every field.
+function currentSectionLabel(field: FieldConfig): string {
+  if (!blockConfig.value) return ''
+  let label = ''
+  for (const f of blockConfig.value.fields) {
+    if (f.type === 'header') label = f.label
+    if (f.key === field.key) return label
+  }
+  return label
+}
+function isFieldInCollapsedSection(field: FieldConfig): boolean {
+  if (field.type === 'header') return false
+  const label = currentSectionLabel(field)
+  return label !== '' && collapsedSections.value.has(label)
+}
+
 const store = usePageBuilderStateStore() as any
 const {
   selectedEl, selectedBlockId, selectedBlockTitle, mode,
@@ -1039,7 +1073,17 @@ onMounted(() => {
 
   // When switching blocks (A→B), mode stays 'block' so watch(mode) won't fire;
   // watch(selectedBlockTitle) catches every block switch reliably.
-  watch(() => selectedBlockTitle.value, (title) => { if (title) _ensureInjected() })
+  watch(() => selectedBlockTitle.value, (title) => {
+    if (title) {
+      collapseAllSections()
+      _ensureInjected()
+    }
+  })
+
+  // Collapse all sections when blockConfig first becomes available (initial load).
+  watch(blockConfig, (cfg) => {
+    if (cfg && collapsedSections.value.size === 0) collapseAllSections()
+  }, { immediate: true })
 
   // Mode change (none/element → block) means panel just became available
   watch(mode, (m) => { if (m !== 'none') _ensureInjected() }, { flush: 'post' })
@@ -1080,27 +1124,42 @@ onUnmounted(() => {
 
       <!-- ── Block Content Editor ────────────────────────────────────────── -->
       <template v-if="mode === 'block' && blockConfig && blockData">
-        <div class="border-b border-gray-100 px-3 pt-3 pb-3">
+        <div class="px-3 pt-3 pb-3 space-y-1">
           <template v-for="field in blockConfig.fields" :key="field.key">
             <template v-if="!field.visibleIf || field.visibleIf(blockData)">
 
-            <!-- header sentinel -->
-            <div v-if="field.type === 'header'" class="mb-3 mt-6 first:mt-2 flex items-center gap-2">
-              <span class="text-sm font-bold text-gray-900 uppercase tracking-wide whitespace-nowrap">{{ field.label }}</span>
-              <div class="flex-1 h-px bg-gray-300"></div>
+            <!-- header sentinel — collapsible accordion -->
+            <div v-if="field.type === 'header'" class="mt-2 first:mt-0">
+              <button
+                type="button"
+                class="w-full flex items-center justify-between px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 cursor-pointer transition-colors group"
+                @click="toggleSection(field.label)"
+              >
+                <span class="text-sm font-bold text-gray-600 uppercase tracking-wider">{{ field.label }}</span>
+                <svg
+                  class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200"
+                  :class="collapsedSections.has(field.label) ? '-rotate-90' : ''"
+                  viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
             </div>
 
+            <!-- all non-header fields: hidden when their section is collapsed, shown in a card -->
+            <div v-else-if="!isFieldInCollapsedSection(field)" class="px-1">
+
             <!-- image -->
-            <div v-else-if="field.type === 'image'" class="mb-2.5">
-              <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
+            <div v-if="field.type === 'image'" class="mb-2.5">
+              <label class="block text-base font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
               <div class="flex items-center gap-1 mb-1">
                 <input type="text" :value="blockData[field.key]" :placeholder="field.placeholder || 'Paste URL'"
-                  class="flex-1 border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400"
+                  class="flex-1 border border-gray-200 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:border-blue-400"
                   :disabled="uploading[field.key]"
                   @change="onImageUrlChange(field.key, ($event.target as HTMLInputElement).value)"
                   @input="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value.trim()); uploadError[field.key] = ''" />
                 <label
-                  class="shrink-0 text-xs border rounded-md px-2 py-1.5"
+                  class="shrink-0 text-sm border rounded-md px-2 py-1.5"
                   :class="uploading[field.key]
                     ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-wait'
                     : 'bg-gray-100 hover:bg-gray-200 text-gray-600 border-gray-200 cursor-pointer'"
@@ -1113,16 +1172,16 @@ onUnmounted(() => {
               <img v-if="blockData[field.key]" :src="blockData[field.key]"
                 class="w-full h-20 object-cover rounded border border-gray-200 mb-1" alt="preview" />
               <div v-if="blockData[field.key] && !field.noAspectRatio" class="flex items-center gap-1.5 mt-1">
-                <label class="text-xs text-gray-400 shrink-0">Aspect ratio</label>
+                <label class="text-sm text-gray-400 shrink-0">Aspect ratio</label>
                 <select
                   :value="(blockData[field.key + 'AspectRatio'] as string) ?? 'Auto'"
-                  class="flex-1 border border-gray-200 rounded-md px-2 py-1 text-xs focus:outline-none focus:border-blue-400"
+                  class="flex-1 border border-gray-200 rounded-md px-2 py-1 text-sm focus:outline-none focus:border-blue-400"
                   @change="updateBlockField(field.key + 'AspectRatio', ($event.target as HTMLSelectElement).value)"
                 >
                   <option v-for="opt in ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)']" :key="opt" :value="opt">{{ opt }}</option>
                 </select>
               </div>
-              <p v-if="uploadError[field.key]" class="text-xs text-red-500">{{ uploadError[field.key] }}</p>
+              <p v-if="uploadError[field.key]" class="text-sm text-red-500">{{ uploadError[field.key] }}</p>
             </div>
 
             <!-- textarea, rich text: any textarea supports inline bold/color/
@@ -1131,36 +1190,36 @@ onUnmounted(() => {
                  (fields whose render logic depends on literal '\n'
                  characters to split into separate bullets/paragraphs, which
                  the modal's HTML output can't produce). -->
-            <div v-else-if="field.type === 'textarea' && !field.plainTextarea" class="mb-2.5">
-              <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
+            <div v-if="field.type === 'textarea' && !field.plainTextarea" class="mb-2.5">
+              <label class="block text-sm font-semibold text-gray-600 mb-1">{{ field.label }}</label>
               <div class="flex items-center gap-1.5">
-                <div class="flex-1 min-w-0 truncate rounded border border-gray-200 px-2 py-1 text-xs" :class="blockData[field.key] ? 'text-gray-600' : 'text-gray-400'" :title="stripHtml(blockData[field.key])">
+                <div class="flex-1 min-w-0 truncate rounded border border-gray-200 px-2 py-1 text-sm" :class="blockData[field.key] ? 'text-gray-600' : 'text-gray-400'" :title="stripHtml(blockData[field.key])">
                   {{ stripHtml(blockData[field.key]) || field.placeholder || 'Click Edit to add text…' }}
                 </div>
                 <button type="button"
-                  class="shrink-0 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100"
+                  class="shrink-0 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-sm text-gray-600 hover:bg-gray-100"
                   @click="openRichTextFieldModal(field.key, blockData[field.key])">Edit</button>
               </div>
             </div>
 
             <!-- textarea, plain -->
-            <div v-else-if="field.type === 'textarea'" class="mb-2.5">
-              <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
+            <div v-else-if="field.type === 'textarea' && field.plainTextarea" class="mb-2.5">
+              <label class="block text-sm font-semibold text-gray-600 mb-1">{{ field.label }}</label>
               <textarea
                 :value="blockData[field.key]"
                 :placeholder="field.placeholder ?? ''"
                 rows="3"
-                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors resize-none"
+                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors resize-none"
                 @input="debouncedUpdateBlockField(field.key, ($event.target as HTMLTextAreaElement).value)"
               ></textarea>
             </div>
 
             <!-- text / url -->
-            <div v-else-if="field.type === 'text' || field.type === 'url'" class="mb-2.5">
-              <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
+            <div v-if="field.type === 'text' || field.type === 'url'" class="mb-2.5">
+              <label class="block text-sm font-semibold text-gray-600 mb-1">{{ field.label }}</label>
               <input type="text" :value="blockData[field.key]"
                 :placeholder="field.placeholder ?? ''"
-                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors"
+                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors"
                 @input="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
             </div>
 
@@ -1170,54 +1229,55 @@ onUnmounted(() => {
                  a bare 0 until the admin nudges it, then behaves like any
                  other number field -->
             <div v-else-if="field.key === 'cardHeight' && selectedBlockTitle === 'Ru7-Hero-Category-Collection'" class="mb-2.5">
-              <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
+              <label class="block text-base font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
               <div class="flex items-center gap-1 w-full">
                 <button type="button"
-                  class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-lg font-medium cursor-pointer shrink-0"
+                  class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-xl font-medium cursor-pointer shrink-0"
                   @click="updateBlockField('cardHeight', Math.max(0, ru7CardHeightDisplay - (field.step ?? 1)))">−</button>
                 <input type="number" :value="ru7CardHeightDisplay"
-                  class="flex-1 text-center border border-gray-300 rounded-lg py-1.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                  class="flex-1 text-center border border-gray-300 rounded-lg py-1.5 text-base text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
                   @input="debouncedUpdateBlockField('cardHeight', Number(($event.target as HTMLInputElement).value))" />
-                <span class="text-xs text-gray-500 font-semibold">{{ field.unit ?? 'px' }}</span>
+                <span class="text-sm text-gray-500 font-semibold">{{ field.unit ?? 'px' }}</span>
                 <button type="button"
-                  class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-lg font-medium cursor-pointer shrink-0"
+                  class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-xl font-medium cursor-pointer shrink-0"
                   @click="updateBlockField('cardHeight', ru7CardHeightDisplay + (field.step ?? 1))">+</button>
               </div>
             </div>
 
-            <div v-else-if="field.type === 'number'" class="mb-2.5">
-              <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
+            <div v-if="field.type === 'number'" class="mb-2.5">
+              <label class="block text-sm font-semibold text-gray-600 mb-1">{{ field.label }}</label>
               <div class="flex items-center gap-1 w-full">
                 <button type="button"
-                  class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-lg font-medium cursor-pointer shrink-0"
+                  class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-xl font-medium cursor-pointer shrink-0"
                   @click="updateBlockField(field.key, Math.max(0, Number(blockData[field.key] ?? field.placeholder ?? 0) - (field.step ?? 1)))">−</button>
                 <input type="number" :value="blockData[field.key]"
                   :placeholder="field.placeholder ?? ''"
-                  class="flex-1 text-center border border-gray-300 rounded-lg py-1.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                  class="flex-1 text-center border border-gray-300 rounded-lg py-1.5 text-base text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
                   @input="debouncedUpdateBlockField(field.key, Number(($event.target as HTMLInputElement).value))" />
-                <span class="text-xs text-gray-500 font-semibold">{{ field.unit ?? 'px' }}</span>
+                <span class="text-sm text-gray-500 font-semibold">{{ field.unit ?? 'px' }}</span>
                 <button type="button"
-                  class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-lg font-medium cursor-pointer shrink-0"
+                  class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-xl font-medium cursor-pointer shrink-0"
                   @click="updateBlockField(field.key, Number(blockData[field.key] ?? field.placeholder ?? 0) + (field.step ?? 1))">+</button>
               </div>
             </div>
 
             <!-- color -->
-            <div v-else-if="field.type === 'color'" class="mb-2.5">
-              <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
-              <div class="flex items-center gap-2 w-full">
-                <input type="color" :value="toHex(blockData[field.key])" class="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5 bg-white"
+            <div v-if="field.type === 'color'" class="mb-2.5">
+              <label class="block text-sm font-semibold text-gray-600 mb-1">{{ field.label }}</label>
+              <div class="flex items-center gap-2 border border-gray-200 rounded-lg px-2 py-1.5 bg-white hover:border-gray-300 transition-colors">
+                <input type="color" :value="toHex(blockData[field.key])" class="w-7 h-7 rounded cursor-pointer border-none p-0 shrink-0"
                   @input="updateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
-                <input type="text" :value="blockData[field.key]" class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                <input type="text" :value="blockData[field.key]" class="flex-1 text-sm bg-transparent border-none outline-none text-gray-700 min-w-0"
+                  :placeholder="field.placeholder ?? '#000000'"
                   @input="debouncedUpdateBlockField(field.key, ($event.target as HTMLInputElement).value)" />
               </div>
             </div>
 
             <!-- toggle -->
-            <div v-else-if="field.type === 'toggle'" class="mb-2.5 flex items-center justify-between py-1">
-              <label class="text-sm font-semibold text-gray-800">{{ field.label }}</label>
+            <div v-if="field.type === 'toggle'" class="mb-2.5 flex items-center justify-between py-1">
+              <label class="text-sm font-semibold text-gray-600">{{ field.label }}</label>
               <div class="flex items-center gap-2">
-                <span class="text-xs font-medium text-gray-500">{{ blockData[field.key] ? 'ON' : 'OFF' }}</span>
+                <span class="text-sm font-medium text-gray-500">{{ blockData[field.key] ? 'ON' : 'OFF' }}</span>
                 <button type="button"
                   class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors border-none cursor-pointer shrink-0"
                   :class="blockData[field.key] ? 'bg-blue-500' : 'bg-gray-200'"
@@ -1229,21 +1289,21 @@ onUnmounted(() => {
             </div>
 
             <!-- button -->
-            <div v-else-if="field.type === 'button'" class="mb-2.5">
+            <div v-if="field.type === 'button'" class="mb-2.5">
               <button type="button"
-                class="w-full rounded-lg border border-gray-300 bg-gray-50 hover:bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-800 transition-colors"
+                class="w-full rounded-lg border border-gray-300 bg-gray-50 hover:bg-gray-100 px-3 py-2 text-base font-semibold text-gray-800 transition-colors"
                 :disabled="buttonFieldBusy[field.key]"
                 @click="onButtonField(field.key)">
                 {{ buttonFieldBusy[field.key] ? 'Working…' : field.label }}
               </button>
-              <p v-if="buttonFieldError[field.key]" class="text-xs text-red-500 mt-1">{{ buttonFieldError[field.key] }}</p>
+              <p v-if="buttonFieldError[field.key]" class="text-sm text-red-500 mt-1">{{ buttonFieldError[field.key] }}</p>
             </div>
 
             <!-- select -->
-            <div v-else-if="field.type === 'select'" class="mb-2.5">
-              <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
+            <div v-if="field.type === 'select'" class="mb-2.5">
+              <label class="block text-sm font-semibold text-gray-600 mb-1">{{ field.label }}</label>
               <div class="relative">
-                <select class="w-full rounded-lg border border-gray-300 px-3 py-2 pr-8 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors appearance-none cursor-pointer"
+                <select class="w-full rounded-lg border border-gray-300 px-3 py-2 pr-8 text-base text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors appearance-none cursor-pointer"
                   :value="String(blockData[field.key])"
                   @change="onSelectField(field.key, Number(($event.target as HTMLSelectElement).value) || ($event.target as HTMLSelectElement).value)">
                   <option v-for="opt in field.options" :key="opt" :value="opt">{{ field.optionLabels?.[opt] ?? (opt || 'Default') }}</option>
@@ -1255,8 +1315,8 @@ onUnmounted(() => {
             </div>
 
             <!-- align: left/center/right icon button group -->
-            <div v-else-if="field.type === 'align'" class="mb-2.5">
-              <label class="block text-sm font-semibold text-gray-800 mb-1.5">{{ field.label }}</label>
+            <div v-if="field.type === 'align'" class="mb-2.5">
+              <label class="block text-sm font-semibold text-gray-600 mb-1">{{ field.label }}</label>
               <div class="flex gap-1.5">
                 <button v-for="a in ['left', 'center', 'right']" :key="a" type="button"
                   class="flex-1 h-9 rounded-lg border flex items-center justify-center cursor-pointer transition-colors"
@@ -1278,15 +1338,15 @@ onUnmounted(() => {
 
             <!-- column-order -->
             <div v-else-if="field.type === 'column-order'" class="mb-2.5">
-              <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
+              <label class="block text-sm text-gray-500 mb-1">{{ field.label }}</label>
               <div class="flex gap-1.5">
                 <div
                   v-for="(pos, i) in ((blockData[field.key] as string[] ?? []).length === 2 ? ['Left', 'Right'] : ['Left', 'Center', 'Right'])"
                   :key="pos"
                   class="flex-1">
-                  <label class="block text-xs text-gray-400 mb-0.5">{{ pos }}</label>
+                  <label class="block text-sm text-gray-400 mb-0.5">{{ pos }}</label>
                   <select
-                    class="w-full border border-gray-200 rounded px-1.5 py-1 text-xs bg-white focus:outline-none"
+                    class="w-full border border-gray-200 rounded px-1.5 py-1 text-sm bg-white focus:outline-none"
                     :value="(blockData[field.key] as string[])?.[i]"
                     @change="updateColumnOrder(field.key, i, ($event.target as HTMLSelectElement).value)">
                     <option
@@ -1303,9 +1363,9 @@ onUnmounted(() => {
             <!-- list -->
             <div v-if="field.type === 'list' && field.listFields" class="mb-2.5">
               <div class="flex items-center justify-between mb-1.5">
-                <label class="text-xs text-gray-500">{{ field.label }}</label>
+                <label class="text-sm text-gray-500">{{ field.label }}</label>
                 <button type="button"
-                  class="text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-1.5 py-0.5 bg-blue-50 cursor-pointer"
+                  class="text-sm text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-1.5 py-0.5 bg-blue-50 cursor-pointer"
                   @click="addBlockListItem(field.key, Object.fromEntries((field.listFields ?? []).map(f => [f.key, f.default ?? ''])))">+ Add</button>
               </div>
               <div v-for="(item, idx) in (blockData[field.key] as Record<string,any>[])" :key="idx"
@@ -1320,31 +1380,31 @@ onUnmounted(() => {
                           <img :src="faviconUrl(item.href)" width="16" height="16" class="object-contain" :alt="getDomain(item.href)" />
                         </span>
                       </template>
-                      <span v-else class="flex items-center justify-center w-6 h-6 rounded-full border border-dashed border-gray-300 text-gray-300 text-xs">+</span>
-                      <span class="text-xs font-medium" :class="item.href ? 'text-gray-700' : 'text-gray-400'">
+                      <span v-else class="flex items-center justify-center w-6 h-6 rounded-full border border-dashed border-gray-300 text-gray-300 text-sm">+</span>
+                      <span class="text-sm font-medium" :class="item.href ? 'text-gray-700' : 'text-gray-400'">
                         {{ item.href ? (getDomain(item.href) || 'Link') : 'Paste URL below' }}
                       </span>
                     </div>
                   </template>
-                  <span v-else class="text-xs text-gray-400 font-medium">{{ idx + 1 }}</span>
+                  <span v-else class="text-sm text-gray-400 font-medium">{{ idx + 1 }}</span>
                   <div class="flex gap-1">
-                    <button v-if="idx > 0" type="button" class="text-xs text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="moveListItemUp(field.key, idx)">↑</button>
-                    <button v-if="idx < (blockData[field.key] as any[]).length - 1" type="button" class="text-xs text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="moveListItemDown(field.key, idx)">↓</button>
-                    <button type="button" class="text-xs text-red-400 hover:text-red-600 border-none bg-transparent cursor-pointer px-1" @click="removeBlockListItem(field.key, idx)">✕</button>
+                    <button v-if="idx > 0" type="button" class="text-sm text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="moveListItemUp(field.key, idx)">↑</button>
+                    <button v-if="idx < (blockData[field.key] as any[]).length - 1" type="button" class="text-sm text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="moveListItemDown(field.key, idx)">↓</button>
+                    <button type="button" class="text-sm text-red-400 hover:text-red-600 border-none bg-transparent cursor-pointer px-1" @click="removeBlockListItem(field.key, idx)">✕</button>
                   </div>
                 </div>
                 <div class="px-2 py-1.5">
                   <template v-for="subField in field.listFields" :key="subField.label">
                     <div class="mb-1" v-if="!subField.visibleIf || subField.visibleIf(item)">
-                      <label class="block text-sm font-medium text-gray-700 mb-0.5">{{ subField.label }}</label>
+                      <label class="block text-base font-medium text-gray-700 mb-0.5">{{ subField.label }}</label>
                       <template v-if="subField.type === 'image'">
                         <div class="flex items-center gap-1 mb-1">
                           <input type="text" :value="item[subField.key]" :placeholder="subField.placeholder || 'Paste URL'"
-                            class="flex-1 border border-gray-200 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-blue-400"
+                            class="flex-1 border border-gray-200 rounded px-2 py-0.5 text-sm focus:outline-none focus:border-blue-400"
                             @change="debouncedUpdateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value.trim())"
                             @input="debouncedUpdateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value.trim())" />
                           <label
-                            class="shrink-0 text-xs border rounded px-1.5 py-0.5"
+                            class="shrink-0 text-sm border rounded px-1.5 py-0.5"
                             :class="uploading[subUploadKey(field.key, idx, subField.key)]
                               ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-wait'
                               : 'bg-gray-100 hover:bg-gray-200 text-gray-600 border-gray-200 cursor-pointer'"
@@ -1355,7 +1415,7 @@ onUnmounted(() => {
                           </label>
                         </div>
                         <img v-if="item[subField.key]" :src="item[subField.key]" class="w-full aspect-square object-cover rounded border border-gray-200 bg-gray-50" alt="preview" />
-                        <p v-if="uploadError[subUploadKey(field.key, idx, subField.key)]" class="text-xs text-red-500">{{ uploadError[subUploadKey(field.key, idx, subField.key)] }}</p>
+                        <p v-if="uploadError[subUploadKey(field.key, idx, subField.key)]" class="text-sm text-red-500">{{ uploadError[subUploadKey(field.key, idx, subField.key)] }}</p>
                       </template>
                       <template v-else-if="subField.type === 'toggle'">
                         <button type="button"
@@ -1375,14 +1435,14 @@ onUnmounted(() => {
                             @input="updateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value)" />
                           <input type="text" :value="item[subField.key]"
                             placeholder="#000000"
-                            class="flex-1 text-xs focus:outline-none min-w-0"
+                            class="flex-1 text-sm focus:outline-none min-w-0"
                             @input="debouncedUpdateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value)" />
                         </div>
                       </template>
 
                       <!-- select sub-field: dropdown, instant on selection -->
                       <template v-else-if="subField.type === 'select'">
-                        <select class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs bg-white focus:outline-none focus:border-blue-400"
+                        <select class="w-full border border-gray-200 rounded px-2 py-0.5 text-sm bg-white focus:outline-none focus:border-blue-400"
                           :value="item[subField.key] || subField.default || subField.options?.[0]"
                           @change="updateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLSelectElement).value)">
                           <option v-for="opt in subField.options" :key="opt" :value="opt">{{ subField.optionLabels?.[opt] ?? opt }}</option>
@@ -1393,15 +1453,15 @@ onUnmounted(() => {
                       <template v-else-if="subField.type === 'number'">
                         <div class="flex items-center gap-1 w-full">
                           <button type="button"
-                            class="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-base font-medium cursor-pointer shrink-0"
+                            class="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-lg font-medium cursor-pointer shrink-0"
                             @click="updateBlockListItem(field.key, idx, subField.key, Math.max(0, Number(item[subField.key] ?? subField.placeholder ?? 0) - (subField.step ?? 1)))">−</button>
                           <input type="number" :value="item[subField.key]"
                             :placeholder="subField.placeholder ?? ''"
-                            class="flex-1 text-center border border-gray-300 rounded-lg py-1 text-xs text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                            class="flex-1 text-center border border-gray-300 rounded-lg py-1 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
                             @input="debouncedUpdateBlockListItem(field.key, idx, subField.key, Number(($event.target as HTMLInputElement).value))" />
-                          <span class="text-xs text-gray-500 font-semibold shrink-0">{{ subField.unit ?? 'px' }}</span>
+                          <span class="text-sm text-gray-500 font-semibold shrink-0">{{ subField.unit ?? 'px' }}</span>
                           <button type="button"
-                            class="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-base font-medium cursor-pointer shrink-0"
+                            class="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors text-lg font-medium cursor-pointer shrink-0"
                             @click="updateBlockListItem(field.key, idx, subField.key, Number(item[subField.key] ?? subField.placeholder ?? 0) + (subField.step ?? 1))">+</button>
                         </div>
                       </template>
@@ -1416,36 +1476,36 @@ onUnmounted(() => {
                       <template v-else-if="subField.type === 'list' && subField.listFields">
                         <div class="flex items-center justify-end mb-1.5">
                           <button type="button"
-                            class="text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-1.5 py-0.5 bg-blue-50 cursor-pointer"
+                            class="text-sm text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-1.5 py-0.5 bg-blue-50 cursor-pointer"
                             @click="addNestedListItem(field.key, idx, subField.key, Object.fromEntries((subField.listFields ?? []).map(f => [f.key, ''])))">+ Add</button>
                         </div>
                         <div v-for="(nestedItem, nestedIdx) in (item[subField.key] as Record<string,any>[] ?? [])" :key="nestedIdx"
                           class="rounded-lg border border-gray-200 bg-gray-50 p-2 mb-2">
                           <div class="flex justify-between items-center px-1 py-0.5 mb-1">
-                            <span class="text-xs text-gray-400 font-medium">{{ nestedIdx + 1 }}</span>
+                            <span class="text-sm text-gray-400 font-medium">{{ nestedIdx + 1 }}</span>
                             <div class="flex gap-1">
-                              <button v-if="nestedIdx > 0" type="button" class="text-xs text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="moveNestedListItemUp(field.key, idx, subField.key, nestedIdx)">↑</button>
-                              <button v-if="nestedIdx < (item[subField.key] as any[]).length - 1" type="button" class="text-xs text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="moveNestedListItemDown(field.key, idx, subField.key, nestedIdx)">↓</button>
-                              <button type="button" class="text-xs text-red-400 hover:text-red-600 border-none bg-transparent cursor-pointer px-1" @click="removeNestedListItem(field.key, idx, subField.key, nestedIdx)">✕</button>
+                              <button v-if="nestedIdx > 0" type="button" class="text-sm text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="moveNestedListItemUp(field.key, idx, subField.key, nestedIdx)">↑</button>
+                              <button v-if="nestedIdx < (item[subField.key] as any[]).length - 1" type="button" class="text-sm text-gray-400 hover:text-gray-700 border-none bg-transparent cursor-pointer px-1" @click="moveNestedListItemDown(field.key, idx, subField.key, nestedIdx)">↓</button>
+                              <button type="button" class="text-sm text-red-400 hover:text-red-600 border-none bg-transparent cursor-pointer px-1" @click="removeNestedListItem(field.key, idx, subField.key, nestedIdx)">✕</button>
                             </div>
                           </div>
                           <template v-for="nestedSubField in subField.listFields" :key="nestedSubField.key">
                             <div class="mb-1">
-                              <label class="block text-xs font-medium text-gray-700 mb-0.5">{{ nestedSubField.label }}</label>
+                              <label class="block text-sm font-medium text-gray-700 mb-0.5">{{ nestedSubField.label }}</label>
                               <template v-if="nestedSubField.type === 'textarea' && !nestedSubField.plainTextarea">
                                 <div class="flex items-center gap-1.5">
-                                  <div class="flex-1 min-w-0 truncate rounded border border-gray-200 px-2 py-1 text-xs bg-white" :class="nestedItem[nestedSubField.key] ? 'text-gray-600' : 'text-gray-400'" :title="stripHtml(nestedItem[nestedSubField.key])">
+                                  <div class="flex-1 min-w-0 truncate rounded border border-gray-200 px-2 py-1 text-sm bg-white" :class="nestedItem[nestedSubField.key] ? 'text-gray-600' : 'text-gray-400'" :title="stripHtml(nestedItem[nestedSubField.key])">
                                     {{ stripHtml(nestedItem[nestedSubField.key]) || nestedSubField.placeholder || 'Click Edit to add text…' }}
                                   </div>
                                   <button type="button"
-                                    class="shrink-0 rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 hover:bg-gray-100"
+                                    class="shrink-0 rounded border border-gray-200 bg-white px-2 py-1 text-sm text-gray-600 hover:bg-gray-100"
                                     @click="openNestedFaqAnswerModal(field.key, idx, subField.key, nestedIdx, nestedSubField.key, nestedItem[nestedSubField.key])">Edit</button>
                                 </div>
                               </template>
                               <template v-else>
                                 <input type="text" :value="typeof nestedItem[nestedSubField.key] === 'object' ? '' : (nestedItem[nestedSubField.key] ?? '')"
                                   :placeholder="nestedSubField.placeholder ?? ''"
-                                  class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs bg-white focus:outline-none focus:border-blue-400"
+                                  class="w-full border border-gray-200 rounded px-2 py-0.5 text-sm bg-white focus:outline-none focus:border-blue-400"
                                   @input="debouncedUpdateNestedListItem(field.key, idx, subField.key, nestedIdx, nestedSubField.key, ($event.target as HTMLInputElement).value)" />
                               </template>
                             </div>
@@ -1461,7 +1521,7 @@ onUnmounted(() => {
                       <template v-else-if="field.key === 'categories' && subField.key === 'name'">
                         <input type="text" :value="item.name ?? ''"
                           :placeholder="subField.placeholder ?? ''"
-                          class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-blue-400"
+                          class="w-full border border-gray-200 rounded px-2 py-0.5 text-sm focus:outline-none focus:border-blue-400"
                           @input="onRu7CategoryNameInput(idx, ($event.target as HTMLInputElement).value)" />
                       </template>
 
@@ -1472,11 +1532,11 @@ onUnmounted(() => {
                            top-level textarea case above. -->
                       <template v-else-if="subField.type === 'textarea' && !subField.plainTextarea">
                         <div class="flex items-center gap-1.5">
-                          <div class="flex-1 min-w-0 truncate rounded border border-gray-200 px-2 py-1 text-xs" :class="item[subField.key] ? 'text-gray-600' : 'text-gray-400'" :title="stripHtml(item[subField.key])">
+                          <div class="flex-1 min-w-0 truncate rounded border border-gray-200 px-2 py-1 text-sm" :class="item[subField.key] ? 'text-gray-600' : 'text-gray-400'" :title="stripHtml(item[subField.key])">
                             {{ stripHtml(item[subField.key]) || subField.placeholder || 'Click Edit to add text…' }}
                           </div>
                           <button type="button"
-                            class="shrink-0 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100"
+                            class="shrink-0 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-sm text-gray-600 hover:bg-gray-100"
                             @click="openFaqAnswerModal(field.key, idx, subField.key, item[subField.key])">Edit</button>
                         </div>
                       </template>
@@ -1488,7 +1548,7 @@ onUnmounted(() => {
                         <div class="relative">
                           <input type="text" :value="typeof item[subField.key] === 'object' ? '' : (item[subField.key] ?? '')"
                             :placeholder="subField.placeholder ?? ''"
-                            class="w-full border border-gray-200 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-blue-400"
+                            class="w-full border border-gray-200 rounded px-2 py-0.5 text-sm focus:outline-none focus:border-blue-400"
                             @input="debouncedUpdateBlockListItem(field.key, idx, subField.key, ($event.target as HTMLInputElement).value)" />
                         </div>
                       </template>
@@ -1499,22 +1559,22 @@ onUnmounted(() => {
                   <template v-if="selectedBlockTitle === 'Ru2-Mega-Menu-Header' && field.key === 'navLinks'">
                     <div class="mt-1.5 pt-1.5 border-t border-gray-100">
                       <div class="flex items-center justify-between mb-1">
-                        <span class="text-xs text-gray-400">Mega Menu</span>
+                        <span class="text-sm text-gray-400">Mega Menu</span>
                         <button type="button"
                           @click="megaMenuPickerIdx === idx ? closeMegaMenuEditor() : openMegaMenuEditor(idx)"
-                          class="text-xs border border-gray-200 rounded px-1.5 py-0.5 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
+                          class="text-sm border border-gray-200 rounded px-1.5 py-0.5 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
                           {{ (item.megaMenu as any[])?.length ? `${(item.megaMenu as any[]).length} groups ✎` : '+ Set' }}
                         </button>
                       </div>
 
                       <!-- mega menu editor panel -->
-                      <div v-if="megaMenuPickerIdx === idx" class="border border-gray-200 rounded-md overflow-hidden text-xs mt-1">
+                      <div v-if="megaMenuPickerIdx === idx" class="border border-gray-200 rounded-md overflow-hidden text-sm mt-1">
 
                         <!-- product picker for a specific group -->
                         <template v-if="groupProductIdx >= 0">
                           <div class="px-2 py-1.5 bg-gray-50 border-b border-gray-100 flex items-center gap-1.5">
                             <button type="button" @click="groupProductIdx = -1; selectedProductIds = new Set()"
-                              class="text-gray-400 hover:text-gray-700 bg-transparent border-none cursor-pointer text-sm leading-none">←</button>
+                              class="text-gray-400 hover:text-gray-700 bg-transparent border-none cursor-pointer text-base leading-none">←</button>
                             <span class="font-medium text-gray-600 flex-1">{{ editingGroups[groupProductIdx]?.label || 'Group' }} products
                               <span v-if="selectedProductIds.size" class="text-blue-500">({{ selectedProductIds.size }})</span>
                             </span>
@@ -1522,7 +1582,7 @@ onUnmounted(() => {
                           </div>
                           <div class="px-2 py-1.5 border-b border-gray-100">
                             <input type="text" v-model="megaMenuSearch" placeholder="Search products…"
-                              class="w-full border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-blue-400" />
+                              class="w-full border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-400" />
                           </div>
                           <div v-if="megaMenuLoading" class="px-2 py-3 text-gray-400 text-center">Loading…</div>
                           <div v-else class="max-h-52 overflow-y-auto">
@@ -1542,7 +1602,7 @@ onUnmounted(() => {
                           </div>
                           <div class="px-2 py-1.5 bg-gray-50 border-t border-gray-100">
                             <button type="button" @click="applyGroupProducts"
-                              class="w-full text-xs border border-gray-900 rounded px-2 py-1 bg-gray-900 text-white hover:bg-gray-700 cursor-pointer">
+                              class="w-full text-sm border border-gray-900 rounded px-2 py-1 bg-gray-900 text-white hover:bg-gray-700 cursor-pointer">
                               Done
                             </button>
                           </div>
@@ -1560,9 +1620,9 @@ onUnmounted(() => {
                               <input type="text" :value="group.label"
                                 @input="onGroupLabelInput(gi, ($event.target as HTMLInputElement).value)"
                                 placeholder="e.g. Women"
-                                class="flex-1 border border-gray-200 rounded px-1.5 py-0.5 text-xs focus:outline-none focus:border-blue-400 min-w-0" />
+                                class="flex-1 border border-gray-200 rounded px-1.5 py-0.5 text-sm focus:outline-none focus:border-blue-400 min-w-0" />
                               <button type="button" @click="openGroupProductPicker(gi)"
-                                class="shrink-0 text-xs border border-blue-200 rounded px-1.5 py-0.5 bg-blue-50 text-blue-600 hover:bg-blue-100 cursor-pointer whitespace-nowrap">
+                                class="shrink-0 text-sm border border-blue-200 rounded px-1.5 py-0.5 bg-blue-50 text-blue-600 hover:bg-blue-100 cursor-pointer whitespace-nowrap">
                                 {{ group.products.length ? `${group.products.length} ✎` : '+ Products' }}
                               </button>
                               <button type="button" @click="removeGroup(gi)"
@@ -1572,17 +1632,17 @@ onUnmounted(() => {
                           </div>
                           <div class="px-2 py-1 border-b border-gray-100">
                             <button type="button" @click="addGroup"
-                              class="w-full text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-2 py-1 bg-blue-50 cursor-pointer">
+                              class="w-full text-sm text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-2 py-1 bg-blue-50 cursor-pointer">
                               + Add group
                             </button>
                           </div>
                           <div class="px-2 py-1.5 bg-gray-50 flex gap-1.5">
                             <button type="button" @click="applyMegaMenuToLink"
-                              class="flex-1 text-xs border border-gray-900 rounded px-2 py-1 bg-gray-900 text-white hover:bg-gray-700 cursor-pointer">
+                              class="flex-1 text-sm border border-gray-900 rounded px-2 py-1 bg-gray-900 text-white hover:bg-gray-700 cursor-pointer">
                               Apply
                             </button>
                             <button type="button" @click="closeMegaMenuEditor"
-                              class="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
+                              class="text-sm border border-gray-200 rounded px-2 py-1 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
                               Cancel
                             </button>
                           </div>
@@ -1592,8 +1652,8 @@ onUnmounted(() => {
                       <!-- summary when closed -->
                       <div v-else-if="(item.megaMenu as any[])?.length" class="mt-0.5">
                         <div v-for="(g, gi) in (item.megaMenu as any[]).slice(0, 3)" :key="gi"
-                          class="text-xs text-gray-400 truncate">• {{ g.label }} ({{ (g.products as any[])?.length ?? 0 }})</div>
-                        <div v-if="(item.megaMenu as any[]).length > 3" class="text-xs text-gray-400">
+                          class="text-sm text-gray-400 truncate">• {{ g.label }} ({{ (g.products as any[])?.length ?? 0 }})</div>
+                        <div v-if="(item.megaMenu as any[]).length > 3" class="text-sm text-gray-400">
                           + {{ (item.megaMenu as any[]).length - 3 }} more
                         </div>
                       </div>
@@ -1604,15 +1664,15 @@ onUnmounted(() => {
                   <template v-if="selectedBlockTitle === 'Ru5-Dynamic-Navbar' && field.key === 'logoNavLinks'">
                     <div class="mt-1.5 pt-1.5 border-t border-gray-100">
                       <div class="flex items-center justify-between mb-1">
-                        <span class="text-xs text-gray-400">Logo Groups</span>
+                        <span class="text-sm text-gray-400">Logo Groups</span>
                         <button type="button"
                           @click="logoPickerIdx === idx ? closeLogoPicker() : openLogoPicker(idx)"
-                          class="text-xs border border-gray-200 rounded px-1.5 py-0.5 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
+                          class="text-sm border border-gray-200 rounded px-1.5 py-0.5 bg-white text-gray-500 hover:bg-gray-50 cursor-pointer">
                           {{ (item.logoGroups as string[])?.length ? `${(item.logoGroups as string[]).length} groups ✎` : '+ Select Logo Group' }}
                         </button>
                       </div>
 
-                      <div v-if="logoPickerIdx === idx" class="border border-gray-200 rounded-md overflow-hidden text-xs mt-1">
+                      <div v-if="logoPickerIdx === idx" class="border border-gray-200 rounded-md overflow-hidden text-sm mt-1">
                         <div class="px-2 py-1.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
                           <span class="font-medium text-gray-600">Select Logo Group
                             <span v-if="!logoLoading" class="text-gray-400">({{ logoGroupOptions.length }})</span>
@@ -1622,7 +1682,7 @@ onUnmounted(() => {
                         </div>
                         <div class="px-2 py-1.5 border-b border-gray-100">
                           <input type="text" v-model="logoSearch" placeholder="Search groups…"
-                            class="w-full border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-blue-400" />
+                            class="w-full border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-400" />
                         </div>
                         <div v-if="logoLoading" class="px-2 py-3 text-gray-400 text-center">Loading…</div>
                         <div v-else class="max-h-52 overflow-y-auto">
@@ -1636,7 +1696,7 @@ onUnmounted(() => {
                         </div>
                         <div class="px-2 py-1.5 bg-gray-50 border-t border-gray-100">
                           <button type="button" @click="applyLogoSelection"
-                            class="w-full text-xs border border-gray-900 rounded px-2 py-1 bg-gray-900 text-white hover:bg-gray-700 cursor-pointer">
+                            class="w-full text-sm border border-gray-900 rounded px-2 py-1 bg-gray-900 text-white hover:bg-gray-700 cursor-pointer">
                             Done
                           </button>
                         </div>
@@ -1647,6 +1707,8 @@ onUnmounted(() => {
               </div>
             </div>
 
+            </div><!-- /non-header fields wrapper -->
+
             </template><!-- /visibleIf -->
           </template>
         </div>
@@ -1654,7 +1716,7 @@ onUnmounted(() => {
 
       <!-- Fallback: block selected but not registered in app registry -->
       <div v-if="!isProductBlock && mode === 'block' && (!blockConfig || !blockData)"
-        class="px-3 py-3 border-b border-gray-100 text-xs text-gray-400 text-center leading-relaxed">
+        class="px-3 py-3 border-b border-gray-100 text-sm text-gray-400 text-center leading-relaxed">
         No custom editor for this block.<br/>Use the library editors below.
       </div>
 
@@ -1664,61 +1726,61 @@ onUnmounted(() => {
 
         <!-- Typography (text elements only) -->
         <details v-if="isTextEl" open class="border-b border-gray-100">
-          <summary class="px-3 py-2.5 text-xs font-semibold text-gray-600 uppercase tracking-wide cursor-pointer list-none flex items-center justify-between select-none hover:bg-gray-50">
+          <summary class="px-3 py-2.5 text-sm font-semibold text-gray-600 uppercase tracking-wide cursor-pointer list-none flex items-center justify-between select-none hover:bg-gray-50">
             Typography <span class="text-gray-300">▾</span>
           </summary>
           <div class="px-3 pb-3 space-y-2.5">
             <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-500">Size</span>
+              <span class="text-sm text-gray-500">Size</span>
               <div class="flex items-center gap-1">
-                <button @click="adjFs(-1)" class="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600 border-none cursor-pointer text-sm leading-none font-medium">−</button>
-                <input type="number" :value="fsVal" class="w-11 text-center text-xs border border-gray-200 rounded py-0.5 focus:outline-none focus:border-blue-400"
+                <button @click="adjFs(-1)" class="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600 border-none cursor-pointer text-base leading-none font-medium">−</button>
+                <input type="number" :value="fsVal" class="w-11 text-center text-sm border border-gray-200 rounded py-0.5 focus:outline-none focus:border-blue-400"
                   @input="fsVal = applyPx('fontSize', Number(($event.target as HTMLInputElement).value), 1, 200)" />
-                <button @click="adjFs(1)" class="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600 border-none cursor-pointer text-sm leading-none font-medium">+</button>
-                <span class="text-xs text-gray-400">px</span>
+                <button @click="adjFs(1)" class="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600 border-none cursor-pointer text-base leading-none font-medium">+</button>
+                <span class="text-sm text-gray-400">px</span>
               </div>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-500">Line height</span>
+              <span class="text-sm text-gray-500">Line height</span>
               <div class="flex items-center gap-1">
-                <button @click="adjLh(-1)" class="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600 border-none cursor-pointer text-sm leading-none font-medium">−</button>
-                <input type="number" :value="lhVal" class="w-11 text-center text-xs border border-gray-200 rounded py-0.5 focus:outline-none focus:border-blue-400"
+                <button @click="adjLh(-1)" class="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600 border-none cursor-pointer text-base leading-none font-medium">−</button>
+                <input type="number" :value="lhVal" class="w-11 text-center text-sm border border-gray-200 rounded py-0.5 focus:outline-none focus:border-blue-400"
                   @input="lhVal = applyPx('lineHeight', Number(($event.target as HTMLInputElement).value), 0, 200)" />
-                <button @click="adjLh(1)" class="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600 border-none cursor-pointer text-sm leading-none font-medium">+</button>
-                <span class="text-xs text-gray-400">px</span>
+                <button @click="adjLh(1)" class="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600 border-none cursor-pointer text-base leading-none font-medium">+</button>
+                <span class="text-sm text-gray-400">px</span>
               </div>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-500">Spacing</span>
+              <span class="text-sm text-gray-500">Spacing</span>
               <div class="flex items-center gap-1">
-                <button @click="adjLs(-1)" class="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600 border-none cursor-pointer text-sm leading-none font-medium">−</button>
-                <input type="number" :value="lsVal" class="w-11 text-center text-xs border border-gray-200 rounded py-0.5 focus:outline-none focus:border-blue-400"
+                <button @click="adjLs(-1)" class="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600 border-none cursor-pointer text-base leading-none font-medium">−</button>
+                <input type="number" :value="lsVal" class="w-11 text-center text-sm border border-gray-200 rounded py-0.5 focus:outline-none focus:border-blue-400"
                   @input="lsVal = applyPx('letterSpacing', Number(($event.target as HTMLInputElement).value), -10, 50)" />
-                <button @click="adjLs(1)" class="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600 border-none cursor-pointer text-sm leading-none font-medium">+</button>
-                <span class="text-xs text-gray-400">px</span>
+                <button @click="adjLs(1)" class="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600 border-none cursor-pointer text-base leading-none font-medium">+</button>
+                <span class="text-sm text-gray-400">px</span>
               </div>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-500">Weight</span>
-              <select class="border border-gray-200 rounded px-2 py-0.5 text-xs bg-white focus:outline-none focus:border-blue-400"
+              <span class="text-sm text-gray-500">Weight</span>
+              <select class="border border-gray-200 rounded px-2 py-0.5 text-sm bg-white focus:outline-none focus:border-blue-400"
                 @change="updateElementStyle('fontWeight', ($event.target as HTMLSelectElement).value)">
                 <option value="">—</option>
                 <option v-for="w in fontWeights" :key="w.v" :value="w.v">{{ w.l }}</option>
               </select>
             </div>
             <div>
-              <span class="text-xs text-gray-500 block mb-1">Font Family</span>
-              <select class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs bg-white focus:outline-none focus:border-blue-400"
+              <span class="text-sm text-gray-500 block mb-1">Font Family</span>
+              <select class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm bg-white focus:outline-none focus:border-blue-400"
                 @change="updateElementStyle('fontFamily', ($event.target as HTMLSelectElement).value)">
                 <option value="">— family —</option>
                 <option v-for="f in fontFamilies" :key="f" :value="f">{{ f }}</option>
               </select>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-500">Align</span>
+              <span class="text-sm text-gray-500">Align</span>
               <div class="flex gap-1">
                 <button v-for="a in textAligns" :key="a" type="button"
-                  class="w-7 h-7 text-xs border rounded border-gray-200 cursor-pointer flex items-center justify-center hover:bg-gray-100"
+                  class="w-7 h-7 text-sm border rounded border-gray-200 cursor-pointer flex items-center justify-center hover:bg-gray-100"
                   :class="selectedEl?.style.textAlign === a ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-500'"
                   @click="updateElementStyle('textAlign', a)">≡</button>
               </div>
@@ -1728,43 +1790,28 @@ onUnmounted(() => {
 
         <!-- Text colour (text elements only) -->
         <details v-if="isTextEl" class="border-b border-gray-100">
-          <summary class="px-3 py-2.5 text-xs font-semibold text-gray-600 uppercase tracking-wide cursor-pointer list-none flex items-center justify-between select-none hover:bg-gray-50">
+          <summary class="px-3 py-2.5 text-sm font-semibold text-gray-600 uppercase tracking-wide cursor-pointer list-none flex items-center justify-between select-none hover:bg-gray-50">
             Text Colour <span class="text-gray-300">▾</span>
           </summary>
           <div class="px-3 pb-3 flex items-center gap-2">
             <input type="color" class="w-8 h-8 rounded-md border border-gray-200 cursor-pointer p-0.5"
               @change="updateElementStyle('color', ($event.target as HTMLInputElement).value)" />
-            <input type="text" placeholder="#000000" class="flex-1 border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400"
+            <input type="text" placeholder="#000000" class="flex-1 border border-gray-200 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:border-blue-400"
               @input="updateElementStyle('color', ($event.target as HTMLInputElement).value)" />
-            <button type="button" class="text-xs text-gray-400 hover:text-red-500 border-none bg-transparent cursor-pointer shrink-0"
+            <button type="button" class="text-sm text-gray-400 hover:text-red-500 border-none bg-transparent cursor-pointer shrink-0"
               @click="updateElementStyle('color', '')">✕</button>
-          </div>
-        </details>
-
-        <!-- Background colour -->
-        <details class="border-b border-gray-100">
-          <summary class="px-3 py-2.5 text-xs font-semibold text-gray-600 uppercase tracking-wide cursor-pointer list-none flex items-center justify-between select-none hover:bg-gray-50">
-            Background <span class="text-gray-300">▾</span>
-          </summary>
-          <div class="px-3 pb-3 flex items-center gap-2">
-            <input type="color" class="w-8 h-8 rounded-md border border-gray-200 cursor-pointer p-0.5"
-              @change="updateElementStyle('backgroundColor', ($event.target as HTMLInputElement).value)" />
-            <input type="text" placeholder="#ffffff" class="flex-1 border border-gray-200 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400"
-              @input="updateElementStyle('backgroundColor', ($event.target as HTMLInputElement).value)" />
-            <button type="button" class="text-xs text-gray-400 hover:text-red-500 border-none bg-transparent cursor-pointer shrink-0"
-              @click="updateElementStyle('backgroundColor', '')">✕</button>
           </div>
         </details>
 
         <!-- Image src (img elements only) -->
         <details v-if="isImgEl" class="border-b border-gray-100">
-          <summary class="px-3 py-2.5 text-xs font-semibold text-gray-600 uppercase tracking-wide cursor-pointer list-none flex items-center justify-between select-none hover:bg-gray-50">
+          <summary class="px-3 py-2.5 text-sm font-semibold text-gray-600 uppercase tracking-wide cursor-pointer list-none flex items-center justify-between select-none hover:bg-gray-50">
             Image <span class="text-gray-300">▾</span>
           </summary>
           <div class="px-3 pb-3">
             <img v-if="imageInput" :src="imageInput" class="w-full h-24 object-cover rounded-md mb-2 border border-gray-200" alt="preview" />
-            <input type="text" v-model="imageInput" placeholder="https://…" class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-xs mb-2 focus:outline-none focus:border-blue-400" />
-            <button type="button" class="w-full text-xs bg-blue-500 text-white rounded-md py-1.5 border-none cursor-pointer hover:bg-blue-600" @click="onApplyImage">Apply</button>
+            <input type="text" v-model="imageInput" placeholder="https://…" class="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm mb-2 focus:outline-none focus:border-blue-400" />
+            <button type="button" class="w-full text-sm bg-blue-500 text-white rounded-md py-1.5 border-none cursor-pointer hover:bg-blue-600" @click="onApplyImage">Apply</button>
           </div>
         </details>
 

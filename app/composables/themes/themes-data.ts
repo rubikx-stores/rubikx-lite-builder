@@ -2135,7 +2135,6 @@ export const ru3HomeSplitHeroDefaults = {
   cardBgColor: '#e8f5f1',
   cardBorderRadius: 16,
   cardPadding: 24,
-  imageHeight: 380,
 }
 
 export const ru3HomeStatsDefaults = {
@@ -2252,7 +2251,6 @@ export const ru4HomeSplitHeroDefaults = {
   cardBgColor: '#e8ddd0',
   cardBorderRadius: 16,
   cardPadding: 24,
-  imageHeight: 380,
 }
 
 export const ru4HomeStepsDefaults = {
@@ -2301,7 +2299,6 @@ export const ru4HomeAboutSplitDefaults = {
   cardBgColor: '#f5f0e8',
   cardBorderRadius: 0,
   cardPadding: 0,
-  imageHeight: 320,
 }
 
 export const ru4HomeFooterDefaults = {

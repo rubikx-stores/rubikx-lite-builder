@@ -5108,7 +5108,7 @@ export const ru4FooterFields: FieldConfig[] = [
   { key: 'linksFontWeight', label: 'Links Font Weight', type: 'select', options: ['300', '400', '500', '600', '700', '800'] },
   fontField('linkFont', 'Link Font'),
 
-  { key: '_h_right', label: 'Right Side Text', type: 'header' },
+  { key: '_h_right', label: 'Copy Right text', type: 'header' },
   { key: 'rightText',    label: 'Text', type: 'text', placeholder: '© 2026 Your Company, Inc.' },
   { key: 'rightTextUrl', label: 'Link (optional)', type: 'url', placeholder: 'https://…' },
   { key: 'rightTextAlign', label: 'Right Text Position', type: 'select', options: ['left', 'center', 'right'] },
@@ -6860,13 +6860,18 @@ export interface Ru8FeaturedBrandsData {
   paddingY: number
   title: string
   titleColor: string
+  titleFontWeight: string
   subtitle: string
   subtitleColor: string
+  subtitleFontWeight: string
   showCta: boolean
   ctaLabel: string
   ctaHref: string
+  ctaStyle: string
   ctaBgColor: string
   ctaTextColor: string
+  ctaFontWeight: string
+  ctaBorderRadius: number
   logoHeight: number
   logoGap: number
   brands: Ru8BrandItem[]
@@ -6881,13 +6886,18 @@ export const ru8FeaturedBrandsDefaults: Ru8FeaturedBrandsData = {
   paddingY: 64,
   title: 'Your Favorite Brands',
   titleColor: '#ffffff',
+  titleFontWeight: '700',
   subtitle: 'Shop the brands you already know and trust—now customized to work for you.',
   subtitleColor: '#ffffff',
+  subtitleFontWeight: '400',
   showCta: true,
   ctaLabel: 'Shop By Brand',
   ctaHref: '/shop',
+  ctaStyle: 'filled',
   ctaBgColor: '#166534',
   ctaTextColor: '#ffffff',
+  ctaFontWeight: '600',
+  ctaBorderRadius: 24,
   logoHeight: 40,
   logoGap: 48,
   brands: [],
@@ -6908,19 +6918,24 @@ export const ru8FeaturedBrandsFields: FieldConfig[] = [
   { key: '_h_title', label: 'Title', type: 'header' },
   { key: 'title',      label: 'Title',        type: 'text', placeholder: 'e.g. Your Favorite Brands' },
   { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  { key: 'titleFontWeight', label: 'Title Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
   fontField('titleFont', 'Title Font'),
 
   { key: '_h_subtitle', label: 'Subtitle', type: 'header' },
   { key: 'subtitle',      label: 'Subtitle',        type: 'text', placeholder: 'Short supporting line…' },
   { key: 'subtitleColor', label: 'Subtitle Colour', type: 'color' },
+  { key: 'subtitleFontWeight', label: 'Subtitle Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
   fontField('subtitleFont', 'Subtitle Font'),
 
   { key: '_h_cta', label: 'CTA Button', type: 'header' },
   { key: 'showCta',      label: 'Show Button',      type: 'toggle' },
   { key: 'ctaLabel',     label: 'Button Text',      type: 'text', placeholder: 'e.g. Shop By Brand' },
   { key: 'ctaHref',      label: 'Button URL',       type: 'url',  placeholder: '/shop' },
+  { key: 'ctaStyle',     label: 'Button Style',     type: 'select', options: ['filled', 'outline'] },
   { key: 'ctaBgColor',   label: 'Button Background',  type: 'color' },
   { key: 'ctaTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'ctaFontWeight', label: 'Button Text Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
+  { key: 'ctaBorderRadius', label: 'Button Border Radius (px)', type: 'number', placeholder: '24' },
   fontField('buttonFont', 'Button Font'),
 
   { key: '_h_brands', label: 'Brands', type: 'header' },
@@ -6936,8 +6951,12 @@ export const ru8FeaturedBrandsFields: FieldConfig[] = [
 ]
 
 export function renderRu8FeaturedBrands(data: Ru8FeaturedBrandsData): string {
+  const ctaBtnStyle = data.ctaStyle === 'outline'
+    ? `background:transparent;color:${data.ctaBgColor};border:2px solid ${data.ctaBgColor};`
+    : `background:${data.ctaBgColor};color:${data.ctaTextColor};border:2px solid transparent;`
+
   const ctaHtml = data.showCta !== false
-    ? `<a href="${data.ctaHref}" style="display:inline-block;margin-top:2rem;padding:0.75rem 2rem;background:${data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:999px;font-size:1rem;font-weight:600;${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaLabel}</a>`
+    ? `<a href="${data.ctaHref}" style="display:inline-block;margin-top:2rem;padding:0.75rem 2rem;${ctaBtnStyle}text-decoration:none;border-radius:${data.ctaBorderRadius ?? 999}px;font-size:1rem;font-weight:${data.ctaFontWeight ?? '600'};box-sizing:border-box;${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaLabel}</a>`
     : ''
 
   const brands = data.brands ?? []
@@ -6956,8 +6975,8 @@ export function renderRu8FeaturedBrands(data: Ru8FeaturedBrandsData): string {
 
   return `<section data-component-title="Ru8-Featured-Brands" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:min(${data.paddingY}px,10vw) 1rem;${fontCss(undefined, data.fontFamily)}">
   <div style="max-width:80rem;margin:0 auto;width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;">
-    <h2 data-field-key="title" style="font-size:min(2.5rem,8vw);font-weight:700;color:${data.titleColor};margin:0;line-height:1.2;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
-    <p data-field-key="subtitle" style="font-size:min(1.125rem,4.5vw);color:${data.subtitleColor};margin:1rem 0 0;max-width:42rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>
+    <h2 data-field-key="title" style="font-size:min(2.5rem,8vw);font-weight:${data.titleFontWeight ?? '700'};color:${data.titleColor};margin:0;line-height:1.2;${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
+    <p data-field-key="subtitle" style="font-size:min(1.125rem,4.5vw);font-weight:${data.subtitleFontWeight ?? '400'};color:${data.subtitleColor};margin:1rem 0 0;max-width:42rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>
     ${ctaHtml}
     ${logosHtml}
   </div>
@@ -8071,6 +8090,9 @@ export interface Ru2SplitBannerCollageData {
   bgColor: string
   overlayColor: string
   overlayOpacity: number
+  headlineMode: string
+  headlineLogoUrl: string
+  headlineLogoWidth: number
   title: string
   titleSize: number
   titleWeight: string
@@ -8080,7 +8102,6 @@ export interface Ru2SplitBannerCollageData {
   subtitleColor: string
   subtitleSize: number
   description: string
-  descriptionColor: string
   textSide: string
   textAlign: string
   showCta: boolean
@@ -8089,6 +8110,7 @@ export interface Ru2SplitBannerCollageData {
   ctaBgColor: string
   ctaTextColor: string
   ctaBorderRadius: number
+  ctaAlign: string
   paddingY: number
   splitRatio: string
   bgImageAspectRatio?: string
@@ -8098,7 +8120,6 @@ export interface Ru2SplitBannerCollageData {
   fontFamily: string
   titleFont: string
   subtitleFont: string
-  descriptionFont: string
   buttonFont: string
 }
 
@@ -8108,6 +8129,9 @@ export const ru2SplitBannerCollageDefaults: Ru2SplitBannerCollageData = {
   bgColor: '#1f2937',
   overlayColor: '#000000',
   overlayOpacity: 30,
+  headlineMode: 'text',
+  headlineLogoUrl: '',
+  headlineLogoWidth: 600,
   title: 'OUTFITTER',
   titleSize: 72,
   titleWeight: '800',
@@ -8117,7 +8141,6 @@ export const ru2SplitBannerCollageDefaults: Ru2SplitBannerCollageData = {
   subtitleColor: '#d1d5db',
   subtitleSize: 13,
   description: 'From the shop to the field to the weekend — discover a collection built for every moment.',
-  descriptionColor: '#9ca3af',
   textSide: 'left',
   textAlign: 'left',
   showCta: true,
@@ -8126,6 +8149,7 @@ export const ru2SplitBannerCollageDefaults: Ru2SplitBannerCollageData = {
   ctaBgColor: '#16a34a',
   ctaTextColor: '#ffffff',
   ctaBorderRadius: 6,
+  ctaAlign: 'left',
   paddingY: 0,
   splitRatio: '50/50',
   collageGap: 6,
@@ -8142,7 +8166,6 @@ export const ru2SplitBannerCollageDefaults: Ru2SplitBannerCollageData = {
   fontFamily: '',
   titleFont: '',
   subtitleFont: '',
-  descriptionFont: '',
   buttonFont: '',
 }
 
@@ -8157,11 +8180,14 @@ export const ru2SplitBannerCollageFields: FieldConfig[] = [
   { key: 'overlayOpacity', label: 'Overlay Opacity (0–100)', type: 'number', placeholder: '30' },
 
   { key: '_h_title',          label: 'Title', type: 'header' },
-  { key: 'title',             label: 'Title',             type: 'text',   placeholder: 'e.g. OUTFITTER' },
-  { key: 'titleSize',         label: 'Title Size (px)',   type: 'number', placeholder: '72' },
-  { key: 'titleWeight',       label: 'Title Weight',      type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
-  { key: 'titleColor',        label: 'Title Colour',      type: 'color' },
-  { key: 'titleLetterSpacing',label: 'Letter Spacing (px)', type: 'number', placeholder: '2' },
+  { key: 'headlineMode',      label: 'Headline Type', type: 'select', options: ['text', 'logo'], optionLabels: { text: 'Text', logo: 'Logo Image' } },
+  { key: 'headlineLogoUrl',   label: 'Logo Image',      type: 'image',  noAspectRatio: true,                    visibleIf: (d) => d.headlineMode === 'logo' },
+  { key: 'headlineLogoWidth', label: 'Logo Width (px)', type: 'number', placeholder: '600',                     visibleIf: (d) => d.headlineMode === 'logo' },
+  { key: 'title',             label: 'Title',             type: 'text',   placeholder: 'e.g. OUTFITTER',         visibleIf: (d) => d.headlineMode !== 'logo' },
+  { key: 'titleSize',         label: 'Title Size (px)',   type: 'number', placeholder: '72',                     visibleIf: (d) => d.headlineMode !== 'logo' },
+  { key: 'titleWeight',       label: 'Title Weight',      type: 'select', options: ['400', '500', '600', '700', '800', '900'], visibleIf: (d) => d.headlineMode !== 'logo' },
+  { key: 'titleColor',        label: 'Title Colour',      type: 'color',                                         visibleIf: (d) => d.headlineMode !== 'logo' },
+  { key: 'titleLetterSpacing',label: 'Letter Spacing (px)', type: 'number', placeholder: '2',                   visibleIf: (d) => d.headlineMode !== 'logo' },
   fontField('titleFont', 'Title Font'),
 
   { key: '_h_subtitle',   label: 'Subtitle', type: 'header' },
@@ -8170,10 +8196,8 @@ export const ru2SplitBannerCollageFields: FieldConfig[] = [
   { key: 'subtitleColor', label: 'Subtitle Colour',   type: 'color' },
   fontField('subtitleFont', 'Subtitle Font'),
 
-  { key: '_h_desc',          label: 'Description', type: 'header' },
-  { key: 'description',      label: 'Description',       type: 'text',  placeholder: 'Short paragraph…' },
-  { key: 'descriptionColor', label: 'Description Colour', type: 'color' },
-  fontField('descriptionFont', 'Description Font'),
+  { key: '_h_desc',     label: 'Description', type: 'header' },
+  { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Short paragraph…' },
 
   { key: '_h_cta',          label: 'CTA Button', type: 'header' },
   { key: 'showCta',         label: 'Show Button',        type: 'toggle' },
@@ -8182,6 +8206,7 @@ export const ru2SplitBannerCollageFields: FieldConfig[] = [
   { key: 'ctaBgColor',      label: 'Button Background',  type: 'color' },
   { key: 'ctaTextColor',    label: 'Button Text Colour', type: 'color' },
   { key: 'ctaBorderRadius', label: 'Button Radius (px)', type: 'number', placeholder: '6' },
+  { key: 'ctaAlign',        label: 'Button Alignment',   type: 'select', options: ['left', 'center', 'right'] },
   fontField('buttonFont', 'Button Font'),
 
   { key: '_h_layout',  label: 'Layout', type: 'header' },
@@ -8400,14 +8425,23 @@ export function renderRu2SplitBannerCollage(data: Ru2SplitBannerCollageData): st
 
   const letterSpacing = data.titleLetterSpacing ? `letter-spacing:${data.titleLetterSpacing}px;` : ''
 
+  const ctaAlignValue = alignMap[data.ctaAlign ?? 'left'] ?? 'flex-start'
   const ctaHtml = data.showCta !== false
-    ? `<a href="${data.ctaHref}" style="display:inline-block;margin-top:2rem;padding:0.75rem 2rem;background:${data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:${data.ctaBorderRadius ?? 6}px;font-size:1rem;font-weight:600;${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaLabel}</a>`
+    ? `<div style="display:flex;justify-content:${ctaAlignValue};width:100%;margin-top:2rem;"><a href="${data.ctaHref}" style="display:inline-block;padding:0.75rem 2rem;background:${data.ctaBgColor};color:${data.ctaTextColor};text-decoration:none;border-radius:${data.ctaBorderRadius ?? 6}px;font-size:1rem;font-weight:600;${fontCss(data.buttonFont, data.fontFamily)}">${data.ctaLabel}</a></div>`
     : ''
 
+  // Headline: either a logo image or the text title — toggled by headlineMode.
+  // When logo mode is active but no URL is set yet, show a placeholder box.
+  const headlineHtml = (data.headlineMode === 'logo' && data.headlineLogoUrl)
+    ? `<img src="${productImageSrc(data.headlineLogoUrl)}" alt="${data.title || 'Logo'}" style="width:${data.headlineLogoWidth ?? 600}px;max-width:100%;height:auto;display:block;margin-bottom:0.5rem;" />`
+    : (data.headlineMode === 'logo')
+      ? `<div style="width:${data.headlineLogoWidth ?? 600}px;height:60px;border:2px dashed #4b5563;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:0.5rem;box-sizing:border-box;"><span style="color:#9ca3af;font-size:13px;">Upload logo above</span></div>`
+      : `<h2 style="font-size:min(${data.titleSize ?? 72}px,11vw);font-weight:${data.titleWeight ?? '800'};color:${data.titleColor};margin:0 0 0.5rem;line-height:1;${letterSpacing}${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>`
+
   const textCol = `<div style="padding:${py}px 3rem;display:flex;flex-direction:column;align-items:${itemsAlign};text-align:${data.textAlign ?? 'left'};align-self:center;">
+    ${headlineHtml}
     ${data.subtitle ? `<p style="font-size:${data.subtitleSize ?? 13}px;font-weight:600;color:${data.subtitleColor};letter-spacing:0.14em;text-transform:uppercase;margin:0 0 1rem;${fontCss(data.subtitleFont, data.fontFamily)}">${data.subtitle}</p>` : ''}
-    <h2 style="font-size:min(${data.titleSize ?? 72}px,11vw);font-weight:${data.titleWeight ?? '800'};color:${data.titleColor};margin:0 0 1.25rem;line-height:1;${letterSpacing}${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>
-    ${data.description ? `<p style="font-size:1rem;line-height:1.7;color:${data.descriptionColor};margin:0;max-width:36rem;${fontCss(data.descriptionFont, data.fontFamily)}">${data.description}</p>` : ''}
+    ${data.description ? `<div style="font-size:1rem;line-height:1.7;margin:0;max-width:36rem;">${data.description}</div>` : ''}
     ${ctaHtml}
   </div>`
 
@@ -9995,6 +10029,7 @@ export interface Ru6SplitHeroData {
   textSide: string
   splitRatio: string
   gap: number
+  bannerHeight: number
   eyebrow: string
   eyebrowColor: string
   eyebrowFontSize: number
@@ -10014,6 +10049,7 @@ export interface Ru6SplitHeroData {
   ctaBorderRadius: number
   ctaBorderColor: string
   ctaStyle: string
+  ctaAlign: string
   showSecondaryCta: boolean
   secondaryCtaLabel: string
   secondaryCtaHref: string
@@ -10021,7 +10057,6 @@ export interface Ru6SplitHeroData {
   imageUrl: string
   imageBorderRadius: number
   imageObjectFit: string
-  imageHeight: number
   cardMode: boolean
   cardBgColor: string
   cardPadding: number
@@ -10045,6 +10080,7 @@ export const ru6SplitHeroDefaults: Ru6SplitHeroData = {
   textSide: 'left',
   splitRatio: '50/50',
   gap: 48,
+  bannerHeight: 480,
   eyebrow: '',
   eyebrowColor: '#6b7280',
   eyebrowFontSize: 13,
@@ -10064,14 +10100,14 @@ export const ru6SplitHeroDefaults: Ru6SplitHeroData = {
   ctaBorderRadius: 24,
   ctaBorderColor: '#dc2626',
   ctaStyle: 'filled',
+  ctaAlign: 'left',
   showSecondaryCta: false,
   secondaryCtaLabel: 'Learn More',
   secondaryCtaHref: '/aboutus',
   secondaryCtaColor: '#374151',
   imageUrl: '',
-  imageBorderRadius: 12,
+  imageBorderRadius: 0,
   imageObjectFit: 'cover',
-  imageHeight: 480,
   cardMode: false,
   cardBgColor: '#f3f4f6',
   cardPadding: 24,
@@ -10096,6 +10132,7 @@ export const ru6SplitHeroFields: FieldConfig[] = [
   { key: 'textSide', label: 'Text Side', type: 'select', options: ['left', 'right'] },
   { key: 'splitRatio', label: 'Split Ratio', type: 'select', options: ['50/50', '55/45', '60/40', '40/60', '45/55'] },
   { key: 'gap', label: 'Gap (px)', type: 'number', placeholder: '48' },
+  { key: 'bannerHeight', label: 'Banner Height (px)', type: 'number', placeholder: '480 (0 = auto, fits content)' },
   { key: 'verticalAlign', label: 'Vertical Align', type: 'select', options: ['top', 'center', 'bottom'] },
   { key: 'paddingY', label: 'Vertical Padding (px)', type: 'number', placeholder: '64' },
   { key: 'paddingX', label: 'Horizontal Padding (px)', type: 'number', placeholder: '32' },
@@ -10129,6 +10166,7 @@ export const ru6SplitHeroFields: FieldConfig[] = [
   { key: 'ctaTextColor', label: 'Primary CTA Text', type: 'color' },
   { key: 'ctaBorderColor', label: 'Primary CTA Border', type: 'color' },
   { key: 'ctaBorderRadius', label: 'CTA Border Radius (px)', type: 'number', placeholder: '24' },
+  { key: 'ctaAlign', label: 'CTA Alignment', type: 'select', options: ['left', 'center', 'right'] },
   fontField('buttonFont', 'Primary CTA Font'),
   { key: 'showSecondaryCta', label: 'Show Secondary CTA', type: 'toggle' },
   { key: 'secondaryCtaLabel', label: 'Secondary CTA Label', type: 'text', placeholder: 'e.g. Learn More' },
@@ -10138,7 +10176,6 @@ export const ru6SplitHeroFields: FieldConfig[] = [
 
   { key: '_h_image', label: 'Image', type: 'header' },
   { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
-  { key: 'imageHeight', label: 'Image Height (px)', type: 'number', placeholder: '480' },
   { key: 'imageBorderRadius', label: 'Image Radius (px)', type: 'number', placeholder: '12' },
   { key: 'imageObjectFit', label: 'Image Fit', type: 'select', options: ['cover', 'contain', 'fill'] },
 
@@ -10152,34 +10189,28 @@ export const ru6SplitHeroFields: FieldConfig[] = [
 ]
 
 export function renderRu6SplitHero(data: Ru6SplitHeroData): string {
-  const splitMap: Record<string, [string, string]> = {
-    '50/50': ['1fr', '1fr'],
-    '55/45': ['1.22fr', '1fr'],
-    '60/40': ['1.5fr', '1fr'],
-    '40/60': ['0.67fr', '1fr'],
-    '45/55': ['0.82fr', '1fr'],
+  // The image always bleeds to the real viewport edge on its side (not just
+  // to the edge of a centered max-width column) — the text column is the
+  // only one that stays width-capped, sized as a fraction of a notional
+  // 1280px reference, wrapped in minmax(0, …) so it can still shrink below
+  // that on narrower viewports instead of overflowing. The image column is
+  // a plain `1fr` track, so it simply absorbs whatever's left, including any
+  // space beyond 1280px on wide screens.
+  const textFractionMap: Record<string, number> = {
+    '50/50': 0.5,
+    '55/45': 0.55,
+    '60/40': 0.6,
+    '40/60': 0.4,
+    '45/55': 0.45,
   }
-  const [textFr, imageFr] = splitMap[data.splitRatio ?? '50/50'] ?? ['1fr', '1fr']
+  const textFraction = textFractionMap[data.splitRatio ?? '50/50'] ?? 0.5
+  const textTrack = `minmax(0, calc((1280px - ${data.paddingX}px - ${data.gap}px) * ${textFraction}))`
   const gridCols = data.textSide === 'left'
-    ? `${textFr} ${imageFr}`
-    : `${imageFr} ${textFr}`
+    ? `${textTrack} 1fr`
+    : `1fr ${textTrack}`
 
   const vAlignMap: Record<string, string> = { top: 'flex-start', center: 'center', bottom: 'flex-end' }
   const vAlign = vAlignMap[data.verticalAlign ?? 'center'] ?? 'center'
-
-  // Image Height was a fixed px value applied at every screen width — fine
-  // side-by-side on desktop, but once the grid collapses to a single column
-  // below 820px (see the @media rule further down) that same fixed height
-  // (e.g. the 480px default) makes the image take up far more of a phone's
-  // screen than the two-column desktop layout ever intended. Scales it down
-  // on narrower viewports the same way Ru5-Image-Carousel's slide height
-  // does, but capped at the configured value as its max (never grows past
-  // what the admin set — there's no full-bleed reason to enlarge it like the
-  // carousel's background does on very wide screens).
-  const baseImgHeight = data.imageHeight ?? 480
-  const minImgHeight = Math.round(baseImgHeight * 0.5)
-  const imgVwRatio = (baseImgHeight / 1280) * 100
-  const responsiveImgHeight = `clamp(${minImgHeight}px, ${imgVwRatio.toFixed(2)}vw, ${baseImgHeight}px)`
 
   const eyebrowHtml = data.eyebrow
     ? `<p style="margin:0 0 12px;font-size:min(${data.eyebrowFontSize}px,3.5vw);font-weight:600;color:${data.eyebrowColor};letter-spacing:0.1em;text-transform:uppercase;${fontCss(data.eyebrowFont, data.fontFamily)}">${data.eyebrow}</p>`
@@ -10201,41 +10232,60 @@ export function renderRu6SplitHero(data: Ru6SplitHeroData): string {
     ? `<a href="${data.secondaryCtaHref}" style="display:inline-block;padding:0.75rem 1.25rem;color:${data.secondaryCtaColor};text-decoration:none;font-size:0.9rem;font-weight:500;${fontCss(data.secondaryButtonFont, data.fontFamily)}">→ ${data.secondaryCtaLabel}</a>`
     : ''
 
+  const ctaJustifyMap: Record<string, string> = { left: 'flex-start', center: 'center', right: 'flex-end' }
+  const ctaJustify = ctaJustifyMap[data.ctaAlign ?? 'left'] ?? 'flex-start'
+
   const ctasHtml = (primaryCtaHtml || secondaryCtaHtml)
-    ? `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">${primaryCtaHtml}${secondaryCtaHtml}</div>`
+    ? `<div style="display:flex;align-items:center;justify-content:${ctaJustify};gap:12px;flex-wrap:wrap;">${primaryCtaHtml}${secondaryCtaHtml}</div>`
     : ''
 
-  const textCol = `<div style="display:flex;flex-direction:column;justify-content:${vAlign};text-align:${data.textAlign ?? 'left'};">
+  // Padding only on the outer edge (away from the gap/image) — the image
+  // side must stay at zero so it can bleed flush to the viewport edge.
+  const textPaddingLeft = data.textSide === 'left' ? `min(${data.paddingX}px,6vw)` : '0'
+  const textPaddingRight = data.textSide === 'left' ? '0' : `min(${data.paddingX}px,6vw)`
+
+  const textCol = `<div data-ru6sh-text="true" style="display:flex;flex-direction:column;justify-content:${vAlign};text-align:${data.textAlign ?? 'left'};padding:${data.paddingY}px ${textPaddingRight} ${data.paddingY}px ${textPaddingLeft};width:100%;min-width:0;box-sizing:border-box;">
     ${eyebrowHtml}
     ${titleHtml}
     ${descHtml}
     ${ctasHtml}
   </div>`
 
+  // The <img> is absolutely positioned (filling its nearest positioned
+  // ancestor via inset:0) rather than a normal-flow width:100%;height:100%
+  // element. A normal-flow image, even stretched by the grid, still
+  // contributes its own intrinsic aspect-ratio-based height to the grid's
+  // "auto" row-sizing calculation — on a wide/full-bleed image column this
+  // can make the computed row (and so the whole banner) far taller than the
+  // text content actually needs. Absolutely positioned elements are removed
+  // from flow entirely, so they contribute nothing to that calculation —
+  // the row (and banner height) ends up driven purely by the text column,
+  // as intended, while the image still visually fills the space it's given.
   const imgInner = data.imageUrl
-    ? `<img src="${escapeAttr(data.imageUrl)}" alt="${escapeAttr(data.title)}" style="width:100%;height:${responsiveImgHeight};object-fit:${data.imageObjectFit};border-radius:${data.cardMode ? '0' : data.imageBorderRadius}px;display:block;" />`
-    : `<div style="width:100%;height:${responsiveImgHeight};background:#e5e7eb;border-radius:${data.cardMode ? '0' : data.imageBorderRadius}px;display:flex;align-items:center;justify-content:center;"><span style="color:#9ca3af;font-size:14px;">Add an image</span></div>`
+    ? `<img src="${escapeAttr(data.imageUrl)}" alt="${escapeAttr(data.title)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:${data.imageObjectFit};border-radius:${data.cardMode ? '0' : data.imageBorderRadius}px;display:block;" />`
+    : `<div style="position:absolute;inset:0;width:100%;height:100%;background:#e5e7eb;border-radius:${data.cardMode ? '0' : data.imageBorderRadius}px;display:flex;align-items:center;justify-content:center;"><span style="color:#9ca3af;font-size:14px;">Add an image</span></div>`
 
   const imageCol = data.cardMode
-    ? `<div style="display:flex;align-items:${vAlign};">
-        <div style="width:100%;background:${data.cardBgColor};padding:${data.cardPadding}px;border-radius:${data.cardBorderRadius}px;${data.cardShowBorder ? `border:1px solid ${data.cardBorderColor};` : ''}box-sizing:border-box;">
-          ${imgInner}
+    ? `<div style="height:100%;width:100%;min-width:0;box-sizing:border-box;position:relative;overflow:hidden;">
+        <div style="position:relative;height:100%;background:${data.cardBgColor};border-radius:${data.cardBorderRadius}px;${data.cardShowBorder ? `border:1px solid ${data.cardBorderColor};` : ''}box-sizing:border-box;overflow:hidden;">
+          <div style="position:absolute;inset:${data.cardPadding}px;">${imgInner}</div>
         </div>
       </div>`
-    : `<div style="display:flex;align-items:${vAlign};">${imgInner}</div>`
+    : `<div style="height:100%;width:100%;min-width:0;box-sizing:border-box;position:relative;overflow:hidden;">${imgInner}</div>`
 
   const leftCol = data.textSide === 'left' ? textCol : imageCol
   const rightCol = data.textSide === 'left' ? imageCol : textCol
 
-  return `<section data-component-title="Ru6-Split-Hero" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};padding:${data.paddingY}px min(${data.paddingX}px,6vw);${fontCss(undefined, data.fontFamily)}">
+  return `<section data-component-title="Ru6-Split-Hero" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="background:${data.bgColor};${fontCss(undefined, data.fontFamily)}">
 <style>
-  @media(max-width:820px){[data-ru6sh-grid]{grid-template-columns:1fr!important;}}
+  @media(max-width:820px){
+    [data-ru6sh-grid]{grid-template-columns:1fr!important;}
+    [data-ru6sh-text]{padding-left:min(${data.paddingX}px,6vw)!important;padding-right:min(${data.paddingX}px,6vw)!important;}
+  }
 </style>
-  <div style="max-width:1280px;margin:0 auto;">
-    <div data-ru6sh-grid="true" style="display:grid;grid-template-columns:${gridCols};gap:${data.gap}px;align-items:${vAlign};">
-      ${leftCol}
-      ${rightCol}
-    </div>
+  <div data-ru6sh-grid="true" style="display:grid;grid-template-columns:${gridCols};gap:${data.gap}px;align-items:stretch;${data.bannerHeight && data.bannerHeight > 0 ? `min-height:${data.bannerHeight}px;` : ''}">
+    ${leftCol}
+    ${rightCol}
   </div>
 </section>`
 }
