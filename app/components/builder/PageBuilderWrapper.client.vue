@@ -420,7 +420,7 @@ defineExpose({ triggerSave: handleSaveClick })
 
 <template>
   <div class="relative h-full">
-    <PageBuilder :CustomBuilderComponents="BuilderPanel">
+    <PageBuilder :CustomBuilderComponents="BuilderPanel" :show-advanced-style-editors="false">
       <template #toolbarExtra>
         <div class="flex items-center justify-center gap-2 ml-2">
           <div @click="showThemeColorsModal = true">

@@ -20,6 +20,13 @@ const { translate } = useTranslations()
 const pageBuilderService = getPageBuilder()
 const pageBuilderStateStore = sharedPageBuilderStore
 
+defineProps({
+  showAdvancedStyleEditors: {
+    type: Boolean,
+    default: true,
+  },
+})
+
 defineEmits(['closeEditor'])
 
 const getElement = computed(() => {
@@ -125,43 +132,45 @@ const closeHTMLSettings = async function () {
       @scroll="onScroll"
       class="pl-3 pr-3 mb-4 overflow-y-scroll"
     >
-      <div v-show="getElement && pageBuilderService.isEditableElement(getElement)">
-        <article class="mb-1">
-          <ImageEditor> </ImageEditor>
-        </article>
-        <article class="my-1">
-          <OpacityEditor> </OpacityEditor>
-        </article>
-        <article class="my-1">
-          <Padding> </Padding>
-        </article>
-        <article class="my-1">
-          <Margin> </Margin>
-        </article>
-        <article class="my-1">
-          <BorderRadius></BorderRadius>
-        </article>
-        <article class="my-1">
-          <Borders></Borders>
-        </article>
-        <article class="my-1">
-          <ClassEditor></ClassEditor>
-        </article>
-        <article class="my-1">
-          <StyleEditor></StyleEditor>
-        </article>
-        <div class="w-full border-t border-solid border-gray-200 my-6"></div>
-      </div>
+      <div v-show="showAdvancedStyleEditors">
+        <div v-show="getElement && pageBuilderService.isEditableElement(getElement)">
+          <article class="mb-1">
+            <ImageEditor> </ImageEditor>
+          </article>
+          <article class="my-1">
+            <OpacityEditor> </OpacityEditor>
+          </article>
+          <article class="my-1">
+            <Padding> </Padding>
+          </article>
+          <article class="my-1">
+            <Margin> </Margin>
+          </article>
+          <article class="my-1">
+            <BorderRadius></BorderRadius>
+          </article>
+          <article class="my-1">
+            <Borders></Borders>
+          </article>
+          <article class="my-1">
+            <ClassEditor></ClassEditor>
+          </article>
+          <article class="my-1">
+            <StyleEditor></StyleEditor>
+          </article>
+          <div class="w-full border-t border-solid border-gray-200 my-6"></div>
+        </div>
 
-      <button
-        @click="openHTMLSettings"
-        type="button"
-        class="my-1 border border-gray-900 flex flex-row justify-between items-center pl-3 pr-3 py-5 cursor-pointer duration-200 bg-black text-white hover:bg-myPrimaryLightGrayColor hover:text-black select-none w-full"
-      >
-        <p class="font-medium my-0 py-0">
-          {{ translate('Global Page Styles') }}
-        </p>
-      </button>
+        <button
+          @click="openHTMLSettings"
+          type="button"
+          class="my-1 border border-gray-900 flex flex-row justify-between items-center pl-3 pr-3 py-5 cursor-pointer duration-200 bg-black text-white hover:bg-myPrimaryLightGrayColor hover:text-black select-none w-full"
+        >
+          <p class="font-medium my-0 py-0">
+            {{ translate('Global Page Styles') }}
+          </p>
+        </button>
+      </div>
     </div>
   </div>
   <ModalBuilder
