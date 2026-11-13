@@ -1167,6 +1167,20 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
     [data-nav-desktop] { display: none !important; }
   }
   ${dynamicCategoriesRowCss}
+  /* Ru4 only: mega dropdown width follows its column count (data-mega-cols,
+     max 4 across, extra columns wrap to a new row) at ~220px per column,
+     opening under its own nav item, left-aligned with it. Not scoped to :hover
+     on purpose: the live site hides the dropdown 200ms AFTER mouseleave, and
+     hover-only rules made it flash the full-width Ru5 style during that gap.
+     The :hover twin is needed too: the shared [data-mega-contained]:hover rule
+     (width:auto) out-specifies the plain selector while hovered. */
+  section[data-component-title="Ru4-Navbar"] nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega] { position: relative !important; --ru4-cols: 4; }
+  section[data-component-title="Ru4-Navbar"] nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega][data-mega-cols="1"] { --ru4-cols: 1; }
+  section[data-component-title="Ru4-Navbar"] nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega][data-mega-cols="2"] { --ru4-cols: 2; }
+  section[data-component-title="Ru4-Navbar"] nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega][data-mega-cols="3"] { --ru4-cols: 3; }
+  section[data-component-title="Ru4-Navbar"] nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega] [data-cat-dropdown],
+  section[data-component-title="Ru4-Navbar"] nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega]:hover [data-cat-dropdown] { left: 0 !important; right: auto !important; width: calc(var(--ru4-cols) * 220px) !important; min-width: 0 !important; max-width: calc(100vw - 32px) !important; box-sizing: border-box; border-radius: 8px !important; }
+  section[data-component-title="Ru4-Navbar"] nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega] [data-cat-dropdown-inner] { grid-template-columns: repeat(var(--ru4-cols), minmax(0, 1fr)) !important; }
 </style>
 <!-- Mobile header -->
 <div data-nav-mobile="true" style="display:none;align-items:center;justify-content:space-between;padding:1rem ${data.paddingX}px;${data.showBottomBorder ? `border-bottom:1px solid ${data.bottomBorderColor};` : ''}">
@@ -1203,7 +1217,9 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
 
   const sectionStyle = `width:100%;display:block;${fontCss(undefined, data.fontFamily)}${data.sticky ? 'position:sticky;top:0;z-index:9999;' : ''}`
 
-  const { hydrationAttrs: dynamicNavHydrationAttrs } = dynamicCategoriesRow
+  const dynamicNavHydrationAttrs = dynamicCategoriesRow.hydrationAttrs
+    ? `${dynamicCategoriesRow.hydrationAttrs} data-headless-categories="true"`
+    : ''
 
   return `<section data-component-title="Ru4-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
 <nav style="${navStyle}"${dynamicNavHydrationAttrs}>
