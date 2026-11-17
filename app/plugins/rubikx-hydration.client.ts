@@ -11,9 +11,18 @@ import { fetchCategoriesCached } from '~/composables/categories/fetchCategoriesC
 // Set true to preview logged-in auth state inside the builder
 const SIMULATE_AUTH = false
 
+// Visible text for a category link. Default: last segment of a " / "-delimited
+// displayName. Opt-in (headless=true, Ru4 only): headlessName first.
+function catLabel(c: { displayName: string, name?: string, headlessName?: string | false }, headless = false): string {
+  if (headless && c.headlessName) return c.headlessName
+  const d = c.displayName || c.name || ''
+  return d.includes(' / ') ? d.split(' / ').pop()! : d
+}
+
 function renderCategoryTree(
   categories: CategoryNode[],
-  linkStyle: string
+  linkStyle: string,
+  headless = false
 ): string {
   return categories
     .map((cat) => {
@@ -23,9 +32,7 @@ function renderCategoryTree(
       // published — including synthesized parents with no real slug.
       const categoryQuery = cat.headlessName || cat.displayName || cat.name
       const href = `/shop?category=${encodeURIComponent(categoryQuery)}`
-      const label = cat.displayName.includes(' / ')
-        ? cat.displayName.split(' / ').pop()!
-        : cat.displayName
+      const label = catLabel(cat, headless)
       if (!cat.children || cat.children.length === 0) {
         return `<a href='${href}' style='display:block;padding:6px 16px;${linkStyle}text-decoration:none;white-space:nowrap;'>${label}</a>`
       }
@@ -33,7 +40,7 @@ function renderCategoryTree(
       <a href='${href}' aria-haspopup='true' aria-expanded='false' style='display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 16px;${linkStyle}text-decoration:none;font-weight:600;white-space:nowrap;'>${label}<span aria-hidden='true' style='font-size:16px;opacity:.9;'>▸</span></a>
       <div data-cat-flyout='true' style='display:none;position:absolute;left:100%;top:0;margin-left:-10px;padding:8px 0 8px 10px;z-index:101;pointer-events:none;'>
         <div style='background:#fff;min-width:180px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;pointer-events:auto;'>
-          ${renderCategoryTree(cat.children, linkStyle)}
+          ${renderCategoryTree(cat.children, linkStyle, headless)}
         </div>
       </div>
     </div>`
@@ -109,15 +116,14 @@ function bindFlyoutAccessibility(dropdown: HTMLElement) {
 function renderCategoryTreeInline(
   categories: CategoryNode[],
   linkStyle: string,
-  depth = 0
+  depth = 0,
+  headless = false
 ): string {
   return categories
     .map((cat) => {
       const categoryQuery = cat.headlessName || cat.displayName || cat.name
       const href = `/shop?category=${encodeURIComponent(categoryQuery)}`
-      const label = cat.displayName.includes(' / ')
-        ? cat.displayName.split(' / ').pop()!
-        : cat.displayName
+      const label = catLabel(cat, headless)
       const indent = 16 + depth * 16
       if (!cat.children || cat.children.length === 0) {
         return `<a href='${href}' style='display:block;padding:6px 16px 6px ${indent}px;${linkStyle}text-decoration:none;white-space:nowrap;'>${label}</a>`
@@ -125,7 +131,7 @@ function renderCategoryTreeInline(
       return `<div data-cat-inline-parent='true'>
       <div data-cat-inline-toggle='true' style='display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 16px 6px ${indent}px;${linkStyle}font-weight:600;white-space:nowrap;cursor:pointer;'>${label}<span data-cat-inline-chevron='true' style='font-size:11px;opacity:.6;transition:transform .15s;display:inline-block;transform:rotate(180deg);'>▾</span></div>
       <div data-cat-inline-children='true' style='display:block;'>
-        ${renderCategoryTreeInline(cat.children, linkStyle, depth + 1)}
+        ${renderCategoryTreeInline(cat.children, linkStyle, depth + 1, headless)}
       </div>
     </div>`
     })
@@ -138,16 +144,14 @@ function renderCategoryTreeInline(
 // beneath it in the same column, rather than the grandchildren being
 // silently omitted because the mega-grid map only ever read cat.children,
 // never child.children.
-function renderMegaColumnItems(nodes: CategoryNode[], depth = 0): string {
+function renderMegaColumnItems(nodes: CategoryNode[], depth = 0, headless = false): string {
   return nodes
     .map((node) => {
       const query = node.headlessName || node.displayName || node.name
       const href = `/shop?category=${encodeURIComponent(query)}`
-      const label = node.displayName.includes(' / ')
-        ? node.displayName.split(' / ').pop()!
-        : node.displayName
+      const label = catLabel(node, headless)
       const nested = (node.children ?? []).length
-        ? `<div style='padding-left:${8 + (depth + 1) * 8}px;'>${renderMegaColumnItems(node.children, depth + 1)}</div>`
+        ? `<div style='padding-left:${8 + (depth + 1) * 8}px;'>${renderMegaColumnItems(node.children, depth + 1, headless)}</div>`
         : ''
       return `<div class='rubikx-mega-child'><a href='${href}'>${label}</a></div>${nested}`
     })
@@ -160,13 +164,11 @@ function renderMegaColumnItems(nodes: CategoryNode[], depth = 0): string {
 // points at the column's own header link) matching the brand-column mega
 // menu reference design (e.g. Water Innovations → Moen / Must Be A Moen,
 // each column repeating the same product-type list).
-function renderMegaColumn(header: CategoryNode, items: CategoryNode[]): string {
+function renderMegaColumn(header: CategoryNode, items: CategoryNode[], headless = false): string {
   const query = header.headlessName || header.displayName || header.name
   const href = `/shop?category=${encodeURIComponent(query)}`
-  const label = header.displayName.includes(' / ')
-    ? header.displayName.split(' / ').pop()!
-    : header.displayName
-  const itemsHtml = renderMegaColumnItems(items)
+  const label = catLabel(header, headless)
+  const itemsHtml = renderMegaColumnItems(items, 0, headless)
   return `<div>
     <div class='rubikx-mega-header'><a href='${href}'>${label}</a></div>
     ${itemsHtml}
@@ -208,9 +210,7 @@ function renderGroupCategoryLinks(categories: Array<{ id: number, name: string, 
     .map((cat) => {
       const query = cat.headlessName || cat.displayName || cat.name
       const href = `/shop?category=${encodeURIComponent(query)}&logoGroup=${encodedGroupName}`
-      const label = cat.displayName.includes(' / ')
-        ? cat.displayName.split(' / ').pop()!
-        : cat.displayName
+      const label = catLabel(cat)
       return `<div class='rubikx-mega-child'><a href='${href}' style='text-decoration:none;'>${label}</a></div>`
     })
     .join('')
@@ -280,6 +280,12 @@ function _findCategoryNode(nodes: CategoryNode[], filter: string): CategoryNode 
   return null
 }
 
+// Opt-in marker (data-headless-categories="true") set by the header's render
+// function on its <section>; Ru5 never sets it so it keeps the old behavior.
+function isHeadlessCategories(el: HTMLElement): boolean {
+  return !!el.closest('[data-headless-categories="true"]')
+}
+
 async function loadCategories(el: HTMLElement, companyId?: number) {
   if (el.dataset.hydrated === 'true') return
   el.dataset.hydrated = 'true'
@@ -299,7 +305,8 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
 
   try {
     const flat = await fetchCategoriesCached(companyId)
-    const fullTree = buildCategoryTree(flat)
+    const headless = isHeadlessCategories(el)
+    const fullTree = buildCategoryTree(flat, { atomicNames: headless })
     // When a specific category name is configured for this nav link (e.g.
     // "Apparel" vs "Headwear"), scope the dropdown to just that category's
     // own children instead of showing every top-level category everywhere.
@@ -316,7 +323,7 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
       // as a horizontal mega-grid, so this bypasses that layout regardless
       // of how many top-level categories there are.
       el.removeAttribute('data-mega')
-      dropdown.innerHTML = renderCategoryTreeInline(tree, linkStyle)
+      dropdown.innerHTML = renderCategoryTreeInline(tree, linkStyle, 0, headless)
       bindInlineCategoryToggles(dropdown)
     } else if (tree.length > 6) {
       // Mega menu — horizontal grid layout (unscoped: every top-level
@@ -327,9 +334,9 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
         .map((cat) => {
           const categoryQuery = cat.headlessName || cat.displayName || cat.name
           const href = `/shop?category=${encodeURIComponent(categoryQuery)}`
-          const childrenHtml = renderMegaColumnItems(cat.children ?? [])
+          const childrenHtml = renderMegaColumnItems(cat.children ?? [], 0, headless)
           return `<div>
-          <div class='rubikx-mega-header'><a href='${href}'>${cat.displayName}</a></div>
+          <div class='rubikx-mega-header'><a href='${href}'>${headless ? catLabel(cat, true) : cat.displayName}</a></div>
           ${childrenHtml}
         </div>`
         })
@@ -337,7 +344,7 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
     } else {
       // Simple vertical dropdown — children reveal as a flyout on hover
       el.removeAttribute('data-mega')
-      dropdown.innerHTML = renderCategoryTree(tree, linkStyle)
+      dropdown.innerHTML = renderCategoryTree(tree, linkStyle, headless)
       bindFlyoutAccessibility(dropdown)
     }
   } catch (e) {
@@ -374,7 +381,8 @@ function _renderDynamicNavResults(
   desktopContainer: HTMLElement | null,
   mobileContainer: HTMLElement | null,
   linkStyle: string,
-  dropdownInnerStyle: string
+  dropdownInnerStyle: string,
+  headless = false
 ) {
   const emptyState = `<span style='display:block;padding:6px 0;color:#9ca3af;font-size:13px;font-style:italic;'>No categories found</span>`
 
@@ -385,12 +393,12 @@ function _renderDynamicNavResults(
           const href = `/shop?category=${encodeURIComponent(query)}`
           const children = root.children ?? []
           if (!children.length) {
-            return `<a href='${href}' style='${linkStyle}text-decoration:none;'>${root.displayName}</a>`
+            return `<a href='${href}' style='${linkStyle}text-decoration:none;'>${headless ? catLabel(root, true) : root.displayName}</a>`
           }
           const hasGrouping = children.some((c) => (c.children ?? []).length > 0)
           const dropInner = hasGrouping
-            ? children.map((c) => renderMegaColumn(c, c.children ?? [])).join('')
-            : renderMegaColumn(root, children)
+            ? children.map((c) => renderMegaColumn(c, c.children ?? [], headless)).join('')
+            : renderMegaColumn(root, children, headless)
           const columnCount = hasGrouping ? children.length : 1
           // data-mega-cols tells the Ru5-scoped CSS (rubikx-cat-styles) the
           // column count, which drives the 6-track grid columns sit in
@@ -406,7 +414,7 @@ function _renderDynamicNavResults(
           // its columns up with wherever the header row's real content
           // starts/ends — same left edge "Home" and every category sit at.
           return `<div data-cat-nav='true' data-mega='true' data-mega-cols='${columnCount}' style='position:relative;display:inline-block;'>
-            <a href='${href}' style='${linkStyle}text-decoration:none;cursor:pointer;'>${root.displayName} ▾</a>
+            <a href='${href}' style='${linkStyle}text-decoration:none;cursor:pointer;'>${headless ? catLabel(root, true) : root.displayName} ▾</a>
             <div data-cat-dropdown='true' style='display:none;position:absolute;top:100%;left:0;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;z-index:100;margin-top:-2px;padding-top:4px;'>
               <div data-cat-dropdown-inner='true' style='${dropdownInnerStyle}'>${dropInner}</div>
             </div>
@@ -421,7 +429,7 @@ function _renderDynamicNavResults(
       // starts every branch pre-expanded, and bindInlineCategoryToggles
       // lets a shopper collapse/re-expand from there. No forced collapse
       // pass here, so both navbars share identical default behavior.
-      mobileContainer.innerHTML = renderCategoryTreeInline(roots, linkStyle)
+      mobileContainer.innerHTML = renderCategoryTreeInline(roots, linkStyle, 0, headless)
       bindInlineCategoryToggles(mobileContainer)
     } else {
       mobileContainer.innerHTML = emptyState
@@ -475,7 +483,8 @@ async function loadDynamicNav(el: HTMLElement, companyId?: number) {
 
   try {
     const flat = await fetchCategoriesCached(companyId)
-    const roots = buildCategoryTree(flat).slice(0, maxCategories)
+    const headless = isHeadlessCategories(el)
+    const roots = buildCategoryTree(flat, { atomicNames: headless }).slice(0, maxCategories)
 
     const liveSection = componentId
       ? document.querySelector<HTMLElement>(`section[data-componentid="${componentId}"]`)
@@ -484,7 +493,7 @@ async function loadDynamicNav(el: HTMLElement, companyId?: number) {
     const liveMobile = liveSection?.querySelector<HTMLElement>('[data-ru5-mobile-items]') ?? mobileContainer
     if (!liveDesktop?.isConnected && !liveMobile?.isConnected) return
 
-    _renderDynamicNavResults(roots, liveDesktop, liveMobile, linkStyle, dropdownInnerStyle)
+    _renderDynamicNavResults(roots, liveDesktop, liveMobile, linkStyle, dropdownInnerStyle, headless)
   } catch (e) {
     console.error('[Rubikx] Failed to load dynamic nav categories:', e)
     const liveSection = componentId
