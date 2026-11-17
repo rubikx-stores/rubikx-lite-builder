@@ -14,6 +14,21 @@ import type { Product } from '../themes/themes-data'
 // categoryDropdownTextColor existed on that block), so those are the only
 // two things passed in; everything else (markup, CSS override, hydration
 // attrs) is identical across callers.
+// Ru1/Ru2 only: stops a multi-column category dropdown from being squeezed
+// into a box only as wide as its own nav link (columns then wrap one letter
+// per line). The box takes its natural content width (capped to the
+// viewport), columns flow in a row, and each column has a small minimum
+// width — so a dropdown that already fit looks the same as before and only a
+// crowded one grows. Not :hover-scoped on purpose; the :hover twin is needed
+// because the shared [data-mega-contained]:hover rule would otherwise win.
+export function renderMegaFitCss(sectionTitle: string): string {
+  const b = `section[data-component-title="${sectionTitle}"] nav[data-rubikx-component="DynamicCategoryNav"] [data-cat-nav][data-mega]`
+  return `${b} [data-cat-dropdown],
+  ${b}:hover [data-cat-dropdown] { width: max-content !important; max-width: calc(100vw - 32px) !important; box-sizing: border-box; }
+  ${b} [data-cat-dropdown-inner] { grid-template-columns: none !important; grid-auto-flow: column; grid-auto-columns: auto; }
+  ${b} [data-cat-dropdown-inner] > div { min-width: 140px !important; }`
+}
+
 export function renderDynamicCategoriesRow(data: {
   showDynamicCategories: boolean
   maxCategories: number
@@ -447,11 +462,12 @@ export function renderMegaMenuHeader(data: MegaMenuHeaderData): string {
   const { css: dynamicCategoriesRowCss, hydrationAttrs: dynamicNavHydrationAttrs } = dynamicCategoriesRow
 
   const sectionFontStyle = fontCss(undefined, data.fontFamily) + (data.sticky ? 'position:sticky;top:0;z-index:9999' : '')
-  return `<section data-component-title="Ru2-Mega-Menu-Header" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionFontStyle ? ` style="${sectionFontStyle}"` : ''}>
+  return `<section data-component-title="Ru2-Mega-Menu-Header" data-headless-categories="true" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionFontStyle ? ` style="${sectionFontStyle}"` : ''}>
 <style>
 .ru-mega-item:hover .ru-mega-drop{display:block !important;}
 .ru-pd{display:none;width:100%;border-top:1px solid #e5e7eb;overflow:hidden;}
 ${dynamicCategoriesRowCss}
+${dynamicCategoriesRowCss ? renderMegaFitCss('Ru2-Mega-Menu-Header') : ''}
 </style>
 <nav style="${navStyle}"${dynamicNavHydrationAttrs}>
   ${mobileNav}
@@ -835,6 +851,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
     [data-nav-desktop] { display: none !important; }
   }
   ${dynamicCategoriesRowCss}
+  ${dynamicCategoriesRowCss ? renderMegaFitCss('Ru3-Mega-Header') : ''}
 </style>
 <!-- Mobile header -->
 <div data-nav-mobile="true" style="display:none;align-items:center;justify-content:space-between;padding:1.25rem ${data.paddingX}px;${data.showBottomBorder ? `border-bottom:1px solid ${data.bottomBorderColor};` : ''}">
@@ -872,7 +889,7 @@ export function renderRu3MegaHeader(data: Ru3MegaHeaderData): string {
 
   const { hydrationAttrs: dynamicNavHydrationAttrs } = dynamicCategoriesRow
 
-  return `<section data-component-title="Ru3-Mega-Header" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
+  return `<section data-component-title="Ru3-Mega-Header" data-headless-categories="true" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
 <nav style="${navStyle}"${dynamicNavHydrationAttrs}>
   ${mobileNav}
   <div data-nav-desktop="true" style="width:100%;display:flex;align-items:center;gap:3rem;">
@@ -1221,7 +1238,7 @@ export function renderRu4Navbar(data: Ru4NavbarData): string {
     ? `${dynamicCategoriesRow.hydrationAttrs} data-headless-categories="true"`
     : ''
 
-  return `<section data-component-title="Ru4-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
+  return `<section data-component-title="Ru4-Navbar" data-headless-categories="true" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
 <nav style="${navStyle}"${dynamicNavHydrationAttrs}>
   ${mobileNav}
   <div data-nav-desktop="true" style="width:100%;display:flex;align-items:center;gap:2rem;">
@@ -2328,6 +2345,7 @@ export function renderRu8Navbar(data: Ru8NavbarData): string {
      sizing back. */
   nav[data-rubikx-component="DynamicCategoryNav"][data-mega-contained] [data-cat-nav][data-mega] { position: relative !important; }
   nav[data-rubikx-component="DynamicCategoryNav"][data-mega-contained] [data-cat-nav][data-mega]:hover [data-cat-dropdown] { left: 0 !important; right: auto !important; width: auto !important; min-width: 200px !important; border-radius: 8px !important; }
+  ${data.showDynamicCategories ? renderMegaFitCss('Ru8-Navbar') : ''}
   @media (max-width: 1024px) {
     [data-ru8-desktop-top] { display: none !important; }
     [data-ru8-desktop-nav] { display: none !important; }
@@ -2354,7 +2372,7 @@ export function renderRu8Navbar(data: Ru8NavbarData): string {
     ? ` data-rubikx-component="DynamicCategoryNav" data-mega-contained="true" data-on-mount="loadDynamicNav" data-max-categories="${data.maxCategories ?? 8}" data-link-color="${data.linkColor}" data-font-size="${data.linkFontSize}" data-font-weight="${data.linkFontWeight}" data-padding-x="${data.paddingX}"`
     : ''
 
-  return `<section data-component-title="Ru8-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
+  return `<section data-component-title="Ru8-Navbar" data-headless-categories="true" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
 ${responsiveStyle}
 <nav style="${navStyle}"${dynamicNavHydrationAttrs}>
   ${topRow}
@@ -2746,7 +2764,7 @@ export function renderRu6HamburgerNavbar(data: Ru6HamburgerNavbarData): string {
   // actually shrink at narrow widths instead of overflowing — the same fix
   // applied retroactively to Ru1-Navbar's desktop grid, built in here from
   // the start.
-  return `<section data-component-title="Ru6-Hamburger-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}background:${data.bgColor};">
+  return `<section data-component-title="Ru6-Hamburger-Navbar" data-headless-categories="true" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}background:${data.bgColor};">
 ${responsiveStyle}
 ${menuLinkHoverStyle}
 <nav data-ru6-navbar style="position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);align-items:center;gap:1rem;padding:${data.paddingY}px ${data.paddingX}px;">
@@ -3184,6 +3202,7 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   const responsiveStyle = (showMobileMenu || dynamicCategoriesRowCss)
     ? `<style>
   ${dynamicCategoriesRowCss}
+  ${dynamicCategoriesRowCss ? renderMegaFitCss('Ru7-Navbar') : ''}
   @media (max-width: 640px) {
     [data-ru7-desktop-links] { display: none !important; }
     [data-ru7-menu-toggle] { display: inline-flex !important; }
@@ -3248,7 +3267,7 @@ export function renderRu7Navbar(data: Ru7NavbarData): string {
   const zone = (items: string[], justify: string) =>
     `<div style="display:flex;align-items:center;gap:1.75rem;justify-content:${justify};min-width:0;flex:1;">${items.join('')}</div>`
 
-  return `<section data-component-title="Ru7-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
+  return `<section data-component-title="Ru7-Navbar" data-headless-categories="true" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="${sectionStyle}">
 ${responsiveStyle}
 ${homePageScript}
 ${topBarEl}

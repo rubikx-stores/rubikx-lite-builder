@@ -21,7 +21,8 @@ function catLabel(c: { displayName: string, name?: string, headlessName?: string
 
 function renderCategoryTree(
   categories: CategoryNode[],
-  linkStyle: string
+  linkStyle: string,
+  headless = false
 ): string {
   return categories
     .map((cat) => {
@@ -31,7 +32,7 @@ function renderCategoryTree(
       // published — including synthesized parents with no real slug.
       const categoryQuery = cat.headlessName || cat.displayName || cat.name
       const href = `/shop?category=${encodeURIComponent(categoryQuery)}`
-      const label = catLabel(cat)
+      const label = catLabel(cat, headless)
       if (!cat.children || cat.children.length === 0) {
         return `<a href='${href}' style='display:block;padding:6px 16px;${linkStyle}text-decoration:none;white-space:nowrap;'>${label}</a>`
       }
@@ -39,7 +40,7 @@ function renderCategoryTree(
       <a href='${href}' aria-haspopup='true' aria-expanded='false' style='display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 16px;${linkStyle}text-decoration:none;font-weight:600;white-space:nowrap;'>${label}<span aria-hidden='true' style='font-size:16px;opacity:.9;'>▸</span></a>
       <div data-cat-flyout='true' style='display:none;position:absolute;left:100%;top:0;margin-left:-10px;padding:8px 0 8px 10px;z-index:101;pointer-events:none;'>
         <div style='background:#fff;min-width:180px;box-shadow:0 4px 12px rgba(0,0,0,0.1);border-radius:8px;padding:8px 0;pointer-events:auto;'>
-          ${renderCategoryTree(cat.children, linkStyle)}
+          ${renderCategoryTree(cat.children, linkStyle, headless)}
         </div>
       </div>
     </div>`
@@ -279,6 +280,12 @@ function _findCategoryNode(nodes: CategoryNode[], filter: string): CategoryNode 
   return null
 }
 
+// Opt-in marker (data-headless-categories="true") set by the header's render
+// function on its <section>; Ru5 never sets it so it keeps the old behavior.
+function isHeadlessCategories(el: HTMLElement): boolean {
+  return !!el.closest('[data-headless-categories="true"]')
+}
+
 async function loadCategories(el: HTMLElement, companyId?: number) {
   if (el.dataset.hydrated === 'true') return
   el.dataset.hydrated = 'true'
@@ -298,7 +305,8 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
 
   try {
     const flat = await fetchCategoriesCached(companyId)
-    const fullTree = buildCategoryTree(flat)
+    const headless = isHeadlessCategories(el)
+    const fullTree = buildCategoryTree(flat, { atomicNames: headless })
     // When a specific category name is configured for this nav link (e.g.
     // "Apparel" vs "Headwear"), scope the dropdown to just that category's
     // own children instead of showing every top-level category everywhere.
@@ -315,7 +323,7 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
       // as a horizontal mega-grid, so this bypasses that layout regardless
       // of how many top-level categories there are.
       el.removeAttribute('data-mega')
-      dropdown.innerHTML = renderCategoryTreeInline(tree, linkStyle)
+      dropdown.innerHTML = renderCategoryTreeInline(tree, linkStyle, 0, headless)
       bindInlineCategoryToggles(dropdown)
     } else if (tree.length > 6) {
       // Mega menu — horizontal grid layout (unscoped: every top-level
@@ -326,9 +334,9 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
         .map((cat) => {
           const categoryQuery = cat.headlessName || cat.displayName || cat.name
           const href = `/shop?category=${encodeURIComponent(categoryQuery)}`
-          const childrenHtml = renderMegaColumnItems(cat.children ?? [])
+          const childrenHtml = renderMegaColumnItems(cat.children ?? [], 0, headless)
           return `<div>
-          <div class='rubikx-mega-header'><a href='${href}'>${cat.displayName}</a></div>
+          <div class='rubikx-mega-header'><a href='${href}'>${headless ? catLabel(cat, true) : cat.displayName}</a></div>
           ${childrenHtml}
         </div>`
         })
@@ -336,7 +344,7 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
     } else {
       // Simple vertical dropdown — children reveal as a flyout on hover
       el.removeAttribute('data-mega')
-      dropdown.innerHTML = renderCategoryTree(tree, linkStyle)
+      dropdown.innerHTML = renderCategoryTree(tree, linkStyle, headless)
       bindFlyoutAccessibility(dropdown)
     }
   } catch (e) {
@@ -475,7 +483,7 @@ async function loadDynamicNav(el: HTMLElement, companyId?: number) {
 
   try {
     const flat = await fetchCategoriesCached(companyId)
-    const headless = el.dataset.headlessCategories === 'true'
+    const headless = isHeadlessCategories(el)
     const roots = buildCategoryTree(flat, { atomicNames: headless }).slice(0, maxCategories)
 
     const liveSection = componentId

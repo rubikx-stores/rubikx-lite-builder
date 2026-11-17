@@ -5,7 +5,7 @@ import { balanceBadgesDefaults, balanceBadgesFields, renderBalanceBadges } from 
 import type { BalanceBadgesData } from '../useBalanceBadges'
 import { socialIconHtml } from '../useSocialIcons'
 import {
-  renderDynamicCategoriesRow,
+  renderDynamicCategoriesRow, renderMegaFitCss,
   megaMenuHeaderDefaults, megaMenuHeaderFields, renderMegaMenuHeader,
   ru1FooterDefaults as layoutFooter1Defaults, ru1FooterFields as layoutFooter1Fields, renderRu1Footer as renderLayoutFooter1,
   ru1StatsDefaults, ru1StatsFields, renderRu1Stats,
@@ -367,6 +367,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
   [data-nav-mobile] img, [data-mobile-drawer] img { width: ${Math.round(data.logoWidth * 0.75)}px !important; }
   [data-nav-mobile] [data-field-key="brandName"], [data-mobile-drawer] [data-field-key="brandName"] { font-size: ${Math.round(data.brandFontSize * 0.85)}px !important; }
   ${dynamicCategoriesRowCss}
+  ${dynamicCategoriesRowCss ? renderMegaFitCss('Ru1-Navbar') : ''}
 </style>
 <!-- Mobile header -->
 <div data-nav-mobile="true" style="display:none;align-items:center;justify-content:space-between;padding:1.25rem ${data.paddingX}px;border-bottom:1px solid ${data.borderColor || '#374151'};">
@@ -405,7 +406,7 @@ export function renderRu1Navbar(data: Ru1NavbarData): string {
 
   const { hydrationAttrs: dynamicNavHydrationAttrs } = dynamicCategoriesRow
 
-  return `<section data-component-title="Ru1-Navbar" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
+  return `<section data-component-title="Ru1-Navbar" data-headless-categories="true" data-component-props="${encodeURIComponent(JSON.stringify(data))}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>
 <nav style="${navStyle}"${dynamicNavHydrationAttrs}>
   ${mobileNav}
   <div data-nav-desktop="true" style="display:grid;margin:0 auto;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:1rem;height:80px;${topRowBorder}">
