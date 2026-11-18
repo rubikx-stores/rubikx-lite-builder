@@ -28,7 +28,7 @@ declare module '@myissue/vue-website-page-builder' {
     userForPageBuilder?: PageBuilderUser
     userSettings?: {
       theme?: 'light' | 'dark' | 'auto'
-      language?: { default: string; enable?: ReadonlyArray<string> }
+      language?: { default: string; enable?: ReadonlyArray<string>; disableLanguageDropDown?: boolean }
       autoSave?: boolean
       [key: string]: unknown
     } | null

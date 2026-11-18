@@ -60,7 +60,7 @@ const PAGE_TYPE_OPTIONS = [
   { group: 'Pages', slug: 'terms-and-conditions', name: 'Terms & Conditions' },
   { group: 'Pages', slug: 'returns', name: 'Returns' },
   { group: 'Auth', slug: 'login', name: 'Sign In' },
-  { group: 'Auth', slug: 'signup', name: 'Sign Up' },
+  { group: 'Auth', slug: 'registration', name: 'Sign Up' },
   { group: 'Auth', slug: 'password/reset', name: 'Forgot Password' },
   { group: 'Auth', slug: 'password/create', name: 'Create New Password' },
 ]
