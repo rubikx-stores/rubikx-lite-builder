@@ -100,6 +100,9 @@ import {
   ru11CurvedSplitHeroDefaults,
   ru11CurvedSplitHeroFields,
   renderRu11CurvedSplitHero,
+  ru12OverlayStatsDefaults,
+  ru12OverlayStatsFields,
+  renderRu12OverlayStats,
   ru7HeroCategoryCollectionDefaults,
   ru7HeroCategoryCollectionFields,
   renderRu7HeroCategoryCollection,
@@ -184,6 +187,9 @@ import {
   ru1SignUpDefaults,
   ru1SignUpFields,
   renderRu1SignUp,
+  ru2SignUpDefaults,
+  ru2SignUpFields,
+  renderRu2SignUp,
   ru1ForgotPasswordDefaults,
   ru1ForgotPasswordFields,
   renderRu1ForgotPassword,
@@ -318,6 +324,11 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       title: 'Ru11-Curved-Split-Hero',
       category: 'Banner',
       html_code: renderRu11CurvedSplitHero(ru11CurvedSplitHeroDefaults),
+    },
+    {
+      title: 'Ru12-Overlay-Stats',
+      category: 'Banner',
+      html_code: renderRu12OverlayStats(ru12OverlayStatsDefaults),
     },
   ],
   Contact: [
@@ -531,6 +542,11 @@ export const layoutComponentRegistry: Record<string, LayoutComponentItem[]> = {
       category: 'Register',
       html_code: renderRu1SignUp(ru1SignUpDefaults),
     },
+    {
+      title: 'Ru2-Sign Up',
+      category: 'Register',
+      html_code: renderRu2SignUp(ru2SignUpDefaults),
+    },
   ],
   'Reset Password': [
     {
@@ -705,6 +721,12 @@ export function useLayouts() {
     defaults: ru11CurvedSplitHeroDefaults,
     fields: ru11CurvedSplitHeroFields,
     render: renderRu11CurvedSplitHero,
+  })
+
+  blockRegistry.register('Ru12-Overlay-Stats', {
+    defaults: ru12OverlayStatsDefaults,
+    fields: ru12OverlayStatsFields,
+    render: renderRu12OverlayStats,
   })
 
   blockRegistry.register('Ru7-Hero-Category-Collection', {
@@ -903,6 +925,12 @@ export function useLayouts() {
     defaults: ru1SignUpDefaults,
     fields: ru1SignUpFields,
     render: renderRu1SignUp,
+  })
+
+  blockRegistry.register('Ru2-Sign Up', {
+    defaults: ru2SignUpDefaults,
+    fields: ru2SignUpFields,
+    render: renderRu2SignUp,
   })
 
   blockRegistry.register('Ru1-Forgot Password', {

@@ -993,7 +993,7 @@ export const ru4NavbarDefaults: Ru4NavbarData = {
   signInUrl: '/login',
   showCreateAccount: true,
   createAccountLabel: 'Create an account',
-  createAccountUrl: '/register',
+  createAccountUrl: '/registration',
   authLinksColor: '#111827',
 
   showSearch: true,
@@ -7295,6 +7295,7 @@ export interface Ru10ShopByCategoryData {
   cardBorderColor: string
   cardBorderWidth: number
   cardAspectRatio: string
+  cardObjectPosition: string
   categoryFontSize: number
   categoryFontWeight: string
   categoryColor: string
@@ -7341,6 +7342,7 @@ export const ru10ShopByCategoryDefaults: Ru10ShopByCategoryData = {
   cardBorderColor: '#d1d5db',
   cardBorderWidth: 1,
   cardAspectRatio: '1 / 1',
+  cardObjectPosition: 'top',
   categoryFontSize: 15,
   categoryFontWeight: '600',
   categoryColor: '#111827',
@@ -7393,6 +7395,7 @@ export const ru10ShopByCategoryFields: FieldConfig[] = [
   { key: 'cardBorderColor', label: 'Card Border Colour', type: 'color' },
   { key: 'cardBorderWidth', label: 'Card Border Thickness (px)', type: 'number', step: 1, placeholder: '1' },
   { key: 'cardAspectRatio', label: 'Card Image Aspect Ratio', type: 'select', options: ['1 / 1', '4 / 5', '3 / 4', '16 / 9'] },
+  { key: 'cardObjectPosition', label: 'Image Position', type: 'select', options: ['top', 'center', 'bottom'] },
   { key: 'categoryFontSize', label: 'Category Name Size (px)', type: 'number', placeholder: '15' },
   { key: 'categoryFontWeight', label: 'Category Name Weight', type: 'select', options: ['400', '500', '600', '700', '800', '900'] },
   { key: 'categoryColor', label: 'Category Name Colour', type: 'color' },
@@ -7505,7 +7508,7 @@ export function renderRu10ShopByCategory(data: Ru10ShopByCategoryData): string {
     const href = cat.categoryUrl?.trim() || (slug ? `/shop?category=${slug}` : '#')
     const imgSrc = productImageSrc(cat.imageUrl)
     const imageHtml = imgSrc
-      ? `<img src="${imgSrc}" alt="${name}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s ease;will-change:transform;" />`
+      ? `<img src="${imgSrc}" alt="${name}" style="width:100%;height:100%;object-fit:cover;object-position:${data.cardObjectPosition || 'top'};transition:transform 0.3s ease;will-change:transform;" />`
       : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">${fallbackIcon}</div>`
 
     const cardSizeStyle = isSlider
@@ -8172,7 +8175,7 @@ export const ru2SplitBannerCollageDefaults: Ru2SplitBannerCollageData = {
   titleWeight: '800',
   titleColor: '#ffffff',
   titleLetterSpacing: 2,
-  subtitle: 'BRANDED APPAREL & GOODS',
+  subtitle: '',
   subtitleColor: '#d1d5db',
   subtitleSize: 13,
   description: 'From the shop to the field to the weekend — discover a collection built for every moment.',
@@ -10458,6 +10461,195 @@ export function renderRu11CurvedSplitHero(data: Ru11CurvedSplitHeroData): string
   <svg width="0" height="0" style="position:absolute;overflow:hidden;" aria-hidden="true">
     <defs><clipPath id="${clipId}" clipPathUnits="objectBoundingBox"><path d="${ru11CurveClipPath(side)}"/></clipPath></defs>
   </svg>
+</section>`
+}
+
+// ─── Ru12-Overlay-Stats ──────────────────────────────────────────────────────
+// A full-bleed background-image banner with a floating stats card
+// overlapping its bottom edge — each stat is an icon (from the shared icon
+// set, or an uploaded logo image) next to a rich-text block, so the admin
+// can bold a title line and colour/link a "click here" the way the
+// reference design does, all from one field per item.
+
+export interface Ru12StatItem {
+  mediaType: string
+  icon: string
+  logoUrl: string
+  text: string
+}
+
+export interface Ru12OverlayStatsData {
+  bgImage: string
+  bgImageAspectRatio: string
+  sectionBgColor: string
+  overlayColor: string
+  overlayOpacity: number
+
+  cardBgColor: string
+  cardOpacity: number
+  cardBorderColor: string
+  cardBorderRadius: number
+  cardMaxWidth: number
+  cardOverlap: number
+  cardPaddingY: number
+  cardPaddingX: number
+  dividerColor: string
+
+  iconSize: number
+  iconColor: string
+  textColor: string
+  textFont: string
+
+  items: Ru12StatItem[]
+  fontFamily: string
+}
+
+export const ru12OverlayStatsDefaults: Ru12OverlayStatsData = {
+  bgImage: '',
+  bgImageAspectRatio: 'Wide (16:9)',
+  sectionBgColor: '#f3f4f6',
+  overlayColor: '#000000',
+  overlayOpacity: 0,
+
+  cardBgColor: '#ffffff',
+  cardOpacity: 100,
+  cardBorderColor: '#e5e7eb',
+  cardBorderRadius: 0,
+  cardMaxWidth: 1280,
+  cardOverlap: 200,
+  cardPaddingY: 24,
+  cardPaddingX: 40,
+  dividerColor: '#e5e7eb',
+
+  iconSize: 28,
+  iconColor: '#dc2626',
+  textColor: '#111827',
+  textFont: '',
+
+  items: [
+    { mediaType: 'icon', icon: 'wrenchScrewdriver', logoUrl: '', text: '<strong>Need a Custom Order?</strong><br>Click here for more info.' },
+    { mediaType: 'icon', icon: 'envelope', logoUrl: '', text: '<strong>Customer Support</strong><br>Need help? Click here' },
+    { mediaType: 'icon', icon: 'checkCircle', logoUrl: '', text: '<strong>See Official Brand Gear Here</strong><br>High Quality Products' },
+  ],
+  fontFamily: '',
+}
+
+export const ru12OverlayStatsFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_bg', label: 'Background', type: 'header' },
+  { key: 'bgImage', label: 'Background Image', type: 'image', noAspectRatio: true },
+  { key: 'bgImageAspectRatio', label: 'Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
+  { key: 'sectionBgColor', label: 'Fallback Background Colour', type: 'color' },
+  { key: 'overlayColor', label: 'Overlay Colour', type: 'color' },
+  { key: 'overlayOpacity', label: 'Overlay Opacity (0-100)', type: 'number', step: 5, placeholder: '0' },
+
+  { key: '_h_card', label: 'Stats Card', type: 'header' },
+  { key: 'cardBgColor', label: 'Card Background', type: 'color' },
+  { key: 'cardOpacity', label: 'Card Background Opacity (%)', type: 'number', step: 5, placeholder: '100' },
+  { key: 'cardBorderColor', label: 'Card Border Colour', type: 'color' },
+  { key: 'cardBorderRadius', label: 'Card Corner Radius (px)', type: 'number', placeholder: '0' },
+  { key: 'cardMaxWidth', label: 'Card Max Width (px)', type: 'number', placeholder: '1280' },
+  { key: 'cardOverlap', label: 'Overlap Over Image (px, 0 = flush)', type: 'number', placeholder: '200' },
+  { key: 'cardPaddingY', label: 'Card Vertical Padding (px)', type: 'number', placeholder: '24' },
+  { key: 'cardPaddingX', label: 'Card Horizontal Padding (px)', type: 'number', placeholder: '40' },
+  { key: 'dividerColor', label: 'Divider Colour', type: 'color' },
+
+  { key: '_h_stats_style', label: 'Stats Style', type: 'header' },
+  { key: 'iconSize', label: 'Icon / Logo Size (px)', type: 'number', placeholder: '28' },
+  { key: 'iconColor', label: 'Icon Colour', type: 'color' },
+  { key: 'textColor', label: 'Text Colour', type: 'color' },
+  fontField('textFont', 'Text Font'),
+
+  {
+    key: 'items',
+    label: 'Stats (3)',
+    type: 'list',
+    listFields: [
+      { key: 'mediaType', label: 'Show Icon or Logo', type: 'select', options: ['icon', 'logo'], optionLabels: { icon: 'Icon', logo: 'Logo Image' } },
+      { key: 'icon', label: 'Icon', type: 'select', options: ['wrenchScrewdriver', 'envelope', 'checkCircle', 'shieldCheck', 'clock', 'tag', 'heart', 'sparkles', 'gift', 'informationCircle'], visibleIf: (item: Record<string, any>) => item.mediaType !== 'logo' },
+      { key: 'logoUrl', label: 'Logo Image', type: 'image', noAspectRatio: true, visibleIf: (item: Record<string, any>) => item.mediaType === 'logo' },
+      { key: 'text', label: 'Text', type: 'textarea', placeholder: 'e.g. <strong>Need a Custom Order?</strong> Click here for more info.' },
+    ],
+  },
+]
+
+export function renderRu12OverlayStats(data: Ru12OverlayStatsData): string {
+  const imgSrc = productImageSrc(data.bgImage)
+  const ratio = data.bgImageAspectRatio ?? 'Wide (16:9)'
+  const aspectMap: Record<string, string> = {
+    'Auto':             '',
+    'Wide (16:9)':      'aspect-ratio:16/9',
+    'Standard (4:3)':   'aspect-ratio:4/3',
+    'Square (1:1)':     'aspect-ratio:1/1',
+    'Tall (3:4)':       'aspect-ratio:3/4',
+    'Cinematic (21:9)': 'aspect-ratio:21/9',
+  }
+  const aspectStyle = aspectMap[ratio] ?? 'aspect-ratio:16/9'
+  const autoRatioAttr = (ratio === 'Auto' && imgSrc)
+    ? ` onload="this.parentElement.style.aspectRatio=this.naturalWidth+'/'+this.naturalHeight"`
+    : ''
+
+  const overlayOpacity = Math.min(100, Math.max(0, data.overlayOpacity ?? 0)) / 100
+  const overlayHtml = (imgSrc && overlayOpacity > 0)
+    ? `<div style="position:absolute;inset:0;background:${hexToRgba(data.overlayColor || '#000000', overlayOpacity)};pointer-events:none;"></div>`
+    : ''
+
+  const overlap = Math.max(0, data.cardOverlap ?? 200)
+  // The raw px overlap is tuned against a desktop-height image — on a
+  // narrower viewport the image itself renders much shorter (same
+  // aspect-ratio, less width), so the same px amount would float the card
+  // far above the image instead of merely overlapping its bottom edge.
+  // Scaling it down at each breakpoint keeps the card anchored to roughly
+  // the same fraction of the image regardless of screen size.
+  const overlapTablet = Math.round(overlap * 0.6)
+  const overlapPhone = Math.round(overlap * 0.3)
+  const itemCount = (data.items ?? []).length || 1
+  const cardOpacity = Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100
+  const cardBg = hexToRgba(data.cardBgColor || '#ffffff', cardOpacity)
+  const dividerColor = data.dividerColor ?? '#e5e7eb'
+
+  const itemsHtml = (data.items ?? []).map((item) => {
+    const mediaHtml = (item.mediaType === 'logo' && item.logoUrl)
+      ? `<img src="${escapeAttr(item.logoUrl)}" alt="" style="width:${data.iconSize}px;height:${data.iconSize}px;max-width:9vw;max-height:9vw;object-fit:contain;display:block;" />`
+      : icon((item.icon ?? 'wrenchScrewdriver') as any, { size: data.iconSize, stroke: data.iconColor })
+
+    return `<div style="display:flex;align-items:flex-start;gap:14px;padding:min(${data.cardPaddingY ?? 24}px,5vw) min(${data.cardPaddingX ?? 40}px,6vw);min-width:0;">
+      <span style="display:flex;align-items:center;justify-content:center;flex-shrink:0;">${mediaHtml}</span>
+      <div style="font-size:min(0.9375rem,3.8vw);line-height:1.5;color:${data.textColor};min-width:0;${fontCss(data.textFont, data.fontFamily)}">${item.text}</div>
+    </div>`
+  }).join('')
+
+  // The card is absolutely positioned over the image wrapper, anchored by
+  // `top:calc(100% - ${overlap}px)` — its top edge sits exactly that many px
+  // above the wrapper's bottom edge, regardless of the card's own
+  // (content-driven) height. Being absolute (out of flow) it never pushes
+  // or pulls any other block on the page; it just floats freely up/down
+  // over the image as `overlap` changes, even past the image's own edges.
+  // The outer <section> gets its own stacking context (position:relative +
+  // z-index) so the card still paints above whatever block follows this one
+  // when it overlaps down past the image.
+  return `<section data-component-title="Ru12-Overlay-Stats" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;z-index:1;background:${data.sectionBgColor};${fontCss(undefined, data.fontFamily)}">
+<style>
+  [data-ru12-card] > div + div { border-left:1px solid ${dividerColor}; }
+  @media(max-width:1024px){
+    [data-ru12-card]{top:calc(100% - ${overlapTablet}px)!important;}
+  }
+  @media(max-width:640px){
+    [data-ru12-card]{top:calc(100% - ${overlapPhone}px)!important;grid-template-columns:1fr!important;}
+    [data-ru12-card] > div + div { border-left:none!important;border-top:1px solid ${dividerColor}; }
+  }
+</style>
+  <div data-ru12-imgwrap="true" style="position:relative;width:100%;${aspectStyle};">
+    ${imgSrc
+      ? `<img src="${imgSrc}"${autoRatioAttr} style="width:100%;height:100%;object-fit:cover;display:block;" />`
+      : `<div style="width:100%;height:100%;background:#d1d5db;display:flex;align-items:center;justify-content:center;"><span style="color:#6b7280;font-size:14px;">Add a background image</span></div>`}
+    ${overlayHtml}
+    <div data-ru12-card="true" style="position:absolute;top:calc(100% - ${overlap}px);left:50%;transform:translateX(-50%);width:calc(100% - 2rem);max-width:${data.cardMaxWidth ?? 1280}px;background:${cardBg};border:1px solid ${data.cardBorderColor ?? '#e5e7eb'};border-radius:${data.cardBorderRadius ?? 0}px;box-shadow:0 10px 30px rgba(15,23,42,0.1);display:grid;grid-template-columns:repeat(${itemCount},1fr);box-sizing:border-box;overflow:hidden;">
+      ${itemsHtml}
+    </div>
+  </div>
 </section>`
 }
 
@@ -13598,7 +13790,7 @@ export const ru1SignInDefaults: Ru1SignInData = {
   showRegisterLink: true,
   registerText: "Don't have an account ",
   registerLinkLabel: 'Register here',
-  registerLinkHref: '/signup',
+  registerLinkHref: '/registration',
   registerTextColor: '#374151',
   registerLinkColor: '#0a1e5e',
 
@@ -13682,7 +13874,7 @@ export const ru1SignInFields: FieldConfig[] = [
   { key: 'showRegisterLink', label: 'Show Register Line', type: 'toggle' },
   { key: 'registerText', label: 'Text', type: 'text', placeholder: "Don't have an account " },
   { key: 'registerLinkLabel', label: 'Link Label', type: 'text', placeholder: 'Register here' },
-  { key: 'registerLinkHref', label: 'Link URL', type: 'url', placeholder: '/register' },
+  { key: 'registerLinkHref', label: 'Link URL', type: 'url', placeholder: '/registration' },
   { key: 'registerTextColor', label: 'Text Colour', type: 'color' },
   { key: 'registerLinkColor', label: 'Link Colour', type: 'color' },
 
@@ -14094,6 +14286,273 @@ export function renderRu1SignUp(data: Ru1SignUpData): string {
       <button type="submit" style="width:100%;background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:${data.submitRadius ?? 8}px;padding:0.875rem;font-size:1rem;font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.submitLabel}</button>
     </form>
     ${loginHtml}
+  </div>
+  </div>
+</section>`
+}
+
+// ─── Ru2-Sign Up ─────────────────────────────────────────────────────────────
+// A sign-up card whose input fields are a fully admin-editable list (not
+// fixed named fields like Ru1-Sign Up) — add/remove/reorder fields, each with
+// its own label, input type, placeholder, and Required toggle. Below the
+// submit button sits a separate secondary section: a label (default "Create
+// an Account") plus its own independent button (own label/URL/icon), rather
+// than Ru1-Sign Up's single inline text+link. Purely presentational markup —
+// wiring the form up to a real account-creation endpoint is a separate
+// concern outside this renderer.
+
+export interface Ru2SignUpField {
+  label: string
+  inputType: string
+  placeholder: string
+  required: boolean
+}
+
+export interface Ru2SignUpData {
+  fontFamily: string
+
+  sectionBgColor: string
+  bgImage: string
+  overlayColor: string
+  overlayOpacity: number
+  bgImageAspectRatio: string
+  paddingY: number
+
+  cardBgColor: string
+  cardOpacity: number
+  cardBorderRadius: number
+  cardMaxWidth: number
+
+  title: string
+  titleColor: string
+  titleSize: number
+  titleFontWeight: string
+  titleFont: string
+
+  labelColor: string
+  labelFont: string
+  requiredColor: string
+  inputBorderColor: string
+  inputBgColor: string
+  inputTextColor: string
+  inputRadius: number
+
+  fields: Ru2SignUpField[]
+
+  submitLabel: string
+  submitBgColor: string
+  submitTextColor: string
+  submitRadius: number
+  buttonFont: string
+
+  showSecondaryText: boolean
+  showSecondaryButton: boolean
+  secondaryText: string
+  secondaryTextColor: string
+  secondaryTextHref: string
+  secondaryButtonLabel: string
+  secondaryButtonHref: string
+  secondaryButtonBgColor: string
+  secondaryButtonTextColor: string
+  secondaryButtonBorderColor: string
+  secondaryButtonRadius: number
+  secondaryButtonFont: string
+}
+
+export const ru2SignUpDefaults: Ru2SignUpData = {
+  fontFamily: '',
+
+  sectionBgColor: '#f3f4f6',
+  bgImage: '',
+  overlayColor: '#000000',
+  overlayOpacity: 0,
+  bgImageAspectRatio: 'Auto',
+  paddingY: 64,
+
+  cardBgColor: '#ffffff',
+  cardOpacity: 100,
+  cardBorderRadius: 16,
+  cardMaxWidth: 480,
+
+  title: '',
+  titleColor: '#0a1e5e',
+  titleSize: 28,
+  titleFontWeight: '600',
+  titleFont: '',
+
+  labelColor: '#374151',
+  labelFont: '',
+  requiredColor: '#dc2626',
+  inputBorderColor: '#d1d5db',
+  inputBgColor: '#ffffff',
+  inputTextColor: '#111827',
+  inputRadius: 4,
+
+  fields: [
+    { label: 'Your Email', inputType: 'email', placeholder: '', required: true },
+    { label: 'TSP ID', inputType: 'text', placeholder: '', required: true },
+    { label: 'First Name', inputType: 'text', placeholder: '', required: true },
+    { label: 'Last Name', inputType: 'text', placeholder: '', required: true },
+  ],
+
+  submitLabel: 'Sign up',
+  submitBgColor: '#dc2626',
+  submitTextColor: '#ffffff',
+  submitRadius: 4,
+  buttonFont: '',
+
+  showSecondaryText: true,
+  showSecondaryButton: true,
+  secondaryText: 'Create an Account',
+  secondaryTextColor: '#dc2626',
+  secondaryTextHref: '#',
+  secondaryButtonLabel: 'Log In',
+  secondaryButtonHref: '/login',
+  secondaryButtonBgColor: '#ffffff',
+  secondaryButtonTextColor: '#111827',
+  secondaryButtonBorderColor: '#d1d5db',
+  secondaryButtonRadius: 4,
+  secondaryButtonFont: '',
+}
+
+export const ru2SignUpFields: FieldConfig[] = [
+  { key: '_h_font', label: 'Font', type: 'header' },
+  fontField('fontFamily', 'Font Family'),
+
+  { key: '_h_section', label: 'Section', type: 'header' },
+  { key: 'sectionBgColor', label: 'Background Colour', type: 'color' },
+  { key: 'bgImage', label: 'Background Image', type: 'image', noAspectRatio: true },
+  { key: 'overlayColor', label: 'Overlay Colour', type: 'color' },
+  { key: 'overlayOpacity', label: 'Overlay Opacity (0-100)', type: 'number', step: 5, placeholder: '0' },
+  { key: 'bgImageAspectRatio', label: 'Background Image Aspect Ratio', type: 'select', options: ['Auto', 'Wide (16:9)', 'Standard (4:3)', 'Square (1:1)', 'Tall (3:4)', 'Cinematic (21:9)'] },
+  { key: 'paddingY', label: 'Vertical Padding', type: 'number', unit: 'px', step: 4, placeholder: '64' },
+
+  { key: '_h_card', label: 'Card', type: 'header' },
+  { key: 'cardBgColor', label: 'Card Background', type: 'color' },
+  { key: 'cardOpacity', label: 'Card Opacity (%)', type: 'number', unit: '%', step: 5, placeholder: '100' },
+  { key: 'cardBorderRadius', label: 'Card Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '16' },
+  { key: 'cardMaxWidth', label: 'Card Width', type: 'number', unit: 'px', step: 10, placeholder: '480' },
+
+  { key: '_h_title', label: 'Title', type: 'header' },
+  { key: 'title', label: 'Title Text (optional)', type: 'text', placeholder: 'e.g. Sign up' },
+  { key: 'titleColor', label: 'Title Colour', type: 'color' },
+  { key: 'titleSize', label: 'Title Size', type: 'number', unit: 'px', step: 1, placeholder: '28' },
+  { key: 'titleFontWeight', label: 'Title Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
+  fontField('titleFont', 'Title Font'),
+
+  { key: '_h_fieldstyle', label: 'Field Style', type: 'header' },
+  { key: 'labelColor', label: 'Label Colour', type: 'color' },
+  fontField('labelFont', 'Label Font'),
+  { key: 'requiredColor', label: 'Required Asterisk Colour', type: 'color' },
+  { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
+  { key: 'inputBgColor', label: 'Input Background', type: 'color' },
+  { key: 'inputTextColor', label: 'Input Text Colour', type: 'color' },
+  { key: 'inputRadius', label: 'Input Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '4' },
+  {
+    key: 'fields',
+    label: 'Form Fields',
+    type: 'list',
+    listFields: [
+      { key: 'label', label: 'Field Label', type: 'text', placeholder: 'e.g. Your Email' },
+      { key: 'inputType', label: 'Input Type', type: 'select', options: ['text', 'email', 'tel', 'number'], optionLabels: { text: 'Text', email: 'Email', tel: 'Phone', number: 'Number' } },
+      { key: 'placeholder', label: 'Placeholder', type: 'text' },
+      { key: 'required', label: 'Required', type: 'toggle' },
+    ],
+  },
+
+  { key: '_h_submit', label: 'Submit Button', type: 'header' },
+  { key: 'submitLabel', label: 'Button Text', type: 'text', placeholder: 'Sign up' },
+  { key: 'submitBgColor', label: 'Button Background', type: 'color' },
+  { key: 'submitTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'submitRadius', label: 'Button Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '4' },
+  fontField('buttonFont', 'Button Font'),
+
+  { key: '_h_secondary', label: 'Secondary Section', type: 'header' },
+  { key: 'showSecondaryText', label: 'Show "Create an Account" Label', type: 'toggle' },
+  { key: 'secondaryText', label: 'Label Text ("Create an Account")', type: 'text', placeholder: 'Create an Account' },
+  { key: 'secondaryTextColor', label: 'Label Colour', type: 'color' },
+  { key: 'secondaryTextHref', label: 'Label Link URL', type: 'url', placeholder: '#' },
+  { key: 'showSecondaryButton', label: 'Show Login Button', type: 'toggle' },
+  { key: 'secondaryButtonLabel', label: 'Button Text', type: 'text', placeholder: 'Log In' },
+  { key: 'secondaryButtonHref', label: 'Button URL', type: 'url', placeholder: '/login' },
+  { key: 'secondaryButtonBgColor', label: 'Button Background', type: 'color' },
+  { key: 'secondaryButtonTextColor', label: 'Button Text Colour', type: 'color' },
+  { key: 'secondaryButtonBorderColor', label: 'Button Border Colour', type: 'color' },
+  { key: 'secondaryButtonRadius', label: 'Button Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '4' },
+  fontField('secondaryButtonFont', 'Button Font'),
+]
+
+export function renderRu2SignUp(data: Ru2SignUpData): string {
+  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:${data.inputRadius ?? 4}px;background:${data.inputBgColor};padding:0.625rem 0.875rem;font-size:min(0.9375rem,4vw);color:${data.inputTextColor};border:1px solid ${data.inputBorderColor};outline:none;`
+  const labelStyle = `display:block;font-size:min(0.875rem,3.6vw);font-weight:600;color:${data.labelColor};margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
+  const requiredMark = `<span style="color:${data.requiredColor};">*</span>`
+
+  // item.required may be `''` right after a brand-new list item is added
+  // (seeded from this field's own `default`, which is unset here) — treating
+  // anything other than the literal `false` as required matches the sidebar
+  // toggle's own on/off convention (see isSubToggleOn/nextSubToggleValue in
+  // EditorSidebar.client.vue), so a freshly-added field shows as required
+  // immediately instead of needing the toggle clicked off-and-on once.
+  const fieldsHtml = (data.fields ?? []).map((f, i) => {
+    const required = f.required !== false
+    return `<div style="margin-bottom:1.25rem;">
+        <label style="${labelStyle}">${f.label}${required ? ` ${requiredMark}` : ''}</label>
+        <input type="${f.inputType || 'text'}" name="field_${i}" placeholder="${f.placeholder ?? ''}" style="${inputStyle}"${required ? ' required' : ''} />
+      </div>`
+  }).join('')
+
+  const showSecondaryText = data.showSecondaryText !== false
+  const showSecondaryButton = data.showSecondaryButton !== false
+
+  const secondaryTextHtml = showSecondaryText && data.secondaryText
+    ? `<a href="${data.secondaryTextHref || '#'}" style="display:block;margin:0 0 0.75rem;text-align:center;font-size:min(0.9375rem,4vw);font-weight:700;color:${data.secondaryTextColor};text-decoration:none;cursor:pointer;">${data.secondaryText}?</a>`
+    : ''
+
+  const secondaryButtonHtml = showSecondaryButton
+    ? `<a href="${data.secondaryButtonHref || '#'}" style="display:flex;align-items:center;justify-content:center;gap:0.5rem;width:100%;box-sizing:border-box;background:${data.secondaryButtonBgColor};color:${data.secondaryButtonTextColor};border:1px solid ${data.secondaryButtonBorderColor};border-radius:${data.secondaryButtonRadius ?? 4}px;padding:0.75rem;font-size:min(0.9375rem,4vw);font-weight:600;text-decoration:none;${fontCss(data.secondaryButtonFont, data.fontFamily)}"><span style="display:flex;flex-shrink:0;">${icon('arrowRight', { size: 18, stroke: data.secondaryButtonTextColor })}</span>${data.secondaryButtonLabel}</a>`
+    : ''
+
+  const secondaryHtml = (secondaryTextHtml || secondaryButtonHtml)
+    ? `<div style="margin-top:1.5rem;">${secondaryTextHtml}${secondaryButtonHtml}</div>`
+    : ''
+
+  const bgImgSrc = productImageSrc(data.bgImage)
+  const aspectRatioMap: Record<string, string> = {
+    'Wide (16:9)':      'aspect-ratio:16/9;',
+    'Standard (4:3)':   'aspect-ratio:4/3;',
+    'Square (1:1)':     'aspect-ratio:1/1;',
+    'Tall (3:4)':       'aspect-ratio:3/4;',
+    'Cinematic (21:9)': 'aspect-ratio:21/9;',
+  }
+  const bgAspect = (data.bgImageAspectRatio && data.bgImageAspectRatio !== 'Auto')
+    ? (aspectRatioMap[data.bgImageAspectRatio] ?? '')
+    : ''
+  const bgSpacerHtml = (bgImgSrc && !bgAspect)
+    ? `<img src="${bgImgSrc}" alt="" aria-hidden="true" style="grid-area:1/1;display:block;width:100%;height:auto;max-height:640px;visibility:hidden;pointer-events:none;" />`
+    : ''
+  const sectionBgStyle = bgImgSrc
+    ? `background-image:url('${bgImgSrc}');background-size:100% 100%;background-position:center;background-repeat:no-repeat;background-color:${data.sectionBgColor};${bgAspect}`
+    : `background-color:${data.sectionBgColor};`
+  const overlayOpacity = Math.min(100, Math.max(0, data.overlayOpacity ?? 0)) / 100
+  const overlayHtml = (bgImgSrc && overlayOpacity > 0)
+    ? `<div style="position:absolute;inset:0;background:${hexToRgba(data.overlayColor || '#000000', overlayOpacity)};pointer-events:none;"></div>`
+    : ''
+
+  return `<section data-component-title="Ru2-Sign Up" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;display:grid;${sectionBgStyle}${fontCss(undefined, data.fontFamily)}">
+<style>
+  @media(max-width:480px){ [data-ru2su-card]{padding:min(2rem,6vw) min(1.25rem,5vw)!important;} }
+</style>
+  ${bgSpacerHtml}
+  ${overlayHtml}
+  <div style="grid-area:1/1;position:relative;display:flex;align-items:flex-start;min-width:0;padding:min(${data.paddingY}px,10vw) 1rem;">
+  <div data-ru2su-card="true" style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 480}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
+    ${data.title ? `<h2 style="margin:0 0 2rem;text-align:center;font-size:min(${data.titleSize ?? 28}px,8vw);font-weight:${data.titleFontWeight ?? '600'};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>` : ''}
+    <form data-cms-auth="signup">
+      ${fieldsHtml}
+      <div data-cms-turnstile></div>
+      <button type="submit" style="width:100%;background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:${data.submitRadius ?? 4}px;padding:0.875rem;font-size:min(1rem,4.2vw);font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.submitLabel}</button>
+    </form>
+    ${secondaryHtml}
   </div>
   </div>
 </section>`
