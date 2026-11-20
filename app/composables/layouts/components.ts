@@ -14380,13 +14380,16 @@ export interface Ru2SignUpData {
   submitTextColor: string
   submitRadius: number
   buttonFont: string
+  submitEndpoint: string
 
-  showSecondaryText: boolean
+  showLoginLink: boolean
+  loginText: string
+  loginLinkLabel: string
+  loginLinkHref: string
+  loginTextColor: string
+  loginLinkColor: string
+
   showSecondaryButton: boolean
-  secondaryText: string
-  secondaryTextColor: string
-  secondaryTextFontWeight: string
-  secondaryTextHref: string
   secondaryButtonLabel: string
   secondaryButtonHref: string
   secondaryButtonBgColor: string
@@ -14442,14 +14445,17 @@ export const ru2SignUpDefaults: Ru2SignUpData = {
   submitTextColor: '#ffffff',
   submitRadius: 4,
   buttonFont: '',
+  submitEndpoint: '',
 
-  showSecondaryText: true,
-  showSecondaryButton: true,
-  secondaryText: 'Create an Account',
-  secondaryTextColor: '#111827',
-  secondaryTextFontWeight: '700',
-  secondaryTextHref: '#',
-  secondaryButtonLabel: 'Log In',
+  showLoginLink: true,
+  loginText: 'Already have an account ',
+  loginLinkLabel: 'Login here',
+  loginLinkHref: '/login',
+  loginTextColor: '#374151',
+  loginLinkColor: '#0a1e5e',
+
+  showSecondaryButton: false,
+  secondaryButtonLabel: 'Log in with VIDAPAY',
   secondaryButtonHref: '/login',
   secondaryButtonBgColor: '#ffffff',
   secondaryButtonTextColor: '#111827',
@@ -14511,19 +14517,23 @@ export const ru2SignUpFields: FieldConfig[] = [
 
   { key: '_h_submit', label: 'Submit Button', type: 'header' },
   { key: 'submitLabel', label: 'Button Text', type: 'text', placeholder: 'Sign up' },
+  { key: 'submitEndpoint', label: 'Submit Button End Point', type: 'text', placeholder: '' },
   { key: 'submitBgColor', label: 'Button Background', type: 'color' },
   { key: 'submitTextColor', label: 'Button Text Colour', type: 'color' },
   { key: 'submitRadius', label: 'Button Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '4' },
   fontField('buttonFont', 'Button Font'),
 
+  { key: '_h_login', label: 'Login Link', type: 'header' },
+  { key: 'showLoginLink', label: 'Show Login Line', type: 'toggle' },
+  { key: 'loginText', label: 'Text', type: 'text', placeholder: 'Already have an account ' },
+  { key: 'loginLinkLabel', label: 'Link Label', type: 'text', placeholder: 'Login here' },
+  { key: 'loginLinkHref', label: 'Link URL', type: 'url', placeholder: '/login' },
+  { key: 'loginTextColor', label: 'Text Colour', type: 'color' },
+  { key: 'loginLinkColor', label: 'Link Colour', type: 'color' },
+
   { key: '_h_secondary', label: 'Secondary Section', type: 'header' },
-  { key: 'showSecondaryText', label: 'Show "Create an Account" Label', type: 'toggle' },
-  { key: 'secondaryText', label: 'Label Text ("Create an Account")', type: 'text', placeholder: 'Create an Account' },
-  { key: 'secondaryTextColor', label: 'Label Colour', type: 'color' },
-  { key: 'secondaryTextFontWeight', label: 'Label Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
-  { key: 'secondaryTextHref', label: 'Label Link URL', type: 'url', placeholder: '#' },
   { key: 'showSecondaryButton', label: 'Show Login Button', type: 'toggle' },
-  { key: 'secondaryButtonLabel', label: 'Button Text', type: 'text', placeholder: 'Log In' },
+  { key: 'secondaryButtonLabel', label: 'Button Text', type: 'text', placeholder: 'Log in with VIDAPAY' },
   { key: 'secondaryButtonHref', label: 'Button URL', type: 'url', placeholder: '/login' },
   { key: 'secondaryButtonBgColor', label: 'Button Background', type: 'color' },
   { key: 'secondaryButtonTextColor', label: 'Button Text Colour', type: 'color' },
@@ -14551,20 +14561,17 @@ export function renderRu2SignUp(data: Ru2SignUpData): string {
       </div>`
   }).join('')
 
-  const showSecondaryText = data.showSecondaryText !== false
-  const showSecondaryButton = data.showSecondaryButton !== false
-
-  const secondaryTextHtml = showSecondaryText && data.secondaryText
-    ? `<a href="${data.secondaryTextHref || '#'}" style="display:block;margin:0 0 0.75rem;text-align:center;font-size:min(0.9375rem,4vw);font-weight:${data.secondaryTextFontWeight ?? '700'};color:${data.secondaryTextColor};text-decoration:none;cursor:pointer;">${data.secondaryText}?</a>`
+  const loginHtml = data.showLoginLink !== false && data.loginText
+    ? `<p style="margin:1.5rem 0 0;text-align:center;font-size:min(0.9375rem,4vw);color:${data.loginTextColor};">${data.loginText}<a href="${data.loginLinkHref || '#'}" style="color:${data.loginLinkColor};font-weight:700;text-decoration:none;">${data.loginLinkLabel}</a></p>`
     : ''
+
+  const showSecondaryButton = data.showSecondaryButton === true
 
   const secondaryButtonHtml = showSecondaryButton
-    ? `<a href="${data.secondaryButtonHref || '#'}" style="display:flex;align-items:center;justify-content:center;gap:0.5rem;width:100%;box-sizing:border-box;background:${data.secondaryButtonBgColor};color:${data.secondaryButtonTextColor};border:1px solid ${data.secondaryButtonBorderColor};border-radius:${data.secondaryButtonRadius ?? 4}px;padding:0.75rem;font-size:min(0.9375rem,4vw);font-weight:600;text-decoration:none;${fontCss(data.secondaryButtonFont, data.fontFamily)}"><span style="display:flex;flex-shrink:0;">${icon('arrowRight', { size: 18, stroke: data.secondaryButtonTextColor })}</span>${data.secondaryButtonLabel}</a>`
+    ? `<div style="margin-top:1rem;"><a href="${data.secondaryButtonHref || '#'}" style="display:flex;align-items:center;justify-content:center;gap:0.5rem;width:100%;box-sizing:border-box;background:${data.secondaryButtonBgColor};color:${data.secondaryButtonTextColor};border:1px solid ${data.secondaryButtonBorderColor};border-radius:${data.secondaryButtonRadius ?? 4}px;padding:0.75rem;font-size:min(0.9375rem,4vw);font-weight:600;text-decoration:none;${fontCss(data.secondaryButtonFont, data.fontFamily)}"><span style="display:flex;flex-shrink:0;">${icon('arrowRight', { size: 18, stroke: data.secondaryButtonTextColor })}</span>${data.secondaryButtonLabel}</a></div>`
     : ''
 
-  const secondaryHtml = (secondaryTextHtml || secondaryButtonHtml)
-    ? `<div style="margin-top:1.5rem;">${secondaryTextHtml}${secondaryButtonHtml}</div>`
-    : ''
+  const secondaryHtml = `${loginHtml}${secondaryButtonHtml}`
 
   const showInfoNote = data.showInfoIcon === true
   const infoIconHtml = showInfoNote
@@ -14610,7 +14617,7 @@ export function renderRu2SignUp(data: Ru2SignUpData): string {
   <div style="grid-area:1/1;position:relative;display:flex;align-items:flex-start;min-width:0;padding:min(${data.paddingY}px,10vw) 1rem;">
   <div data-ru2su-card="true" style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 560}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(1.5rem,5vw) min(2.5rem,7vw);box-sizing:border-box;">
     ${data.title ? `<h2 style="margin:0 0 2rem;text-align:center;font-size:min(${data.titleSize ?? 28}px,8vw);font-weight:${data.titleFontWeight ?? '600'};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>` : ''}
-    <form data-cms-auth="signup">
+    <form data-cms-auth="signup"${data.submitEndpoint ? ` data-cms-auth-endpoint="${data.submitEndpoint}"` : ''}>
       ${fieldsHtml}
       <div data-cms-turnstile></div>
       ${infoHtml}
