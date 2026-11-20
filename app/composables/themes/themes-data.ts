@@ -952,6 +952,7 @@ export interface Ru1FooterData {
   contactPhone: string
   contactUsLabel: string
   contactUsUrl: string
+  connectNotes: { position: 'top' | 'above_contact_us' | 'above_email' | 'above_phone' | 'bottom'; text: string }[]
   showConnectIcons: boolean
   connectIconColor: string
   connectIconStyle: 'outline' | 'filled'
@@ -997,6 +998,7 @@ export const ru1FooterDefaults: Ru1FooterData = {
   contactPhone: '+1 000-000-0000',
   contactUsLabel: 'Contact us',
   contactUsUrl: '/contactus',
+  connectNotes: [],
   showConnectIcons: false,
   connectIconColor: '',
   connectIconStyle: 'outline',
@@ -1039,6 +1041,23 @@ export const ru1FooterFields: FieldConfig[] = [
   { key: 'contactUsUrl', label: 'Contact Us URL', type: 'url' },
   { key: 'contactEmail', label: 'Contact Email', type: 'text' },
   { key: 'contactPhone', label: 'Contact Phone', type: 'text' },
+  {
+    key: 'connectNotes', label: 'Connect With Us — Custom Text', type: 'list',
+    listFields: [
+      {
+        key: 'position', label: 'Position', type: 'select',
+        options: ['top', 'above_contact_us', 'above_email', 'above_phone', 'bottom'],
+        optionLabels: {
+          top: 'Top of column',
+          above_contact_us: 'Above "Contact Us" link',
+          above_email: 'Above email',
+          above_phone: 'Above phone',
+          bottom: 'Bottom of column',
+        },
+      },
+      { key: 'text', label: 'Text', type: 'textarea', placeholder: 'Add your text' },
+    ],
+  },
   { key: 'showConnectIcons', label: 'Show Icons', type: 'toggle' },
   { key: 'connectIconColor', label: 'Icon Color', type: 'color', visibleIf: (d: any) => d.showConnectIcons === true },
   { key: 'connectIconStyle', label: 'Icon Style', type: 'select', options: ['outline', 'filled'], visibleIf: (d: any) => d.showConnectIcons === true },
@@ -1159,12 +1178,24 @@ export function renderRu1Footer(data: Ru1FooterData): string {
     label?.trim()
       ? `<li style="list-style:none;display:flex;align-items:center;gap:0.5rem;">${connectIconsOn ? `<span style="color:${connectIconColor};display:inline-flex;">${iconSvg}</span>` : ''}<a href="${href}" style="${aStyle}">${label}</a></li>`
       : ''
+  // Merchant-authored freeform text pinned to one of five anchors around the
+  // three fixed rows, rendered as plain (non-link) lines, e.g. "Contact: Jane Doe".
+  const notesFor = (pos: string) =>
+    (data.connectNotes ?? [])
+      .filter(n => (n.position || 'top') === pos)
+      .map(n => n.text?.trim() ? `<li style="list-style:none;${pStyle}">${n.text}</li>` : '')
+      .join('')
   const contactCol = `<div style="max-width:20rem;">
         <h3 style="${hStyle}">Connect with Us</h3>
         <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.5rem;">
+          ${notesFor('top')}
+          ${notesFor('above_contact_us')}
           ${connectRow(connectIcons.chat, data.contactUsUrl, data.contactUsLabel)}
+          ${notesFor('above_email')}
           ${connectRow(connectIcons.envelope, `mailto:${data.contactEmail}`, data.contactEmail)}
+          ${notesFor('above_phone')}
           ${connectRow(connectIcons.phone, `tel:${data.contactPhone}`, data.contactPhone)}
+          ${notesFor('bottom')}
         </ul>
         ${socialRow}
       </div>`

@@ -44,6 +44,12 @@ const config: PageBuilderConfig = {
     formName: 'page',
   },
   resourceData: props.pageId ? { title: props.pageId, id: props.pageId as any } : null,
+  userSettings: {
+    language: {
+      default: 'en',
+      disableLanguageDropDown: true,
+    },
+  },
 }
 
 // Mirrors the builder's internal sanitizeForLocalStorage to compute the key.
@@ -77,10 +83,19 @@ const hasUnsavedChanges = useState<boolean>('hasUnsavedChanges', () => false)
 async function handleSaveClick() {
   if (saveInFlight.value || !props.pageId) return
 
-  // Allow the builder's handleManualSave to flush saveDomComponentsToLocalStorage first
-  await new Promise<void>((resolve) => setTimeout(resolve, 500))
-
   const builder = getPageBuilder() as any
+  // Force a fresh DOM→localStorage flush right now, synchronously, instead
+  // of guessing with a fixed delay that an earlier edit's own flush (fired
+  // from _applyBlockRender/_syncBuilderWithListeners in useEditorSidebar.ts)
+  // already landed. A field edited and saved (e.g. a link added via the
+  // rich-text modal) a second or two before clicking this button should
+  // already be flushed by then — but relying on that timing instead of
+  // re-flushing here is exactly the kind of gap that silently drops a
+  // just-made edit from the saved page. saveDomComponentsToLocalStorage()
+  // reads the live canvas DOM directly (not the Pinia store), so this is
+  // always accurate regardless of what ran before it.
+  builder.saveDomComponentsToLocalStorage()
+
   const html = builder.getSavedPageHtml()
   if (!html) return
 
