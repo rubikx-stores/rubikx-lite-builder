@@ -29,9 +29,12 @@ export type IconName = keyof typeof PATHS
 
 export function icon(
   name: IconName,
-  opts: { size?: number; stroke?: string; style?: string; strokeWidth?: string } = {},
+  opts: { size?: number; stroke?: string; style?: string; strokeWidth?: string; filled?: boolean } = {},
 ): string {
-  const { size = 24, stroke = 'currentColor', style = '', strokeWidth = '1.5' } = opts
+  const { size = 24, stroke = 'currentColor', style = '', strokeWidth = '1.5', filled = false } = opts
   const styleAttr = style ? ` style="${style}"` : ''
+  if (filled) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" fill="${stroke}" viewBox="0 0 24 24" width="${size}" height="${size}"${styleAttr}><path d="${PATHS[name]}"/></svg>`
+  }
   return `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="${strokeWidth}" stroke="${stroke}" width="${size}" height="${size}"${styleAttr}><path stroke-linecap="round" stroke-linejoin="round" d="${PATHS[name]}"/></svg>`
 }

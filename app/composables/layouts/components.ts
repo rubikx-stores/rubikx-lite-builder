@@ -4457,6 +4457,7 @@ export interface Ru1FooterData {
   contactPhone: string
   contactUsLabel: string
   contactUsUrl: string
+  connectNotes: { position: 'top' | 'above_contact_us' | 'above_email' | 'above_phone' | 'bottom'; text: string }[]
   showConnectIcons: boolean
   connectIconColor: string
   connectIconStyle: 'outline' | 'filled'
@@ -4502,6 +4503,7 @@ export const ru1FooterDefaults: Ru1FooterData = {
   contactPhone: '+1 000-000-0000',
   contactUsLabel: 'Contact us',
   contactUsUrl: '/contactus',
+  connectNotes: [],
   showConnectIcons: false,
   connectIconColor: '',
   connectIconStyle: 'outline',
@@ -4552,6 +4554,23 @@ export const ru1FooterFields: FieldConfig[] = [
   { key: 'contactUsUrl', label: 'Contact Us URL', type: 'url' },
   { key: 'contactEmail', label: 'Contact Email',      type: 'text'   },
   { key: 'contactPhone', label: 'Contact Phone',      type: 'text'   },
+  {
+    key: 'connectNotes', label: 'Connect With Us — Custom Text', type: 'list',
+    listFields: [
+      {
+        key: 'position', label: 'Position', type: 'select',
+        options: ['top', 'above_contact_us', 'above_email', 'above_phone', 'bottom'],
+        optionLabels: {
+          top: 'Top of column',
+          above_contact_us: 'Above "Contact Us" link',
+          above_email: 'Above email',
+          above_phone: 'Above phone',
+          bottom: 'Bottom of column',
+        },
+      },
+      { key: 'text', label: 'Text', type: 'textarea', placeholder: 'Add your text' },
+    ],
+  },
   { key: 'showConnectIcons', label: 'Show Icons', type: 'toggle' },
   { key: 'connectIconColor', label: 'Icon Color', type: 'color', visibleIf: (d: any) => d.showConnectIcons === true },
   { key: 'connectIconStyle', label: 'Icon Style', type: 'select', options: ['outline', 'filled'], visibleIf: (d: any) => d.showConnectIcons === true },
@@ -4652,12 +4671,24 @@ export function renderRu1Footer(data: Ru1FooterData): string {
     label?.trim()
       ? `<li style="list-style:none;display:flex;align-items:center;gap:8px;">${connectIconsOn ? `<span style="color:${connectIconColor};display:inline-flex;">${iconSvg}</span>` : ''}<a href="${href}" style="${aStyle}">${label}</a></li>`
       : ''
+  // Merchant-authored freeform text pinned to one of five anchors around the
+  // three fixed rows, rendered as plain (non-link) lines, e.g. "Contact: Jane Doe".
+  const notesFor = (pos: string) =>
+    (data.connectNotes ?? [])
+      .filter(n => (n.position || 'top') === pos)
+      .map(n => n.text?.trim() ? `<li style="list-style:none;${pStyle}">${n.text}</li>` : '')
+      .join('')
   const contactCol = `<div style="max-width:320px;">
         <h3 style="${hStyle}">Connect with Us</h3>
         <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;">
+          ${notesFor('top')}
+          ${notesFor('above_contact_us')}
           ${connectRow(connectIcons.chat, data.contactUsUrl, data.contactUsLabel)}
+          ${notesFor('above_email')}
           ${connectRow(connectIcons.envelope, `mailto:${data.contactEmail}`, data.contactEmail)}
+          ${notesFor('above_phone')}
           ${connectRow(connectIcons.phone, `tel:${data.contactPhone}`, data.contactPhone)}
+          ${notesFor('bottom')}
         </ul>
         ${socialRow}
       </div>`
@@ -14331,13 +14362,18 @@ export interface Ru2SignUpData {
 
   labelColor: string
   labelFont: string
+  labelFontWeight: string
   requiredColor: string
   inputBorderColor: string
   inputBgColor: string
-  inputTextColor: string
   inputRadius: number
 
   fields: Ru2SignUpField[]
+
+  infoText: string
+  infoTextColor: string
+  showInfoIcon: boolean
+  infoIconSize: number
 
   submitLabel: string
   submitBgColor: string
@@ -14349,6 +14385,7 @@ export interface Ru2SignUpData {
   showSecondaryButton: boolean
   secondaryText: string
   secondaryTextColor: string
+  secondaryTextFontWeight: string
   secondaryTextHref: string
   secondaryButtonLabel: string
   secondaryButtonHref: string
@@ -14372,7 +14409,7 @@ export const ru2SignUpDefaults: Ru2SignUpData = {
   cardBgColor: '#ffffff',
   cardOpacity: 100,
   cardBorderRadius: 16,
-  cardMaxWidth: 480,
+  cardMaxWidth: 560,
 
   title: '',
   titleColor: '#0a1e5e',
@@ -14382,21 +14419,26 @@ export const ru2SignUpDefaults: Ru2SignUpData = {
 
   labelColor: '#374151',
   labelFont: '',
-  requiredColor: '#dc2626',
+  labelFontWeight: '700',
+  requiredColor: '#111827',
   inputBorderColor: '#d1d5db',
   inputBgColor: '#ffffff',
-  inputTextColor: '#111827',
   inputRadius: 4,
 
   fields: [
-    { label: 'Your Email', inputType: 'email', placeholder: '', required: true },
-    { label: 'TSP ID', inputType: 'text', placeholder: '', required: true },
-    { label: 'First Name', inputType: 'text', placeholder: '', required: true },
-    { label: 'Last Name', inputType: 'text', placeholder: '', required: true },
+    { label: 'Your Email', inputType: 'email', placeholder: 'Enter your email', required: true },
+    { label: 'TSP ID', inputType: 'text', placeholder: 'Enter your TSP ID', required: true },
+    { label: 'First Name', inputType: 'text', placeholder: 'Enter your first name', required: true },
+    { label: 'Last Name', inputType: 'text', placeholder: 'Enter your last name', required: true },
   ],
 
+  infoText: '',
+  infoTextColor: '#374151',
+  showInfoIcon: false,
+  infoIconSize: 16,
+
   submitLabel: 'Sign up',
-  submitBgColor: '#dc2626',
+  submitBgColor: '#165379',
   submitTextColor: '#ffffff',
   submitRadius: 4,
   buttonFont: '',
@@ -14404,7 +14446,8 @@ export const ru2SignUpDefaults: Ru2SignUpData = {
   showSecondaryText: true,
   showSecondaryButton: true,
   secondaryText: 'Create an Account',
-  secondaryTextColor: '#dc2626',
+  secondaryTextColor: '#111827',
+  secondaryTextFontWeight: '700',
   secondaryTextHref: '#',
   secondaryButtonLabel: 'Log In',
   secondaryButtonHref: '/login',
@@ -14431,7 +14474,7 @@ export const ru2SignUpFields: FieldConfig[] = [
   { key: 'cardBgColor', label: 'Card Background', type: 'color' },
   { key: 'cardOpacity', label: 'Card Opacity (%)', type: 'number', unit: '%', step: 5, placeholder: '100' },
   { key: 'cardBorderRadius', label: 'Card Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '16' },
-  { key: 'cardMaxWidth', label: 'Card Width', type: 'number', unit: 'px', step: 10, placeholder: '480' },
+  { key: 'cardMaxWidth', label: 'Card Width', type: 'number', unit: 'px', step: 10, placeholder: '560' },
 
   { key: '_h_title', label: 'Title', type: 'header' },
   { key: 'title', label: 'Title Text (optional)', type: 'text', placeholder: 'e.g. Sign up' },
@@ -14443,10 +14486,10 @@ export const ru2SignUpFields: FieldConfig[] = [
   { key: '_h_fieldstyle', label: 'Field Style', type: 'header' },
   { key: 'labelColor', label: 'Label Colour', type: 'color' },
   fontField('labelFont', 'Label Font'),
+  { key: 'labelFontWeight', label: 'Field Label Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
   { key: 'requiredColor', label: 'Required Asterisk Colour', type: 'color' },
   { key: 'inputBorderColor', label: 'Input Border Colour', type: 'color' },
   { key: 'inputBgColor', label: 'Input Background', type: 'color' },
-  { key: 'inputTextColor', label: 'Input Text Colour', type: 'color' },
   { key: 'inputRadius', label: 'Input Corner Radius', type: 'number', unit: 'px', step: 1, placeholder: '4' },
   {
     key: 'fields',
@@ -14460,6 +14503,12 @@ export const ru2SignUpFields: FieldConfig[] = [
     ],
   },
 
+  { key: '_h_info', label: 'Info Note', type: 'header' },
+  { key: 'showInfoIcon', label: 'Show Icon', type: 'toggle', default: false },
+  { key: 'infoText', label: 'Info Text', type: 'textarea', placeholder: 'e.g. We will never share your details.' },
+  { key: 'infoTextColor', label: 'Info Text Colour', type: 'color' },
+  { key: 'infoIconSize', label: 'Icon Size', type: 'number', unit: 'px', step: 1, placeholder: '16' },
+
   { key: '_h_submit', label: 'Submit Button', type: 'header' },
   { key: 'submitLabel', label: 'Button Text', type: 'text', placeholder: 'Sign up' },
   { key: 'submitBgColor', label: 'Button Background', type: 'color' },
@@ -14471,6 +14520,7 @@ export const ru2SignUpFields: FieldConfig[] = [
   { key: 'showSecondaryText', label: 'Show "Create an Account" Label', type: 'toggle' },
   { key: 'secondaryText', label: 'Label Text ("Create an Account")', type: 'text', placeholder: 'Create an Account' },
   { key: 'secondaryTextColor', label: 'Label Colour', type: 'color' },
+  { key: 'secondaryTextFontWeight', label: 'Label Font Weight', type: 'select', options: ['400', '500', '600', '700', '800'] },
   { key: 'secondaryTextHref', label: 'Label Link URL', type: 'url', placeholder: '#' },
   { key: 'showSecondaryButton', label: 'Show Login Button', type: 'toggle' },
   { key: 'secondaryButtonLabel', label: 'Button Text', type: 'text', placeholder: 'Log In' },
@@ -14483,8 +14533,8 @@ export const ru2SignUpFields: FieldConfig[] = [
 ]
 
 export function renderRu2SignUp(data: Ru2SignUpData): string {
-  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:${data.inputRadius ?? 4}px;background:${data.inputBgColor};padding:0.625rem 0.875rem;font-size:min(0.9375rem,4vw);color:${data.inputTextColor};border:1px solid ${data.inputBorderColor};outline:none;`
-  const labelStyle = `display:block;font-size:min(0.875rem,3.6vw);font-weight:600;color:${data.labelColor};margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
+  const inputStyle = `display:block;width:100%;box-sizing:border-box;border-radius:${data.inputRadius ?? 4}px;background:${data.inputBgColor};padding:0.625rem 0.875rem;font-size:min(0.9375rem,4vw);color:#111827;border:1px solid ${data.inputBorderColor};outline:none;`
+  const labelStyle = `display:block;font-size:min(0.875rem,3.6vw);font-weight:${data.labelFontWeight ?? '700'};color:${data.labelColor};margin-bottom:0.5rem;${fontCss(data.labelFont, data.fontFamily)}`
   const requiredMark = `<span style="color:${data.requiredColor};">*</span>`
 
   // item.required may be `''` right after a brand-new list item is added
@@ -14505,7 +14555,7 @@ export function renderRu2SignUp(data: Ru2SignUpData): string {
   const showSecondaryButton = data.showSecondaryButton !== false
 
   const secondaryTextHtml = showSecondaryText && data.secondaryText
-    ? `<a href="${data.secondaryTextHref || '#'}" style="display:block;margin:0 0 0.75rem;text-align:center;font-size:min(0.9375rem,4vw);font-weight:700;color:${data.secondaryTextColor};text-decoration:none;cursor:pointer;">${data.secondaryText}?</a>`
+    ? `<a href="${data.secondaryTextHref || '#'}" style="display:block;margin:0 0 0.75rem;text-align:center;font-size:min(0.9375rem,4vw);font-weight:${data.secondaryTextFontWeight ?? '700'};color:${data.secondaryTextColor};text-decoration:none;cursor:pointer;">${data.secondaryText}?</a>`
     : ''
 
   const secondaryButtonHtml = showSecondaryButton
@@ -14514,6 +14564,19 @@ export function renderRu2SignUp(data: Ru2SignUpData): string {
 
   const secondaryHtml = (secondaryTextHtml || secondaryButtonHtml)
     ? `<div style="margin-top:1.5rem;">${secondaryTextHtml}${secondaryButtonHtml}</div>`
+    : ''
+
+  const showInfoNote = data.showInfoIcon === true
+  const infoIconHtml = showInfoNote
+    ? `<span style="display:flex;flex-shrink:0;margin-top:0.125rem;">${icon('informationCircle', { size: data.infoIconSize ?? 16, stroke: data.infoTextColor || '#374151' })}</span>`
+    : ''
+  const infoTextHtml = (showInfoNote && data.infoText) ? `<span>${data.infoText}</span>` : ''
+
+  const infoHtml = showInfoNote
+    ? `<div style="display:flex;align-items:flex-start;gap:0.5rem;margin-bottom:1.25rem;font-size:min(0.8125rem,3.6vw);line-height:1.5;color:${data.infoTextColor || '#374151'};">
+        ${infoIconHtml}
+        ${infoTextHtml}
+      </div>`
     : ''
 
   const bgImgSrc = productImageSrc(data.bgImage)
@@ -14540,16 +14603,17 @@ export function renderRu2SignUp(data: Ru2SignUpData): string {
 
   return `<section data-component-title="Ru2-Sign Up" data-component-props="${encodeURIComponent(JSON.stringify(data))}" style="position:relative;display:grid;${sectionBgStyle}${fontCss(undefined, data.fontFamily)}">
 <style>
-  @media(max-width:480px){ [data-ru2su-card]{padding:min(2rem,6vw) min(1.25rem,5vw)!important;} }
+  @media(max-width:480px){ [data-ru2su-card]{padding:min(1.25rem,4vw) min(1.25rem,5vw)!important;} }
 </style>
   ${bgSpacerHtml}
   ${overlayHtml}
   <div style="grid-area:1/1;position:relative;display:flex;align-items:flex-start;min-width:0;padding:min(${data.paddingY}px,10vw) 1rem;">
-  <div data-ru2su-card="true" style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 480}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(3rem,8vw) min(2.5rem,7vw);box-sizing:border-box;">
+  <div data-ru2su-card="true" style="position:relative;width:100%;max-width:${data.cardMaxWidth ?? 560}px;margin:0 auto;background:${hexToRgba(data.cardBgColor, Math.min(100, Math.max(0, data.cardOpacity ?? 100)) / 100)};border-radius:${data.cardBorderRadius ?? 16}px;box-shadow:0 20px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.06);padding:min(1.5rem,5vw) min(2.5rem,7vw);box-sizing:border-box;">
     ${data.title ? `<h2 style="margin:0 0 2rem;text-align:center;font-size:min(${data.titleSize ?? 28}px,8vw);font-weight:${data.titleFontWeight ?? '600'};color:${data.titleColor};${fontCss(data.titleFont, data.fontFamily)}">${data.title}</h2>` : ''}
     <form data-cms-auth="signup">
       ${fieldsHtml}
       <div data-cms-turnstile></div>
+      ${infoHtml}
       <button type="submit" style="width:100%;background:${data.submitBgColor};color:${data.submitTextColor};border:none;border-radius:${data.submitRadius ?? 4}px;padding:0.875rem;font-size:min(1rem,4.2vw);font-weight:600;cursor:pointer;${fontCss(data.buttonFont, data.fontFamily)}">${data.submitLabel}</button>
     </form>
     ${secondaryHtml}
