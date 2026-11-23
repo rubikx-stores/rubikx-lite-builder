@@ -3377,7 +3377,7 @@ function renderFileUploadButton(f: ContactFormFieldItem, req: string, id: string
   const buttonBg = f.button_bg_color || submitBgColor
   const idAttr = id ? ` id="${id}"` : ''
   return `<span style="display:inline-flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
-    <label style="position:relative;${buttonStyle}background:${buttonBg};">${buttonLabel}<input type="file"${idAttr} name="${f.name}" accept="image/*" style="${VISUALLY_HIDDEN_FILE_INPUT_STYLE}"${req} onchange="var s=this.closest('label').nextElementSibling;if(s)s.textContent=this.files&amp;&amp;this.files[0]?this.files[0].name:'';" /></label>
+    <label style="position:relative;${buttonStyle}background:${buttonBg};">${buttonLabel}<input type="file"${idAttr} name="${f.name}" data-field-name="${f.name}" accept="image/*" style="${VISUALLY_HIDDEN_FILE_INPUT_STYLE}"${req} onchange="var s=this.closest('label').nextElementSibling;if(s)s.textContent=this.files&amp;&amp;this.files[0]?this.files[0].name:'';" /></label>
     <span style="font-size:0.875rem;color:${fileNameTextColor};"></span>
   </span>`
 }
@@ -3568,16 +3568,16 @@ export function renderRu1Form(data: Ru1FormData): string {
     const fullWidth = ['textarea', 'select', 'checkbox', 'file'].includes(f.field_type) ? 'grid-column:1/-1;' : ''
     let control: string
     if (f.field_type === 'textarea') {
-      control = `<textarea id="ru1-${f.name}" name="${f.name}" rows="4" style="${inputStyle}resize:vertical;"${req}>${f.default_value ?? ''}</textarea>`
+      control = `<textarea id="ru1-${f.name}" name="${f.name}" data-field-name="${f.name}" rows="4" style="${inputStyle}resize:vertical;"${req}>${f.default_value ?? ''}</textarea>`
     } else if (f.field_type === 'select') {
       const opts = (f.values ?? '').split(',').map(v => v.trim()).filter(Boolean)
-      control = `<select id="ru1-${f.name}" name="${f.name}" style="${inputStyle}"${req}>${opts.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`
+      control = `<select id="ru1-${f.name}" name="${f.name}" data-field-name="${f.name}" style="${inputStyle}"${req}>${opts.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`
     } else if (f.field_type === 'checkbox') {
       control = renderCheckboxGroup(f, req, 'display:flex;align-items:center;gap:0.5rem;font-size:0.9375rem;color:#111827;font-weight:400;')
     } else if (f.field_type === 'file') {
       control = renderFileUploadButton(f, req, `ru1-${f.name}`, data.submitBgColor, 'display:inline-flex;align-items:center;border-radius:6px;padding:0.625rem 1.25rem;font-size:0.875rem;font-weight:600;color:#fff;cursor:pointer;', '#111827')
     } else {
-      control = `<input type="${f.field_type || 'text'}" id="ru1-${f.name}" name="${f.name}" style="${inputStyle}"${value}${req} />`
+      control = `<input type="${f.field_type || 'text'}" id="ru1-${f.name}" name="${f.name}" data-field-name="${f.name}" style="${inputStyle}"${value}${req} />`
     }
     // A checkbox group has no single control to point a `for` at — a plain
     // <span> avoids a dangling label reference that focuses nothing.
@@ -3844,16 +3844,16 @@ export function renderRu2Form(data: Ru2FormData): string {
     const fullWidth = ['textarea', 'select', 'checkbox', 'file'].includes(f.field_type) ? 'grid-column:1/-1;' : ''
     let control: string
     if (f.field_type === 'textarea') {
-      control = `<textarea name="${f.name}" rows="4" placeholder="${f.label}" style="${inputStyle}resize:vertical;height:120px;"${req}>${f.default_value ?? ''}</textarea>`
+      control = `<textarea name="${f.name}" data-field-name="${f.name}" rows="4" placeholder="${f.label}" style="${inputStyle}resize:vertical;height:120px;"${req}>${f.default_value ?? ''}</textarea>`
     } else if (f.field_type === 'select') {
       const opts = (f.values ?? '').split(',').map(v => v.trim()).filter(Boolean)
-      control = `<select name="${f.name}" style="${inputStyle}appearance:none;cursor:pointer;"${req}>${opts.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`
+      control = `<select name="${f.name}" data-field-name="${f.name}" style="${inputStyle}appearance:none;cursor:pointer;"${req}>${opts.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`
     } else if (f.field_type === 'checkbox') {
       control = renderCheckboxGroup(f, req, `display:flex;align-items:center;gap:8px;font-size:14px;color:${data.labelColor};font-weight:400;`)
     } else if (f.field_type === 'file') {
       control = renderFileUploadButton(f, req, null, data.submitBgColor, `display:inline-flex;align-items:center;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;color:${data.submitTextColor};cursor:pointer;`, data.labelColor)
     } else {
-      control = `<input type="${f.field_type || 'text'}" name="${f.name}" placeholder="${f.label}" style="${inputStyle}"${value}${req}/>`
+      control = `<input type="${f.field_type || 'text'}" name="${f.name}" data-field-name="${f.name}" placeholder="${f.label}" style="${inputStyle}"${value}${req}/>`
     }
     return `<div style="margin-bottom:16px;${fullWidth}">
         <label style="display:block;font-size:12px;font-weight:600;color:${data.labelColor};margin-bottom:6px;">${f.label}</label>
@@ -4328,16 +4328,16 @@ function buildRu3ContactFormHtml(data: Ru3ContactFormData): { html: string; reso
     const value = f.default_value ? ` value="${f.default_value}"` : ''
     let control: string
     if (f.field_type === 'textarea') {
-      control = `<textarea name="${f.name}" rows="4" style="${inputStyle}resize:vertical;"${req}>${f.default_value ?? ''}</textarea>`
+      control = `<textarea name="${f.name}" data-field-name="${f.name}" rows="4" style="${inputStyle}resize:vertical;"${req}>${f.default_value ?? ''}</textarea>`
     } else if (f.field_type === 'select') {
       const opts = (f.values ?? '').split(',').map(v => v.trim()).filter(Boolean)
-      control = `<select name="${f.name}" style="${inputStyle}"${req}>${opts.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`
+      control = `<select name="${f.name}" data-field-name="${f.name}" style="${inputStyle}"${req}>${opts.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`
     } else if (f.field_type === 'checkbox') {
       control = renderCheckboxGroup(f, req, `display:flex;align-items:center;gap:0.5rem;font-size:0.9375rem;color:${data.inputTextColor};font-weight:400;`)
     } else if (f.field_type === 'file') {
       control = renderFileUploadButton(f, req, null, data.submitBgColor, `display:inline-flex;align-items:center;border-radius:${data.inputRadius ?? 4}px;padding:0.625rem 1.25rem;font-size:0.9375rem;font-weight:600;color:${data.submitTextColor};cursor:pointer;`, data.inputTextColor)
     } else {
-      control = `<input type="${f.field_type || 'text'}" name="${f.name}" style="${inputStyle}"${value}${req} />`
+      control = `<input type="${f.field_type || 'text'}" name="${f.name}" data-field-name="${f.name}" style="${inputStyle}"${value}${req} />`
     }
     return `<div style="margin-bottom:1.25rem;">
       <label style="${labelStyle}">${f.label}${requiredMark}</label>
