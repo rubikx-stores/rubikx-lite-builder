@@ -67,7 +67,7 @@ export default defineEventHandler(async (event) => {
   // directly (shop), so they'd never follow the owner page's deletions on
   // their own.
   const CASCADE_MAP: Record<string, string[]> = {
-    home: ['global-header', 'global-footer'],
+    home: ['global-header', 'global-footer', 'category-banners'],
     shop: ['shop-header', 'shop-footer'],
   }
   const CASCADE_TARGET_KEYS = CASCADE_MAP[key] ?? []
