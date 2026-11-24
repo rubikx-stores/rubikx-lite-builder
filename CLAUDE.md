@@ -100,11 +100,11 @@ if (document.getElementById('page-builder-wrapper')) return
 ## Deployment
 
 - Platform: AWS Amplify (`amplify.yml`), `NITRO_PRESET=aws-amplify`
-- Deploy branch: `amplify-setup`
-- Feature branches PR into `amplify-setup`, not `main`
+- Staging branch: `develop`
+- Feature branches PR into `develop`, not `main`
 
 ## Commit / PR conventions
 
 - Use `rtk` prefix for all shell commands (token savings)
-- PRs target `amplify-setup` branch
+- PRs target `develop` branch (our staging branch)
 - Commit style: `feat:` / `fix:` with a short body describing the why
