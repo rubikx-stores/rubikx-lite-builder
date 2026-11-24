@@ -50,6 +50,7 @@ Dynamic elements in rendered HTML are wrapped in a shell element:
 | Handler | Component | What it does |
 |---------|-----------|-------------|
 | `loadCategories` | `CategoryNav` | Fetches `/api/categories`, renders category tree or mega-grid into dropdown |
+| `loadRu10CategoryLinks` | `Ru10ShopByCategory` | Fetches `/api/categories`, rewrites each category card's href by matching its name against the live top-level category list (no admin-entered URL field) |
 | `loadSlider` | `HeroSlider` | Wires up slide transitions, dots, prev/next, autoplay |
 | `loadCartCount` | `CartBadge` | Injects red badge with cart count (demo: hardcoded 3; TODO: real Odoo API) |
 | `loadAuthState` | `AuthState` | Fetches `/api/auth/me` — logged in → shows profile icon + dropdown; logged out → shows sign-in link |
