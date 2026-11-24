@@ -7544,10 +7544,6 @@ export function renderRu10ShopByCategory(data: Ru10ShopByCategoryData): string {
     // CategoryNav shell (loadCategories) already uses, so the link is never
     // stale or hand-typed.
     const href = isPlaceholderSet ? '#' : (slug ? `/shop?category=${slug}` : '#')
-    const description = cat.description?.trim()
-    const finalHref = href !== '#' && description
-      ? `${href}${href.includes('?') ? '&' : '?'}categoryDescription=${encodeURIComponent(description)}`
-      : href
     const imgSrc = productImageSrc(cat.imageUrl)
     const imageHtml = imgSrc
       ? `<img src="${imgSrc}" alt="${name}" style="width:100%;height:100%;object-fit:cover;object-position:${data.cardObjectPosition || 'top'};transition:transform 0.3s ease;will-change:transform;" />`
@@ -7557,7 +7553,7 @@ export function renderRu10ShopByCategory(data: Ru10ShopByCategoryData): string {
       ? `flex:0 0 ${cardBasis(maxCategories)};max-width:${cardBasis(maxCategories)};scroll-snap-align:start;`
       : `flex:0 0 ${cardBasis(maxCategories)};max-width:${cardBasis(maxCategories)};`
 
-    return `<a data-ru10-card data-cat-name="${isPlaceholderSet ? '' : name}" href="${finalHref}" style="${cardSizeStyle}min-width:0;display:flex;flex-direction:column;align-items:center;gap:10px;text-decoration:none;">
+    return `<a data-ru10-card data-cat-name="${isPlaceholderSet ? '' : name}" href="${href}" style="${cardSizeStyle}min-width:0;display:flex;flex-direction:column;align-items:center;gap:10px;text-decoration:none;">
       <div style="width:100%;aspect-ratio:${data.cardAspectRatio || '1 / 1'};border-radius:${data.cardBorderRadius}px;overflow:hidden;background:${fallbackBg};border:${data.cardBorderWidth ?? 1}px solid ${data.cardBorderColor || '#d1d5db'};">${imageHtml}</div>
       <p style="margin:0;width:100%;font-size:${data.categoryFontSize}px;font-weight:${data.categoryFontWeight};color:${data.categoryColor};text-align:center;overflow-wrap:break-word;${fontCss(data.categoryFont, data.fontFamily)}">${name}</p>
     </a>`

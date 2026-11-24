@@ -381,14 +381,7 @@ async function loadRu10CategoryLinks(el: HTMLElement, companyId?: number) {
       const match = byLabel.get(key)
       if (!match) return
       const query = match.headlessName || match.displayName || match.name
-      // Preserve a categoryDescription param already on the card's link
-      // (added at render time from the admin-authored description) rather
-      // than clobbering it when the real category URL is swapped in.
-      const current = new URL(card.getAttribute('href') || '', window.location.origin)
-      const description = current.searchParams.get('categoryDescription')
-      let newHref = `/shop?category=${encodeURIComponent(query)}`
-      if (description) newHref += `&categoryDescription=${encodeURIComponent(description)}`
-      card.setAttribute('href', newHref)
+      card.setAttribute('href', `/shop?category=${encodeURIComponent(query)}`)
     })
   } catch (e) {
     console.error('[Rubikx] Failed to load Ru10 category links:', e)
