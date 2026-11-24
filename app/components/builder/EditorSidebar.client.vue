@@ -308,9 +308,13 @@ async function syncRu7CategoriesFromApi() {
   }
 }
 
-// Sync Categories from API (Ru10-Shop-By-Category): identical logic to
-// syncRu7CategoriesFromApi above — same "categories" list shape, so the two
-// blocks share this exact sync behaviour independently per-instance.
+// Sync Categories from API (Ru10-Shop-By-Category): similar to
+// syncRu7CategoriesFromApi above, but Ru10 has no categoryUrl field — the
+// card's link is resolved live on page load by loadRu10CategoryLinks
+// (rubikx-hydration.client.ts), matched by name against /api/categories, so
+// there's nothing URL-shaped to sync here. Only imageUrl/description (admin-
+// authored per card) are preserved across a re-sync; name always refreshes
+// from the backend label.
 async function syncRu10CategoriesFromApi() {
   const data = blockData.value
   if (!data) return
@@ -323,20 +327,16 @@ async function syncRu10CategoriesFromApi() {
     const tree = buildCategoryTree(flat)
     const labelFor = (c: CategoryNode) => String(c.headlessName || c.displayName || c.name)
 
-    const existingCategories = (data.categories ?? []) as Array<{ imageUrl: string; name: string; categoryUrl?: string }>
+    const existingCategories = (data.categories ?? []) as Array<{ imageUrl: string; name: string; description?: string }>
     const existingByName = new Map(existingCategories.map(c => [c.name, c]))
 
     const synced = tree.map(cat => {
       const label = labelFor(cat)
       const existing = existingByName.get(label)
-      // Slug always derived from the same label shown as this category's
-      // name (not the backend's separate headlessName) — so the URL always
-      // matches whatever name is visible in the editor for this category.
-      const slug = label.trim().toLowerCase().replace(/\s+/g, '-')
       return {
         imageUrl: existing?.imageUrl ?? '',
         name: label,
-        categoryUrl: existing?.categoryUrl ?? `/shop?category=${slug}`,
+        description: existing?.description ?? '',
       }
     })
 
