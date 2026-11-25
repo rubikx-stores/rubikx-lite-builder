@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { useSiteConfig } from '~/composables/useSiteConfig'
-import { splitShopSectionsForPublish, GLOBAL_OWNER_PAGES } from '~/composables/useGlobalSections'
+import {
+  splitShopSectionsForPublish,
+  buildCategoryBannersValue,
+  GLOBAL_OWNER_PAGES,
+  CATEGORY_BANNERS_KEY,
+  CATEGORY_BANNERS_OWNER_PAGE,
+} from '~/composables/useGlobalSections'
 import { resetThemeToDefaults } from '~/composables/editor/useThemeColors'
 import CloneSiteModal from '~/components/builder/CloneSiteModal.client.vue'
 import type { Website } from '~/types/website'
@@ -172,6 +178,15 @@ watch(showDeleteModal, (open) => {
   else window.removeEventListener('keydown', onDeleteModalKeydown)
 })
 
+// Returns the banner value to write, or null to skip the write entirely. A site
+// that has never used banners (no `category-banners` row yet) and has nothing to
+// publish ("{}") gets no record and no extra API call. Once a row exists, "{}"
+// IS written, because that's what clears a removed description.
+function bannersWorthWriting(value: string): string | null {
+  const hasRow = pages.value.some((p) => p.id === CATEGORY_BANNERS_KEY)
+  return value !== '{}' || hasRow ? value : null
+}
+
 // Only one version of a given CMS key should ever be `published` at a time — once a new
 // version goes live, any other version previously marked published gets demoted back to
 // draft (same value/version, just the state flips) so the page list and Odoo agree.
@@ -234,8 +249,24 @@ async function publishPage(page: Page) {
   if (shopFooterHtml) publishTargets.push({ key: 'shop-footer', keepVersion: vData.version })
   for (const g of globalPromotions) publishTargets.push({ key: g.key, keepVersion: g.version })
 
+  // Per-category banners (Ru10 card descriptions) — written ONLY by the home
+  // page, as one site-wide record at the home page's version. Once a site has
+  // a banner row, every home publish rewrites it (even as "{}") so removing a
+  // description or the block clears the live banner. Mirrored in
+  // unpublishPage() and the delete cascade.
+  const categoryBannersValue = page.id === CATEGORY_BANNERS_OWNER_PAGE
+    ? bannersWorthWriting(buildCategoryBannersValue(vData.value))
+    : null
+  if (categoryBannersValue !== null) publishTargets.push({ key: CATEGORY_BANNERS_KEY, keepVersion: vData.version })
+
   try {
     const posts = [$fetch('/api/proxy/odoo/cms', { method: 'POST', body: publishPayload })]
+    if (categoryBannersValue !== null) {
+      posts.push($fetch('/api/proxy/odoo/cms', {
+        method: 'POST',
+        body: { ...commonFields, key: CATEGORY_BANNERS_KEY, value: categoryBannersValue },
+      }))
+    }
     if (shopHeaderHtml) {
       posts.push($fetch('/api/proxy/odoo/cms', {
         method: 'POST',
@@ -260,6 +291,19 @@ async function publishPage(page: Page) {
     }
     const res = await Promise.all(posts)
     console.log('[PUBLISH] response:', res)
+    // The banner row may be brand new this session (never in the list loaded at
+    // page open) — register it so later actions in this session can see it.
+    if (categoryBannersValue !== null) {
+      const row = { version: vData.version, updatedAt: commonFields.updatedOn, updatedBy: commonFields.updatedBy, status: 'published' as const, value: categoryBannersValue }
+      const existing = pages.value.find((p) => p.id === CATEGORY_BANNERS_KEY)
+      if (existing) {
+        const i = existing.versions.findIndex((v) => v.version === vData.version)
+        if (i >= 0) existing.versions[i] = { ...existing.versions[i], ...row }
+        else existing.versions.unshift(row)
+      } else {
+        pages.value.push({ id: CATEGORY_BANNERS_KEY, name: CATEGORY_BANNERS_KEY, slug: `/${CATEGORY_BANNERS_KEY}`, status: 'published', updatedAt: row.updatedAt, updatedBy: row.updatedBy, versions: [row] } as any)
+      }
+    }
     for (const t of publishTargets) {
       const tTarget = pages.value.find((p) => p.id === t.key)
       if (!tTarget) continue
@@ -292,6 +336,18 @@ async function unpublishPage(page: Page) {
     const { shopHeaderHtml, shopFooterHtml } = splitShopSectionsForPublish(vData.value)
     if (shopHeaderHtml) targets.push({ key: 'shop-header', version: vData.version, value: shopHeaderHtml })
     if (shopFooterHtml) targets.push({ key: 'shop-footer', version: vData.version, value: shopFooterHtml })
+  }
+  // Always demote the banner entry at the home version being unpublished
+  // (publishPage() wrote it at that same version). Deliberately NOT looked up
+  // in pages.value: that list is loaded once, so a banner row written by a
+  // publish in this same session isn't in it, and a lookup would silently skip
+  // the demotion and leave the banner live. The value is regenerated from the
+  // home HTML (the same function publish used), so the draft keeps its content.
+  if (page.id === CATEGORY_BANNERS_OWNER_PAGE) {
+    // Same skip rule as publishPage(): no banner row + nothing in the home HTML
+    // means the feature was never used here, so there's nothing to demote.
+    const bannersValue = bannersWorthWriting(buildCategoryBannersValue(vData.value))
+    if (bannersValue !== null) targets.push({ key: CATEGORY_BANNERS_KEY, version: vData.version, value: bannersValue })
   }
   if (GLOBAL_OWNER_PAGES.includes(page.id)) {
     for (const key of ['global-header', 'global-footer']) {
@@ -380,7 +436,7 @@ async function deletePage() {
 
 const pageHtmlCache = usePageHtmlCache()
 
-const GLOBAL_KEYS = ['global-header', 'global-footer', 'global-theme', 'global-config', 'shop-header', 'shop-footer']
+const GLOBAL_KEYS = ['global-header', 'global-footer', 'global-theme', 'global-config', 'shop-header', 'shop-footer', CATEGORY_BANNERS_KEY]
 const displayPages = computed(() => {
   return pages.value.filter(p => {
     if (GLOBAL_KEYS.includes(p.id)) return false

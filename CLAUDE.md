@@ -55,6 +55,13 @@ Dynamic elements in rendered HTML are wrapped in a shell element:
 | `loadCartCount` | `CartBadge` | Injects red badge with cart count (demo: hardcoded 3; TODO: real Odoo API) |
 | `loadAuthState` | `AuthState` | Fetches `/api/auth/me` — logged in → shows profile icon + dropdown; logged out → shows sign-in link |
 
+### Category banners (`category-banners` CMS entry)
+
+Ru10 card **descriptions** (rich text, inline styles) become the banner shown atop `/shop?category=<name>` on the live store:
+- Written by `publishPage()` (`app/pages/index.vue`) **only when publishing `home`** — one site-wide record, value = JSON `{ "<card name>": "<description HTML>" }`, built by `buildCategoryBannersValue()` in `composables/useGlobalSections.ts`. Stored exactly as authored (no heading/wrapper added). Once a site has a `category-banners` row it's rewritten on every home publish, even as `"{}"` (the CMS proxy rejects an empty string), so clearing a description clears the banner. Sites that never used banners (no row, nothing to publish) skip the write entirely (`bannersWorthWriting()` in `index.vue`).
+- Key = the card's `name` (synced as `headlessName || displayName || name`) = the `?category=` value `loadRu10CategoryLinks` puts in the link. The description is **not** in the URL.
+- Lifecycle: demoted in `unpublishPage()`, removed via `CASCADE_MAP.home` in `server/api/pages/[...key].delete.ts`, hidden from page lists/clone (`GLOBAL_KEYS` in `index.vue`, `INTERNAL_CMS_KEYS`). Rebuilt from the cloned home on the target site's next publish.
+
 ### Builder guard
 
 Every handler that mutates the live DOM must bail out inside the page builder:
@@ -93,11 +100,11 @@ if (document.getElementById('page-builder-wrapper')) return
 ## Deployment
 
 - Platform: AWS Amplify (`amplify.yml`), `NITRO_PRESET=aws-amplify`
-- Deploy branch: `amplify-setup`
-- Feature branches PR into `amplify-setup`, not `main`
+- Staging branch: `develop`
+- Feature branches PR into `develop`, not `main`
 
 ## Commit / PR conventions
 
 - Use `rtk` prefix for all shell commands (token savings)
-- PRs target `amplify-setup` branch
+- PRs target `develop` branch (our staging branch)
 - Commit style: `feat:` / `fix:` with a short body describing the why
