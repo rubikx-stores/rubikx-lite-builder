@@ -9,7 +9,50 @@ export const GLOBAL_OWNER_PAGES = ['home', 'shop']
 // CMS keys that are internal storage slots, not real content pages — never
 // offered as a page to clone/select in page pickers (Clone Design/Clone Site
 // modals, etc).
-export const INTERNAL_CMS_KEYS = new Set(['global-header', 'global-footer', 'global-theme', 'global-config'])
+export const INTERNAL_CMS_KEYS = new Set(['global-header', 'global-footer', 'global-theme', 'global-config', 'category-banners'])
+
+// ── Category banners ─────────────────────────────────────────────────────────
+// ONE site-wide CMS record, written only by the home page's publish (never by
+// any other page, so pages can't overwrite each other's banners). Its value is
+// a JSON object: category -> the banner HTML the admin authored in the
+// Ru10-Shop-By-Category card's rich-text description. The live shop page looks
+// the current `?category=` up in it. The HTML is stored exactly as authored —
+// no heading or wrapper is added — so the banner looks the same as in the editor.
+export const CATEGORY_BANNERS_KEY = 'category-banners'
+export const CATEGORY_BANNERS_OWNER_PAGE = 'home'
+const RU10_TITLE = 'Ru10-Shop-By-Category'
+
+// Builds the `category-banners` value from a saved page's HTML. The key is the
+// card's `name` — synced as headlessName || displayName || name, the same text
+// loadRu10CategoryLinks puts in the card's `?category=` link. Cards hidden by
+// "Number of Categories to Show" are skipped, as are blank descriptions. Always
+// returns a non-empty string ("{}" when there's nothing), because the CMS proxy
+// rejects an empty value and a removed description must still clear the entry.
+// Browser-only (DOMParser) — call it from client code like publishPage().
+export function buildCategoryBannersValue(pageHtml: string): string {
+  const banners: Record<string, string> = {}
+  const doc = new DOMParser().parseFromString(pageHtml || '', 'text/html')
+  doc.querySelectorAll(`section[data-component-title="${RU10_TITLE}"]`).forEach((section) => {
+    let props: any
+    try {
+      props = JSON.parse(decodeURIComponent(section.getAttribute('data-component-props') || ''))
+    } catch {
+      return
+    }
+    const all: any[] = Array.isArray(props?.categories) ? props.categories : []
+    const limit = props?.displayLimit && props.displayLimit !== 'All' ? Number(props.displayLimit) : null
+    const shown = limit && limit > 0 ? all.slice(0, limit) : all
+    for (const cat of shown) {
+      const name = String(cat?.name ?? '').trim()
+      const html = String(cat?.description ?? '').trim()
+      if (!name || !html) continue
+      const probe = new DOMParser().parseFromString(html, 'text/html')
+      if (!probe.body.textContent?.trim()) continue
+      banners[name] = html // duplicate category: last one wins
+    }
+  })
+  return JSON.stringify(banners)
+}
 
 // Shop theme mockup blocks (product grid/filters/breadcrumb) — live product data
 // replaces these on the real storefront, so they're stripped out at publish time.

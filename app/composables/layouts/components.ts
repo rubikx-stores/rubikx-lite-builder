@@ -7291,7 +7291,7 @@ export function renderRu9MultiBannerGrid(data: Ru9MultiBannerGridData): string {
 export interface Ru10CategoryItem {
   imageUrl: string
   name: string
-  categoryUrl: string
+  description?: string
 }
 
 export interface Ru10ShopByCategoryData {
@@ -7446,7 +7446,7 @@ export const ru10ShopByCategoryFields: FieldConfig[] = [
     listFields: [
       { key: 'imageUrl', label: 'Image', type: 'image', noAspectRatio: true },
       { key: 'name', label: 'Category Name', type: 'text', placeholder: 'e.g. Apparel' },
-      { key: 'categoryUrl', label: 'Categories url', type: 'text', placeholder: '/shop?category=apparel' },
+      { key: 'description', label: 'Description (optional)', type: 'textarea', placeholder: 'Shown as a banner when this category is opened' },
     ],
   },
 ]
@@ -7514,9 +7514,10 @@ export function renderRu10ShopByCategory(data: Ru10ShopByCategoryData): string {
   const allRawCategories = Array.isArray(data.categories) ? data.categories : []
   const displayLimit = data.displayLimit && data.displayLimit !== 'All' ? Number(data.displayLimit) : null
   const rawCategories = displayLimit && displayLimit > 0 ? allRawCategories.slice(0, displayLimit) : allRawCategories
+  const isPlaceholderSet = rawCategories.length === 0
   const categories = rawCategories.length > 0
     ? rawCategories
-    : Array.from({ length: 5 }, () => ({ imageUrl: '', name: 'Category', categoryUrl: '#' }))
+    : Array.from({ length: 5 }, () => ({ imageUrl: '', name: 'Category', description: '' }))
 
   // "Wrap to Rows" (default): extras beyond maxCategories flow onto additional
   // rows at the same fixed per-card size — see the responsive shrink rules
@@ -7536,7 +7537,16 @@ export function renderRu10ShopByCategory(data: Ru10ShopByCategoryData): string {
   const cards = categories.map((cat) => {
     const name = cat.name || 'Category'
     const slug = name.trim().toLowerCase().replace(/\s+/g, '-')
-    const href = cat.categoryUrl?.trim() || (slug ? `/shop?category=${slug}` : '#')
+    // No admin-entered URL any more — this slug-based link is only the
+    // pre-hydration fallback. loadRu10CategoryLinks (rubikx-hydration.client.ts)
+    // overwrites it on mount with the real category's live URL, matched by
+    // name against /api/categories — same fetch-driven approach the navbar's
+    // CategoryNav shell (loadCategories) already uses, so the link is never
+    // stale or hand-typed.
+    // The card's `description` is NOT carried in the link: it's published once
+    // per site as the `category-banners` CMS entry (see publishPage() in
+    // pages/index.vue), which the shop page looks up by this same category.
+    const href = isPlaceholderSet ? '#' : (slug ? `/shop?category=${slug}` : '#')
     const imgSrc = productImageSrc(cat.imageUrl)
     const imageHtml = imgSrc
       ? `<img src="${imgSrc}" alt="${name}" style="width:100%;height:100%;object-fit:cover;object-position:${data.cardObjectPosition || 'top'};transition:transform 0.3s ease;will-change:transform;" />`
@@ -7546,7 +7556,7 @@ export function renderRu10ShopByCategory(data: Ru10ShopByCategoryData): string {
       ? `flex:0 0 ${cardBasis(maxCategories)};max-width:${cardBasis(maxCategories)};scroll-snap-align:start;`
       : `flex:0 0 ${cardBasis(maxCategories)};max-width:${cardBasis(maxCategories)};`
 
-    return `<a data-ru10-card href="${href}" style="${cardSizeStyle}min-width:0;display:flex;flex-direction:column;align-items:center;gap:10px;text-decoration:none;">
+    return `<a data-ru10-card data-cat-name="${isPlaceholderSet ? '' : name}" href="${href}" style="${cardSizeStyle}min-width:0;display:flex;flex-direction:column;align-items:center;gap:10px;text-decoration:none;">
       <div style="width:100%;aspect-ratio:${data.cardAspectRatio || '1 / 1'};border-radius:${data.cardBorderRadius}px;overflow:hidden;background:${fallbackBg};border:${data.cardBorderWidth ?? 1}px solid ${data.cardBorderColor || '#d1d5db'};">${imageHtml}</div>
       <p style="margin:0;width:100%;font-size:${data.categoryFontSize}px;font-weight:${data.categoryFontWeight};color:${data.categoryColor};text-align:center;overflow-wrap:break-word;${fontCss(data.categoryFont, data.fontFamily)}">${name}</p>
     </a>`
@@ -7658,7 +7668,7 @@ export function renderRu10ShopByCategory(data: Ru10ShopByCategoryData): string {
 
   const innerHtml = `<div style="max-width:90rem;margin:0 auto;${hasBgImage ? 'position:relative;z-index:1;' : ''}">
     ${headerHtml}
-    <div data-ru10-grid style="${gridStyle}">
+    <div data-ru10-grid data-rubikx-component="Ru10ShopByCategory" data-on-mount="loadRu10CategoryLinks" style="${gridStyle}">
       ${cards}
     </div>
   </div>`

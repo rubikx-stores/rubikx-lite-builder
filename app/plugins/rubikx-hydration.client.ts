@@ -353,6 +353,41 @@ async function loadCategories(el: HTMLElement, companyId?: number) {
   }
 }
 
+// Ru10-Shop-By-Category: rewrites each category card's href from the live
+// category list, matched by name — same fetch-driven approach as
+// loadCategories above instead of a hand-typed URL stored on the block. Runs
+// in both the builder preview and the published page (no page-builder
+// guard), same as loadCategories, so the preview link already resolves the
+// way it will once published. Ru10 only ever syncs top-level categories (see
+// syncRu10CategoriesFromApi in EditorSidebar.client.vue), so this matches
+// against tree roots only, not nested children.
+async function loadRu10CategoryLinks(el: HTMLElement, companyId?: number) {
+  if (el.dataset.hydrated === 'true') return
+  el.dataset.hydrated = 'true'
+
+  const cards = Array.from(el.querySelectorAll<HTMLAnchorElement>('[data-ru10-card]'))
+  if (!cards.length) return
+
+  try {
+    const flat = await fetchCategoriesCached(companyId)
+    const roots = buildCategoryTree(flat)
+    const byLabel = new Map(
+      roots.map((c) => [String(c.headlessName || c.displayName || c.name).trim().toLowerCase(), c])
+    )
+
+    cards.forEach((card) => {
+      const key = (card.dataset.catName ?? '').trim().toLowerCase()
+      if (!key) return
+      const match = byLabel.get(key)
+      if (!match) return
+      const query = match.headlessName || match.displayName || match.name
+      card.setAttribute('href', `/shop?category=${encodeURIComponent(query)}`)
+    })
+  } catch (e) {
+    console.error('[Rubikx] Failed to load Ru10 category links:', e)
+  }
+}
+
 // Ru5-Dynamic-Navbar's nav row — unlike loadCategories above (which fills a
 // single hand-configured nav link's dropdown), this builds the entire row of
 // top-level nav items itself, one per root category the backend returns, so
@@ -1212,6 +1247,7 @@ function loadSearch(el: HTMLElement, companyId?: number) {
 const HANDLERS: Record<string, (el: HTMLElement, companyId?: number) => void> =
   {
     loadCategories,
+    loadRu10CategoryLinks,
     loadDynamicNav,
     loadLogoNav,
     loadNavOverflow,
